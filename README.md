@@ -1,1 +1,1 @@
-# incomplete_multiview_clustering
+# Incomplete multi-view clustering
