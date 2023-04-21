@@ -1,5 +1,5 @@
 from sklearn.pipeline import make_pipeline
-from utils.utils import FillMissingViews, ConcatenateViews
+from utils.utils import ConcatenateViews, FillMissingViews
 from sklearn.preprocessing import Normalizer
 from sklearn.cluster import KMeans
 

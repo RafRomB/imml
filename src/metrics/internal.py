@@ -1,6 +1,5 @@
 import numpy as np
-from sklearn.metrics.pairwise import euclidean_distances
-from sklearn.metrics import silhouette_score
+from sklearn import metrics
 
 
 class InternalMetrics():
@@ -31,7 +30,7 @@ class InternalMetrics():
         Adapted from: https://github.com/jqmviegas/jqm_cvi
         """
         if distances is None:
-            distances = euclidean_distances(self.X)
+            distances = metrics.pairwise.euclidean_distances(self.X)
         ks = np.sort(np.unique(labels_pred))
 
         deltas = np.ones([len(ks), len(ks)])*1000000
@@ -50,7 +49,7 @@ class InternalMetrics():
     
     def connectivity(self, labels_pred, distances = None, n_neighbors=10):
         if distances is None:
-            distances = euclidean_distances(self.X)
+            distances = metrics.pairwise.euclidean_distances(self.X)
         nearest = np.apply_along_axis(lambda x: np.argsort(x)[1:(n_neighbors+1)], 1, distances)
         nr, nc = nearest.shape
         clusters_mat = np.tile(labels_pred, (nc, 1)).T
@@ -60,14 +59,14 @@ class InternalMetrics():
     
     
     def compute(self, labels_pred):
-        metrics = {}
-        distances = euclidean_distances(self.X)
+        scoring = {}
+        distances = metrics.pairwise.euclidean_distances(self.X)
         dunn_m = self.dunn_index(labels_pred = labels_pred, distances = distances)
-        metrics['Dunn'] = dunn_m
-        sil_m = silhouette_score(self.X, labels = labels_pred, random_state = self.random_state)
-        metrics['Silhouette'] = sil_m
+        scoring['Dunn'] = dunn_m
+        sil_m = metrics.silhouette_score(self.X, labels = labels_pred, random_state = self.random_state)
+        scoring['Silhouette'] = sil_m
         conn_m = self.connectivity(labels_pred = labels_pred, distances = distances, n_neighbors = self.n_neighbors)
-        metrics['Connectivity'] = conn_m
-        return metrics
+        scoring['Connectivity'] = conn_m
+        return scoring
         
 

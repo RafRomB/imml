@@ -21,8 +21,8 @@ class StabilityMetrics():
         
     def compute(self, pred):
         metrics = {'APN': [], 'AD': [], 'ADM': [], 'FOM': []}
-        dij = np.full((nc1, nc1), np.nan)
-        dij2 = np.zeros((nc1, nc1))
+        dij = np.full((self.nc1, self.nc1), np.nan)
+        dij2 = np.zeros((self.nc1, self.nc1))
         xbar = self.transformed_X.groupby(pred).mean().mean(1)
         for iter_boost in self.boost_preds:
             boost_pred = self.boost_preds[iter_boost]
@@ -45,15 +45,15 @@ class StabilityMetrics():
             metrics['ADM'].append(sum(overlap*dij2)/len(self.transformed_X))
             xbar = self.transformed_X.groupby(boost_pred).mean().mean(1)
             subs = boost_pred.to_frame().apply(lambda x: xbar.loc[x], axis = 0).squeeze().reset_index(drop=True)
-            metrics["FOM"].append(np.sqrt(np.mean((self.transformed_X.subtract(subs, axis = 0))**2)) / np.sqrt((self.transformed_X.shape[0] - nc1) / self.transformed_X.shape[0]))
+            metrics["FOM"].append(np.sqrt(np.mean((self.transformed_X.subtract(subs, axis = 0))**2)) / np.sqrt((self.transformed_X.shape[0] - self.nc1) / self.transformed_X.shape[0]))
         metrics = {key: [np.mean(value), np.std(value), value] for key,value in metrics.items()}
         return metrics
 
         
     def apn(self, pred):
         metric = []
-        dij = np.full((nc1, nc1), np.nan)
-        dij2 = np.zeros((nc1, nc1))
+        dij = np.full((self.nc1, self.nc1), np.nan)
+        dij2 = np.zeros((self.nc1, self.nc1))
         xbar = self.transformed_X.groupby(pred).mean().mean(1)
         for iter_boost in self.boost_preds:
             boost_pred = self.boost_preds[iter_boost]
@@ -66,7 +66,7 @@ class StabilityMetrics():
         
     def ad(self, pred):
         metric = []
-        dij = np.full((nc1, nc1), np.nan)
+        dij = np.full((self.nc1, self.nc1), np.nan)
         xbar = self.transformed_X.groupby(pred).mean().mean(1)
         for iter_boost in self.boost_preds:
             boost_pred = self.boost_preds[iter_boost]
@@ -88,7 +88,7 @@ class StabilityMetrics():
         
     def adm(self, pred):
         metric = []
-        dij2 = np.zeros((nc1, nc1))
+        dij2 = np.zeros((self.nc1, self.nc1))
         xbar = self.transformed_X.groupby(pred).mean().mean(1)
         for iter_boost in self.boost_preds:
             boost_pred = self.boost_preds[iter_boost]
@@ -113,7 +113,7 @@ class StabilityMetrics():
             boost_pred = self.boost_preds[iter_boost]
             xbar = self.transformed_X.groupby(boost_pred).mean().mean(1)
             subs = boost_pred.to_frame().apply(lambda x: xbar.loc[x], axis = 0).squeeze().reset_index(drop=True)
-            metric.append(np.sqrt(np.mean((self.transformed_X.subtract(subs, axis = 0))**2)) / np.sqrt((self.transformed_X.shape[0] - nc1) / self.transformed_X.shape[0]))
+            metric.append(np.sqrt(np.mean((self.transformed_X.subtract(subs, axis = 0))**2)) / np.sqrt((self.transformed_X.shape[0] - self.nc1) / self.transformed_X.shape[0]))
         metric = [np.mean(metric), np.std(metric), metric]
         return metric
 
