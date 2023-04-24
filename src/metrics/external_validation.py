@@ -17,7 +17,7 @@ class ExternalValidation():
         self.n_times = n_times
         self.random_state = random_state
         
-        train_labels, val_labels, train_pred = [], [], []
+        train_labels, val_labels, val_preds = [], [], []
         val_labels = []
         
         for train_index, val_index in ShuffleSplit(n_splits=self.n_times, test_size = sample_frac, random_state = random_state).split(sample_views):
@@ -27,20 +27,20 @@ class ExternalValidation():
             val_estimator = make_pipeline(FunctionTransformer(lambda x: [view.loc[view.index.intersection(val_index)] for view in x]), *estimator)
             train_labels.append(pd.Series(train_estimator.fit_predict(X), index = sample_views.iloc[train_index].index))
             val_labels.append(pd.Series(val_estimator.fit_predict(X), index = sample_views.iloc[val_index].index))
-            train_pred.append(pd.Series(train_estimator.predict(X), index = sample_views.iloc[val_index].index))
+            val_preds.append(pd.Series(train_estimator.predict(X), index = sample_views.iloc[val_index].index))
             
         self.train_labels = train_labels
         self.val_labels = val_labels
-        self.train_pred = train_pred
+        self.val_preds = val_preds
         
         
     def compute_stability(self):
         metric_df = pd.Series(np.arange(self.n_times))
         metric_df = metric_df.apply(lambda x: {
-            'AMI': metrics.adjusted_mutual_info_score(labels_true = self.val_labels[x], labels_pred = self.train_pred[x]),
-            'ARI': metrics.adjusted_rand_score(labels_true = self.val_labels[x], labels_pred = self.train_pred[x]),
-            'Completeness': metrics.completeness_score(labels_true = self.val_labels[x], labels_pred = self.train_pred[x]),
-            'FMI': metrics.fowlkes_mallows_score(labels_true = self.val_labels[x], labels_pred = self.train_pred[x])
+            'AMI': metrics.adjusted_mutual_info_score(labels_true = self.val_labels[x], labels_pred = self.val_preds[x]),
+            'ARI': metrics.adjusted_rand_score(labels_true = self.val_labels[x], labels_pred = self.val_preds[x]),
+            'Completeness': metrics.completeness_score(labels_true = self.val_labels[x], labels_pred = self.val_preds[x]),
+            'FMI': metrics.fowlkes_mallows_score(labels_true = self.val_labels[x], labels_pred = self.val_preds[x])
         })
         metric_df = pd.DataFrame(list(metric_df))
         return metric_df.mean(), metric_df.std(), metric_df

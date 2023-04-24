@@ -6,5 +6,6 @@ from sklearn.cluster import KMeans
 
 class Concat():
     
-    def __new__(cls, n_clusters : int):
-        return make_pipeline(FillMissingViews(value = 'mean'), ConcatenateViews(), Normalizer().set_output(transform = 'pandas'), KMeans(n_clusters = n_clusters))
+    def __new__(cls, alg = KMeans, **args):
+        
+        return make_pipeline(FillMissingViews(), ConcatenateViews(), Normalizer().set_output(transform = 'pandas'), alg()).set_params(**args)
