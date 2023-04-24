@@ -5,6 +5,15 @@ from sklearn.preprocessing import FunctionTransformer
 from sklearn.datasets import make_blobs
 
 
+class ConvertToPositive(BaseEstimator, TransformerMixin):
+    """
+    Concatenate all views in a late integration before the clustering. We strongly recommend all the views have the same number of samples (you can use FillMissingViews operator in case you have an incomplete multi-view dataset).
+    """
+    
+    def __new__(cls):
+        return FunctionTransformer(lambda x: [convert_to_positive(X = view) if view.lt(0).any().any() else view for view in x])
+
+    
 class ConcatenateViews(BaseEstimator, TransformerMixin):
     """
     Concatenate all views in a late integration before the clustering. We strongly recommend all the views have the same number of samples (you can use FillMissingViews operator in case you have an incomplete multi-view dataset).
@@ -106,4 +115,12 @@ def get_sample_views(imvd : list):
     sample_views = pd.concat([view.index.to_series() for view in imvd], axis = 1).sort_index()
     sample_views = sample_views.mask(sample_views.isna(), 0).where(sample_views.isna(), 1).astype(int)
     return sample_views
+
     
+def convert_to_positive(X, y=None):
+
+    positive_X = X.clip(lower = 0)
+    positive_X.columns = positive_X.columns.astype(str) + '_pos'
+    negative_X = 0 - X.clip(upper = 0)
+    negative_X.columns = negative_X.columns.astype(str) + '_neg'
+    return pd.concat([positive_X, negative_X], axis = 1)

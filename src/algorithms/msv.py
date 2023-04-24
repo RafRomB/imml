@@ -7,8 +7,9 @@ import numpy as np
 
 class MSV():
     
-    def __init__(self, n_clusters : list):
-        self.estimators = [make_pipeline(FillMissingViews(value = 'mean'), SingleView(view_idx = view_idx), Normalizer().set_output(transform = 'pandas'), KMeans(n_clusters = n)) for view_idx, n in enumerate(n_clusters)]
+    def __init__(self, n_clusters, alg = KMeans, **args):
+        
+        self.estimators = [make_pipeline(FillMissingViews(), SingleView(view_idx = view_idx), Normalizer().set_output(transform = 'pandas'), alg(n_clusters = n)).set_params(**args) for view_idx, n in enumerate(n_clusters)]
         
     def fit(self, X, y = None):
         for view_idx in range(len(X)):
