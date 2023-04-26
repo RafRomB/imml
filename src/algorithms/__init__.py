@@ -1,3 +1,4 @@
 from .concat import Concat
 from .msv import MSV
-from .nmf import NonnegativeMatrixFactorization
+from .nmf_clustering import NMFClustering
+from .mofa_clustering import MOFAClustering

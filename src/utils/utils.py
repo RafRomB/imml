@@ -50,7 +50,7 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
         """
         value: if 'mean', the missing features are filled based on the average of the corresponding view; if 'zeros', missing views are set as 0.
         """
-        values = ['mean', 'zeros']
+        values = ['mean', 'zeros', 'nan']
         if value not in values:
             raise ValueError(f"Invalid value. Expected one of: {values}")
         self.value = value
@@ -77,9 +77,11 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
                 new_view_data = np.tile(feautures_view_mean, (n_samples,1))
             elif self.value == "zeros":
                 new_view_data = np.zeros((n_samples, n_features))
+            elif self.value == "nan":
+                new_view_data = np.nan
             new_view_data = pd.DataFrame(new_view_data, index= missing_views.index, columns = view_data.columns)
-            new_view_data = new_view_data.astype(view_data.dtypes.to_dict())
             new_view_data[missing_views.loc[:, view_idx]] = view_data
+            new_view_data = new_view_data.astype(view_data.dtypes.to_dict())
             new_X.append(new_view_data)
         return new_X
     
