@@ -1,2 +1,2 @@
-from .MOFA import MOFA
-from .NMF import NMFC
+from .mofa import MOFA
+from .nmf import NMFC
