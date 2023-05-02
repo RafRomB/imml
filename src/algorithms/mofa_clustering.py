@@ -1,13 +1,14 @@
-from sklearn.pipeline import make_pipeline
-from utils.utils import FillMissingViews
+from utils import FillMissingViews
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
 from decomposition import MOFA
 from sklearn.impute import SimpleImputer
+from .base import IMCBase
 
 
-class MOFAClustering():
+class MOFAClustering(IMCBase):
     
-    def __new__(cls, factors : int = 10, random_state : int = None, verbose = False, alg = KMeans, n_clusters : int = 8, **args):
+    def __init__(self, transformers = [FillMissingViews(value="nan"), MOFA().set_output(transform = 'pandas'), SimpleImputer(strategy='mean').set_output(transform = 'pandas'), StandardScaler().set_output(transform = 'pandas')], **args):
         
-        return make_pipeline(FillMissingViews(value="nan"), MOFA(factors = factors, random_state = random_state, verbose = verbose).set_output(transform = 'pandas'), SimpleImputer(strategy='mean'), StandardScaler(), alg(n_clusters = n_clusters, random_state = random_state, verbose = verbose)).set_params(**args)
+        self.transformers = transformers
+        super().__init__(transformers = transformers, **args)

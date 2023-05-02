@@ -1,22 +1,38 @@
-from sklearn.pipeline import make_pipeline
 from sklearn.base import BaseEstimator, ClassifierMixin
-from utils.utils import FillMissingViews, SingleView
-from sklearn.preprocessing import StandardScaler
+from .base import IMCBase
 from sklearn.cluster import KMeans
-import numpy as np
+from sklearn.preprocessing import StandardScaler
+from utils import FillMissingViews, SingleView
+import copy
 
 
 class MSV(BaseEstimator, ClassifierMixin):
     
-    def __init__(self, random_state : int = None, verbose = False, alg = KMeans, n_clusters : int = 8, **args):
+    def __init__(self, view_estimators = KMeans(), view_transformers = [FillMissingViews(value="mean"), SingleView(), StandardScaler().set_output(transform = 'pandas')], verbose = False):
         
-        self.estimators = [make_pipeline(FillMissingViews(value="mean"), SingleView(view_idx = view_idx), StandardScaler().set_output(transform = 'pandas'), alg(n_clusters = n_clusters, random_state = random_state, verbose = verbose)).set_params(**args) for view_idx, n in enumerate(n_clusters)]
+        self.view_estimators = view_estimators
+        self.view_transformers = view_transformers
+        self.verbose = verbose
+        self.pipelines_ = []
+
         
     def fit(self, X, y = None):
         for view_idx in range(len(X)):
-            self.estimators[view_idx].fit(X = X, y = y)
+            if not isinstance(self.view_estimators, list):
+                if not isinstance(self.view_transformers[0], list):
+                    pipeline = IMCBase(estimator = self.view_estimators, transformers = self.view_transformers, verbose = self.verbose)
+                else:
+                    pipeline = IMCBase(estimator = self.view_estimators, transformers = self.view_transformers[view_idx], verbose = self.verbose)
+            else:
+                if not isinstance(self.transformers_list[0], list):
+                    pipeline = IMCBase(estimator = self.view_estimators[view_idx], transformers = self.view_transformers, verbose = self.verbose)
+                else:
+                    pipeline = IMCBase(estimator = self.view_estimators[view_idx], transformers = self.view_transformers[view_idx], verbose = self.verbose)
+            
+            self.pipelines_.append(copy.deepcopy(pipeline))
+            self.pipelines_[view_idx].fit(X = X, y = y)
         return self
 
     def predict(self, X):
-        pred = np.array([self.estimators[view_idx].predict(X = X) for view_idx in range(len(X))])
+        pred = [self.pipelines_[view_idx].predict(X = X) for view_idx in range(len(X))]
         return pred

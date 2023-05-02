@@ -1,12 +1,14 @@
-from sklearn.pipeline import make_pipeline
-from utils.utils import ConcatenateViews, FillMissingViews, ConvertToPositive
-from sklearn.preprocessing import Normalizer
+from utils import FillMissingViews
+from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-from sklearn.decomposition import NMF
+from decomposition import MOFA
+from sklearn.impute import SimpleImputer
+from .base import IMCBase
 
 
-class NonnegativeMatrixFactorization():
+class MOFAClustering(IMCBase):
     
-    def __new__(cls, alg = KMeans, **args):
+    def __init__(self, transformers = [FillMissingViews(value="nan"), MOFA().set_output(transform = 'pandas'), SimpleImputer(strategy='mean').set_output(transform = 'pandas'), StandardScaler().set_output(transform = 'pandas')], **args):
         
-        return make_pipeline(FillMissingViews(), ConvertToPositive(), ConcatenateViews(), NMF().set_output(transform = 'pandas'), alg()).set_params(**args)
+        self.transformers = transformers
+        super().__init__(transformers = transformers, **args)

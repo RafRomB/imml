@@ -1,12 +1,12 @@
-from sklearn.pipeline import make_pipeline
-from utils.utils import ConcatenateViews, FillMissingViews, ConvertToPositive
-from sklearn.preprocessing import Normalizer
-from sklearn.cluster import KMeans
+from .base import IMCBase
+from utils import ConvertToPositive, ConcatenateViews, FillMissingViews, MultiSingleTransformer
 from decomposition import NMFC
 
 
-class NMFClustering():
+class NMFClustering(IMCBase):
     
-    def __new__(cls, n_clusters : int = 8, random_state : int = None, verbose = False, **args):
-        
-        return make_pipeline(FillMissingViews(value="mean"), ConvertToPositive(), ConcatenateViews(), NMFC(n_components = n_clusters, random_state = random_state, verbose = verbose).set_output(transform = 'pandas')).set_params(**args)
+    
+    def __init__(self, estimator = NMFC(n_components = 8).set_output(transform = 'pandas'), transformers = [FillMissingViews(value="mean"), MultiSingleTransformer(transformer = ConvertToPositive()), ConcatenateViews()], **args):
+        self.estimator = estimator
+        self.transformers = transformers
+        super().__init__(estimator = estimator, transformers = transformers, **args)
