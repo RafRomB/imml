@@ -1,15 +1,6 @@
 import pandas as pd
 from sklearn.preprocessing import FunctionTransformer
 
-    
-class ConcatenateViews(FunctionTransformer):
-    """
-    Concatenate all views in a late integration before the clustering. We strongly recommend all the views have the same number of samples (you can use FillMissingViews operator in case you have an incomplete multi-view dataset).
-    """
-    
-    def __init__(self):
-        super().__init__(concatenate_views)
-
 
 class DropView(FunctionTransformer):
     """
@@ -35,7 +26,7 @@ def concatenate_views(X):
     """
     ...
     """
-    return pd.concat(X, axis = 1)
+    return np.hstack(X)
 
 
 def drop_view(X, view_idx : int = 0):

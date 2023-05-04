@@ -2,7 +2,7 @@ import copy
 from sklearn.base import BaseEstimator, TransformerMixin
 
 
-class MultiSingleTransformer(BaseEstimator, TransformerMixin):
+class MultiViewTransformer(BaseEstimator, TransformerMixin):
     
     def __init__(self, transformer):
         
@@ -21,7 +21,7 @@ class MultiSingleTransformer(BaseEstimator, TransformerMixin):
         return [self.transformer_list_[view_idx].transform(X = X[view_idx]) for view_idx in range(len(X))]
     
     
-class MultiSinglePipeline(BaseEstimator, TransformerMixin):
+class MultiViewPipeline(BaseEstimator, TransformerMixin):
     
     def __init__(self, pipeline):
         
