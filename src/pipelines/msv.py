@@ -1,8 +1,8 @@
 from sklearn.base import BaseEstimator, ClassifierMixin
-from .base import IMCBase
+from .base import BasePipeline
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from utils import FillMissingViews, SingleView
+from transformers import FillMissingViews, SingleView
 import copy
 
 
@@ -17,22 +17,22 @@ class MSV(BaseEstimator, ClassifierMixin):
 
         
     def fit(self, X, y = None):
-        for view_idx in range(len(X)):
+        for X_idx in range(len(X)):
             if not isinstance(self.view_estimators, list):
                 if not isinstance(self.view_transformers[0], list):
-                    pipeline = IMCBase(estimator = self.view_estimators, transformers = self.view_transformers, verbose = self.verbose)
+                    pipeline = BasePipeline(estimator = self.view_estimators, transformers = self.view_transformers, verbose = self.verbose)
                 else:
-                    pipeline = IMCBase(estimator = self.view_estimators, transformers = self.view_transformers[view_idx], verbose = self.verbose)
+                    pipeline = BasePipeline(estimator = self.view_estimators, transformers = self.view_transformers[X_idx], verbose = self.verbose)
             else:
                 if not isinstance(self.transformers_list[0], list):
-                    pipeline = IMCBase(estimator = self.view_estimators[view_idx], transformers = self.view_transformers, verbose = self.verbose)
+                    pipeline = BasePipeline(estimator = self.view_estimators[X_idx], transformers = self.view_transformers, verbose = self.verbose)
                 else:
-                    pipeline = IMCBase(estimator = self.view_estimators[view_idx], transformers = self.view_transformers[view_idx], verbose = self.verbose)
+                    pipeline = BasePipeline(estimator = self.view_estimators[X_idx], transformers = self.view_transformers[X_idx], verbose = self.verbose)
             
             self.pipelines_.append(copy.deepcopy(pipeline))
-            self.pipelines_[view_idx].fit(X = X, y = y)
+            self.pipelines_[X_idx].fit(X = X, y = y)
         return self
 
     def predict(self, X):
-        pred = [self.pipelines_[view_idx].predict(X = X) for view_idx in range(len(X))]
+        pred = [self.pipelines_[X_idx].predict(X = X) for X_idx in range(len(X))]
         return pred

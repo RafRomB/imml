@@ -3,7 +3,7 @@ from sklearn.pipeline import Pipeline
 from sklearn.cluster import KMeans
 
 
-class IMCBase(Pipeline):
+class BasePipeline(Pipeline):
     
     def __init__(self, estimator = KMeans(), transformers = [], verbose = False, **args):
         self.estimator = estimator
