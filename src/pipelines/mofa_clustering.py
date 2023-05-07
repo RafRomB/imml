@@ -1,12 +1,12 @@
-from utils import FillMissingViews
+from transformers import FillMissingViews
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-from decomposition import MOFA
+from modules import MOFA
 from sklearn.impute import SimpleImputer
-from .base import IMCBase
+from .base import BasePipeline
 
 
-class MOFAClustering(IMCBase):
+class MOFAClustering(BasePipeline):
     
     def __init__(self, transformers = [FillMissingViews(value="nan"), MOFA().set_output(transform = 'pandas'), SimpleImputer(strategy='mean').set_output(transform = 'pandas'), StandardScaler().set_output(transform = 'pandas')], **args):
         

@@ -9,7 +9,8 @@ from time import time
 import numpy as np
 
 
-class MOFA():
+class MOFA:
+
     
     def __init__(self, factors : int = 10, random_state : int = None, verbose = False, data_options = {}, data_matrix = {}, model_options = {}, train_options = {}, stochastic_options = {},
                  covariates = {}, smooth_options = {}):
@@ -156,7 +157,7 @@ class ModifiedBayesNet(BayesNet):
                     # Print ELBO decomposed by node and variance explained
                     if self.options["verbose"]:
                         print(
-                            "- ELBO decomposition:  "
+                            "- ELBO modules:  "
                             + "".join(
                                 [
                                     "%s=%.2f  " % (k, v)
@@ -368,7 +369,7 @@ class ModifiedStochasticBayesNet(StochasticBayesNet):
                 # Print ELBO decomposed by node and variance explained
                 if self.options["verbose"]:
                     print(
-                        "- ELBO decomposition:  "
+                        "- ELBO modules:  "
                         + "".join(
                             [
                                 "%s=%.2f  " % (k, v)
