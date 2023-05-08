@@ -1,16 +1,25 @@
 from copy import deepcopy
-from sklearn.base import BaseEstimator, TransformerMixin
+from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.pipeline import make_pipeline
 
 
-class MultiViewPipeline(BaseEstimator, TransformerMixin):
+class MultiViewPipeline(BaseEstimator, ClassifierMixin):
     r"""
     An estimator that applies the same pipeline to multiple views of data.
 
     Parameters
     ----------
-    pipeline : scikit-learn pipeline object or list of scikit-learn pipeline object
-        A scikit-learn pipeline object that will be used to estimate each view of data. If a list is provided,
-        each pipeline will be applied on each view, otherwise the same pipeline will be applied on each view.
+    steps : list of Estimator objects or list of list of Estimator objects
+        List of the scikit-learn estimators that are chained together to estimate each view of data. If a list of list
+        is provided, each pipeline will be applied on each view, otherwise the same pipeline will be applied on each view.
+    memory : str or object with the joblib.Memory interface, default=None
+        Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
+        given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
+        fitting. Therefore, the transformer instance given to the pipeline cannot be inspected directly. Use the
+        attribute named_steps or steps to inspect estimators within the pipeline. Caching the transformers is
+        advantageous when fitting is time consuming.
+    verbose : bool, default=False
+        If True, the time elapsed while fitting each step will be printed as it is completed.
 
     Attributes
     ----------
@@ -25,17 +34,21 @@ class MultiViewPipeline(BaseEstimator, TransformerMixin):
     >>> from pipelines import MultiViewPipeline
     >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.cluster import KMeans
-    >>> from sklearn.pipeline import make_pipeline
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
-    >>> pipeline = make_pipeline(StandardScaler(), KMeans(n_clusters=3))
-    >>> mv_pipeline = MultiViewPipeline(pipeline = pipeline)
-    >>> mv_pipeline.fit_predict(Xs)
+    >>> mv_pipeline = MultiViewPipeline(steps = [StandardScaler(), KMeans(n_clusters=3)])
+    # >>> mv_pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, pipeline):
-        self.pipeline = pipeline
-        self.same_pipeline_ = False if isinstance(pipeline, list) else True
-        self.pipeline_list_ = [] if self.same_pipeline_ else pipeline
+    def __init__(self, steps: list, memory = None, verbose = False, **kwargs):
+        self.steps = steps
+        self.verbose = verbose
+        self.memory = memory
+        self.kwargs = kwargs
+        self.same_pipeline_ = False if isinstance(steps[0], list) else True
+        if self.same_pipeline_:
+            self.pipeline_list_ = []
+        else:
+            self.pipeline_list_ = [make_pipeline(*steps_idx, memory = memory, verbose = verbose).set_params(**kwargs) for steps_idx in self.steps]
 
 
     def fit(self, Xs, y=None):
@@ -57,7 +70,7 @@ class MultiViewPipeline(BaseEstimator, TransformerMixin):
         """
         for X_idx,X in enumerate(Xs):
             if self.same_pipeline_:
-                self.pipeline_list_.append(deepcopy(self.pipeline))
+                self.pipeline_list_.append(deepcopy(make_pipeline(*self.steps, memory = self.memory, verbose = self.verbose).set_params(**self.kwargs)))
             self.pipeline_list_[X_idx].fit(X, y)
         return self
 

@@ -31,6 +31,11 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomple
         n_samples and n_views are respectively the number of views and the
         number of samples, and n_features is a list of length n_views
         containing the number of features of each view.
+
+    References
+    ----------
+    Adapted from mvlearn package.
+
     Returns
     -------
     Xs_converted : object
