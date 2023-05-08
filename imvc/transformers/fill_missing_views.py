@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from utils import DatasetUtils, check_Xs
+from imvc.utils import DatasetUtils, check_Xs
 
 
 class FillMissingViews(BaseEstimator, TransformerMixin):
@@ -23,8 +23,8 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from transformers import FillMissingViews
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.transformers import FillMissingViews
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> transformer = FillMissingViews(value = 'mean')
     >>> transformer.fit_transform(Xs)

@@ -1,8 +1,8 @@
 from sklearn.impute import SimpleImputer
-from pipelines import MultiViewPipeline
+from imvc.pipelines import MultiViewPipeline
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
-from transformers import AddMissingViews
+from imvc.transformers import AddMissingViews
 
 
 class MSVPipeline(MultiViewPipeline):
@@ -26,8 +26,8 @@ class MSVPipeline(MultiViewPipeline):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from pipelines import ConcatPipeline
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.pipelines import ConcatPipeline
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> pipeline = MSVPipeline()
     >>> pipeline.fit_predict(Xs)

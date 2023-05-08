@@ -1,6 +1,6 @@
 from mvlearn.compose import ConcatMerger
-from pipelines import BasePipeline
-from transformers import FillMissingViews
+from imvc.pipelines import BasePipeline
+from imvc.transformers import FillMissingViews
 from sklearn.preprocessing import StandardScaler
 
 
@@ -26,8 +26,8 @@ class ConcatPipeline(BasePipeline):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from pipelines import ConcatPipeline
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.pipelines import ConcatPipeline
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> pipeline = ConcatPipeline(n_clusters = 3)
     >>> pipeline.fit_predict(Xs)

@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from utils import check_Xs
+from imvc.utils import check_Xs
 
 
 class ConvertToNM(BaseEstimator, TransformerMixin):
@@ -19,8 +19,8 @@ class ConvertToNM(BaseEstimator, TransformerMixin):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from transformers import ConvertToNM, MultiViewTransformer
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.transformers import ConvertToNM, MultiViewTransformer
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> transformer = MultiViewTransformer(transformer = ConvertToNM())
     >>> transformer.fit_transform(Xs)

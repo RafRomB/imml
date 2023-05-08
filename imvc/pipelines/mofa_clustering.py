@@ -1,7 +1,7 @@
-from transformers import FillMissingViews
+from imvc.transformers import FillMissingViews
 from sklearn.preprocessing import StandardScaler
 from sklearn.cluster import KMeans
-from modules import MOFA
+from imvc.modules import MOFA
 from sklearn.impute import SimpleImputer
 from .base import BasePipeline
 
