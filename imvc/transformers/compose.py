@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import FunctionTransformer
-from utils import check_Xs
+from imvc.utils import check_Xs
 
 
 class DropView(FunctionTransformer):
@@ -23,8 +23,8 @@ class DropView(FunctionTransformer):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from transformers import FillMissingViews
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.transformers import FillMissingViews
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> transformer = DropView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
@@ -52,8 +52,8 @@ class SingleView(FunctionTransformer):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from transformers import FillMissingViews
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.transformers import FillMissingViews
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> transformer = SingleView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
@@ -81,9 +81,9 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from transformers import AddMissingViews, MultiViewTransformer
-    >>> from utils import DatasetUtils
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.transformers import AddMissingViews, MultiViewTransformer
+    >>> from imvc.utils import DatasetUtils
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> samples = DatasetUtils.get_missing_view_panel(Xs= Xs).index
     >>> transformer = MultiViewTransformer(transformer = AddMissingViews(samples= samples))

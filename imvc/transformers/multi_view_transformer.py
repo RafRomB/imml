@@ -1,6 +1,6 @@
 from copy import deepcopy
 from sklearn.base import BaseEstimator, TransformerMixin
-from utils import check_Xs
+from imvc.utils import check_Xs
 
 
 class MultiViewTransformer(BaseEstimator, TransformerMixin):
@@ -22,8 +22,8 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from transformers import MultiViewTransformer
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.transformers import MultiViewTransformer
     >>> from sklearn.impute import SimpleImputer
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> mv_transformer = MultiViewTransformer(transformer = SimpleImputer.set_output(transform = 'pandas'))

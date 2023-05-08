@@ -31,8 +31,8 @@ class DatasetUtils:
 
          Examples
         --------
-        >>> from utils import DatasetUtils
-        >>> from datasets import load_incomplete_nutrimouse
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.datasets import load_incomplete_nutrimouse
         >>> Xs = load_incomplete_nutrimouse(p = [0])
         >>> DatasetUtils().create_imvd_from_mvd(Xs = Xs, p = [0.2, 0.5])
         """
@@ -64,8 +64,8 @@ class DatasetUtils:
 
         Examples
         --------
-        >>> from utils import DatasetUtils
-        >>> from datasets import load_incomplete_nutrimouse
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.datasets import load_incomplete_nutrimouse
         >>> Xs = load_incomplete_nutrimouse(p = [0])
         >>> DatasetUtils.create_random_missing_views(Xs = Xs, p = [0.2, 0.5])
         """
@@ -109,8 +109,8 @@ class DatasetUtils:
 
         Examples
         --------
-        >>> from utils import DatasetUtils
-        >>> from datasets import load_incomplete_nutrimouse
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.datasets import load_incomplete_nutrimouse
         >>> Xs = load_incomplete_nutrimouse(p = [0])
         >>> sample_view_panel = DatasetUtils.create_random_missing_views(Xs = Xs, p = [0.2, 0.5])
         >>> DatasetUtils.add_missing_views(Xs = Xs, sample_view_panel = sample_view_panel)
@@ -142,8 +142,8 @@ class DatasetUtils:
 
         Examples
         --------
-        >>> from utils import DatasetUtils
-        >>> from datasets import load_incomplete_nutrimouse
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.datasets import load_incomplete_nutrimouse
         >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
         >>> DatasetUtils.get_missing_view_panel(Xs = Xs)
         """

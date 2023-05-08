@@ -31,8 +31,8 @@ integrated into Scikit-learn pipelines for data preprocessing and modeling.
 We show a simple example of how it works.
 
 ```python
-from datasets import load_incomplete_nutrimouse
-from pipelines import NMFCPipeline
+from imvc.datasets import load_incomplete_nutrimouse
+from imvc.pipelines import NMFCPipeline
 
 # Load an incomplete multi-view dataset
 Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])

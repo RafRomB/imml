@@ -1,4 +1,4 @@
-from utils import DatasetUtils
+from imvc.utils import DatasetUtils
 from sumo.modes.prepare.similarity import feature_to_adjacency
 from sumo.network import MultiplexNet
 from sumo.modes.run.solvers.unsupervised_sumo import UnsupervisedSumoNMF

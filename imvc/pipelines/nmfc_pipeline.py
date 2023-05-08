@@ -1,7 +1,7 @@
 from mvlearn.compose import ConcatMerger
-from pipelines import BasePipeline
-from transformers import ConvertToNM, FillMissingViews, MultiViewTransformer
-from modules import NMFC
+from imvc.pipelines import BasePipeline
+from imvc.transformers import ConvertToNM, FillMissingViews, MultiViewTransformer
+from imvc.modules import NMFC
 
 
 class NMFCPipeline(BasePipeline):
@@ -25,8 +25,8 @@ class NMFCPipeline(BasePipeline):
 
     Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
-    >>> from pipelines import NMFCPipeline
+    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.pipelines import NMFCPipeline
     >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
     >>> pipeline = NMFCPipeline(n_clusters = 3)
     >>> pipeline.fit_predict(Xs)

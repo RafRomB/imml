@@ -1,7 +1,7 @@
 import pandas as pd
 from mvlearn.datasets import load_nutrimouse
 
-from utils import DatasetUtils
+from imvc.utils import DatasetUtils
 
 
 def load_incomplete_nutrimouse(p: list):
@@ -41,7 +41,7 @@ def load_incomplete_nutrimouse(p: list):
 
      Examples
     --------
-    >>> from datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import load_incomplete_nutrimouse
     >>> load_incomplete_nutrimouse(p = [0.2, 0.5])
    """
     dict_data = load_nutrimouse()
