@@ -18,7 +18,9 @@ class DatasetUtils:
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
-        p: The probability that each view will have for missing samples.
+        p: list or int
+            The percentaje that each view will have for missing samples. If p is int, all the views will have the
+            same percentaje.
 
         Returns
         -------
@@ -41,7 +43,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def create_random_missing_views(Xs:list, p : list):
+    def create_random_missing_views(Xs:list, p):
         r"""
         Creates a random panel for transforming a complete multi-view dataset into an incomplete one by randomly
         removing samples from each view.
@@ -52,8 +54,8 @@ class DatasetUtils:
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
         p: list or int
-            The probability that each view will have for missing samples. If p is int, all the views will have the
-            same probability.
+            The percentaje that each view will have for missing samples. If p is int, all the views will have the
+            same percentaje.
 
         Returns
         -------
@@ -74,10 +76,12 @@ class DatasetUtils:
 
         n_samples = len(Xs[0])
         sample_view_panel = []
-        for X_idx,X in enumerate(Xs):
-            sample_view = np.random.choice([0, 1], size= n_samples, p=[p[X_idx], 1 - p[X_idx]]).tolist()
+        for X_idx in range(len(Xs)):
+            sample_view = np.array([1] * n_samples)
+            sample_view[:int(p[X_idx] * n_samples)] = 0
+            sample_view = np.random.permutation(sample_view).tolist()
             sample_view_panel.append(sample_view)
-        sample_view_panel = pd.DataFrame(sample_view_panel, columns = X.index).transpose()
+        sample_view_panel = pd.DataFrame(sample_view_panel, columns = Xs[X_idx].index).transpose()
         sample_view_panel[sample_view_panel.sum(1) == 0] = 1
         return sample_view_panel
 
@@ -138,14 +142,16 @@ class DatasetUtils:
 
         Examples
         --------
+        >>> from utils import DatasetUtils
         >>> from datasets import load_incomplete_nutrimouse
         >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
-        >>> DatasetUtils().get_missing_view_panel(Xs = Xs)
+        >>> DatasetUtils.get_missing_view_panel(Xs = Xs)
         """
 
         sample_view_panel = pd.concat([X.index.to_series() for X in Xs], axis = 1).sort_index()
         sample_view_panel = sample_view_panel.mask(sample_view_panel.isna(), 0).where(sample_view_panel.isna(), 1).astype(int)
         return sample_view_panel
+
 
 
 

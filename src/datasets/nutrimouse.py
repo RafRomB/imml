@@ -6,12 +6,14 @@ from utils import DatasetUtils
 
 def load_incomplete_nutrimouse(p: list):
     r"""
-    Load a incomplete multi-view version of the Nutrimouse dataset [#1paper]_, a two-view dataset from a nutrition
+    Load an incomplete multi-view version of the Nutrimouse dataset [#1paper]_, a two-view dataset from a nutrition
     study on mice, as available from https://CRAN.R-project.org/package=CCA [#2r]_.
 
     Parameters
     ----------
-    p: The probability that each view will have for missing samples.
+    p: list or int
+        The percentaje that each view will have for missing samples. If p is int, all the views will have the
+        same percentaje.
 
     Returns
     -------
