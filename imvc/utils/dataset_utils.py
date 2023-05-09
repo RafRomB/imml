@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+from sklearn.utils._random import sample_without_replacement
 
 
 class DatasetUtils:
@@ -8,7 +9,7 @@ class DatasetUtils:
     """
 
 
-    def create_imvd_from_mvd(self, Xs: list, p: list):
+    def create_imvd_from_mvd(self, Xs: list, p, random_state: int = None):
         r"""
         Creates a random panel for transforming a complete multi-view dataset into an incomplete one by randomly
         removing samples from each view.
@@ -21,6 +22,8 @@ class DatasetUtils:
         p: list or int
             The percentaje that each view will have for missing samples. If p is int, all the views will have the
             same percentaje.
+        random_state: int, default None
+            If int, random_state is the seed used by the random number generator.
 
         Returns
         -------
@@ -37,13 +40,13 @@ class DatasetUtils:
         >>> DatasetUtils().create_imvd_from_mvd(Xs = Xs, p = [0.2, 0.5])
         """
 
-        sample_view_panel = self.create_random_missing_views(Xs = Xs, p = p)
+        sample_view_panel = self.create_random_missing_views(Xs = Xs, p = p, random_state = random_state)
         imvd = self.add_missing_views(Xs= Xs, sample_view_panel=sample_view_panel)
         return imvd
 
 
     @staticmethod
-    def create_random_missing_views(Xs:list, p):
+    def create_random_missing_views(Xs: list, p, random_state: int = None):
         r"""
         Creates a random panel for transforming a complete multi-view dataset into an incomplete one by randomly
         removing samples from each view.
@@ -56,6 +59,9 @@ class DatasetUtils:
         p: list or int
             The percentaje that each view will have for missing samples. If p is int, all the views will have the
             same percentaje.
+        random_state: int, default None
+            If int, random_state is the seed used by the random number generator.
+.
 
         Returns
         -------
@@ -78,9 +84,10 @@ class DatasetUtils:
         sample_view_panel = []
         for X_idx in range(len(Xs)):
             sample_view = np.array([1] * n_samples)
-            sample_view[:int(p[X_idx] * n_samples)] = 0
-            sample_view = np.random.permutation(sample_view).tolist()
-            sample_view_panel.append(sample_view)
+            missing = sample_without_replacement(n_population = n_samples, n_samples = int(p[X_idx] * n_samples),
+                                                 random_state = random_state)
+            sample_view[missing] = 0
+            sample_view_panel.append(sample_view.tolist())
         sample_view_panel = pd.DataFrame(sample_view_panel, columns = Xs[X_idx].index).transpose()
         sample_view_panel[sample_view_panel.sum(1) == 0] = 1
         return sample_view_panel

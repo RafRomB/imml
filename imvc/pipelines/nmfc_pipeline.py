@@ -1,7 +1,7 @@
 from mvlearn.compose import ConcatMerger
 from imvc.pipelines import BasePipeline
 from imvc.transformers import ConvertToNM, FillMissingViews, MultiViewTransformer
-from imvc.modules import NMFC
+from imvc.algorithms import NMFC
 
 
 class NMFCPipeline(BasePipeline):
