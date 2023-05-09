@@ -26,7 +26,10 @@ pip install imvc
 
 This package provides a user-friendly interface to apply these algorithms to 
 user-provided data. Moreover, it is compatible with Scikit-learn and can be easily 
-integrated into Scikit-learn pipelines for data preprocessing and modeling.
+integrated into Scikit-learn pipelines for data preprocessing and modeling. So same 
+than it, classes implement the fit method that creates a model by taking as input 
+the data and the missing views, and predict method, that returns the cluster labels 
+for each sample.
 
 We show a simple example of how it works.
 
@@ -40,10 +43,16 @@ Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
 # Create an instance of a pipeline using a Non-negative matrix factorization with 3 clusters
 pipeline = NMFCPipeline(n_clusters = 3)
 
-# Fit the model with the data and missing views, and get the predictions
-pipeline.fit_predict(Xs)
+# Fit the model with the data and missing views
+pipeline.fit(Xs)
+
+# Get predictions
+pipeline.predict(Xs)
 ```
 
+We also provide some Jupyter notebooks in the examples/ directory to help you get 
+started with using this package. These notebooks demonstrate how to use the package 
+for clustering datasets and provide step-by-step instructions for each example. 
 For more details on the usage and available options for each class, please refer 
 to the documentation.
 
@@ -52,3 +61,16 @@ to the documentation.
 This package is open-source and contributions are welcome! If you find any issues or 
 have suggestions for improvement, please create an issue or pull request on the 
 Github repository.
+
+## Citation
+
+If you use this package in your research, please consider citing the 
+following paper:
+
+[INSERT CITATION HERE]
+
+In addition, we kindly request that you cite the package itself:
+
+[INSERT BIBTEX OR CITATION HERE]
+
+Thank you for acknowledging the use of this package in your research!

@@ -1,10 +1,10 @@
 import pandas as pd
 from mvlearn.datasets import load_nutrimouse
 
-from imvc.utils import DatasetUtils
+from ..utils.dataset_utils import DatasetUtils
 
 
-def load_incomplete_nutrimouse(p: list):
+def load_incomplete_nutrimouse(p, random_state: int = None):
     r"""
     Load an incomplete multi-view version of the Nutrimouse dataset [#1paper]_, a two-view dataset from a nutrition
     study on mice, as available from https://CRAN.R-project.org/package=CCA [#2r]_.
@@ -14,6 +14,8 @@ def load_incomplete_nutrimouse(p: list):
     p: list or int
         The percentaje that each view will have for missing samples. If p is int, all the views will have the
         same percentaje.
+    random_state: int, default None
+        If int, random_state is the seed used by the random number generator.
 
     Returns
     -------
@@ -48,5 +50,5 @@ def load_incomplete_nutrimouse(p: list):
     gene = pd.DataFrame(dict_data['gene'], columns=dict_data['gene_feature_names'])
     lipid = pd.DataFrame(dict_data['lipid'], columns=dict_data['lipid_feature_names'])
     Xs = [gene, lipid]
-    Xs = DatasetUtils().create_imvd_from_mvd(Xs=Xs, p=p)
+    Xs = DatasetUtils().create_imvd_from_mvd(Xs=Xs, p=p, random_state = random_state)
     return Xs
