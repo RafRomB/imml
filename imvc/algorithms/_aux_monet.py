@@ -1,5 +1,5 @@
+import copy
 import heapq
-
 import networkx as nx
 import numpy as np
 import pandas as pd
@@ -52,7 +52,7 @@ class _Module:
     """
 
     def __init__(self, glob_var, samples={}, views={}, weight=0):
-        self.sample = {}
+        self.samples = {}
         self.views = {}
         self.weight = 0
         for name, sam in samples.items():
@@ -68,16 +68,16 @@ class _Module:
         return
 
     def is_sample_in_module(self, sam):
-        return sam in self.sample
+        return sam in self.samples
 
     def get_samples(self):
-        return self.sample
+        return self.samples
 
     def get_size(self):
-        return len(self.sample)
+        return len(self.samples)
 
     def add_sample(self, sam):
-        self.sample.update({sam.get_name(): sam})
+        self.samples.update({sam.get_name(): sam})
         sam_lst = self.get_samples_names_as_list()
         for view in self.views.values():
             edges = view.graph.subgraph(sam_lst).edges(sam.get_name(), data=True)
@@ -96,7 +96,7 @@ class _Module:
             for e in edges:
                 self.weight -= e[2]['weight']
         try:
-            self.sample.pop(sam.get_name())
+            self.samples.pop(sam.get_name())
         except:
             # This error should never occur!
             import pdb;
@@ -123,7 +123,7 @@ class _Module:
     def calc_module_weight(self):
         weight = 0
         for view in self.views.values():
-            g1 = view.graph.subgraph(list(self.sample.keys()))
+            g1 = view.graph.subgraph(list(self.samples.keys()))
             weight += g1.size('weight')
         return weight
 
@@ -253,7 +253,7 @@ class _Module:
         glob_var.kill_module(self)
 
 
-class Sample:
+class _Sample:
     """
     Represents a single sample.
     """
@@ -287,7 +287,7 @@ class Sample:
         return self.name
 
 
-class View:
+class _View:
     """
     Represents a single view, and contains the view's graph.
     """
@@ -357,7 +357,7 @@ def _which_sample_to_remove(module, glob_var):
     cur_max = module.get_weight()
     start_weight = module.get_weight()
     sam_to_del = None
-    for name, sam in module.get_samples().items():
+    for name, sam in copy.deepcopy(module.get_samples()).items():
         tmp_weight = module.remove_sample(sam)
         if tmp_weight > cur_max:
             cur_max = tmp_weight
@@ -489,7 +489,7 @@ def _which_view_to_remove_from_module(mod, glob_var):
     start_weight = mod.get_weight()
     if len(mod.get_views()) <= 1:
         return -float("inf"), None
-    for view in mod.get_views():
+    for view in copy.deepcopy(mod.get_views()):
         mod.remove_view(view, glob_var)
         tmp = mod.get_weight()
         if tmp > cur_max[0]:
