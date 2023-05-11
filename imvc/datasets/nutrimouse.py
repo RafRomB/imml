@@ -1,7 +1,7 @@
 import pandas as pd
 from mvlearn.datasets import load_nutrimouse
 
-from ..utils.dataset_utils import DatasetUtils
+from utils import DatasetUtils
 
 
 def load_incomplete_nutrimouse(p, random_state: int = None):

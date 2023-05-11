@@ -84,6 +84,8 @@ class DatasetUtils:
         sample_view_panel = []
         for X_idx in range(len(Xs)):
             sample_view = np.array([1] * n_samples)
+            if random_state is not None:
+                random_state += 1
             missing = sample_without_replacement(n_population = n_samples, n_samples = int(p[X_idx] * n_samples),
                                                  random_state = random_state)
             sample_view[missing] = 0
