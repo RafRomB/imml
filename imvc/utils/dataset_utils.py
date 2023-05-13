@@ -35,8 +35,9 @@ class DatasetUtils:
          Examples
         --------
         >>> from imvc.utils import DatasetUtils
-        >>> from imvc.datasets import load_incomplete_nutrimouse
-        >>> Xs = load_incomplete_nutrimouse(p = [0])
+        >>> from imvc.datasets import LoadDataset
+
+        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
         >>> DatasetUtils().create_imvd_from_mvd(Xs = Xs, p = [0.2, 0.5])
         """
 
@@ -71,8 +72,9 @@ class DatasetUtils:
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
-        >>> from imvc.datasets import load_incomplete_nutrimouse
-        >>> Xs = load_incomplete_nutrimouse(p = [0])
+        >>> from imvc.datasets import LoadDataset
+
+        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
         >>> DatasetUtils.create_random_missing_views(Xs = Xs, p = [0.2, 0.5])
         """
         if not isinstance(p, list):
@@ -119,8 +121,9 @@ class DatasetUtils:
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
-        >>> from imvc.datasets import load_incomplete_nutrimouse
-        >>> Xs = load_incomplete_nutrimouse(p = [0])
+        >>> from imvc.datasets import LoadDataset
+
+        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
         >>> sample_view_panel = DatasetUtils.create_random_missing_views(Xs = Xs, p = [0.2, 0.5])
         >>> DatasetUtils.add_missing_views(Xs = Xs, sample_view_panel = sample_view_panel)
         """
@@ -152,14 +155,44 @@ class DatasetUtils:
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
-        >>> from imvc.datasets import load_incomplete_nutrimouse
-        >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+        >>> from imvc.datasets import LoadDataset
+
+        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
         >>> DatasetUtils.get_missing_view_panel(Xs = Xs)
         """
 
         sample_view_panel = pd.concat([X.index.to_series() for X in Xs], axis = 1).sort_index()
         sample_view_panel = sample_view_panel.mask(sample_view_panel.isna(), 0).where(sample_view_panel.isna(), 1).astype(int)
         return sample_view_panel
+
+
+    def get_sample_names(self, Xs: list):
+        r"""
+        Get all the samples in an incomplete multi-view dataset.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples_i, n_features_i)
+            A list of different views.
+
+        Returns
+        -------
+        samples: pd.Index with all samples.
+
+        Examples
+        --------
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.datasets import LoadDataset
+
+        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+        >>> DatasetUtils.get_sample_names(Xs = Xs)
+        """
+
+        samples = self.get_missing_view_panel(Xs = Xs).index
+        return samples
+
 
 
 

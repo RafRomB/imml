@@ -29,11 +29,12 @@ class BasePipeline(Pipeline):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from mvlearn.compose import ConcatMerger
     >>> from imvc.pipelines import BasePipeline
     >>> from imvc.transformers import FillMissingViews
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> pipeline = BasePipeline(n_clusters = 3, transformers = [FillMissingViews(value='mean'), ConcatMerger()])
     >>> pipeline.fit_predict(Xs)
     """

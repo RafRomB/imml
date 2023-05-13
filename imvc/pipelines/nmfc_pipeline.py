@@ -6,7 +6,8 @@ from imvc.algorithms import NMFC
 
 class NMFCPipeline(BasePipeline):
     r"""
-    Firstly fill in all the missing samples with the average features for each modality, and then cluster with K-means.
+    Firstly fill in all the missing samples with the average features for each modality, then convert each view into
+    a non-negative matrix and finally apply a NMF for the clustering.
 
     Parameters
     ----------
@@ -20,14 +21,17 @@ class NMFCPipeline(BasePipeline):
 
     References
     ----------
-    [paper] Handong Zhao, Hongfu Liu, and Yun Fu. 2016. Incomplete multi-modal visual data grouping. In
-        International Joint Conferences on Artificial Intelligence. 2392--2398.
+    Several papers used this strategy with successful results, such as:
+    [paper] Cao, L. et al. Proteogenomic characterization of pancreatic ductal adenocarcinoma. Cell 184,
+        5031–5052 e5026 (2021).
+    [url] https://scikit-learn.org/stable/modules/generated/sklearn.decomposition.NMF.html
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.pipelines import NMFCPipeline
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> pipeline = NMFCPipeline(n_clusters = 3)
     >>> pipeline.fit_predict(Xs)
     """
