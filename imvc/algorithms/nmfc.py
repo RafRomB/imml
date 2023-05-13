@@ -10,9 +10,10 @@ class NMFC(NMF, BaseEstimator, ClassifierMixin):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.transformers import FillMissingViews
-    >>> Xs = load_incomplete_nutrimouse(p = 0)
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> estimator = NMFC(n_components = 3)
     >>> estimator.fit_predict(Xs)
 

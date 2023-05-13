@@ -22,10 +22,11 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.transformers import MultiViewTransformer
     >>> from sklearn.impute import SimpleImputer
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> mv_transformer = MultiViewTransformer(transformer = SimpleImputer.set_output(transform = 'pandas'))
     >>> mv_transformer.fit_transform(Xs)
     """

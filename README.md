@@ -34,11 +34,12 @@ for each sample.
 We show a simple example of how it works.
 
 ```python
-from imvc.datasets import load_incomplete_nutrimouse
+from imvc.datasets import LoadDataset
+
 from imvc.pipelines import NMFCPipeline
 
 # Load an incomplete multi-view dataset
-Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
 
 # Create an instance of a pipeline using a Non-negative matrix factorization with 3 clusters
 pipeline = NMFCPipeline(n_clusters = 3)

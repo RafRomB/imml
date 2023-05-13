@@ -19,9 +19,10 @@ class ConvertToNM(BaseEstimator, TransformerMixin):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.transformers import ConvertToNM, MultiViewTransformer
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = MultiViewTransformer(transformer = ConvertToNM())
     >>> transformer.fit_transform(Xs)
 

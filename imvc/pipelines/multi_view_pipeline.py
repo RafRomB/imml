@@ -30,11 +30,12 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.pipelines import MultiViewPipeline
     >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.cluster import KMeans
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> mv_pipeline = MultiViewPipeline(steps = [StandardScaler(), KMeans(n_clusters=3)])
     # >>> mv_pipeline.fit_predict(Xs)
     """

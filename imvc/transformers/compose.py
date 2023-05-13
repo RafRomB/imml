@@ -23,9 +23,10 @@ class DropView(FunctionTransformer):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.transformers import FillMissingViews
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = DropView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
 
@@ -52,9 +53,10 @@ class SingleView(FunctionTransformer):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.transformers import FillMissingViews
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = SingleView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
 
@@ -81,11 +83,12 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.transformers import AddMissingViews, MultiViewTransformer
     >>> from imvc.utils import DatasetUtils
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
-    >>> samples = DatasetUtils.get_missing_view_panel(Xs= Xs).index
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+    >>> samples = DatasetUtils().get_sample_names(Xs= Xs)
     >>> transformer = MultiViewTransformer(transformer = AddMissingViews(samples= samples))
     >>> transformer.fit_transform(Xs)
 

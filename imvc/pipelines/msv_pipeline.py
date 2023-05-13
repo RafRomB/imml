@@ -7,7 +7,8 @@ from imvc.transformers import AddMissingViews
 
 class MSVPipeline(MultiViewPipeline):
     r"""
-    Firstly fill in all the missing samples with the average features for each modality, and then cluster with K-means.
+    Firstly fill in all the missing samples with the average features for each modality, and then cluster each
+    individual view with K-means.
 
     Parameters
     ----------
@@ -26,9 +27,10 @@ class MSVPipeline(MultiViewPipeline):
 
     Examples
     --------
-    >>> from imvc.datasets import load_incomplete_nutrimouse
+    >>> from imvc.datasets import LoadDataset
+
     >>> from imvc.pipelines import ConcatPipeline
-    >>> Xs = load_incomplete_nutrimouse(p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> pipeline = MSVPipeline()
     >>> pipeline.fit_predict(Xs)
     """
