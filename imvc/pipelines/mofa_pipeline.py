@@ -1,4 +1,5 @@
-from imvc.transformers import FillMissingViews
+from sklearn.cluster import KMeans
+from imvc.transformers import FillMissingViews, SortData
 from sklearn.preprocessing import StandardScaler
 from imvc.algorithms import MOFA
 from sklearn.impute import SimpleImputer
@@ -7,7 +8,7 @@ from imvc.pipelines import BasePipeline
 
 class MOFAPipeline(BasePipeline):
     r"""
-    Firstly fill in all the missing samples with the average features for each modality, then use MOFA for data
+    Sort the dataset, fill in all the missing samples with the average features for each modality and use MOFA for data
     integration. The projected data are imputted with the mean values of each feature, stardardized and clustered
     using K-means.
 
@@ -15,26 +16,29 @@ class MOFAPipeline(BasePipeline):
     ----------
     n_clusters : int, default=None
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
-    transformers : list of transformer, default=[FillMissingViews(value="mean"), ConcatMerger(), StandardScaler()]
-        The transformers to apply to the input data before clustering. Each transformer is a transformer object
-        that implements the `fit_transform` method.
+    memory : str or object with the joblib.Memory interface, default=None
+        Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
+        given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
+        fitting. Therefore, the transformer instance given to the pipeline cannot be inspected directly. Use the
+        attribute named_steps or steps to inspect estimators within the pipeline. Caching the transformers is
+        advantageous when fitting is time consuming.
+    verbose : bool, default=False
+        If True, the time elapsed while fitting each step will be printed as it is completed.
     **args
-        Additional parameters to pass to BasePipeline.
+        Additional parameters to pass to the pipeline.
 
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
     >>> from imvc.pipelines import MOFAPipeline
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> pipeline = MOFAPipeline(n_clusters = 3).fit(Xs)
     >>> labels = pipeline.predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = None,
-                 transformers=[FillMissingViews(value="nan"), MOFA().set_output(transform='pandas'),
-                               SimpleImputer(strategy='mean').set_output(transform='pandas'),
-                               StandardScaler().set_output(transform='pandas')], **args):
-        self.n_clusters = n_clusters
-        self.transformers = transformers
-        super().__init__(n_clusters=n_clusters, transformers=transformers, **args)
+    def __init__(self, n_clusters: int = None, memory=None, verbose=False, **args):
+        estimator = KMeans(n_clusters = n_clusters)
+        transformers = [SortData(), FillMissingViews(value="nan"), MOFA().set_output(transform='pandas'),
+                        SimpleImputer(strategy='mean').set_output(transform='pandas'),
+                        StandardScaler().set_output(transform='pandas')]
+        super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose, **args)

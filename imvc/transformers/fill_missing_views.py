@@ -58,7 +58,7 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
         self :  returns and instance of self.
         """
 
-        Xs = check_Xs(Xs, allow_incomplete=True)
+        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
         if self.value == "mean":
             self.features_view_mean_list_ = [X.mean() for X in Xs]
         elif self.value == "zeros":
@@ -83,7 +83,7 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
             The transformed data with filled missing samples.
         """
 
-        Xs = check_Xs(Xs, allow_incomplete=True)
+        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
         sample_views = DatasetUtils.get_missing_view_panel(Xs = Xs)
         missing_views = sample_views == 1
         n_samples = len(missing_views)

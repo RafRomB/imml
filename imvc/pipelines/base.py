@@ -9,7 +9,7 @@ class BasePipeline(Pipeline):
 
     Parameters
     ----------
-    estimator : estimator object, default=KMeans()
+    estimator : estimator object
         The estimator to use for clustering.
     n_clusters : int, default=None
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
@@ -40,7 +40,7 @@ class BasePipeline(Pipeline):
     """
 
 
-    def __init__(self, estimator = KMeans(), n_clusters : int = None, transformers = [], memory = None,
+    def __init__(self, estimator, n_clusters : int = None, transformers = [], memory = None,
                  verbose = False, **args):
         if n_clusters is not None:
             estimator.set_params(**{"n_clusters": n_clusters})

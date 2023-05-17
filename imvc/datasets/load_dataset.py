@@ -1,6 +1,8 @@
 import os
+from os.path import dirname
+
 import pandas as pd
-from utils import DatasetUtils
+from imvc.utils import DatasetUtils
 
 
 class LoadDataset:
@@ -57,10 +59,11 @@ class LoadDataset:
         """
         filenames = ["mfeat-fou.csv", "mfeat-fac.csv", "mfeat-kar.csv",
                      "mfeat-pix.csv", "mfeat-zer.csv", "mfeat-mor.csv"]
-        Xs = [pd.read_csv(os.path.join("datasets", "data", "digits", filename)) for filename in filenames]
-        Xs = DatasetUtils().create_imvd_from_mvd(Xs=Xs, p=p, random_state=random_state)
+        module_path = dirname(__file__)
+        Xs = [pd.read_csv(os.path.join(module_path, "data", "digits", filename)) for filename in filenames]
+        Xs = DatasetUtils.convert_mvd_into_imvd(Xs=Xs, p=p, random_state=random_state)
         if shuffle:
-            Xs = [X.sample(frac=1., random_state=random_state) for X in Xs]
+            Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state)
         if return_y:
             y = [X.iloc[:, -1] for X in Xs]
             Xs = [X.iloc[:, :-1] for X in Xs]
@@ -121,11 +124,12 @@ class LoadDataset:
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
         """
-        Xs = [pd.read_csv(os.path.join("datasets", "data", "nutrimouse", filename)) for filename in ["gene.csv", "lipid.csv"]]
-        ys = [pd.read_csv(os.path.join("datasets", "data", "nutrimouse", filename)) for filename in ["genotype.csv", "diet.csv"]]
-        Xs = DatasetUtils().create_imvd_from_mvd(Xs=Xs, p=p, random_state=random_state)
+        module_path = dirname(__file__)
+        Xs = [pd.read_csv(os.path.join(module_path, "data", "nutrimouse", filename)) for filename in ["gene.csv", "lipid.csv"]]
+        ys = [pd.read_csv(os.path.join(module_path, "data", "nutrimouse", filename)) for filename in ["genotype.csv", "diet.csv"]]
+        Xs = DatasetUtils.convert_mvd_into_imvd(Xs=Xs, p=p, random_state=random_state)
         if shuffle:
-            Xs = [X.sample(frac=1., random_state=random_state) for X in Xs]
+            Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state)
         if return_y:
             out = (Xs, ys)
         else:

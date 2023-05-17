@@ -59,11 +59,10 @@ class MOFA:
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
     >>> from imvc.algorithms import MOFA
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> pipeline = MOFA()
-    >>> pipeline.fit_transform(Xs)
+    >>> pipeline = MOFA().fit(Xs)
+    >>> transformed_Xs = pipeline.transform(Xs)
     """
 
     

@@ -5,3 +5,4 @@ from .concat_pipeline import ConcatPipeline
 from .nmfc_pipeline import NMFCPipeline
 from .mofa_pipeline import MOFAPipeline
 from .monet_pipeline import MONETPipeline
+from .sumo_pipeline import SUMOPipeline

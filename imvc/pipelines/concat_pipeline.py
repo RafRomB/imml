@@ -1,23 +1,30 @@
 from mvlearn.compose import ConcatMerger
+from sklearn.cluster import KMeans
 from imvc.pipelines import BasePipeline
-from imvc.transformers import FillMissingViews
+from imvc.transformers import FillMissingViews, SortData
 from sklearn.preprocessing import StandardScaler
 
 
 class ConcatPipeline(BasePipeline):
     r"""
-    Firstly fill in all the missing samples with the average features for each modality, and then concatenate all
-    modal features into one. A clustering with K-means is performed then.
+    This pipeline assess the order of the dataset firstly. Then fill in all the missing samples with the average
+    features for each modality, and then concatenate all modal features into one. A clustering with K-means
+    is performed finally.
 
     Parameters
     ----------
     n_clusters : int, default=None
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
-    transformers : list of transformer, default=[FillMissingViews(value="mean"), ConcatMerger(), StandardScaler()]
-        The transformers to apply to the input data before clustering. Each transformer is a transformer object
-        that implements the `fit_transform` method.
+    memory : str or object with the joblib.Memory interface, default=None
+        Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
+        given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
+        fitting. Therefore, the transformer instance given to the pipeline cannot be inspected directly. Use the
+        attribute named_steps or steps to inspect estimators within the pipeline. Caching the transformers is
+        advantageous when fitting is time consuming.
+    verbose : bool, default=False
+        If True, the time elapsed while fitting each step will be printed as it is completed.
     **args
-        Additional parameters to pass to BasePipeline.
+        Additional parameters to pass to the pipeline.
 
     References
     ----------
@@ -27,16 +34,15 @@ class ConcatPipeline(BasePipeline):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
     >>> from imvc.pipelines import ConcatPipeline
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> pipeline = ConcatPipeline(n_clusters = 3)
-    >>> pipeline.fit_predict(Xs)
+    >>> labels = pipeline.fit_predict(Xs)
     """
 
     
-    def __init__(self, n_clusters : int = None,
-                 transformers = [FillMissingViews(value="mean"), ConcatMerger(), StandardScaler().set_output(transform = 'pandas')], **args):
-        self.n_clusters = n_clusters
-        self.transformers = transformers
-        super().__init__(n_clusters = n_clusters, transformers = transformers, **args)
+    def __init__(self, n_clusters : int = None, memory=None, verbose=False, **args):
+
+        estimator = KMeans(n_clusters = n_clusters)
+        transformers = [SortData(), FillMissingViews(value="mean"), ConcatMerger(), StandardScaler().set_output(transform='pandas')]
+        super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose, **args)
