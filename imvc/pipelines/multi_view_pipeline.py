@@ -31,13 +31,12 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
     >>> from imvc.pipelines import MultiViewPipeline
     >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.cluster import KMeans
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> mv_pipeline = MultiViewPipeline(steps = [StandardScaler(), KMeans(n_clusters=3)])
-    # >>> mv_pipeline.fit_predict(Xs)
+    >>> labels = mv_pipeline.fit_predict(Xs)
     """
 
     def __init__(self, steps: list, memory = None, verbose = False, **kwargs):
@@ -94,6 +93,7 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
         transformed_Xs = [self.pipeline_list_[X_idx].transform(X) for X_idx, X in enumerate(Xs)]
         return transformed_Xs
 
+
     def predict(self, Xs):
         r"""
         Predict samples by using the fitted pipelines.
@@ -111,5 +111,26 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
             The predicted data.
         """
         labels = [self.pipeline_list_[X_idx].predict(X) for X_idx, X in enumerate(Xs)]
+        return labels
+
+
+    def fit_predict(self, Xs):
+        r"""
+        Fit the pipeline to the input data and predict samples.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples_i, n_features_i)
+            A list of different views.
+
+        Returns
+        -------
+        labels : list of array-likes, shape (n_samples,)
+            The predicted data.
+        """
+
+        labels = self.fit(Xs).predict(Xs)
         return labels
 

@@ -11,12 +11,96 @@ import multiprocessing as mp
 
 
 class SUMO():
+    r"""
+    Subtyping Tool for Multi-Omic data.
 
-    def __init__(self, k: int, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1, alpha: float = 0.5,
-                 sparsity: list = [0.1], repetitions: int = 60,
-                 cluster_method: str = "max_value", max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05,
-                 calc_cost: int = 20,
+    SUMO is a powerful tool designed for molecular subtyping in multi-omics datasets. It utilizes a state-of-the-art
+    nonnegative matrix factorization (NMF) algorithm to identify distinct groups of samples with shared molecular
+    signatures. Moreover, SUMO offers supplementary modules to assess these assignments and uncover the key features
+    that contribute to the classification process.
+
+    Parameters
+    ----------
+    k : int
+        either one value describing number of clusters or list with range of values to check (sumo will suggest cluster
+        structure based on cophenetic correlation coefficient.
+    method : str (default='euclidean')
+        either one method of sample-sample similarity calculation, or list of methods for every view (available
+        methods: ['euclidean', 'cosine', 'pearson', 'spearman']).
+.   missing : float or list (default=[0.1])
+        acceptable fraction of available values for assessment of distance/similarity between pairs of samples - either
+        one value or list for every view.
+    neighbours : float, optional (default=0.1)
+        fraction of nearest neighbours to use for sample similarity calculation using Euclidean distance
+        similarity.
+    alpha : float, optional (default=0.5)
+        hypherparameter of RBF similarity kernel, for Euclidean distance similarity.
+    sparsity : float or list, optional (default=[0.1])
+        either one value or list of sparsity penalty values for H matrix (sumo will try different values and select
+        the best results.
+    repetitions : int, optional (default=60)
+        Number of repetitions.
+    cluster_method : str, optional (default="max_value")
+        Method of cluster extraction. Options are 'max_value' or'spectral'.
+    max_iter : int, optional (default=500)
+        Maximum number of iterations for factorization.
+    tol : float, optional (default=1e-5)
+        If objective cost function value fluctuation (|Δℒ|) is smaller than this value, stop iterations before
+         reaching max_iter.
+    subsample : float, optional (default=0.05)
+        Fraction of samples randomly removed from each run, cannot be greater than 0.5.
+    calc_cost : int, optional (default=20)
+        Number of steps between every calculation of objective cost function.
+    h_init : int, optional (default=None)
+        index of adjacency matrix to use for H matrix initialization (by default using average adjacency), only for
+        unsupervised classification.
+    rep : int, optional (default=5)
+        number of times consensus matrix is created for the purpose of assessing clustering quality.
+    n_jobs : int (default=None)
+        The number of jobs to run in parallel.
+    random_state : int (default=None)
+        Determines random number generation for centroid initialization. Use an int to make the randomness
+        deterministic.
+    verbose : bool, default=False
+        Verbosity mode.
+.
+    Attributes
+    ----------
+    graph_ :
+        Multiview graph.
+    nmf_ : None
+        The nonnegative matrix factorization (NMF) object.
+    priors_ : None
+        The priors for clustering.
+    similarity_ :
+        Object created by SUMO
+    cophenet_list_ :
+        Object created by SUMO
+    pac_list_ :
+        Object created by SUMO
+    labels_ : ndarray of shape (n_samples,)
+        Labels of each point
+
+    References
+    ----------
+    [paper] Sienkiewicz, K., Chen, J., Chatrath, A., Lawson, J. T., Sheffield, N. C., Zhang, L., & Ratan, A. (2022).
+        Detecting molecular subtypes from multi-omics datasets using SUMO. In Cell Reports Methods (Vol. 2, Issue 1,
+        p. 100152). Elsevier BV. https://doi.org/10.1016/j.crmeth.2021.100152
+
+    Examples
+    --------
+    >>> from imvc.datasets import LoadDataset
+    >>> from imvc.algorithms import SUMO
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+    >>> estimator = SUMO(k = 2)
+    >>> labels = estimator.fit_predict(Xs)
+    """
+
+    def __init__(self, k, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1, alpha: float = 0.5,
+                 sparsity: list = [0.1], repetitions: int = 60, cluster_method: str = "max_value",
+                 max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05, calc_cost: int = 20,
                  h_init: int = None, n_jobs: int = 1, rep: int = 5, random_state: int = None, verbose: bool = False):
+
         self.method = method
         self.missing = missing
         self.neighbours = neighbours
@@ -37,7 +121,7 @@ class SUMO():
 
         self.graph_ = None
         self.nmf_ = None
-        self.priors_ = None
+        self.priors = None
 
         if self.repetitions < 1:
             raise ValueError("Incorrect value of 'repetitions' parameter")
@@ -58,32 +142,48 @@ class SUMO():
         elif len(self.k) == 2:
             self.k = list(range(self.k[0], self.k[1] + 1))
 
-    def fit(self, X, y=None):
+    def fit(self, Xs, y=None):
+        r"""
+        Fit the transformer to the input data.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views.
+        y : array-like, shape (n_samples,)
+            Labels for each sample. Only used by supervised algorithms.
+
+        Returns
+        -------
+        self :  returns and instance of self.
+        """
         if len(self.missing) == 1:
             if self.verbose:
                 print(f"#Setting all 'missing' parameters to {self.missing[0]}")
-            self.missing = [self.missing[0]] * len(X)
+            self.missing = [self.missing[0]] * len(Xs)
         if len(self.method) == 1:
-            self.method = [self.method[0]] * len(X)
-        elif len(X) != len(self.method):
+            self.method = [self.method[0]] * len(Xs)
+        elif len(Xs) != len(self.method):
             raise ValueError(
                 "Number of matrices extracted from input files and number of similarity methods does not correspond")
 
-        all_samples = DatasetUtils.get_sample_views(X=X).index.values
+        all_samples = DatasetUtils.get_sample_names(Xs=Xs)
         if self.verbose:
             print(f"Total number of unique samples: {len(all_samples)}")
         self.similarity_ = {}
         adj_matrices = []
         # create adjacency matrices
-        for X_idx, X in enumerate(X):
+        for X_idx, X in enumerate(Xs):
             if self.verbose:
-                print(f"#Layer: {X_idx}")
+                print(f"#View: {X_idx}")
                 print(f"Feature matrix: ({X.shape[0]} samples x {X.shape[1]} features)")
             # create adjacency matrix
-            a = feature_to_adjacency(X.values, missing=self.missing[X_idx], method=self.method[view_idx],
+            a = feature_to_adjacency(X.values, missing=self.missing[X_idx], method=self.method[X_idx],
                                      n=self.neighbours, alpha=self.alpha)
             if self.verbose:
-                print(f"Adjacency matrix: ({a.shape} created [similarity method: {self.method[view_idx]}")
+                print(f"Adjacency matrix: ({a.shape} created [similarity method: {self.method[X_idx]}")
             # add matrices to output arrays
             adj_matrices.append(a)
             self.similarity_[str(X_idx)] = a
@@ -95,13 +195,13 @@ class SUMO():
                 raise ValueError("Incorrect value of h_init")
 
         # create multilayer graph
-        self.graph = MultiplexNet(adj_matrices=adj_matrices, node_labels=all_samples)
+        self.graph_ = MultiplexNet(adj_matrices=adj_matrices, node_labels=all_samples)
         n_sub_samples = round(all_samples.size * self.subsample)
         if self.verbose:
             print(f"#Number of samples randomly removed in each run: {n_sub_samples} out of {all_samples.size}")
         # create solver
-        self.nmf = UnsupervisedSumoNMF(graph=self.graph, nbins=self.repetitions,
-                                       bin_size=self.graph.nodes - n_sub_samples, rseed=self.random_state)
+        self.nmf_ = UnsupervisedSumoNMF(graph=self.graph_, nbins=self.repetitions,
+                                        bin_size=self.graph_.nodes - n_sub_samples, rseed=self.random_state)
         global _sumo_run
         _sumo_run = self  # this solves multiprocessing issue with pickling
         # run factorization for every (eta, k)
@@ -156,6 +256,49 @@ class SUMO():
         self.labels_ = labels
         return self
 
+
+    def _predict(self, Xs):
+        r"""
+        Return clustering results for new samples.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples_i, n_features_i)
+            A list of different views.
+
+        Returns
+        -------
+        labels : list of array-likes, shape (n_samples,)
+            The predicted data.
+        """
+        labels = self.labels_
+        return labels
+
+
+    def fit_predict(self, Xs, y=None):
+        r"""
+        Fit the model and return clustering results.
+        Convenience method; equivalent to calling fit(X) followed by predict(X).
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples_i, n_features_i)
+            A list of different views.
+
+        Returns
+        -------
+        labels : ndarray, shape (n_samples,)
+            The predicted data.
+        """
+
+        labels = self.fit(Xs)._predict(Xs)
+        return labels
+
+
     @staticmethod
     def _run_factorization(sparsity: float, k: int, sumo_run, verbose: bool):
         """ Run factorization for set sparsity and number of clusters
@@ -184,7 +327,7 @@ class SUMO():
                 "bin_id": repeat,
                 "h_init": sumo_run.h_init
             }
-            result = sumo_run.nmf.factorize(**opt_args)
+            result = sumo_run.nmf_.factorize(**opt_args)
             # extract computed clusters
             if verbose:
                 print(f"#Using {sumo_run.cluster_method} for cluster labels extraction)")
@@ -204,14 +347,14 @@ class SUMO():
         for rep in range(sumo_run.rep):
             run_indices = list(np.random.choice(range(len(results)), sumo_run.runs_per_con, replace=False))
 
-            consensus = np.zeros((sumo_run.graph.nodes, sumo_run.graph.nodes))
-            weights = np.empty((sumo_run.graph.nodes, sumo_run.graph.nodes))
+            consensus = np.zeros((sumo_run.graph_.nodes, sumo_run.graph_.nodes))
+            weights = np.empty((sumo_run.graph_.nodes, sumo_run.graph_.nodes))
             weights[:] = np.nan
 
             all_equal = np.allclose(minRE, maxRE)
 
             for run_idx in run_indices:
-                weight = np.empty((sumo_run.graph.nodes, sumo_run.graph.nodes))
+                weight = np.empty((sumo_run.graph_.nodes, sumo_run.graph_.nodes))
                 weight[:] = np.nan
                 sample_ids = results[run_idx].sample_ids
                 if all_equal:
@@ -242,7 +385,7 @@ class SUMO():
                 ccc = cophenet(linkage(dist, method="complete", metric="correlation"), dist)[0]
 
             # calculate proportion of ambiguous clustering
-            den = (sumo_run.graph.nodes ** 2) - sumo_run.graph.nodes
+            den = (sumo_run.graph_.nodes ** 2) - sumo_run.graph_.nodes
             num = org_con[(org_con > 0.1) & (org_con < 0.9)].size
             pac = num * (1. / den)
 
@@ -253,12 +396,12 @@ class SUMO():
             print("#Extracting final clustering result, using normalized cut")
         consensus_labels = extract_ncut(consensus, k=k)
 
-        cluster_array = np.empty((sumo_run.graph.sample_names.shape[0], 2), dtype=np.object)
+        cluster_array = np.empty((sumo_run.graph_.sample_names.shape[0], 2), dtype=np.object)
         # TODO add column with confidence value when investigating soft clustering
-        cluster_array[:, 0] = sumo_run.graph.sample_names
+        cluster_array[:, 0] = sumo_run.graph_.sample_names
         cluster_array[:, 1] = consensus_labels
 
-        clusters_dict = {num: sumo_run.graph.sample_names[list(np.where(consensus_labels == num)[0])] for num in
+        clusters_dict = {num: sumo_run.graph_.sample_names[list(np.where(consensus_labels == num)[0])] for num in
                          np.unique(consensus_labels)}
         for cluster_idx in sorted(clusters_dict.keys()):
             if verbose:
@@ -266,7 +409,7 @@ class SUMO():
                     f"Cluster {cluster_idx} ({len(clusters_dict[cluster_idx])} samples): \n{clusters_dict[cluster_idx]}")
 
         # calculate quality of clustering for given sparsity
-        quality = sumo_run.graph.get_clustering_quality(labels=cluster_array[:, 1])
+        quality = sumo_run.graph_.get_clustering_quality(labels=cluster_array[:, 1])
         # create output file
         conf_array = np.empty((9, 2), dtype=object)
         conf_array[:, 0] = ['method', 'n', 'max_iter', 'tol', 'subsample', 'calc_cost', 'h_init', 'seed', 'sparsity']
@@ -279,7 +422,7 @@ class SUMO():
             "consensus": consensus,
             "unfiltered_consensus": org_con,
             "quality": np.array(quality),
-            "samples": sumo_run.graph.sample_names,
+            "samples": sumo_run.graph_.sample_names,
             "config": conf_array
         })
 

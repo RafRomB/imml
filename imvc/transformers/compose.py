@@ -3,6 +3,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from sklearn.preprocessing import FunctionTransformer
 from imvc.utils import check_Xs
+from imvc.utils import DatasetUtils
 
 
 class DropView(FunctionTransformer):
@@ -24,8 +25,7 @@ class DropView(FunctionTransformer):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
-    >>> from imvc.transformers import FillMissingViews
+    >>> from imvc.transformers import DropView
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = DropView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
@@ -54,8 +54,7 @@ class SingleView(FunctionTransformer):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
-    >>> from imvc.transformers import FillMissingViews
+    >>> from imvc.transformers import SingleView
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = SingleView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
@@ -84,11 +83,10 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
     >>> from imvc.transformers import AddMissingViews, MultiViewTransformer
     >>> from imvc.utils import DatasetUtils
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> samples = DatasetUtils().get_sample_names(Xs= Xs)
+    >>> samples = DatasetUtils.get_sample_names(Xs= Xs)
     >>> transformer = MultiViewTransformer(transformer = AddMissingViews(samples= samples))
     >>> transformer.fit_transform(Xs)
 
@@ -134,6 +132,28 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
         return transformed_X
 
 
+class SortData(FunctionTransformer):
+    r"""
+    Transformer that establish and assess the order of the incomplete multi-view dataset.
+
+    Returns
+    -------
+    transformed_X : list of array-likes (n_samples_i, n_features_i)
+
+    Examples
+    --------
+    >>> from imvc.datasets import LoadDataset
+    >>> from imvc.transformers import SortData
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+    >>> transformer = SortData(X_idx = 1)
+    >>> transformer.fit_transform(Xs)
+
+    """
+
+    def __init__(self):
+        super().__init__(sort_data)
+
+
 def concatenate_views(Xs):
     r"""
     A function that merge features from a multi-view dataset.
@@ -150,7 +170,7 @@ def concatenate_views(Xs):
     transformed_X : array-like of shape (n_samples, n_features)
     """
 
-    Xs = check_Xs(Xs, allow_incomplete=True)
+    Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
     transformed_X = np.hstack(Xs)
     return transformed_X
 
@@ -171,7 +191,7 @@ def drop_view(Xs, X_idx : int = 0):
     transformed_Xs : array-like of shape (n_samples, n_features - n_features[X_idx])
     """
 
-    Xs = check_Xs(Xs, allow_incomplete=True)
+    Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
     transformed_Xs = Xs[:X_idx] + Xs[X_idx+1 :]
     return transformed_Xs
 
@@ -192,7 +212,7 @@ def single_view(Xs, X_idx : int = 0):
     transformed_X : array-like of shape (n_samples, n_features[X_idx])
     """
 
-    Xs = check_Xs(Xs, allow_incomplete=True)
+    Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
     transformed_X = Xs[X_idx]
     return transformed_X
 
@@ -216,5 +236,27 @@ def add_missing_views(X, samples):
     transformed_X[samples.difference(X.index)] = np.nan
     transformed_X = transformed_X.T
     transformed_X = transformed_X.loc[samples]
+    return transformed_X
+
+
+def sort_data(Xs):
+    r"""
+    A function that establish and assess the order of the incomplete multi-view dataset.
+
+    Parameters
+    ----------
+    Xs : list of array-likes
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples_i, n_features_i)
+        A list of different views.
+
+    Returns
+    -------
+    transformed_X : list of array-likes (n_samples_i, n_features_i)
+    """
+
+    Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+    samples = DatasetUtils.get_sample_names(Xs=Xs)
+    transformed_X = [X.loc[samples.intersection(X.index)] for X in Xs]
     return transformed_X
 

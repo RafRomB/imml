@@ -3,7 +3,8 @@ import pandas as pd
 from sklearn.utils import check_array
 
 
-def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomplete=False, return_dimensions=False):
+def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomplete=False,
+             force_all_finite=True,return_dimensions=False):
     r"""
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -25,6 +26,12 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomple
         If True, different views can have different number of samples.
         If False, all views must have the same number of samples. An error
         is raised otherwise.
+    force_all_finite : bool or 'allow-nan', default=True
+        Whether to raise an error on np.inf, np.nan, pd.NA in array. The possibilities are:
+        - True: Force all values of array to be finite.
+        - False: accepts np.inf, np.nan, pd.NA in array.
+        - 'allow-nan': accepts only np.nan and pd.NA values in array. Values
+          cannot be infinite.
     return_dimensions : boolean, (default=False)
         If True, the function also returns the dimensions of the multiview
         dataset. The dimensions are n_views, n_samples, n_features where
@@ -82,10 +89,10 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomple
 
     pandas_format = True if isinstance(Xs[0],pd.DataFrame) else False
     if pandas_format:
-        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy), index=X.index, \
+        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, force_all_finite=force_all_finite), index=X.index, \
                            columns=X.columns) for X_idx, X in enumerate(Xs)]
     else:
-        Xs = [check_array(X, allow_nd=False, copy=copy) for X in Xs]
+        Xs = [check_array(X, allow_nd=False, copy=copy, force_all_finite=force_all_finite) for X in Xs]
 
     if return_dimensions:
         n_samples = Xs[0].shape[0]

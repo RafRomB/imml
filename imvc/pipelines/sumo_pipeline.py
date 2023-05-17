@@ -1,16 +1,18 @@
-from imvc.pipelines import BasePipeline
 from sklearn.preprocessing import StandardScaler
-from imvc.algorithms import MONET
-from imvc.transformers import MultiViewTransformer, SortData
+
+from algorithms import SUMO
+from pipelines import BasePipeline
+from transformers import SortData, MultiViewTransformer, FillMissingViews
 
 
-class MONETPipeline(BasePipeline):
+class SUMOPipeline(BasePipeline):
     r"""
-    The pipeline comprises a standardization of data followed by the MONET algorithm. In addition, the first step is
-    data sortening.
+    The pipeline comprises a data sortening, missing sample filling with nan, standardization of data and SUMO algorithm.
 
     Parameters
     ----------
+    n_clusters : int, default=None
+        The number of clusters to generate.
     memory : str or object with the joblib.Memory interface, default=None
         Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
         given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
@@ -25,13 +27,14 @@ class MONETPipeline(BasePipeline):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.pipelines import MONETPipeline
+    >>> from imvc.pipelines import SUMOPipeline
     >>> Xs = LoadDataset.load_incomplete_digits(p = 0.2)
-    >>> pipeline = MONETPipeline()
-    >>> pipeline.fit_predict(Xs)
+    >>> pipeline = SUMOPipeline(n_clusters=2)
+    >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, memory=None, verbose=False, **args):
-        estimator = MONET()
-        transformers = [SortData(), MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas'))]
+    def __init__(self, n_clusters = None, memory=None, verbose=False, **args):
+        estimator = SUMO(k = n_clusters)
+        transformers = [SortData(), FillMissingViews(value = 'nan'),
+                        MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas'))]
         super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose, **args)

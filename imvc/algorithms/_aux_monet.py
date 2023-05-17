@@ -19,7 +19,7 @@ class _Globals:
         self.actions = [0 for i in range(len)]
         self.index = 0
         self.min_mod_size = 1
-        self.max_samps_per_action = 10
+        self.max_sams_per_action = 10
         self.gmm_params = {}
         return
 
@@ -101,7 +101,6 @@ class _Module:
             # This error should never occur!
             import pdb;
             pdb.set_trace()
-            print("error in remove sample {} from module {}.".format(sam, self))
             exit(1)
         return self.weight
 
@@ -179,13 +178,14 @@ class _Module:
     def merge_me_into(self, mod, glob_var):
         mods_sams = [(name, sam) for name, sam in mod.get_samples().items()]
         selfs_views_list = list(self.get_views().items())
+        # selfs_views_list.sort(key=lambda x: x[0])
         for name, sam in mods_sams:
             mod.remove_sample(sam)
             self.add_sample(sam)
-        for name, view in selfs_views_list:
-            self.remove_view(view, glob_var)
-        for name, view in mod.get_views().items():
-            self.add_view(view, glob_var)
+        for name, sam in selfs_views_list:
+            self.remove_view(sam, glob_var)
+        for name, sam in mod.get_views().items():
+            self.add_view(sam, glob_var)
         glob_var.kill_module(mod)
         return glob_var
 
@@ -194,9 +194,9 @@ class _Module:
         for name, sam in lst:
             mod.remove_sample(sam)
             self.add_sample(sam)
-        view_lst = list(self.get_views().items())
-        view_lst.sort(key=lambda x: x[0])
-        for name, view in view_lst:
+        views_lst = list(self.get_views().items())
+        views_lst.sort(key=lambda x: x[0])
+        for name, view in views_lst:
             if view not in mod.get_views().values():
                 self.remove_view(view, glob_var)
         glob_var.kill_module(mod)
@@ -265,8 +265,7 @@ class _Sample:
 
     def set_module(self, module):
         if self.is_in_module():
-            print(self.name)
-            raise NameError('trying to add sample to 2 modules', self)
+            raise NameError(f'trying to add sample {self.name} to 2 modules', self)
         self.module = module
         return
 

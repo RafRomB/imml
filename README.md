@@ -35,7 +35,6 @@ We show a simple example of how it works.
 
 ```python
 from imvc.datasets import LoadDataset
-
 from imvc.pipelines import NMFCPipeline
 
 # Load an incomplete multi-view dataset

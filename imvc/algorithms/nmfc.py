@@ -11,15 +11,13 @@ class NMFC(NMF, BaseEstimator, ClassifierMixin):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
-    >>> from imvc.transformers import FillMissingViews
+    >>> from imvc.algorithms import NMFC
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> estimator = NMFC(n_components = 3)
     >>> estimator.fit_predict(Xs)
 
     """
 
-    
     def predict(self, X):
         r"""
         Compute clustering by choosing the cluster membership with maximum score in each column of H.
@@ -38,7 +36,7 @@ class NMFC(NMF, BaseEstimator, ClassifierMixin):
         if not isinstance(transformed_X, pd.DataFrame):
             transformed_X = pd.DataFrame(transformed_X)
         transformed_X.columns = np.arange(transformed_X.shape[1])
-        labels = transformed_X.idxmax(axis= 1).values
+        labels = transformed_X.idxmax(axis= 1)
         return labels
     
     
@@ -55,6 +53,5 @@ class NMFC(NMF, BaseEstimator, ClassifierMixin):
         labels : list of array-likes, shape (n_samples,)
             The predicted data.
         """
-        self.fit(X)
-        pred = self.predict(X)
+        pred = self.fit(X).predict(X)
         return pred
