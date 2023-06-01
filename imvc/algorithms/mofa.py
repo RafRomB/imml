@@ -49,11 +49,11 @@ class MOFA:
     References
     ----------
     [paper1] Argelaguet R, Velten B, Arnol D, Dietrich S, Zenz T, Marioni JC, Buettner F, Huber W, Stegle O
-    (2018). “Multi‐Omics Factor Analysis—a framework for unsupervised integration of multi‐omics data sets.” Molecular
-    Systems Biology, 14. doi:10.15252/msb.20178124.
+        (2018). “Multi‐Omics Factor Analysis—a framework for unsupervised integration of multi‐omics data sets.”
+        Molecular Systems Biology, 14. doi:10.15252/msb.20178124.
     [paper2] Argelaguet R, Arnol D, Bredikhin D, Deloro Y, Velten B, Marioni JC, Stegle O (2020). “MOFA+: a statistical
-    framework for comprehensive integration of multi-modal single-cell data.” Genome Biology, 21.
-    doi:10.1186/s13059-020-02015-1.
+        framework for comprehensive integration of multi-modal single-cell data.” Genome Biology, 21.
+        doi:10.1186/s13059-020-02015-1.
     [url] https://biofam.github.io/MOFA2/index.html
 
     Examples

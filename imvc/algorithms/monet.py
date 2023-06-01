@@ -19,13 +19,12 @@ from imvc.utils import check_Xs, DatasetUtils
 
 class MONET(BaseEstimator, ClassifierMixin):
     r"""
-    Multi Omic clustering by Non-Exhaustive Types.
+    MONET (Multi Omic clustering by Non-Exhaustive Types).
 
-    MONET (Multi-Omic Network Extraction Tool) operates in two distinct phases to extract meaningful information from
-    multi-omics datasets. In the first phase, it constructs an edge-weighted graph for each omic, where the nodes
-    represent individual samples, and the weights indicate the similarity between samples within that particular
-    omic. Moving on to the second phase, MONET identifies modules by identifying dense subgraphs that are shared
-    across multiple omic graphs.
+    MONET operates in two distinct phases to extract meaningful information from multi-omics datasets. In the first
+    phase, it constructs an edge-weighted graph for each omic, where the nodes represent individual samples, and the
+    weights indicate the similarity between samples within that particular omic. Moving on to the second phase, MONET
+    identifies modules by identifying dense subgraphs that are shared across multiple omic graphs.
 
     The resulting output comprises a collection of modules, each representing a subset of samples. These modules are
     mutually exclusive, meaning that samples are assigned to only one module. It is important to note that not all
@@ -86,14 +85,13 @@ class MONET(BaseEstimator, ClassifierMixin):
         views used for each module.
     all_ems_ : Gaussian Mixture Scikit-learn model
         Gaussian mixture model used to estimate the parameters for the weighting schemes.
-    n_clusters : int
+    n_clusters_ : int
         Number of cluseters.
 
     References
     ----------
     [paper] Rappoport N, Safra R, Shamir R (2020) MONET: Multi-omic module discovery by omic selection. PLoS Comput
-    Biol 16(9): e1008182. https://doi.org/10.1371/journal.pcbi.1008182.
-
+        Biol 16(9): e1008182. https://doi.org/10.1371/journal.pcbi.1008182.
 
     Examples
     --------
@@ -194,7 +192,7 @@ class MONET(BaseEstimator, ClassifierMixin):
 
     def _predict(self, Xs):
         r"""
-        Return clustering results for new samples.
+        Return clustering results for samples.
 
         Parameters
         ----------

@@ -259,7 +259,7 @@ class SUMO():
 
     def _predict(self, Xs):
         r"""
-        Return clustering results for new samples.
+        Return clustering results for samples.
 
         Parameters
         ----------
