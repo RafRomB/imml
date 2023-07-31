@@ -16,6 +16,8 @@ class MSVPipeline(MultiViewPipeline):
         Index with sample names.
     n_clusters : int, default=None
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
+    random_state : int (default=None)
+        Determines the randomness. Use an int to make the randomness deterministic.
     memory : str or object with the joblib.Memory interface, default=None
         Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
         given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
@@ -43,12 +45,13 @@ class MSVPipeline(MultiViewPipeline):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, samples=None, n_clusters: int = None, memory=None, verbose=False, **kwargs):
+    def __init__(self, samples=None, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **kwargs):
         self.samples = samples
         self.n_clusters = n_clusters
+        self.random_state = random_state
 
         steps = [AddMissingViews(samples=samples),
                  SimpleImputer(strategy='mean').set_output(transform='pandas'),
                  StandardScaler().set_output(transform='pandas'),
-                 KMeans(n_clusters=n_clusters)]
+                 KMeans(n_clusters=n_clusters, random_state=random_state)]
         super().__init__(steps=steps, memory=memory, verbose=verbose, **kwargs)

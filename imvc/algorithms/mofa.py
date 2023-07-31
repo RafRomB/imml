@@ -7,6 +7,10 @@ import sys
 import pandas as pd
 from time import time
 import numpy as np
+import mofax as mfx
+
+from imvc.transformers import concatenate_views
+from imvc.utils import check_Xs
 
 
 class MOFA:
@@ -36,8 +40,7 @@ class MOFA:
     smooth_options : dict (default={})
         options for smooth inference, such as scale_cov or model_groups.
     random_state : int (default=None)
-        Determines random number generation for centroid initialization. Use an int to make the randomness
-        deterministic.
+        Determines the randomness. Use an int to make the randomness deterministic.
     verbose : bool, default=False
         Verbosity mode.
 
@@ -45,6 +48,11 @@ class MOFA:
     ----------
     mofa_ : mofa object
         Entry point as the original library. This can be used for data analysis and explainability.
+    mofa_model_ : Class around HDF5-based model on disk
+        This can be used for data analysis and explainability. It provides utility functions to get factors, weights,
+         features, and samples info in the form of Pandas dataframes, and data as a NumPy array.
+    weights_: ndarray
+        Weights of the MOFA model.
 
     References
     ----------
@@ -104,12 +112,19 @@ class MOFA:
         -------
         self :  returns and instance of self.
         """
+        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
         if self.verbose:
             self._run_mofa(data = [[view] for view in Xs])
         else:
             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
                 self._run_mofa(data = [[view] for view in Xs])
+        outfile = "tmp.hdf5"
+        self.mofa_.save(outfile=outfile, save_data=True, save_parameters=False, expectations=None)
+        self.mofa_model_ = mfx.mofa_model(outfile)
+        os.remove(outfile)
+        self.weights_ = self.mofa_model_.get_weights()
         return self
+
 
     def transform(self, Xs):
         r"""
@@ -127,14 +142,13 @@ class MOFA:
         transformed_Xs : list of array-likes, shape (n_samples, n_features)
             The projected data.
         """
+        winv = np.linalg.pinv(self.mofa_model_.get_weights())
+        transformed_Xs = np.dot(concatenate_views(Xs), winv.T)
         if self.transform_ == "pandas":
-            transformed_Xs = [pd.DataFrame(np.dot(view, self.mofa_.model.nodes['W'].getExpectations()[idx]['E']), index = view.index) for idx, view in enumerate(Xs)]
-            transformed_Xs = pd.concat(transformed_Xs, axis = 1)
-        else:
-            transformed_Xs = [np.dot(view, self.mofa_.model.nodes['W'].getExpectations()[idx]['E']) for idx, view in enumerate(Xs)]
-            transformed_Xs = np.concatenate(transformed_Xs, axis = 1)
+            columns = self.mofa_model_._check_factors(np.arange(self.factors).tolist())[1]
+            transformed_Xs = pd.DataFrame(transformed_Xs, columns=columns, index=Xs[0].index)
         return transformed_Xs
-    
+
     
     def _run_mofa(self, data):
         self.mofa_.set_data_options(**self.data_options_args)

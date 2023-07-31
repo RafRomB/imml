@@ -1,16 +1,18 @@
+from sklearn.base import BaseEstimator, ClassifierMixin
+
 from imvc.utils import DatasetUtils
 from sumo.modes.prepare.similarity import feature_to_adjacency
 from sumo.network import MultiplexNet
 from sumo.modes.run.solvers.unsupervised_sumo import UnsupervisedSumoNMF
-from sumo.modes.run.run import run_thread_wrapper
 from scipy.cluster.hierarchy import cophenet, linkage
 from scipy.spatial.distance import pdist
 from sumo.utils import extract_ncut
 import numpy as np
-import multiprocessing as mp
+
+from imvc.utils import check_Xs
 
 
-class SUMO():
+class SUMO(BaseEstimator, ClassifierMixin):
     r"""
     Subtyping Tool for Multi-Omic data.
 
@@ -21,9 +23,8 @@ class SUMO():
 
     Parameters
     ----------
-    k : int
-        either one value describing number of clusters or list with range of values to check (sumo will suggest cluster
-        structure based on cophenetic correlation coefficient.
+    n_clusters : int, default=None
+        The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
     method : str (default='euclidean')
         either one method of sample-sample similarity calculation, or list of methods for every view (available
         methods: ['euclidean', 'cosine', 'pearson', 'spearman']).
@@ -56,11 +57,8 @@ class SUMO():
         unsupervised classification.
     rep : int, optional (default=5)
         number of times consensus matrix is created for the purpose of assessing clustering quality.
-    n_jobs : int (default=None)
-        The number of jobs to run in parallel.
     random_state : int (default=None)
-        Determines random number generation for centroid initialization. Use an int to make the randomness
-        deterministic.
+        Determines the randomness. Use an int to make the randomness deterministic.
     verbose : bool, default=False
         Verbosity mode.
 .
@@ -92,20 +90,20 @@ class SUMO():
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.algorithms import SUMO
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> estimator = SUMO(k = 2)
+    >>> estimator = SUMO(n_clusters = 2)
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, k, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1, alpha: float = 0.5,
+    def __init__(self, n_clusters, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1, alpha: float = 0.5,
                  sparsity: list = [0.1], repetitions: int = 60, cluster_method: str = "max_value",
                  max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05, calc_cost: int = 20,
-                 h_init: int = None, n_jobs: int = 1, rep: int = 5, random_state: int = None, verbose: bool = False):
+                 h_init: int = None, rep: int = 5, random_state: int = None, verbose: bool = False):
 
         self.method = method
         self.missing = missing
         self.neighbours = neighbours
         self.alpha = alpha
-        self.k = k if isinstance(k, list) else [k]
+        self.n_clusters = n_clusters
         self.sparsity = sparsity
         self.repetitions = repetitions
         self.cluster_method = cluster_method
@@ -114,7 +112,6 @@ class SUMO():
         self.subsample = subsample
         self.calc_cost = calc_cost
         self.h_init = h_init
-        self.n_jobs = n_jobs
         self.rep = rep
         self.random_state = random_state
         self.verbose = verbose
@@ -125,8 +122,6 @@ class SUMO():
 
         if self.repetitions < 1:
             raise ValueError("Incorrect value of 'repetitions' parameter")
-        if self.n_jobs < 1:
-            raise ValueError("Incorrect number of threads")
         if self.subsample > 0.5 or self.subsample < 0:
             # do not allow for removal of more then 50% of samples in each run
             raise ValueError("Incorrect value of 'subsample' parameter")
@@ -136,11 +131,6 @@ class SUMO():
         if self.random_state is not None and self.random_state < 0:
             raise ValueError("Seed value cannot be negative")
         self.runs_per_con = max(round(self.repetitions * 0.8), 1)  # number of runs per consensus matrix creation
-
-        if len(self.k) > 2 or (len(self.k) == 2 and self.k[0] > self.k[1]):
-            raise ValueError("Incorrect range of k values")
-        elif len(self.k) == 2:
-            self.k = list(range(self.k[0], self.k[1] + 1))
 
     def fit(self, Xs, y=None):
         r"""
@@ -159,6 +149,7 @@ class SUMO():
         -------
         self :  returns and instance of self.
         """
+        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
         if len(self.missing) == 1:
             if self.verbose:
                 print(f"#Setting all 'missing' parameters to {self.missing[0]}")
@@ -204,56 +195,29 @@ class SUMO():
                                         bin_size=self.graph_.nodes - n_sub_samples, rseed=self.random_state)
         global _sumo_run
         _sumo_run = self  # this solves multiprocessing issue with pickling
-        # run factorization for every (eta, k)
-        cophenet_list = []
-        pac_list = []
-        cluster_list = []
-        for k in self.k:
+        results = [SUMO._run_factorization(sparsity=sparsity, k=self.n_clusters, sumo_run=_sumo_run, verbose=self.verbose) for
+                   sparsity in self.sparsity]
+        sparsity_order = self.sparsity
+
+        # select best result
+        best_result = sorted(results, reverse=True)[0]
+        best_eta = None
+
+        quality_output = []
+        for (result, sparsity) in zip(results, sparsity_order):
             if self.verbose:
-                print(f"#K:{k}")
-            if self.n_jobs == 1:
-                results = [SUMO._run_factorization(sparsity=sparsity, k=k, sumo_run=_sumo_run, verbose=self.verbose) for
-                           sparsity in self.sparsity]
-                sparsity_order = self.sparsity
-            else:
-                if self.verbose:
-                    print(f"{self.sparsity} processes to run")
-                pool = mp.Pool(self.n_jobs)
-                results = []
-                sparsity_order = []
-                iproc = 1
-                for res in pool.imap_unordered(run_thread_wrapper, zip(self.sparsity, [k] * len(self.sparsity))):
-                    if self.verbose:
-                        print(f"- process {iproc} finished")
-                    results.append(res[0])
-                    sparsity_order.append(res[1])
-                    iproc += 1
+                print(f"#Clustering quality (eta={sparsity}): {result[0]}")
+            quality_output.append(np.array([sparsity, result[0]]))
+            if result[1] == best_result[1]:
+                best_eta = sparsity
 
-            # select best result
-            best_result = sorted(results, reverse=True)[0]
-            best_eta = None
+        # summarize results
+        assert best_eta is not None
+        out_arrays = best_result[1]
 
-            quality_output = []
-            for (result, sparsity) in zip(results, sparsity_order):
-                if self.verbose:
-                    print(f"#Clustering quality (eta={sparsity}): {result[0]}")
-                quality_output.append(np.array([sparsity, result[0]]))
-                if result[1] == best_result[1]:
-                    best_eta = sparsity
-
-            # summarize results
-            assert best_eta is not None
-            out_arrays = best_result[1]
-            cophenet_list.append(out_arrays["cophenet"])
-            pac_list.append(out_arrays["pac"])
-            cluster_list.append(out_arrays["clusters"])
-        labels = np.stack([i[:, 1] for i in cluster_list], axis=1)
-        if len(self.k) == 1:
-            cophenet_list, pac_list, cluster_list, labels = cophenet_list[0], pac_list[0], cluster_list[0], labels[:, 0]
-        self.cophenet_list_ = cophenet_list
-        self.pac_list_ = pac_list
-        self.cluster_list_ = cluster_list
-        self.labels_ = labels
+        self.cophenet_list_ = out_arrays["cophenet"]
+        self.pac_list_ = out_arrays["pac"]
+        self.labels_ = out_arrays["clusters"][:,1].astype(int)
         return self
 
 
@@ -435,3 +399,5 @@ class SUMO():
                 print(f"Consider increasing -max_iter and decreasing -tol to achieve better accuracy")
         out_arrays['steps'] = np.array([steps_reached])
         return quality, out_arrays
+
+

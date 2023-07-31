@@ -13,6 +13,8 @@ class SUMOPipeline(BasePipeline):
     ----------
     n_clusters : int, default=None
         The number of clusters to generate.
+    random_state : int (default=None)
+        Determines the randomness. Use an int to make the randomness deterministic.
     memory : str or object with the joblib.Memory interface, default=None
         Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
         given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
@@ -33,8 +35,9 @@ class SUMOPipeline(BasePipeline):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters = None, memory=None, verbose=False, **args):
-        estimator = SUMO(k = n_clusters)
+    def __init__(self, n_clusters = None, memory=None, verbose=False, random_state : int = None, **args):
+        estimator = SUMO(n_clusters= n_clusters, random_state=random_state)
         transformers = [SortData(), FillMissingViews(value = 'nan'),
                         MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas'))]
-        super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose, **args)
+        super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose,
+                         n_clusters=estimator.n_clusters, random_state=random_state, **args)

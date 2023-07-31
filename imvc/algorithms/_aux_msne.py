@@ -59,7 +59,6 @@ class RandomWalker:
         """
         Preprocessing of transition probabilities for guiding the random walks.
         """
-        print("Preprocess node alias")
         alias_nodes = {}
         L=len(G.nodes())/100
         for i,node in enumerate(G.nodes()):
@@ -138,8 +137,9 @@ class RandomWalker:
 
 class Embedding:
 
-    def __init__(self, graphs, workers=1,verbose=0):
+    def __init__(self, graphs, workers=1,verbose=0, random_state= None):
 
+        self.random_state = random_state
         self.graphs = graphs
         self._embeddings = {}
         self.nodes = list(reduce(lambda x, y: x | y, [set(g.nodes()) for g in self.graphs]))
@@ -154,16 +154,15 @@ class Embedding:
 
         kwargs["sentences"] = self.sentences
         kwargs["min_count"] = kwargs.get("min_count", 0)
-        kwargs["size"] = embed_size
+        kwargs["vector_size"] = embed_size
         kwargs["sg"] = 1  #select sg mode
         kwargs["hs"] = 0  #not use Hierarchical Softmax
         kwargs["workers"] = self.workers
         kwargs["window"] = window_size
-        kwargs["iter"] = epoch
+        kwargs["epochs"] = epoch
+        kwargs["seed"] = self.random_state
 
-        print("Learning embedding vectors...")
         model = Word2Vec(**kwargs)
-        print("Learning embedding vectors done!")
 
         self.w2v_model = model
 

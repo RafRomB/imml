@@ -1,7 +1,7 @@
 from imvc.pipelines import BasePipeline
 from sklearn.preprocessing import StandardScaler
 from imvc.algorithms import MONET
-from imvc.transformers import MultiViewTransformer, SortData
+from imvc.transformers import MultiViewTransformer, SortData, FillMissingViews
 
 
 class MONETPipeline(BasePipeline):
@@ -11,6 +11,11 @@ class MONETPipeline(BasePipeline):
 
     Parameters
     ----------
+    random_state : int (default=None)
+        Determines the randomness. Use an int to make the randomness deterministic.
+    n_jobs : int (default=1)
+        The number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means
+        using all processors.
     memory : str or object with the joblib.Memory interface, default=None
         Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
         given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
@@ -31,7 +36,9 @@ class MONETPipeline(BasePipeline):
     >>> pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, memory=None, verbose=False, **args):
-        estimator = MONET()
-        transformers = [SortData(), MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas'))]
-        super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose, **args)
+    def __init__(self, memory=None, verbose=False, random_state : int = None, n_jobs: int = None, **args):
+        estimator = MONET(random_state=random_state, n_jobs=n_jobs)
+        transformers = [SortData(),
+                        MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas'))]
+        super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose,
+                         random_state=random_state, **args)

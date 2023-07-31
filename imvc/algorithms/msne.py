@@ -1,7 +1,7 @@
 import networkx as nx
 import numpy as np
 import pandas as pd
-from scipy.stats import stats
+from scipy import stats
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
@@ -32,11 +32,11 @@ class MSNE(BaseEstimator, ClassifierMixin):
     window_size : int (default=10)
         The window_size in skip-gram.
     random_state : int (default=None)
-        Determines random number generation for centroid initialization. Use an int to make the randomness
-        deterministic.
+        Determines the randomness. Use an int to make the randomness deterministic (however, it will not be totally
+        deterministic because of random walk).
     verbose : bool, default=False
         Verbosity mode.
-    n_jobs : int (default=None)
+    n_jobs : int (default=1)
         The number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means
         using all processors.
 .
@@ -61,7 +61,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
 
     def __init__(self, n_clusters: int = None, k: int = 20, walk_length: int = 20, num_walks: int = 100,
                  embed_size: int = 100, window_size: int = 10, random_state: int = None, verbose: bool = False,
-                 n_jobs: int = None):
+                 n_jobs: int = 1):
         self.window_size = window_size
         self.embed_size = embed_size
         self.num_walks = num_walks
@@ -90,13 +90,14 @@ class MSNE(BaseEstimator, ClassifierMixin):
         -------
         self :  returns and instance of self.
         """
-        Xs = check_Xs(Xs, allow_incomplete=True)
+        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
         S = []
         for X in Xs:
             s = self._similarity(X, k=self.k)
             S.append(nx.DiGraph(s))
-        print("construct similarity networks finished")
-        model = Embedding(S, workers=self.n_jobs, verbose=self.verbose)
+        if self.verbose:
+            print("construct similarity networks finished")
+        model = Embedding(S, workers=self.n_jobs, verbose=self.verbose, random_state=self.random_state)
         model.sample_sentence(walk_length=self.walk_length, num_walks=self.num_walks)
         if self.verbose:
             print("sample sequences finished")
