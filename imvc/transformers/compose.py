@@ -32,12 +32,33 @@ class DropView(FunctionTransformer):
 
     """
 
-    
-    def __init__(self, X_idx : int = 0):
+    def __init__(self, X_idx: int = 0):
         self.X_idx = X_idx
-        super().__init__(drop_view, kw_args = {"X_idx": X_idx})
+        super().__init__(drop_view, kw_args={"X_idx": X_idx})
 
-        
+
+class ConcatenateViews(FunctionTransformer):
+    r"""
+    A transformer that concatenates all views from a multi-view dataset.
+
+    Returns
+    -------
+    transformed_X : array-like of shape (n_samples, n_features)
+
+    Examples
+    --------
+    >>> from imvc.datasets import LoadDataset
+    >>> from imvc.transformers import DropView
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+    >>> transformer = ConcatenateView()
+    >>> transformer.fit_transform(Xs)
+
+    """
+
+    def __init__(self):
+        super().__init__(concatenate_views)
+
+
 class SingleView(FunctionTransformer):
     r"""
     Transformer that selects a single view from multi-view data.
@@ -145,7 +166,7 @@ class SortData(FunctionTransformer):
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.transformers import SortData
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> transformer = SortData(X_idx = 1)
+    >>> transformer = SortData()
     >>> transformer.fit_transform(Xs)
 
     """
@@ -171,7 +192,7 @@ def concatenate_views(Xs):
     """
 
     Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
-    transformed_X = np.hstack(Xs)
+    transformed_X = pd.concat(Xs, axis= 1)
     return transformed_X
 
 

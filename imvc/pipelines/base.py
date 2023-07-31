@@ -31,23 +31,28 @@ class BasePipeline(Pipeline):
     --------
     >>> from imvc.datasets import LoadDataset
 
-    >>> from mvlearn.compose import ConcatMerger
     >>> from imvc.pipelines import BasePipeline
-    >>> from imvc.transformers import FillMissingViews
+    >>> from imvc.transformers import FillMissingViews, ConcatenateViews
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> pipeline = BasePipeline(n_clusters = 3, transformers = [FillMissingViews(value='mean'), ConcatMerger()])
+    >>> pipeline = BasePipeline(n_clusters = 3, transformers = [FillMissingViews(value='mean'), ConcatenateViews()])
     >>> pipeline.fit_predict(Xs)
     """
 
 
-    def __init__(self, estimator, n_clusters : int = None, transformers = [], memory = None,
-                 verbose = False, **args):
+    def __init__(self, estimator, n_clusters : int = None, transformers = [], random_state : int = None, memory = None,
+                 verbose = False, n_jobs: int = None, **args):
         if n_clusters is not None:
             estimator.set_params(**{"n_clusters": n_clusters})
+        if random_state is not None:
+            estimator.set_params(**{"random_state": random_state})
+        if n_jobs is not None:
+            estimator.set_params(**{"n_jobs": n_jobs})
         self.estimator = estimator
         self.n_clusters = n_clusters
+        self.random_state = random_state
+        self.n_jobs = n_jobs
         self.transformers = transformers
         self.verbose = verbose
         self.memory = memory
-        super().__init__(make_pipeline(*transformers, estimator).set_params(**args).steps,
-                         memory = memory, verbose = verbose)
+        pipeline = make_pipeline(*transformers, estimator).set_params(**args).steps
+        super().__init__(pipeline, memory = memory, verbose = verbose)

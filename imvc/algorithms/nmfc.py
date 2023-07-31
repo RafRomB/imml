@@ -36,7 +36,7 @@ class NMFC(NMF, BaseEstimator, ClassifierMixin):
         if not isinstance(transformed_X, pd.DataFrame):
             transformed_X = pd.DataFrame(transformed_X)
         transformed_X.columns = np.arange(transformed_X.shape[1])
-        labels = transformed_X.idxmax(axis= 1)
+        labels = transformed_X.idxmax(axis= 1).values
         return labels
     
     

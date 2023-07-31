@@ -4,6 +4,8 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 
+from utils.utils import BugInMONET
+
 
 class _Globals:
     """
@@ -87,7 +89,7 @@ class _Module:
         return self.weight
 
     def remove_sample(self, sam):
-        if isinstance(sam, str):
+        if isinstance(sam, (str, int)):
             sam = self.get_samples()[sam]
         sam.remove_module(self)
         sam_lst = self.get_samples_names_as_list()
@@ -369,7 +371,6 @@ def _which_sample_to_remove(module, glob_var):
 
 def _top_samples_to_switch(mod, glob_var):
     max_sams_to_switch = glob_var.max_samps_per_action
-    init_num = (len(mod.get_samples_names_as_list()))
     res = []
     init_weight = sum([tmp_mod.get_weight() for mod_name, tmp_mod in glob_var.modules.items()])
     for mod2_name, mod2 in glob_var.modules.items():
@@ -451,7 +452,7 @@ def _best_samples_to_switch(mod1, mod2, glob_var):
 
 
 def _switch_2_samples(sam, mod1, mod2, glob_var):
-    if isinstance(sam, str):
+    if isinstance(sam, (str, int)):
         sam = glob_var.samples[sam]
     if sam.get_module() == mod1:
         mod1.remove_sample(sam)
@@ -461,8 +462,7 @@ def _switch_2_samples(sam, mod1, mod2, glob_var):
         mod1.add_sample(sam)
     else:
         # This should never occur!
-        import pdb;
-        pdb.set_trace()
+        raise BugInMONET
     return
 
 
@@ -524,8 +524,9 @@ def _score_of_split_module(mod, glob_var):
     lst.sort(key=lambda x: x[0])
     for name, view in lst:
         adj += nx.adjacency_matrix(view.graph.subgraph(sam_list), nodelist=sam_list)
-    adj = pd.DataFrame(adj, index=sam_list, columns=sam_list)
-    joined_subgraph = nx.from_pandas_adjacency(adj)
+    joined_subgraph = nx.from_numpy_array(adj)
+    mapping = {i: j for i, j in enumerate(sam_list)}
+    joined_subgraph = nx.relabel_nodes(joined_subgraph, mapping)
     heavy_subweight, heavy_subnodes = _find_heaviest_subgraph(joined_subgraph, weight=mod.get_weight(),
                                                               min_size=glob_var.min_mod_size,
                                                               max_size=len(sam_list) - glob_var.min_mod_size)

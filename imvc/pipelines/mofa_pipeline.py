@@ -1,5 +1,5 @@
 from sklearn.cluster import KMeans
-from imvc.transformers import FillMissingViews, SortData
+from imvc.transformers import FillMissingViews, SortData, ConcatenateViews
 from sklearn.preprocessing import StandardScaler
 from imvc.algorithms import MOFA
 from sklearn.impute import SimpleImputer
@@ -16,6 +16,8 @@ class MOFAPipeline(BasePipeline):
     ----------
     n_clusters : int, default=None
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
+    random_state : int (default=None)
+        Determines the randomness. Use an int to make the randomness deterministic.
     memory : str or object with the joblib.Memory interface, default=None
         Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
         given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
@@ -33,12 +35,14 @@ class MOFAPipeline(BasePipeline):
     >>> from imvc.pipelines import MOFAPipeline
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> pipeline = MOFAPipeline(n_clusters = 3).fit(Xs)
-    >>> labels = pipeline.predict(Xs)
+    >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = None, memory=None, verbose=False, **args):
-        estimator = KMeans(n_clusters = n_clusters)
-        transformers = [SortData(), FillMissingViews(value="nan"), MOFA().set_output(transform='pandas'),
+    def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
+        estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
+        transformers = [SortData(), FillMissingViews(value="nan"),
+                        MOFA(random_state=random_state).set_output(transform='pandas'),
                         SimpleImputer(strategy='mean').set_output(transform='pandas'),
                         StandardScaler().set_output(transform='pandas')]
-        super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose, **args)
+        super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose,
+                         n_clusters=n_clusters, random_state=random_state, **args)

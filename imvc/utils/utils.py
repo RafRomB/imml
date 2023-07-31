@@ -101,3 +101,7 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomple
     else:
         return Xs
 
+
+class BugInMONET(Exception):
+    "Raised when the input value is less than 18"
+    pass

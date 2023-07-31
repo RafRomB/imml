@@ -60,8 +60,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         are kept in the graph. For example, percentile_remove_edge=90 keeps only the 10% edges with highest positive
         weight and lowest negative weight in the graph. one keeps all edges in the graph.
     random_state : int (default=None)
-        Determines random number generation for centroid initialization. Use an int to make the randomness
-        deterministic.
+        Determines the randomness. Use an int to make the randomness deterministic.
     verbose : bool, default=False
         Verbosity mode.
     n_jobs : int (default=None)
@@ -146,25 +145,26 @@ class MONET(BaseEstimator, ClassifierMixin):
         -------
         self :  returns and instance of self.
         """
-        Xs = check_Xs(Xs, allow_incomplete=True)
-        samples = DatasetUtils.get_sample_names(Xs).astype(str)
+        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        samples = DatasetUtils.get_sample_names(Xs)
         data = {}
         if self.similarity_mode == "prob":
-            em_graph_ret = self._get_em_graph_per_view(Xs=Xs)
-            views_dist, all_ems, n_clusters = [], [], []
-            for idx,i in enumerate(em_graph_ret):
-                data[str(idx)] = i['prob']
-                views_dist.append(i['prob'])
-                all_ems.append(i['all_views_ems'])
-                n_clusters.append(i['num_clusters'])
-            self.views_dist_ = views_dist
-            self.all_ems_ = all_ems
-            self.n_clusters_ = n_clusters
-            data_to_fit = []
-            for X in Xs:
-                X.index = X.index.astype(str) + 'fit'
-                data_to_fit.append(X)
-            self.data_to_fit_ = data_to_fit
+            raise NotImplemented
+            # em_graph_ret = self._get_em_graph_per_view(Xs=Xs)
+            # views_dist, all_ems, n_clusters = [], [], []
+            # for idx,i in enumerate(em_graph_ret):
+            #     data[str(idx)] = i['prob']
+            #     views_dist.append(i['prob'])
+            #     all_ems.append(i['all_views_ems'])
+            #     n_clusters.append(i['num_clusters'])
+            # self.views_dist_ = views_dist
+            # self.all_ems_ = all_ems
+            # self.n_clusters_ = n_clusters
+            # data_to_fit = []
+            # for X in Xs:
+            #     X.index = X.index.astype(str) + 'fit'
+            #     data_to_fit.append(X)
+            # self.data_to_fit_ = data_to_fit
 
         elif self.similarity_mode == "corr":
             data = self._process_data(Xs=Xs)
@@ -183,7 +183,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         best_sol = solutions[best_sol]
         glob_var, total_weight = best_sol['glob_var'], best_sol['total_weight']
         labels, view_graphs, mod_views = self._post_processing(glob_var=glob_var)
-        self.labels_ = labels.loc[samples].squeeze()
+        self.labels_ = labels.loc[samples].squeeze().values
         self.glob_var_ = glob_var
         self.total_weight_ = total_weight
         self.view_graphs_ = view_graphs
@@ -340,7 +340,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         data = {}
         for X_idx, X in enumerate(Xs):
             X_t = X.copy().T
-            X_t.columns = X_t.columns.astype(str)
+            X_t.columns = X_t.columns
             X_t = X_t.corr()
             np.fill_diagonal(X_t.values, 0)
             data[str(X_idx)] = X_t
@@ -353,26 +353,20 @@ class MONET(BaseEstimator, ClassifierMixin):
         modules, view, etc, and associating them with a Global instance.
         """
         all_sam_names = set(samples)
-        for sample in all_sam_names:
-            glob_var.samples.update({sample: _Sample(sample)})
+        glob_var.samples = {sample: _Sample(sample) for sample in all_sam_names}
 
         for view, dat in data.items():
             self.view = view
             graph, means, covs, percentile = self._build_a_graph_similarity(dat)
             if percentile_remove_edge is not None:
-                all_weights = []
-                for edge in graph.edges:
-                    all_weights.append(graph.edges[edge]['weight'])
+                all_weights = [graph.edges[edge]['weight'] for edge in graph.edges]
                 all_weights_array = np.array(all_weights)
                 positive_thresh = np.percentile(all_weights_array[all_weights_array > 0], percentile_remove_edge)
                 negative_thresh = np.percentile(all_weights_array[all_weights_array < 0], 100 - percentile_remove_edge)
-                all_edges = []
-                for edge in graph.edges:
-                    all_edges.append(edge)
+                all_edges = [edge for edge in graph.edges]
                 for edge in all_edges:
                     cur_weight = graph.edges[edge]['weight']
-                    if (cur_weight > 0 and cur_weight < positive_thresh) or (
-                            cur_weight < 0 and cur_weight > negative_thresh):
+                    if (cur_weight > 0 and cur_weight < positive_thresh) or (cur_weight < 0 and cur_weight > negative_thresh):
                         graph.remove_edge(edge[0], edge[1])
 
             cur_graph_sams = set(graph.nodes)

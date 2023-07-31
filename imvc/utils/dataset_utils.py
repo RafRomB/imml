@@ -1,3 +1,5 @@
+import copy
+
 import numpy as np
 import pandas as pd
 
@@ -8,7 +10,7 @@ class DatasetUtils:
     """
 
     @staticmethod
-    def convert_mvd_into_imvd(Xs: list, p, random_state: int = None):
+    def convert_mvd_into_imvd(Xs: list, p, assess_percentage: bool = True, random_state: int = None):
         r"""
         Randomly drop samples in a multi-view dataset to convert it into an incomplete multi-view dataset.
 
@@ -18,9 +20,11 @@ class DatasetUtils:
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
-        p: list or int
-            The percentaje that each view will have for missing samples. If p is int, all the views will have the
+        p: list or float
+            The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
+        assess_percentage: bool
+            If False, each view is dropped independently.
         random_state: int, default None
             If int, random_state is the seed used by the random number generator.
 
@@ -43,9 +47,29 @@ class DatasetUtils:
         if len(p) != len(Xs):
             p = p*len(Xs)
 
-        imvd = [X.drop(X.sample(frac = p[X_idx],
-                                random_state = random_state + X_idx if random_state is not None else random_state).index)
-                for X_idx,X in enumerate(Xs)]
+        if sum(p) > 0:
+            if assess_percentage:
+                p = [prob/len(p) for prob in p]
+                sample_names = DatasetUtils.get_sample_names(Xs)
+                total_len = len(sample_names)
+                common_samples = pd.Series(sample_names).sample(frac= 1 - sum(p), random_state=random_state)
+                sampled_names = copy.deepcopy(common_samples)
+                imvd = []
+                for X_idx,X in enumerate(Xs):
+                    x_per_view = X.drop(sampled_names)
+                    if X_idx != len(Xs)-1:
+                        x_per_view = x_per_view.drop(x_per_view.sample(
+                            n = int(p[X_idx]*total_len),
+                            random_state = random_state + X_idx if random_state is not None else random_state).index)
+                    sampled_names = pd.concat([sampled_names, pd.Series(x_per_view.index)])
+                    idxs_to_keep = pd.concat([common_samples, pd.Series(x_per_view.index)])
+                    imvd.append(X.loc[idxs_to_keep])
+            else:
+                imvd = [X.drop(X.sample(frac = p[X_idx],
+                                        random_state = random_state + X_idx if random_state is not None else random_state).index)
+                        for X_idx,X in enumerate(Xs)]
+        else:
+            imvd = Xs
         return imvd
 
 

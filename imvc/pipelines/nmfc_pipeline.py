@@ -1,6 +1,5 @@
-from mvlearn.compose import ConcatMerger
 from imvc.pipelines import BasePipeline
-from imvc.transformers import ConvertToNM, FillMissingViews, MultiViewTransformer
+from imvc.transformers import ConvertToNM, FillMissingViews, MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
 from transformers import SortData
 
@@ -14,6 +13,8 @@ class NMFCPipeline(BasePipeline):
     ----------
     n_clusters : int, default=None
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
+    random_state : int (default=None)
+        Determines the randomness. Use an int to make the randomness deterministic.
     memory : str or object with the joblib.Memory interface, default=None
         Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
         given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
@@ -41,7 +42,8 @@ class NMFCPipeline(BasePipeline):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = None, memory=None, verbose=False, **args):
-        estimator = NMFC(n_components=n_clusters).set_output(transform='pandas')
-        transformers = [SortData(), FillMissingViews(value="mean"), MultiViewTransformer(ConvertToNM()), ConcatMerger()]
-        super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose, **args)
+    def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
+        estimator = NMFC(n_components=n_clusters, random_state=random_state).set_output(transform='pandas')
+        transformers = [SortData(), FillMissingViews(value="mean"), MultiViewTransformer(ConvertToNM()), ConcatenateViews()]
+        super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose,
+                         random_state=random_state, **args)
