@@ -11,7 +11,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 from validclust import dunn
 
-from imvc.pipelines import MOFAPipeline, MONETPipeline, MSNEPipeline, SUMOPipeline, NMFCPipeline, ConcatPipeline
+from imvc.pipelines import MOFAPipeline, MONETPipeline, MSNEPipeline, SUMOPipeline, NMFCPipeline, ConcatPipeline, NEMOPipeline
 from imvc.datasets import LoadDataset
 from imvc.utils import DatasetUtils
 from imvc.transformers import ConcatenateViews
@@ -32,6 +32,7 @@ algorithms = {
     "MONET": {"alg": MONETPipeline, "params": {"n_jobs":-1}},
     "MSNE": {"alg": MSNEPipeline, "params": {"n_jobs":8}},
     "SUMO": {"alg": SUMOPipeline, "params": {}},
+    "NEMO": {"alg": NEMOPipeline, "params": {}},
 }
 runs_per_alg = np.arange(10).tolist()
 
@@ -62,12 +63,18 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
             start_time = time.perf_counter()
             clusters = model.fit_predict(incomplete_Xs)
             keep_running = False
-        except (NameError, BugInMONET) as exception:
+        except BugInMONET as exception:
             model.estimator.set_params(random_state=model.estimator.random_state + 1)
             errors_dict[type(exception).__name__] += 1
+            print(errors_dict)
             if sum(errors_dict.values()) == 100:
                 keep_running = False
-                continue
+        except NameError as exception:
+            model.estimator.set_params(random_state=model.estimator.random_state + 1)
+            errors_dict[type(exception).__name__] += 1
+            print(errors_dict)
+            if sum(errors_dict.values()) == 100:
+                keep_running = False
     if sum(errors_dict.values()) == 100:
         continue
     elapsed_time = time.perf_counter() - start_time

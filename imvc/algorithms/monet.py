@@ -85,7 +85,7 @@ class MONET(BaseEstimator, ClassifierMixin):
     all_ems_ : Gaussian Mixture Scikit-learn model
         Gaussian mixture model used to estimate the parameters for the weighting schemes.
     n_clusters_ : int
-        Number of cluseters.
+        Number of clusters.
 
     References
     ----------
