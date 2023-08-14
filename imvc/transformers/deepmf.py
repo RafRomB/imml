@@ -1,12 +1,3 @@
-# -*- coding: utf-8 -*-
-"""
-    src.DeepMF
-    ~~~~~~~~~~~
-
-    @Copyright: (c) 2018-04 by Lingxi Chen (chanlingxi@gmail.com).
-    @License: LICENSE_NAME, see LICENSE for more details.
-"""
-
 import torch
 import torch.nn
 from torch.nn import init
@@ -14,15 +5,13 @@ from torch.nn.parameter import Parameter
 from sklearn.decomposition import FastICA
 import math
 import numpy as np
-from torch.utils.data import DataLoader
-import lightning as L
+import lightning.pytorch as pl
 
 
 class DeepMFDataset(torch.utils.data.Dataset):
 
-    def __init__(self, data, y, transform = None, target_transform = None):
+    def __init__(self, data, transform = None, target_transform = None):
         self.data = data
-        self.y = y
         self.transform = transform
         self.target_transform = target_transform
 
@@ -32,10 +21,10 @@ class DeepMFDataset(torch.utils.data.Dataset):
 
 
     def __getitem__(self, idx):
-        label = self.y[idx, :]
-        Xi = torch.tensor(range(1), dtype=torch.long)
+        label = self.data[idx, :]
+        Xi = torch.tensor([range(1), idx], dtype=torch.long)
         Xv = torch.ones(1, dtype=torch.float)
-        X = torch.sparse_coo_tensor(Xi, Xv, torch.Size(len(label)))
+        X = torch.sparse_coo_tensor(Xi, Xv, torch.Size([1, len(self.data)]))
 
         if self.transform:
             X = self.transform(X)
@@ -85,14 +74,14 @@ class _SparseLinear(torch.nn.Module):
         )
 
 
-class DeepMF(L.LightningModule):
+class DeepMF(pl.LightningModule):
 
-    def __init__(self, data, M, N, K=10, n_layers:int =3, alpha:float = 0.01, neighbor_proximity='Lap', problem='regression'):
+    def __init__(self, data, K=10, n_layers:int =3, learning_rate:float =1e-2, alpha:float = 0.01,
+                 neighbor_proximity='Lap', problem='regression'):
         super().__init__()
-        self.M = M
-        self.N = N
-        self.K = K
+        self.M, self.N = data.shape
         self.n_layers = n_layers
+        self.learning_rate = learning_rate
         self.alpha = alpha
         self.neighbor_proximity = neighbor_proximity
         self.problem = problem
@@ -102,18 +91,22 @@ class DeepMF(L.LightningModule):
         else:
             self.loss_fun = torch.nn.BCELoss()
 
-        layers = [_SparseLinear(M, K)]
+        layers = [_SparseLinear(self.M, K)]
         for i in range(n_layers):
             layers.append(torch.nn.Linear(K, K))
             if n_layers > 1:
                 layers.append(torch.nn.ReLU())
-        layers.append(torch.nn.Linear(K, N))
+        layers.append(torch.nn.Linear(K, self.N))
         if self.problem == 'classification':
             layers.append(torch.nn.Sigmoid())
 
         self.model = torch.nn.Sequential(*layers)
         self.Su, self.Du = self._get_similarity(data, 'row')
         self.Sv, self.Dv = self._get_similarity(data, 'col')
+
+
+    def configure_optimizers(self):
+        return torch.optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=0.0001)
 
 
     def training_step(self, batch, batch_idx):

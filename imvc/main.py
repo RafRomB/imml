@@ -3,13 +3,13 @@ import time
 from collections import defaultdict
 import numpy as np
 import pandas as pd
-from reval.utils import compute_metrics
+# from reval.utils import compute_metrics
 from sklearn import metrics
 from sklearn.impute import SimpleImputer
 from sklearn.metrics import pairwise_distances
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
-from validclust import dunn
+# from validclust import dunn
 
 from imvc.pipelines import MOFAPipeline, MONETPipeline, MSNEPipeline, SUMOPipeline, NMFCPipeline, ConcatPipeline, NEMOPipeline
 from imvc.datasets import LoadDataset

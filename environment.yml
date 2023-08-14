@@ -418,7 +418,7 @@ dependencies:
       - networkx==3.1
       - numba==0.56.4
       - numpy==1.23.5
-      - pandas==2.0.1
+#      - pandas==2.0.1
       - pillow==9.5.0
       - pipreqs==0.4.13
       - ply==3.11
