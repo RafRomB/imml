@@ -21,57 +21,18 @@ class DeepMFDataset(torch.utils.data.Dataset):
 
 
     def __getitem__(self, idx):
-        label = self.data[idx, :]
-        Xi = torch.tensor([range(1), idx], dtype=torch.long)
+        X = self.data
+        label = X[idx, :]
+        Xi = torch.tensor([idx], dtype=torch.long).unsqueeze(0)
         Xv = torch.ones(1, dtype=torch.float)
-        X = torch.sparse_coo_tensor(Xi, Xv, torch.Size([1, len(self.data)]))
+        X = torch.sparse_coo_tensor(Xi, Xv, (len(X),))
+        label = label.to(X.dtype)
 
         if self.transform:
             X = self.transform(X)
         if self.target_transform:
             label = self.target_transform(label)
         return X, label
-
-
-class _SparseLinear(torch.nn.Module):
-
-    _constants__ = ['bias']
-
-    def __init__(self, in_features, out_features, bias=True):
-        super(_SparseLinear, self).__init__()
-        self.in_features = in_features
-        self.out_features = out_features
-        self.weight = Parameter(torch.Tensor(out_features, in_features))
-        if bias:
-            self.bias = Parameter(torch.Tensor(out_features))
-        else:
-            self.register_parameter('bias', None)
-        self.reset_parameters()
-
-    def reset_parameters(self):
-        init.kaiming_uniform_(self.weight, a=math.sqrt(5))
-        if self.bias is not None:
-            fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
-            bound = 1 / math.sqrt(fan_in)
-            init.uniform_(self.bias, -bound, bound)
-
-
-    def forward(self, input):
-
-        if input.dim() == 2 and self.bias is not None:
-            # fused op is marginally faster
-            ret = torch.sparse.addmm(self.bias, input, self.weight.t())
-        else:
-            output = torch.sparse.mm(input, self.weight.t())
-            if self.bias is not None:
-                output += self.bias
-            ret = output
-        return ret
-
-    def extra_repr(self):
-        return 'in_features={}, out_features={}, bias={}'.format(
-            self.in_features, self.out_features, self.bias is not None
-        )
 
 
 class DeepMF(pl.LightningModule):
@@ -139,7 +100,7 @@ class DeepMF(pl.LightningModule):
         return loss
 
 
-    def predict_step(self, batch, batch_idx):
+    def predict_step(self, batch, batch_idx, dataloader_idx: int = 0):
         x, _ = batch
         pred = self.model(x)
         if self.problem == 'classification':
@@ -258,3 +219,44 @@ class DeepMF(pl.LightningModule):
         y_pred[torch.isnan(y)] = 0
         y[torch.isnan(y)] = 0
         return y_pred, y
+
+
+class _SparseLinear(torch.nn.Module):
+
+    _constants__ = ['bias']
+
+    def __init__(self, in_features, out_features, bias=True):
+        super(_SparseLinear, self).__init__()
+        self.in_features = in_features
+        self.out_features = out_features
+        self.weight = Parameter(torch.Tensor(out_features, in_features))
+        if bias:
+            self.bias = Parameter(torch.Tensor(out_features))
+        else:
+            self.register_parameter('bias', None)
+        self.reset_parameters()
+
+    def reset_parameters(self):
+        init.kaiming_uniform_(self.weight, a=math.sqrt(5))
+        if self.bias is not None:
+            fan_in, _ = init._calculate_fan_in_and_fan_out(self.weight)
+            bound = 1 / math.sqrt(fan_in)
+            init.uniform_(self.bias, -bound, bound)
+
+
+    def forward(self, input):
+
+        if input.dim() == 2 and self.bias is not None:
+            # fused op is marginally faster
+            ret = torch.sparse.addmm(self.bias, input, self.weight.t())
+        else:
+            output = torch.sparse.mm(input, self.weight.t())
+            if self.bias is not None:
+                output += self.bias
+            ret = output
+        return ret
+
+    def extra_repr(self):
+        return 'in_features={}, out_features={}, bias={}'.format(
+            self.in_features, self.out_features, self.bias is not None
+        )
