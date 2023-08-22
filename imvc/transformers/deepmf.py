@@ -10,18 +10,18 @@ import lightning.pytorch as pl
 
 class DeepMFDataset(torch.utils.data.Dataset):
 
-    def __init__(self, data, transform = None, target_transform = None):
-        self.data = data
+    def __init__(self, Xs, transform = None, target_transform = None):
+        self.Xs = Xs
         self.transform = transform
         self.target_transform = target_transform
 
 
     def __len__(self):
-        return len(self.data)
+        return len(self.Xs)
 
 
     def __getitem__(self, idx):
-        X = self.data
+        X = self.Xs
         label = X[idx, :]
         Xi = torch.tensor([idx], dtype=torch.long).unsqueeze(0)
         Xv = torch.ones(1, dtype=torch.float)
@@ -37,10 +37,10 @@ class DeepMFDataset(torch.utils.data.Dataset):
 
 class DeepMF(pl.LightningModule):
 
-    def __init__(self, data, K=10, n_layers:int =3, learning_rate:float =1e-2, alpha:float = 0.01,
+    def __init__(self, X, K=10, n_layers:int =3, learning_rate:float =1e-2, alpha:float = 0.01,
                  neighbor_proximity='Lap', problem='regression'):
         super().__init__()
-        self.M, self.N = data.shape
+        self.M, self.N = X.shape
         self.n_layers = n_layers
         self.learning_rate = learning_rate
         self.alpha = alpha
@@ -62,8 +62,8 @@ class DeepMF(pl.LightningModule):
             layers.append(torch.nn.Sigmoid())
 
         self.model = torch.nn.Sequential(*layers)
-        self.Su, self.Du = self._get_similarity(data, 'row')
-        self.Sv, self.Dv = self._get_similarity(data, 'col')
+        self.Su, self.Du = self._get_similarity(X, 'row')
+        self.Sv, self.Dv = self._get_similarity(X, 'col')
 
 
     def configure_optimizers(self):

@@ -29,7 +29,7 @@ algorithms = {
     "Concat": {"alg": ConcatPipeline, "params": {}},
     "MOFA": {"alg": MOFAPipeline, "params": {}},
     "NMFC": {"alg": NMFCPipeline, "params": {}},
-    "MONET": {"alg": MONETPipeline, "params": {"n_jobs":-1}},
+    "MONET": {"alg": MONETPipeline, "params": {"n_jobs":8}},
     "MSNE": {"alg": MSNEPipeline, "params": {"n_jobs":8}},
     "SUMO": {"alg": SUMOPipeline, "params": {}},
     "NEMO": {"alg": NEMOPipeline, "params": {}},
