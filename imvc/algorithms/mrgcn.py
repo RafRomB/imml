@@ -17,7 +17,7 @@ class MRGCNDataset(torch.utils.data.Dataset):
 
 
     def __getitem__(self, idx):
-        Xs = [self.transform[X_idx](X.loc[idx]) for X_idx,X in enumerate(self.Xs)]
+        Xs = [self.transform[X_idx](X[idx]) for X_idx,X in enumerate(self.Xs)]
         return Xs
 
 
@@ -119,6 +119,23 @@ class MRGCN(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         return self.training_step(batch, batch_idx)
 
+
+    def predict_step(self, batch, batch_idx, dataloader_idx: int = 0):
+        summ = 0
+        for view_idx, view_data in batch:
+            s1,X = view_data
+            enc_1 = getattr(self, f"enc{view_idx}_1")
+            enc_2 = getattr(self, f"enc{view_idx}_2")
+            output_1 = torch.tanh(enc_1(torch.matmul(s1, X)))
+            output_2 = torch.tanh(enc_2(torch.matmul(s1, output_1)))
+            summ += torch.diag(self.we[:, 0]).mm(output_2)
+
+        wei = 1 / torch.sum(self.we, 1)
+        z = torch.diag(wei).mm(summ)
+        pred = self.kmeans.predict(z.detach().numpy())
+        return pred
+
+
     @staticmethod
     def get_kNNgraph2(data, K_num):
         # each row of data is a sample
@@ -148,3 +165,7 @@ class MRGCN(pl.LightningModule):
         s[where_are_inf] = 0
         s = torch.matmul(torch.matmul(s, g), s).to(torch.float32)
         return s
+
+
+    def fit_kmeans(self, X):
+        self.kmeans.fit(X)

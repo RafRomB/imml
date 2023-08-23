@@ -2,7 +2,7 @@ import os
 from os.path import dirname
 
 import pandas as pd
-from imvc.utils import DatasetUtils
+from ..utils import DatasetUtils
 
 
 class LoadDataset:

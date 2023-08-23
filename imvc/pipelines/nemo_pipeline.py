@@ -1,8 +1,8 @@
 from sklearn.preprocessing import StandardScaler
 
-from imvc.algorithms import NEMO
-from imvc.pipelines import BasePipeline
-from imvc.transformers import SortData, MultiViewTransformer
+from ..algorithms import NEMO
+from ..pipelines import BasePipeline
+from ..transformers import SortData, MultiViewTransformer
 
 
 class NEMOPipeline(BasePipeline):

@@ -8,6 +8,12 @@ import pandas as pd
 from time import time
 import numpy as np
 import mofax as mfx
+from mofax.utils import (
+    _load_samples_metadata,
+    _load_features_metadata,
+    _load_covariates,
+    _read_simple,
+)
 
 from imvc.transformers import concatenate_views
 from imvc.utils import check_Xs
@@ -120,9 +126,12 @@ class MOFA:
                 self._run_mofa(data = [[view] for view in Xs])
         outfile = "tmp.hdf5"
         self.mofa_.save(outfile=outfile, save_data=True, save_parameters=False, expectations=None)
-        self.mofa_model_ = mfx.mofa_model(outfile)
+        model = mfx.mofa_model(outfile)
+        self.weights_ = model.get_weights(concatenate_views= False)
+        self.factors_ = model.get_factors(concatenate_groups= False)
+        self._columns = model._check_factors(np.arange(self.factors).tolist())[1]
+        model.close()
         os.remove(outfile)
-        self.weights_ = self.mofa_model_.get_weights()
         return self
 
 
@@ -142,11 +151,12 @@ class MOFA:
         transformed_Xs : list of array-likes, shape (n_samples, n_features)
             The projected data.
         """
-        winv = np.linalg.pinv(self.mofa_model_.get_weights())
-        transformed_Xs = np.dot(concatenate_views(Xs), winv.T)
+        ws = self.weights_
+        winv = [np.linalg.pinv(w) for w in ws]
+        transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
         if self.transform_ == "pandas":
-            columns = self.mofa_model_._check_factors(np.arange(self.factors).tolist())[1]
-            transformed_Xs = pd.DataFrame(transformed_Xs, columns=columns, index=Xs[0].index)
+            transformed_Xs = [pd.DataFrame(transformed_X, columns=self._columns, index=X.index)
+                              for X,transformed_X in zip(Xs,transformed_Xs)]
         return transformed_Xs
 
     
@@ -539,4 +549,3 @@ class _ModifiedStochasticBayesNet(StochasticBayesNet):
             # self.train_stats['scales'] = self.scales
 
         self.trained = True
-        

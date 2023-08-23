@@ -1,6 +1,7 @@
 from copy import deepcopy
 from sklearn.base import BaseEstimator, TransformerMixin
-from imvc.utils import check_Xs
+
+from ..utils import check_Xs
 
 
 class MultiViewTransformer(BaseEstimator, TransformerMixin):

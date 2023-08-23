@@ -1,7 +1,8 @@
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from imvc.utils import DatasetUtils, check_Xs
+
+from ..utils import DatasetUtils, check_Xs
 
 
 class FillMissingViews(BaseEstimator, TransformerMixin):

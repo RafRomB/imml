@@ -1,9 +1,9 @@
 from sklearn.cluster import KMeans
-from imvc.transformers import FillMissingViews, SortData, ConcatenateViews
-from sklearn.preprocessing import StandardScaler
-from imvc.algorithms import MOFA
 from sklearn.impute import SimpleImputer
-from imvc.pipelines import BasePipeline
+from sklearn.preprocessing import StandardScaler
+
+from ..transformers import FillMissingViews, SortData, ConcatenateViews, MOFA
+from ..pipelines import BasePipeline
 
 
 class MOFAPipeline(BasePipeline):
@@ -42,6 +42,7 @@ class MOFAPipeline(BasePipeline):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
         transformers = [SortData(), FillMissingViews(value="nan"),
                         MOFA(random_state=random_state).set_output(transform='pandas'),
+                        ConcatenateViews(),
                         SimpleImputer(strategy='mean').set_output(transform='pandas'),
                         StandardScaler().set_output(transform='pandas')]
         super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose,

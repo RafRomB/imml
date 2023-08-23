@@ -1,7 +1,8 @@
-from imvc.pipelines import BasePipeline
 from sklearn.preprocessing import StandardScaler
-from imvc.algorithms import MONET
-from imvc.transformers import MultiViewTransformer, SortData, FillMissingViews
+
+from ..pipelines import BasePipeline
+from ..algorithms import MONET
+from ..transformers import MultiViewTransformer, SortData, FillMissingViews
 
 
 class MONETPipeline(BasePipeline):

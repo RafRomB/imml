@@ -5,8 +5,8 @@ from scipy import stats
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from algorithms._aux_msne import Embedding
-from utils import check_Xs
+from ._aux_msne import Embedding
+from ..utils import check_Xs
 
 
 class MSNE(BaseEstimator, ClassifierMixin):

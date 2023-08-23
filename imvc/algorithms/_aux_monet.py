@@ -2,9 +2,8 @@ import copy
 import heapq
 import networkx as nx
 import numpy as np
-import pandas as pd
 
-from utils.utils import BugInMONET
+from ..utils.utils import BugInMONET
 
 
 class _Globals:
