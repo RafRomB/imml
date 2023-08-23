@@ -1,6 +1,4 @@
 from sklearn.base import BaseEstimator, ClassifierMixin
-
-from imvc.utils import DatasetUtils
 from sumo.modes.prepare.similarity import feature_to_adjacency
 from sumo.network import MultiplexNet
 from sumo.modes.run.solvers.unsupervised_sumo import UnsupervisedSumoNMF
@@ -9,7 +7,7 @@ from scipy.spatial.distance import pdist
 from sumo.utils import extract_ncut
 import numpy as np
 
-from imvc.utils import check_Xs
+from ..utils import DatasetUtils, check_Xs
 
 
 class SUMO(BaseEstimator, ClassifierMixin):

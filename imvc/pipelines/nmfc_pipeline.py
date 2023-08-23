@@ -1,7 +1,6 @@
-from imvc.pipelines import BasePipeline
-from imvc.transformers import ConvertToNM, FillMissingViews, MultiViewTransformer, ConcatenateViews
-from imvc.algorithms import NMFC
-from transformers import SortData
+from ..pipelines import BasePipeline
+from ..transformers import ConvertToNM, FillMissingViews, MultiViewTransformer, ConcatenateViews, SortData
+from ..algorithms import NMFC
 
 
 class NMFCPipeline(BasePipeline):

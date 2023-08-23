@@ -4,7 +4,7 @@ import snf
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import SpectralClustering
 
-from imvc.utils import DatasetUtils, check_Xs
+from ..utils import DatasetUtils, check_Xs
 
 
 class NEMO(BaseEstimator, ClassifierMixin):

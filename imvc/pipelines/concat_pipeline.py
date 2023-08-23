@@ -1,7 +1,8 @@
 from sklearn.cluster import KMeans
-from imvc.pipelines import BasePipeline
-from imvc.transformers import FillMissingViews, SortData, ConcatenateViews
 from sklearn.preprocessing import StandardScaler
+
+from ..pipelines import BasePipeline
+from ..transformers import FillMissingViews, SortData, ConcatenateViews
 
 
 class ConcatPipeline(BasePipeline):

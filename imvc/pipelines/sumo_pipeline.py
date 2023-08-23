@@ -1,8 +1,8 @@
 from sklearn.preprocessing import StandardScaler
 
-from algorithms import SUMO
-from pipelines import BasePipeline
-from transformers import SortData, MultiViewTransformer, FillMissingViews
+from ..algorithms import SUMO
+from ..pipelines import BasePipeline
+from ..transformers import SortData, MultiViewTransformer, FillMissingViews
 
 
 class SUMOPipeline(BasePipeline):
