@@ -15,8 +15,8 @@ from mofax.utils import (
     _read_simple,
 )
 
-from imvc.transformers import concatenate_views
-from imvc.utils import check_Xs
+from ..transformers import concatenate_views
+from ..utils import check_Xs
 
 
 class MOFA:
