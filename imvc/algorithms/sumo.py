@@ -359,7 +359,6 @@ class SUMO(BaseEstimator, ClassifierMixin):
         consensus_labels = extract_ncut(consensus, k=k)
 
         cluster_array = np.empty((sumo_run.graph_.sample_names.shape[0], 2), dtype=np.object)
-        # TODO add column with confidence value when investigating soft clustering
         cluster_array[:, 0] = sumo_run.graph_.sample_names
         cluster_array[:, 1] = consensus_labels
 

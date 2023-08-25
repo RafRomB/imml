@@ -10,18 +10,18 @@ import lightning.pytorch as pl
 
 class DeepMFDataset(torch.utils.data.Dataset):
 
-    def __init__(self, Xs, transform = None, target_transform = None):
-        self.Xs = Xs
+    def __init__(self, X, transform = None, target_transform = None):
+        self.X = X
         self.transform = transform
         self.target_transform = target_transform
 
 
     def __len__(self):
-        return len(self.Xs)
+        return len(self.X)
 
 
     def __getitem__(self, idx):
-        X = self.Xs
+        X = self.X
         label = X[idx, :]
         Xi = torch.tensor([idx], dtype=torch.long).unsqueeze(0)
         Xv = torch.ones(1, dtype=torch.float)
