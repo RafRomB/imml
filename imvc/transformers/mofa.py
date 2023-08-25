@@ -1,3 +1,5 @@
+import copy
+
 from mofapy2.run.entry_point import entry_point
 import os
 import contextlib
@@ -8,14 +10,7 @@ import pandas as pd
 from time import time
 import numpy as np
 import mofax as mfx
-from mofax.utils import (
-    _load_samples_metadata,
-    _load_features_metadata,
-    _load_covariates,
-    _read_simple,
-)
 
-from ..transformers import concatenate_views
 from ..utils import check_Xs
 
 
@@ -31,6 +26,8 @@ class MOFA:
     ----------
     factors : int, default=10
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
+    impute : bool, default=True
+        True if missing values should be imputed.
     data_options : dict (default={})
         Data processing options, such as scale_views and scale_groups.
     data_matrix : dict (default={})
@@ -80,10 +77,11 @@ class MOFA:
     """
 
     
-    def __init__(self, factors : int = 10, data_options = {}, data_matrix = {}, model_options = {}, train_options = {},
-                 stochastic_options = {}, covariates = {}, smooth_options = {}, random_state : int = None,
-                 verbose = False):
+    def __init__(self, factors : int = 10, impute:bool = True, data_options = {}, data_matrix = {}, model_options = {},
+                 train_options = {}, stochastic_options = {}, covariates = {}, smooth_options = {},
+                 random_state : int = None, verbose = False):
         self.factors = factors
+        self.impute = impute
         self.random_state = random_state
         self.verbose = verbose        
         if self.verbose:
@@ -154,6 +152,14 @@ class MOFA:
         ws = self.weights_
         winv = [np.linalg.pinv(w) for w in ws]
         transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
+        if self.impute:
+            imputed_Xs = copy.deepcopy(Xs)
+            for idx, (transformed_X, w) in enumerate(zip(transformed_Xs, ws)):
+                imputed_X = np.dot(np.nan_to_num(transformed_X, nan=0.0), w.T)
+                imputed_X = pd.DataFrame(imputed_X, columns=imputed_Xs[idx].columns)
+                imputed_Xs[idx] = imputed_Xs[idx].fillna(imputed_X)
+            transformed_Xs = [np.dot(X, w.T) for X, w in zip(imputed_Xs, winv)]
+
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, columns=self._columns, index=X.index)
                               for X,transformed_X in zip(Xs,transformed_Xs)]

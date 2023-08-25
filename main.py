@@ -4,12 +4,17 @@ import time
 from collections import defaultdict
 import numpy as np
 import pandas as pd
+import torch
+from pytorch_lightning import Trainer
 from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
+from torch.utils.data import DataLoader
 
-from imvc.pipelines import MOFAPipeline, MONETPipeline, MSNEPipeline, SUMOPipeline, NMFCPipeline, ConcatPipeline, NEMOPipeline
+from imvc.pipelines import MOFAPipeline, MONETPipeline, MSNEPipeline, SUMOPipeline, NMFCPipeline, ConcatPipeline, \
+    NEMOPipeline, DeepMFPipeline
 from imvc.datasets import LoadDataset
+from imvc.transformers.deepmf import DeepMFDataset, DeepMF
 from imvc.utils import DatasetUtils
 from imvc.transformers import ConcatenateViews
 from imvc.utils.utils import BugInMONET
@@ -34,6 +39,7 @@ algorithms = {
     "MSNE": {"alg": MSNEPipeline, "params": {"n_jobs":8}},
     "SUMO": {"alg": SUMOPipeline, "params": {}},
     "NEMO": {"alg": NEMOPipeline, "params": {}},
+    "DeepMF": {"alg": DeepMFPipeline, "params": {"max_epochs":10}},
 }
 runs_per_alg = np.arange(10).tolist()
 
@@ -59,28 +65,38 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
     print(f"Algorithm: {alg_name} \t Dataset: {dataset_name} \t Missing: {p} \t Iteration: {i}")
     if alg_name == "MONET":
         model = alg(random_state = random_state + i, **params)
+    elif alg_name in ["DeepMF"]:
+        X = model[:-2].fit_transform(Xs)
+        X = torch.from_numpy(X.values)
+        train_data = DeepMFDataset(X=X)
+        train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
+        trainer = Trainer(**params, logger=False, enable_checkpointing=False)
+        ann = DeepMF(X=X)
+        trainer.fit(ann, train_dataloader)
+        incomplete_Xs = trainer.predict(ann, train_dataloader)
+        model = model[-2:]
+
     else:
         model = alg(n_clusters=n_clusters, random_state = random_state + i, **params)
     model.estimator = model.estimator.set_params(verbose=False)
-    keep_running = True
     errors_dict = defaultdict(int)
-    while keep_running:
+    while True:
         try:
             start_time = time.perf_counter()
             clusters = model.fit_predict(incomplete_Xs)
-            keep_running = False
+            break
         except BugInMONET as exception:
             model.estimator.set_params(random_state=model.estimator.random_state + 1)
             errors_dict[type(exception).__name__] += 1
             print(errors_dict)
             if sum(errors_dict.values()) == 100:
-                keep_running = False
+                break
         except NameError as exception:
             model.estimator.set_params(random_state=model.estimator.random_state + 1)
             errors_dict[type(exception).__name__] += 1
             print(errors_dict)
             if sum(errors_dict.values()) == 100:
-                keep_running = False
+                break
     if sum(errors_dict.values()) == 100:
         continue
     elapsed_time = time.perf_counter() - start_time
@@ -88,10 +104,12 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
         X = make_pipeline(*model.transformers).transform(incomplete_Xs)
     elif alg_name in ["NMFC"]:
         X = model.transform(incomplete_Xs)
+    elif alg_name in ["DeepMF"]:
+        continue
     else:
         X = make_pipeline(*model.transformers).transform(incomplete_Xs)
         X = make_pipeline(ConcatenateViews(), SimpleImputer().set_output(transform="pandas")).fit_transform(X)
-    #todo test pipeline index when it is a list
+
     mask = ~np.isnan(clusters)
     labels_pred = np.nan_to_num(clusters, nan = -1).astype(int)
     labels_pred = pd.factorize(labels_pred)[0]

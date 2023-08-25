@@ -37,8 +37,8 @@ class DatasetUtils:
 
          Examples
         --------
-        >>> from utils import DatasetUtils
-        >>> from datasets import LoadDataset
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
         >>> Xs = DatasetUtils.convert_mvd_into_imvd(Xs = Xs, p = [0.2, 0.5])
         """
@@ -65,7 +65,7 @@ class DatasetUtils:
                     idxs_to_keep = pd.concat([common_samples, pd.Series(x_per_view.index)])
                     imvd.append(X.loc[idxs_to_keep])
             else:
-                imvd = [X.drop(X.sample(frac = p[X_idx],
+                imvd = [X.drop(X.sample(frac = p[X_idx]/len(p),
                                         random_state = random_state + X_idx if random_state is not None else random_state).index)
                         for X_idx,X in enumerate(Xs)]
         else:

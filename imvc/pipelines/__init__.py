@@ -8,3 +8,4 @@ from .monet_pipeline import MONETPipeline
 from .sumo_pipeline import SUMOPipeline
 from .msne_pipeline import MSNEPipeline
 from .nemo_pipeline import NEMOPipeline
+from .deepmf_pipeline import DeepMFPipeline

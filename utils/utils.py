@@ -27,7 +27,7 @@ def save_record(labels_pred, y, X, random_state, alg_name, dataset_name, p, elap
         "alg": alg_name,
         "dataset": dataset_name,
         "n_samples": len(X),
-        "missing_percentage": int(100*p),
+        "% incomplete samples": int(100*p),
         "time": elapsed_time,
         "execution": i,
         **supervised_metrics,
