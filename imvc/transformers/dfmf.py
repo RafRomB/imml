@@ -1,11 +1,12 @@
+import pandas as pd
+from skfusion import fusion
+from sklearn.base import TransformerMixin, BaseEstimator
 
-class DFMF:
+from imvc.utils import check_Xs
+
+
+class DFMF(TransformerMixin, BaseEstimator):
     r"""
-    MOFA is a factor analysis model that provides a general framework for the integration of (originally, multi-omic
-    data sets) incomplete multi-view datasets, in an unsupervised fashion. Intuitively, MOFA can be viewed as a
-    versatile and statistically rigorous generalization of principal component analysis to multi-views data. Given
-    several data matrices with measurements of multiple -views data types on the same or on overlapping sets of
-    samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors.
 
     Parameters
     ----------
@@ -60,24 +61,13 @@ class DFMF:
     """
 
 
-    def __init__(self, factors : int = 10, data_options = {}, data_matrix = {}, model_options = {}, train_options = {},
-                 stochastic_options = {}, covariates = {}, smooth_options = {}, random_state : int = None,
-                 verbose = False):
+    def __init__(self, factors : int = 10, args_dmfm: dict = {}, args_dmfmtransform: dict = {}):
         self.factors = factors
-        self.random_state = random_state
-        self.verbose = verbose
-        if self.verbose:
-            self.mofa_ = entry_point()
-        else:
-            with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
-                self.mofa_ = entry_point()
-        self.data_options_args = data_options
-        self.data_matrix_args = data_matrix
-        self.model_options_args = model_options
-        self.train_options_args = train_options
-        self.stochastic_options_args = stochastic_options
-        self.covariates_args = covariates
-        self.smooth_options_args = smooth_options
+        self.args_dmfm = args_dmfm
+        self.args_dmfmtransform = args_dmfmtransform
+        self.fuser = fusion.Dfmf(**args_dmfm)
+        self.transformer = fusion.DfmfTransform(**args_dmfmtransform)
+        self.t = fusion.ObjectType('Type 0', factors)
         self.transform_ = None
 
 
@@ -99,19 +89,10 @@ class DFMF:
         self :  returns and instance of self.
         """
         Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
-        if self.verbose:
-            self._run_mofa(data = [[view] for view in Xs])
-        else:
-            with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
-                self._run_mofa(data = [[view] for view in Xs])
-        outfile = "tmp.hdf5"
-        self.mofa_.save(outfile=outfile, save_data=True, save_parameters=False, expectations=None)
-        model = mfx.mofa_model(outfile)
-        self.weights_ = model.get_weights(concatenate_views= False)
-        self.factors_ = model.get_factors(concatenate_groups= False)
-        self._columns = model._check_factors(np.arange(self.factors).tolist())[1]
-        model.close()
-        os.remove(outfile)
+        self.ts = [fusion.ObjectType(f'Type {i+1}', self.factors) for i in range(len(Xs))]
+        relations = [fusion.Relation(X.values, self.t, t) for X,t in zip(Xs, self.ts)]
+        fusion_graph = fusion.FusionGraph(relations)
+        self.fuser.fuse(fusion_graph)
         return self
 
 
@@ -131,10 +112,17 @@ class DFMF:
         transformed_Xs : list of array-likes, shape (n_samples, n_features)
             The projected data.
         """
-        ws = self.weights_
-        winv = [np.linalg.pinv(w) for w in ws]
-        transformed_Xs = [np.dot(X.fillna(0), w.T) for X ,w in zip(Xs, winv)]
+
+        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        relations = [fusion.Relation(X.values, self.t, t) for X,t in zip(Xs, self.ts)]
+        fusion_graph = fusion.FusionGraph(relations)
+        transformed_X = self.transformer.transform(self.t, fusion_graph, self.fuser).factor(self.t)
         if self.transform_ == "pandas":
-            transformed_Xs = [pd.DataFrame(transformed_X, columns=self._columns, index=X.index)
-                              for X ,transformed_X in zip(Xs ,transformed_Xs)]
-        return transformed_Xs
+            transformed_X = pd.DataFrame(transformed_X, index= Xs[0].index)
+        return transformed_X
+
+
+    def set_output(self, *, transform=None):
+        self.transform_ = "pandas"
+        return self
+

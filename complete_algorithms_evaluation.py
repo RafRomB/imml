@@ -11,8 +11,7 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import LabelEncoder
 from torch.utils.data import DataLoader
 
-from imvc.pipelines import MOFAPipeline, MONETPipeline, MSNEPipeline, SUMOPipeline, NMFCPipeline, ConcatPipeline, \
-    NEMOPipeline, DeepMFPipeline
+from imvc.pipelines import NMFCPipeline, ConcatPipeline
 from imvc.datasets import LoadDataset
 from imvc.transformers.deepmf import DeepMFDataset, DeepMF
 from imvc.utils import DatasetUtils
@@ -23,7 +22,7 @@ from utils.utils import save_record
 random_state = 0
 START_BENCHMARKING = True
 folder_name = "results"
-filelame = "missing_evaluation.csv"
+filelame = "complete_algorithms_evaluation.csv"
 file_path = os.path.join(folder_name, filelame)
 
 Xs, y = LoadDataset.load_incomplete_nutrimouse(p = 0, return_y = True, random_state = random_state)
@@ -33,13 +32,7 @@ datasets = [nutrimouse_genotype, nutrimouse_diet]
 probs = np.arange(0., 1., step= 0.1).round(1)
 algorithms = {
     "Concat": {"alg": ConcatPipeline, "params": {}},
-    "MOFA": {"alg": MOFAPipeline, "params": {}},
     "NMFC": {"alg": NMFCPipeline, "params": {}},
-    "MONET": {"alg": MONETPipeline, "params": {"n_jobs":8}},
-    "MSNE": {"alg": MSNEPipeline, "params": {"n_jobs":8}},
-    "SUMO": {"alg": SUMOPipeline, "params": {}},
-    "NEMO": {"alg": NEMOPipeline, "params": {}},
-    "DeepMF": {"alg": DeepMFPipeline, "params": {"max_epochs":10}},
 }
 runs_per_alg = np.arange(10).tolist()
 

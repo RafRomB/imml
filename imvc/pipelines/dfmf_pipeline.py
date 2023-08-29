@@ -1,11 +1,11 @@
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-from ..transformers import FillMissingViews, SortData, ConcatenateViews, MOFA, MultiViewTransformer
-from ..pipelines import BasePipeline
+from imvc.pipelines import BasePipeline
+from imvc.transformers import SortData, FillMissingViews, MultiViewTransformer, DFMF
 
 
-class MOFAPipeline(BasePipeline):
+class DFMFPipeline(BasePipeline):
     r"""
     Sort the dataset, fill in all the missing samples with the average features for each modality and use MOFA for data
     integration. The projected data are imputted with the mean values of each feature, stardardized and clustered
@@ -41,8 +41,8 @@ class MOFAPipeline(BasePipeline):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
         transformers = [SortData(), FillMissingViews(value="nan"),
                         MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas')),
-                        MOFA(random_state=random_state).set_output(transform='pandas'),
-                        ConcatenateViews(),
+                        # DFMF(),
+                        DFMF().set_output(transform='pandas'),
                         StandardScaler().set_output(transform='pandas')]
         super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose,
                          n_clusters=n_clusters, random_state=random_state, **args)

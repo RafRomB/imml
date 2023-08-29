@@ -1,5 +1,6 @@
 import numpy as np
 import torch
+from sklearn.cluster import KMeans
 from torch import nn
 import lightning.pytorch as pl
 from torch.nn import functional as F
@@ -13,18 +14,24 @@ class MRGCNDataset(torch.utils.data.Dataset):
 
 
     def __len__(self):
-        return len(self.Xs)
+        return len(self.Xs[0])
 
 
     def __getitem__(self, idx):
-        Xs = [self.transform[X_idx](X[idx]) for X_idx,X in enumerate(self.Xs)]
+        if self.transform is not None:
+            Xs = [self.transform[X_idx](X[idx]) for X_idx,X in enumerate(self.Xs)]
+        else:
+            Xs = [X[idx] for X in self.Xs]
+        Xs = tuple(Xs)
         return Xs
 
 
 
 class MRGCN(pl.LightningModule):
-    def __init__(self, Xs, kmeans, k_num:int = 10, learning_rate:float = 0.001, reg2:int = 1, reg3:int = 1):
+    def __init__(self, kmeans, Xs = None, k_num:int = 10, learning_rate:float = 0.001, reg2:int = 1, reg3:int = 1, **args):
         super(MRGCN, self).__init__()
+        self.data = Xs
+        self.n_features_ = [X.shape[1] for X in Xs]
         self.n_views_ = len(Xs)
         self.learning_rate = learning_rate
         self.criterion = torch.nn.MSELoss(reduction='sum')
@@ -32,6 +39,8 @@ class MRGCN(pl.LightningModule):
         self.kmeans = kmeans
         self.reg2 = reg2
         self.reg3 = reg3
+        self.gs = []
+        self.ss = []
 
         for idx, X in enumerate(Xs):
             n_features_i = X.shape[1]
@@ -39,14 +48,14 @@ class MRGCN(pl.LightningModule):
             self.gs.append(g)
             s = self.comp(g)
             self.ss.append(s)
-            ind = np.any(X, axis=1).astype(int)
+            ind = torch.any(X, axis=1).int()
             we.append(ind)
 
             dims = []
             linshidim = round(n_features_i * 0.8)
             linshidim = int(linshidim)
             dims.append(linshidim)
-            linshidim = round(min(self.n_features) * 0.8)
+            linshidim = round(min(self.n_features_) * 0.8)
             linshidim = int(linshidim)
             dims.append(linshidim)
 
@@ -64,9 +73,7 @@ class MRGCN(pl.LightningModule):
             setattr(self, f"weight{idx}", weight1)
             setattr(self, f"weight_{idx}", weight_1)
 
-        we = np.array(we, dtype='float32')
-        we = torch.tensor(we)
-        self.we = we
+        self.we = torch.stack(we).float()
 
 
     def configure_optimizers(self):
@@ -74,17 +81,7 @@ class MRGCN(pl.LightningModule):
 
 
     def training_step(self, batch, batch_idx):
-        summ = 0
-        for view_idx, view_data in batch:
-            s1,X = view_data
-            enc_1 = getattr(self, f"enc{view_idx}_1")
-            enc_2 = getattr(self, f"enc{view_idx}_2")
-            output_1 = torch.tanh(enc_1(torch.matmul(s1, X)))
-            output_2 = torch.tanh(enc_2(torch.matmul(s1, output_1)))
-            summ += torch.diag(self.we[:, 0]).mm(output_2)
-
-        wei = 1 / torch.sum(self.we, 1)
-        z = torch.diag(wei).mm(summ)
+        z = self.embedding(batch=batch)
         loss_x = 0
         loss_a = 0
         for view_idx in range(self.n_views_):
@@ -121,30 +118,27 @@ class MRGCN(pl.LightningModule):
 
 
     def predict_step(self, batch, batch_idx, dataloader_idx: int = 0):
-        summ = 0
-        for view_idx, view_data in batch:
-            s1,X = view_data
-            enc_1 = getattr(self, f"enc{view_idx}_1")
-            enc_2 = getattr(self, f"enc{view_idx}_2")
-            output_1 = torch.tanh(enc_1(torch.matmul(s1, X)))
-            output_2 = torch.tanh(enc_2(torch.matmul(s1, output_1)))
-            summ += torch.diag(self.we[:, 0]).mm(output_2)
-
-        wei = 1 / torch.sum(self.we, 1)
-        z = torch.diag(wei).mm(summ)
-        pred = self.kmeans.predict(z.detach().numpy())
+        z = self.embedding(batch=batch)
+        z = z.detach().numpy()
+        pred = self.kmeans.predict(z)
         return pred
+
+
+    def on_fit_end(self):
+        z = self.embedding(batch=self.data)
+        z = z.detach().numpy()
+        self.kmeans.fit(z)
 
 
     @staticmethod
     def get_kNNgraph2(data, K_num):
         # each row of data is a sample
 
-        x_norm = np.reshape(np.sum(np.square(data), 1), [-1, 1])  # column vector
-        x_norm2 = np.reshape(np.sum(np.square(data), 1), [1, -1])  # column vector
+        x_norm = np.reshape(torch.sum(np.square(data), 1), [-1, 1])  # column vector
+        x_norm2 = np.reshape(torch.sum(np.square(data), 1), [1, -1])  # column vector
         dists = x_norm - 2 * np.matmul(data, np.transpose(data)) + x_norm2
         num_sample = data.shape[0]
-        graph = np.zeros((num_sample, num_sample), dtype=np.int_)
+        graph = torch.zeros((num_sample, num_sample))
         for i in range(num_sample):
             distance = dists[i, :]
             small_index = np.argsort(distance)
@@ -167,5 +161,15 @@ class MRGCN(pl.LightningModule):
         return s
 
 
-    def fit_kmeans(self, X):
-        self.kmeans.fit(X)
+    def embedding(self, batch):
+        summ = 0
+        for view_idx, view_data in enumerate(batch):
+            enc_1 = getattr(self, f"enc{view_idx}_1")
+            enc_2 = getattr(self, f"enc{view_idx}_2")
+            output_1 = torch.tanh(enc_1(torch.matmul(self.ss[view_idx], view_data)))
+            output_2 = torch.tanh(enc_2(torch.matmul(self.ss[view_idx], output_1)))
+            summ += torch.diag(self.we[view_idx, :]).mm(output_2)
+
+        wei = 1 / torch.sum(self.we, 0)
+        z = torch.diag(wei).mm(summ).detach().numpy()
+        return z
