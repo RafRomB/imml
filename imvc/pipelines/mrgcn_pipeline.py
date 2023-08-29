@@ -1,11 +1,12 @@
+import torch
 from sklearn.cluster import KMeans
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, FunctionTransformer
 
-from ..transformers import FillMissingViews, SortData, ConcatenateViews, MOFA, MultiViewTransformer
-from ..pipelines import BasePipeline
+from imvc.pipelines import BasePipeline
+from imvc.transformers import SortData, FillMissingViews, MultiViewTransformer
 
 
-class MOFAPipeline(BasePipeline):
+class DeepMFPipeline(BasePipeline):
     r"""
     Sort the dataset, fill in all the missing samples with the average features for each modality and use MOFA for data
     integration. The projected data are imputted with the mean values of each feature, stardardized and clustered
@@ -40,9 +41,7 @@ class MOFAPipeline(BasePipeline):
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
         transformers = [SortData(), FillMissingViews(value="nan"),
-                        MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas')),
-                        MOFA(random_state=random_state).set_output(transform='pandas'),
-                        ConcatenateViews(),
-                        StandardScaler().set_output(transform='pandas')]
+                        StandardScaler().set_output(transform='pandas'),
+                        MultiViewTransformer(FunctionTransformer(lambda x: torch.from_numpy(x.values).float()))]
         super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose,
                          n_clusters=n_clusters, random_state=random_state, **args)

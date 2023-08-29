@@ -33,8 +33,18 @@ class DeepMFPipeline(BasePipeline):
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.pipelines import MOFAPipeline
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> pipeline = MOFAPipeline(n_clusters = 3).fit(Xs)
-    >>> labels = pipeline.fit_predict(Xs)
+# pipeline = DeepMFPipeline(n_clusters=3)
+# X = pipeline[:-3].fit_transform(Xs)
+# X = torch.from_numpy(X.values)
+#
+# train_data = DeepMFDataset(X= X)
+# train_dataloader = DataLoader(dataset= train_data, batch_size= 50, shuffle=True)
+#
+# trainer = Trainer(max_epochs=10, logger=False, enable_checkpointing=False)
+# model = DeepMF(X=X)
+# trainer.fit(model, train_dataloader)
+# preds = trainer.predict(model, train_dataloader)
+# preds = pipeline[-3:].fit_predict(preds)
     """
 
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
