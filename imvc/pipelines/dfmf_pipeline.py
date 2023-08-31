@@ -1,8 +1,8 @@
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-from imvc.pipelines import BasePipeline
-from imvc.transformers import SortData, FillMissingViews, MultiViewTransformer, DFMF
+from . import BasePipeline
+from ..transformers import SortData, FillMissingViews, MultiViewTransformer, DFMF
 
 
 class DFMFPipeline(BasePipeline):
@@ -39,9 +39,8 @@ class DFMFPipeline(BasePipeline):
 
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
-        transformers = [SortData(), FillMissingViews(value="nan"),
+        transformers = [SortData(), FillMissingViews(value="mean"),
                         MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas')),
-                        # DFMF(),
                         DFMF().set_output(transform='pandas'),
                         StandardScaler().set_output(transform='pandas')]
         super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose,

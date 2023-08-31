@@ -2,8 +2,8 @@ from sklearn.impute import SimpleImputer
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
-from ..pipelines import MultiViewPipeline
-from ..transformers import AddMissingViews, SortData
+from . import MultiViewPipeline
+from ..transformers import AddMissingViews
 
 
 class MSVPipeline(MultiViewPipeline):

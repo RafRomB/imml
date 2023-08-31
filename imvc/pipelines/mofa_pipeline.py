@@ -2,7 +2,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 from ..transformers import FillMissingViews, SortData, ConcatenateViews, MOFA, MultiViewTransformer
-from ..pipelines import BasePipeline
+from . import BasePipeline
 
 
 class MOFAPipeline(BasePipeline):
@@ -39,7 +39,7 @@ class MOFAPipeline(BasePipeline):
 
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
-        transformers = [SortData(), FillMissingViews(value="nan"),
+        transformers = [SortData(), FillMissingViews(value="mean"),
                         MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas')),
                         MOFA(random_state=random_state).set_output(transform='pandas'),
                         ConcatenateViews(),

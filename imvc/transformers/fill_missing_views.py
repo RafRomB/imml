@@ -8,7 +8,6 @@ from ..utils import DatasetUtils, check_Xs
 class FillMissingViews(BaseEstimator, TransformerMixin):
     r"""
     Fill missing samples in different views of a dataset using a specified method.
-
     Parameters
     ----------
     value : str, optional (default='mean')
@@ -16,16 +15,13 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
         - 'mean': replace missing samples with the mean of each feature in the corresponding view
         - 'zeros': replace missing samples with zeros
         - 'nan': replace missing samples with NaN
-
     Attributes
     ----------
     features_view_mean_list_ : array-like of shape (n_views,)
         The mean value of each feature in the corresponding view, if value='mean'
-
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
     >>> from imvc.transformers import FillMissingViews
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = FillMissingViews(value = 'mean')
@@ -44,7 +40,6 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
     def fit(self, Xs, y=None):
         r"""
         Fit the transformer to the input data.
-
         Parameters
         ----------
         Xs : list of array-likes
@@ -53,7 +48,6 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
             A list of different views.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
-
         Returns
         -------
         self :  returns and instance of self.
@@ -70,14 +64,12 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
     def transform(self, Xs):
         r"""
         Transform the input data by filling missing samples.
-
         Parameters
         ----------
         Xs : list of array-likes
             - Xs length: n_views
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
-
         Returns
         -------
         transformed_Xs : list of array-likes, shape (n_samples, n_features)

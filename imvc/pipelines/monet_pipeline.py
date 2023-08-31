@@ -1,8 +1,8 @@
 from sklearn.preprocessing import StandardScaler
 
-from ..pipelines import BasePipeline
+from . import BasePipeline
 from ..algorithms import MONET
-from ..transformers import MultiViewTransformer, SortData, FillMissingViews
+from ..transformers import MultiViewTransformer, SortData
 
 
 class MONETPipeline(BasePipeline):

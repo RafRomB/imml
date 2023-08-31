@@ -21,7 +21,7 @@ from imvc.utils.utils import BugInMONET
 from utils.utils import save_record
 
 random_state = 0
-START_BENCHMARKING = True
+START_BENCHMARKING = False
 folder_name = "results"
 filelame = "incomplete_algorithms_evaluation.csv"
 file_path = os.path.join(folder_name, filelame)
@@ -34,11 +34,11 @@ probs = np.arange(0., 1., step= 0.1).round(1)
 algorithms = {
     "MOFA": {"alg": MOFAPipeline, "params": {}},
     "MONET": {"alg": MONETPipeline, "params": {"n_jobs":8}},
-    "DFMF": {"alg": DFMFPipeline, "params": {"n_jobs":8}},
+    "DFMF": {"alg": DFMFPipeline, "params": {}},
     "MSNE": {"alg": MSNEPipeline, "params": {"n_jobs":8}},
-    "SUMO": {"alg": SUMOPipeline, "params": {}},
+    "SUMO": {"alg": SUMOPipeline, "params": {"sumo__neighbours": 0.1}},
     "NEMO": {"alg": NEMOPipeline, "params": {}},
-    "DeepMF": {"alg": DeepMFPipeline, "params": {"max_epochs":10}},
+    # "DeepMF": {"alg": DeepMFPipeline, "params": {"max_epochs":10}},
 }
 runs_per_alg = np.arange(10).tolist()
 
@@ -55,7 +55,7 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
 
     if not START_BENCHMARKING:
         checking_results = ((results["alg"] == alg_name) & (results["dataset"] == dataset_name)
-                            & (results["missing_percentage"] == int(100*p)) & (results["execution"] == i))
+                            & (results["% incomplete samples"] == int(100*p)) & (results["execution"] == i))
         if not results[checking_results].empty:
             continue
 
@@ -77,7 +77,6 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
 
     else:
         model = alg(n_clusters=n_clusters, random_state = random_state + i, **params)
-    model.estimator = model.estimator.set_params(verbose=False)
     errors_dict = defaultdict(int)
     while True:
         try:
@@ -99,10 +98,8 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
     if sum(errors_dict.values()) == 100:
         continue
     elapsed_time = time.perf_counter() - start_time
-    if alg_name in ["MOFA", "Concat"]:
+    if alg_name in ["MOFA", "DFMF"]:
         X = make_pipeline(*model.transformers).transform(incomplete_Xs)
-    elif alg_name in ["NMFC"]:
-        X = model.transform(incomplete_Xs)
     elif alg_name in ["DeepMF"]:
         continue
     else:

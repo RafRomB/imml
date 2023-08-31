@@ -1,6 +1,5 @@
 import numpy as np
 import torch
-from sklearn.cluster import KMeans
 from torch import nn
 import lightning.pytorch as pl
 from torch.nn import functional as F

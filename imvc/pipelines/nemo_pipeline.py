@@ -1,7 +1,7 @@
 from sklearn.preprocessing import StandardScaler
 
 from ..algorithms import NEMO
-from ..pipelines import BasePipeline
+from . import BasePipeline
 from ..transformers import SortData, MultiViewTransformer
 
 

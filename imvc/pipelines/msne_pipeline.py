@@ -1,7 +1,7 @@
 from sklearn.preprocessing import StandardScaler
 
 from ..algorithms import MSNE
-from ..pipelines import BasePipeline
+from . import BasePipeline
 from ..transformers import SortData, MultiViewTransformer, FillMissingViews
 
 
@@ -41,7 +41,7 @@ class MSNEPipeline(BasePipeline):
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None,
                  n_jobs: int = 1, **args):
         estimator = MSNE(n_clusters=n_clusters, random_state=random_state, n_jobs=n_jobs)
-        transformers = [SortData(), FillMissingViews(value="nan"),
+        transformers = [SortData(), FillMissingViews(value="mean"),
                         MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas'))]
         super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose,
                          n_clusters=n_clusters, random_state=random_state, **args)
