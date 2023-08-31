@@ -1,4 +1,4 @@
-from ..pipelines import BasePipeline
+from . import BasePipeline
 from ..transformers import ConvertToNM, FillMissingViews, MultiViewTransformer, ConcatenateViews, SortData
 from ..algorithms import NMFC
 

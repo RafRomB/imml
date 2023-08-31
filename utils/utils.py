@@ -42,7 +42,7 @@ def save_record(labels_pred, y, X, random_state, alg_name, dataset_name, p, elap
         "percentage_clustered_samples": 100*mask.sum() // len(X),
     }
 
-    if alg_name == "MONET":
+    if not all(mask):
         X = X.iloc[mask]
         labels_true = y[mask]
         labels_pred = clusters[mask].astype(int)
@@ -54,12 +54,15 @@ def save_record(labels_pred, y, X, random_state, alg_name, dataset_name, p, elap
             "ari": metrics.adjusted_rand_score(labels_true=labels_true, labels_pred=labels_pred),
             "completeness": metrics.completeness_score(labels_true=labels_true, labels_pred=labels_pred),
         }
-        unsupervised_metrics = {
-            "silhouette": metrics.silhouette_score(X=X, labels=labels_pred, random_state=random_state),
-            "vrc": metrics.calinski_harabasz_score(X=X, labels=labels_pred),
-            "db": metrics.davies_bouldin_score(X=X, labels=labels_pred),
-            "dunn": dunn(dist=metrics.pairwise_distances(X), labels=labels_pred),
-        }
+        if len(np.unique(labels_pred)) == 1:
+            unsupervised_metrics = {"silhouette": np.nan, "vrc": np.nan, "db": np.nan, "dunn": np.nan}
+        else:
+            unsupervised_metrics = {
+                "silhouette": metrics.silhouette_score(X=X, labels=labels_pred, random_state=random_state),
+                "vrc": metrics.calinski_harabasz_score(X=X, labels=labels_pred),
+                "db": metrics.davies_bouldin_score(X=X, labels=labels_pred),
+                "dunn": dunn(dist=metrics.pairwise_distances(X), labels=labels_pred),
+            }
         dict_subresults = {
             **supervised_metrics,
             **unsupervised_metrics,

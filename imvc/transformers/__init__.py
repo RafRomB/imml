@@ -6,4 +6,5 @@ from .fill_missing_views import FillMissingViews
 from .deepmf import DeepMF
 from .mofa import MOFA
 from .dfmf import DFMF
+from .select_complete_samples import SelectCompleteSamples, select_complete_samples
 

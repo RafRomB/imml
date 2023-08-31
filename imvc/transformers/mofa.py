@@ -123,7 +123,8 @@ class MOFA:
             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
                 self._run_mofa(data = [[view] for view in Xs])
         outfile = "tmp.hdf5"
-        self.mofa_.save(outfile=outfile, save_data=True, save_parameters=False, expectations=None)
+        with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
+            self.mofa_.save(outfile=outfile, save_data=True, save_parameters=False, expectations=None)
         model = mfx.mofa_model(outfile)
         self.weights_ = model.get_weights(concatenate_views= False)
         self.factors_ = model.get_factors(concatenate_groups= False)
