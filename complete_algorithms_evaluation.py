@@ -1,6 +1,7 @@
 import os.path
 import time
 from collections import defaultdict
+import argparse
 import numpy as np
 import pandas as pd
 from datetime import datetime
@@ -27,7 +28,10 @@ logs_file = os.path.join(folder_name, 'logs.txt')
 error_file = os.path.join(folder_name, 'error.txt')
 
 random_state = 42
-START_BENCHMARKING = False
+
+parser = argparse.ArgumentParser()
+parser.add_argument('start_benchmarking', default= False, type= bool)
+args = parser.parse_args()
 
 datasets = ["nutrimouse_genotype", "nutrimouse_diet", "bbcsport", "bdgp", "caltech101", "digits", "tcga_tissue", "tcga_survival", "nuswide", "metabric"]
 probs = np.arange(100, step= 10)
@@ -59,7 +63,7 @@ indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()),
                    "missing_percentage": probs, "imputation": imputation, "run_n": runs_per_alg}
 
 
-if START_BENCHMARKING:
+if args.start_benchmarking:
     results = pd.DataFrame(datasets, columns= ["dataset"])
     for k,v in {k:v for k,v in indexes_results.items() if k != "dataset"}.items():
         results = results.merge(pd.Series(v, name= k), how= "cross")
