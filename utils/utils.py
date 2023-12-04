@@ -134,6 +134,8 @@ def get_supervised_metrics(y_true, y_pred):
 
 def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, file_path, logs_file, error_file):
     row = results.loc[[idx]]
+    with open(logs_file, "a") as f:
+        f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {datetime.now()}')
     row_index = row.index
     alg_name, impute, p, run_n = (
         row_index.get_level_values("algorithm")[0],
@@ -141,8 +143,6 @@ def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, fil
         row_index.get_level_values("missing_percentage")[0] / 100,
         row_index.get_level_values("run_n")[0])
 
-    with open(logs_file, "w") as f:
-        f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t datetime.now()')
     alg = algorithms[alg_name]
     train_Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state + run_n)
     y_train = y.loc[train_Xs[0].index]
@@ -154,7 +154,7 @@ def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, fil
             errors_dict[f"{type(exception).__name__}: {exception}; n_clusters < len(train_Xs[0]) * (1-p)"] += 1
             results.loc[idx, ["finished", "comments"]] = True, dict(errors_dict)
             results.to_csv(file_path)
-            with open(error_file, "w") as f:
+            with open(error_file, "a") as f:
                 f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
             return results.loc[idx]
         try:
@@ -171,7 +171,7 @@ def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, fil
             except Exception as exception:
                 errors_dict[f"{type(exception).__name__}: {exception}"] += 1
                 results.loc[idx, ["finished", "comments"]] = True, dict(errors_dict)
-                with open(error_file, "w") as f:
+                with open(error_file, "a") as f:
                     f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
                 results.to_csv(file_path)
                 return results.loc[idx]
@@ -238,7 +238,7 @@ def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, fil
     if exceptions:
         results.loc[idx, ["finished", "comments"]] = True, dict(errors_dict)
         results.to_csv(file_path)
-        with open(error_file, "w") as f:
+        with open(error_file, "a") as f:
             f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
         return results.loc[idx]
 
