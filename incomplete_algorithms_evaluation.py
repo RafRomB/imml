@@ -59,8 +59,8 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
         if not results[checking_results].empty:
             continue
 
-    incomplete_Xs = DatasetUtils.convert_mvd_into_imvd(Xs=Xs, p=p, assess_percentage = True,
-                                                       random_state = random_state + i)
+    incomplete_Xs = DatasetUtils.add_random_noise_to_views(Xs=Xs, p=p, assess_percentage = True,
+                                                           random_state = random_state + i)
     print(f"Algorithm: {alg_name} \t Dataset: {dataset_name} \t Missing: {p} \t Iteration: {i}")
     if alg_name == "MONET":
         model = alg(random_state = random_state + i, **params)
@@ -111,7 +111,7 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
     labels_pred = pd.factorize(labels_pred)[0]
     random_preds = [pd.Series(y).value_counts().index[0]] * len(y)
 
-    dict_results = save_record(labels_pred=labels_pred, y=y, X=X, random_state=random_state, alg_name=alg_name,
+    dict_results = save_record(clusters_excluding_missing=labels_pred, y=y, X=X, random_state=random_state, alg_name=alg_name,
                                dataset_name=dataset_name, p=p, elapsed_time=elapsed_time, i=i, random_preds=random_preds,
                                clusters=clusters, mask=mask, errors_dict=errors_dict)
 
