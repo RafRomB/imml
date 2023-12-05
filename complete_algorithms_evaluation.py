@@ -1,25 +1,18 @@
 import os.path
-import time
-from collections import defaultdict
 import argparse
 import numpy as np
 import pandas as pd
-from datetime import datetime
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
-from sklearn.cluster import KMeans, spectral_clustering
+from sklearn.cluster import KMeans
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from snf import compute
-from bignmf.models.jnmf.integrative import IntegrativeJnmf
-from bignmf.models.jnmf.standard import StandardJnmf
 from imvc.datasets import LoadDataset
-from imvc.utils import DatasetUtils
 from imvc.transformers import MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
 
-from utils import save_record, run_iteration
+from utils import Utils
+
 
 folder_name = "results"
 filelame = "complete_algorithms_evaluation.csv"
@@ -30,7 +23,7 @@ error_file = os.path.join(folder_name, 'error.txt')
 random_state = 42
 
 parser = argparse.ArgumentParser()
-parser.add_argument('start_benchmarking', default= False, type= bool)
+parser.add_argument('-continue_benchmarking', default= False, action='store_true')
 args = parser.parse_args()
 
 datasets = ["nutrimouse_genotype", "nutrimouse_diet", "bbcsport", "bdgp", "caltech101", "digits", "tcga_tissue", "tcga_survival", "nuswide", "metabric"]
@@ -62,8 +55,7 @@ algorithms = {
 indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()),
                    "missing_percentage": probs, "imputation": imputation, "run_n": runs_per_alg}
 
-
-if args.start_benchmarking:
+if not args.continue_benchmarking:
     results = pd.DataFrame(datasets, columns= ["dataset"])
     for k,v in {k:v for k,v in indexes_results.items() if k != "dataset"}.items():
         results = results.merge(pd.Series(v, name= k), how= "cross")
@@ -75,6 +67,8 @@ else:
     for col in results_.columns:
         results[col] = results_[col].apply(eval)
         
+    os.remove(logs_file) if os.path.exists(logs_file) else None
+    os.remove(error_file) if os.path.exists(error_file) else None
     open(logs_file, 'w').close()
     open(error_file, 'w').close()
 
@@ -82,12 +76,24 @@ unfinished_results = results.loc[~results["finished"]]
 
 for dataset_name in unfinished_results.index.get_level_values("dataset").unique():
     names = dataset_name.split("_")
-    x_name,y_name = names if len(names) >1 else (names[0],"0")
+    x_name,y_name = names if len(names) > 1 else (names[0], "0")
     Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle= False)
     y = y[y_name]
     n_clusters = y.nunique()
 
-    iterator = pd.Series(unfinished_results.loc[unfinished_results.index.get_level_values("dataset") == dataset_name].index.to_list())
-    iterator.apply(lambda x: run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
-                                           algorithms=algorithms, random_state=random_state, file_path=file_path,
-                                           logs_file=logs_file, error_file=error_file))
+    iterator = pd.Series(unfinished_results.loc[[dataset_name]].index.to_list())
+    iterator.apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
+                                                 algorithms=algorithms, random_state=random_state, file_path=file_path,
+                                                 logs_file=logs_file, error_file=error_file))
+
+    # unfinished_results_dataset = unfinished_results.loc[[dataset_name]]
+    # unfinished_results_dataset_idx = unfinished_results_dataset.xs(0, level=2, drop_level=False).index
+    # iterator = pd.Series(unfinished_results_dataset_idx.to_list())
+    # iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
+    #                                              algorithms=algorithms, random_state=random_state, file_path=file_path,
+    #                                              logs_file=logs_file, error_file=error_file))
+    # unfinished_results_dataset_idx = unfinished_results_dataset.drop(unfinished_results_dataset_idx).index
+    # iterator = pd.Series(unfinished_results_dataset_idx.to_list())
+    # iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
+    #                                              algorithms=algorithms, random_state=random_state, file_path=file_path,
+    #                                              logs_file=logs_file, error_file=error_file))
