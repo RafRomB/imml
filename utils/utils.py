@@ -197,28 +197,12 @@ class Utils:
         assert y_true.index.equals(y_pred.index)
         supervised_metrics = Utils.compute_supervised_metrics(y_true=y_true, y_pred=y_pred)
         if p > 0:
-            xp_supervised_metrics = {k:v*p for k,v in supervised_metrics.items()}
-            xp_supervised_metrics = {f"{key}_allsamplesxp": value for key, value in xp_supervised_metrics.items()}
-
             best_solution_local = best_solution.loc[y_pred.index]
             assert best_solution_local.index.equals(y_pred.index)
             performance_metrics = Utils.compute_supervised_metrics(y_true=best_solution_local, y_pred=y_pred)
             performance_metrics = {f"{key}_performance": value for key, value in performance_metrics.items()}
 
-            y_pred_artificial = pd.Series(np.arange(len(best_solution)), index= best_solution.index)
-            y_pred_artificial += 5000
-            y_pred_artificial.loc[y_pred.index] = y_pred
-
-            assert y_true_total.index.equals(y_pred_artificial.index)
-            artificial_supervised_metrics = Utils.compute_supervised_metrics(y_true=y_true_total, y_pred=y_pred_artificial)
-            artificial_supervised_metrics = {f"{key}_artificial": value for key, value in artificial_supervised_metrics.items()}
-
-            assert best_solution.index.equals(y_pred_artificial.index)
-            artificial_performance_metrics = Utils.compute_supervised_metrics(y_true=best_solution, y_pred=y_pred_artificial)
-            artificial_performance_metrics = {f"{key}_artificial_performance": value for key, value in artificial_performance_metrics.items()}
-
-            supervised_metrics = {**supervised_metrics, **xp_supervised_metrics, **performance_metrics,
-                                  **artificial_supervised_metrics, **artificial_performance_metrics}
+            supervised_metrics = {**supervised_metrics, **performance_metrics}
 
         unsupervised_metrics = Utils.compute_unsupervised_metrics(X=X, y_pred=y_pred, random_state=random_state)
         summary_dict = {

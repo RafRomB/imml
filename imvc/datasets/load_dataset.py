@@ -409,16 +409,13 @@ class LoadDataset:
         data_files = [filename for filename in os.listdir(data_path)]
         data_files = sorted(data_files)
         data_files = [os.path.join(data_path, filename) for filename in data_files if dataset_name in filename and not filename.endswith("y.csv")]
-        if dataset_name in ["tcga"]:
-            Xs = [pd.read_csv(filename, index_col= 0) for filename in data_files]
-        else:
-            Xs = [pd.read_csv(filename) for filename in data_files]
+        Xs = [pd.read_csv(filename) for filename in data_files]
         # Xs = DatasetUtils.add_random_noise_to_views(Xs=Xs, p=p, assess_percentage=assess_percentage, random_state=random_state)
         if shuffle:
             Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state)
         output = (Xs,)
         if return_y:
-            y = pd.read_csv(os.path.join(data_path, f"{dataset_name}_y.csv"), index_col= 0)
+            y = pd.read_csv(os.path.join(data_path, f"{dataset_name}_y.csv"))
             y = y.loc[Xs[0].index]
             if y.shape[1] > 1:
                 y = y.squeeze()
