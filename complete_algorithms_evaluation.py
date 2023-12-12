@@ -15,11 +15,11 @@ from imvc.algorithms import NMFC
 from utils import Utils
 
 
-folder_name = "results"
+folder_results = "results"
 filelame = "complete_algorithms_evaluation.csv"
-file_path = os.path.join(folder_name, filelame)
-logs_file = os.path.join(folder_name, 'logs.txt')
-error_file = os.path.join(folder_name, 'error.txt')
+file_path = os.path.join(folder_results, filelame)
+logs_file = os.path.join(folder_results, 'logs.txt')
+error_file = os.path.join(folder_results, 'error.txt')
 
 random_state = 42
 
@@ -78,6 +78,9 @@ if not args.continue_benchmarking:
     for k,v in {k:v for k,v in indexes_results.items() if k != "dataset"}.items():
         results = results.merge(pd.Series(v, name= k), how= "cross")
     results = results.set_index(list(indexes_results.keys()))
+    idx_to_drop = results.xs(0, level="missing_percentage",
+                             drop_level=False).xs(True, level="imputation", drop_level=False).index
+    results = results.drop(idx_to_drop)
     results[["finished", "completed"]] = False
 
     os.remove(logs_file) if os.path.exists(logs_file) else None
@@ -86,7 +89,8 @@ if not args.continue_benchmarking:
     open(error_file, 'w').close()
 else:
     results = pd.read_csv(file_path, index_col= list(indexes_results.keys()))
-    results_ = results.select_dtypes(object).drop(columns= ["comments", "stratified"]).replace(np.nan, "np.nan")
+    drop_columns = ["comments", "stratified"] if "stratified" in results.select_dtypes(object).columns else "comments"
+    results_ = results.select_dtypes(object).drop(columns= drop_columns).replace(np.nan, "np.nan")
     for col in results_.columns:
         results[col] = results_[col].apply(eval)
 
@@ -103,18 +107,26 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
 
     if args.n_jobs == 1:
         iterator = pd.Series(unfinished_results.loc[[dataset_name]].index.to_list())
-        iterator.apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
-                                                     algorithms=algorithms, random_state=random_state, file_path=file_path,
+        iterator.apply(lambda x: Utils.safe_run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
+                                                     algorithms=algorithms, random_state=random_state, folder_results=folder_results,
                                                      logs_file=logs_file, error_file=error_file))
     else:
         unfinished_results_dataset = unfinished_results.loc[[dataset_name]]
-        unfinished_results_dataset_idx = unfinished_results_dataset.xs(0, level=2, drop_level=False).index
-        iterator = pd.Series(unfinished_results_dataset_idx.to_list())
-        iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
-                                                     algorithms=algorithms, random_state=random_state, file_path=file_path,
-                                                     logs_file=logs_file, error_file=error_file))
+        unfinished_results_dataset_idx = unfinished_results_dataset.xs(0, level="missing_percentage", drop_level=False).index
+        iterator = pd.DataFrame(unfinished_results_dataset_idx.to_list(), columns= list(indexes_results.keys()))
+        iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+                                                                            n_clusters=n_clusters,
+                                                                            algorithms=algorithms,
+                                                                            random_state=random_state,
+                                                                            folder_results=folder_results,
+                                                                            logs_file=logs_file,
+                                                                            error_file=error_file), axis= 1)
         unfinished_results_dataset_idx = unfinished_results_dataset.drop(unfinished_results_dataset_idx).index
-        iterator = pd.Series(unfinished_results_dataset_idx.to_list())
-        iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
-                                                     algorithms=algorithms, random_state=random_state, file_path=file_path,
-                                                     logs_file=logs_file, error_file=error_file))
+        iterator = pd.DataFrame(unfinished_results_dataset_idx.to_list(), columns= list(indexes_results.keys()))
+        iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+                                                                            n_clusters=n_clusters,
+                                                                            algorithms=algorithms,
+                                                                            random_state=random_state,
+                                                                            folder_results=folder_results,
+                                                                            logs_file=logs_file,
+                                                                            error_file=error_file), axis= 1)

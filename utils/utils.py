@@ -1,3 +1,4 @@
+import os
 import time
 from collections import defaultdict
 from datetime import datetime
@@ -22,60 +23,65 @@ class Utils:
 
 
     @staticmethod
-    def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, file_path, logs_file, error_file):
-        row = results.loc[[idx]]
-        with open(logs_file, "a") as f:
-            f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {datetime.now()}')
-        row_index = row.index
-        alg_name, impute, p, run_n = (
-            row_index.get_level_values("algorithm")[0],
-            row_index.get_level_values("imputation")[0],
-            row_index.get_level_values("missing_percentage")[0] / 100,
-            row_index.get_level_values("run_n")[0])
+    def safe_run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, file_path, logs_file, error_file):
+        print("before", results.shape)
+        try:
+            return Utils.run_iteration(idx=idx, results=results, Xs=Xs, y=y, n_clusters=n_clusters,
+                                      algorithms=algorithms, random_state=random_state, file_path=file_path,
+                                      logs_file=logs_file, error_file=error_file)
+        except KeyboardInterrupt:
+            print("after error", results.shape)
+            results.to_csv(file_path)
+            print("saved_file")
 
-        alg = algorithms[alg_name]
-        train_Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state + run_n)
-        y_train = y.loc[train_Xs[0].index]
+
+
+    @staticmethod
+    def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, folder_results, logs_file, error_file):
         errors_dict = defaultdict(int)
-        if p != 0:
-            try:
-                assert n_clusters < len(train_Xs[0]) * (1-p)
-            except AssertionError as exception:
-                errors_dict[f"{type(exception).__name__}: {exception}; n_clusters < len(train_Xs[0]) * (1-p)"] += 1
-                results.loc[idx, ["finished", "comments"]] = True, dict(errors_dict)
-                results.to_csv(file_path)
-                with open(error_file, "a") as f:
-                    f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
-                return results.loc[idx]
-            try:
-                train_Xs = DatasetUtils.add_random_noise_to_views(Xs=train_Xs, p=round(p, 2),
-                                                                  random_state=random_state + run_n,
-                                                                  assess_percentage=True, stratify=y_train)
-                strat = True
-            except ValueError:
+        row = results.loc[[idx]]
+        try:
+            with open(logs_file, "a") as f:
+                f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {datetime.now()}')
+            row_index = row.index
+            alg_name, impute, p, run_n = (
+                row_index.get_level_values("algorithm")[0],
+                row_index.get_level_values("imputation")[0],
+                row_index.get_level_values("missing_percentage")[0] / 100,
+                row_index.get_level_values("run_n")[0])
+
+            alg = algorithms[alg_name]
+            train_Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state + run_n)
+            y_train = y.loc[train_Xs[0].index]
+            if p != 0:
                 try:
+                    assert n_clusters < len(train_Xs[0]) * (1-p)
+                except AssertionError as exception:
+                    raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
+                    # errors_dict[f"{type(exception).__name__}: {exception}; n_clusters < len(train_Xs[0]) * (1-p)"] += 1
+                    # row[["finished", "comments"]] = True, dict(errors_dict)
+                    # with open(error_file, "a") as f:
+                    #     f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
+                try:
+                    train_Xs = DatasetUtils.add_random_noise_to_views(Xs=train_Xs, p=round(p, 2),
+                                                                      random_state=random_state + run_n,
+                                                                      assess_percentage=True, stratify=y_train)
+                    strat = True
+                except ValueError:
                     train_Xs = DatasetUtils.add_random_noise_to_views(Xs=train_Xs, p=round(p, 2),
                                                                       random_state=random_state + run_n,
                                                                       assess_percentage=True)
                     strat = False
-                except Exception as exception:
-                    errors_dict[f"{type(exception).__name__}: {exception}"] += 1
-                    results.loc[idx, ["finished", "comments"]] = True, dict(errors_dict)
-                    with open(error_file, "a") as f:
-                        f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
-                    results.to_csv(file_path)
-                    return results.loc[idx]
-        else:
-            strat = False
+            else:
+                strat = False
 
-        if impute:
-            train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(transform="pandas")).fit_transform(
-                train_Xs)
-        else:
-            train_Xs = DatasetUtils.select_complete_samples(Xs=train_Xs)
-            y_train = y_train.loc[train_Xs[0].index]
+            if impute:
+                train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(transform="pandas")).fit_transform(
+                    train_Xs)
+            else:
+                train_Xs = DatasetUtils.select_complete_samples(Xs=train_Xs)
+                y_train = y_train.loc[train_Xs[0].index]
 
-        try:
             start_time = time.perf_counter()
             if alg_name == "SNF":
                 preprocessing_step = MultiViewTransformer(StandardScaler().set_output(transform="pandas"))
@@ -109,54 +115,59 @@ class Utils:
                 else:
                     model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
                 clusters = model.fit_predict(train_Xs)
-        except ValueError as exception:
+
+            clusters = pd.Series(clusters, index=y_train.index)
+
+            elapsed_time = time.perf_counter() - start_time
+
+            if alg_name in ["NMFC"]:
+                train_X = model.transform(train_Xs)
+            elif alg_name in ["SNF"]:
+                train_X = preprocessing_step.transform(train_Xs)
+            elif alg_name in ["intNMF", "jNMF"]:
+                train_X = model.w
+            else:
+                train_X = model[:-1].transform(train_Xs)
+            if isinstance(train_X, list):
+                train_X = ConcatenateViews().fit_transform(train_X)
+            if not isinstance(train_X, pd.DataFrame):
+                train_X = pd.DataFrame(train_X, index=y_train.index)
+
+            assert train_X.index.equals(y_train.index)
+            assert train_Xs[0].index.equals(y_train.index)
+
+            if p > 0:
+                multiidx = []
+                for level in row_index.names:
+                    if level == "missing_percentage":
+                        multiidx_value = 0
+                    elif level == "imputation":
+                        multiidx_value = False
+                    else:
+                        multiidx_value = row_index.get_level_values(level=level)[0]
+                    multiidx.append([multiidx_value])
+                best_solution = pd.MultiIndex.from_arrays(multiidx, names=row_index.names)
+                best_solution = results.loc[best_solution].iloc[0]
+                y_train_total = pd.Series(best_solution["y_true"], index=best_solution["y_pred_idx"])
+                best_solution = pd.Series(best_solution["y_pred"], index=best_solution["y_pred_idx"])
+            else:
+                best_solution = None
+                y_train_total = None
+
+            dict_results = Utils.save_record(train_Xs=train_Xs, train_X=train_X, clusters=clusters, y=y_train, p=p, y_true_total=y_train_total,
+                                       best_solution=best_solution, elapsed_time=elapsed_time, strat=strat,
+                                       random_state=random_state, errors_dict=errors_dict)
+            dict_results = pd.DataFrame(pd.Series(dict_results), columns=row_index).T
+            row[dict_results.columns] = dict_results
+            row[["finished", "completed"]] = True
+        except Exception as exception:
             errors_dict[f"{type(exception).__name__}: {exception}"] += 1
-            results.loc[idx, ["finished", "comments"]] = True, dict(errors_dict)
-            results.to_csv(file_path)
+            row[["finished", "comments"]] = True, dict(errors_dict)
             with open(error_file, "a") as f:
                 f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
-            return results.loc[idx]
 
-        clusters = pd.Series(clusters, index=y_train.index)
-
-        elapsed_time = time.perf_counter() - start_time
-
-        if alg_name in ["NMFC"]:
-            train_X = model.transform(train_Xs)
-        elif alg_name in ["SNF"]:
-            train_X = preprocessing_step.transform(train_Xs)
-        elif alg_name in ["intNMF", "jNMF"]:
-            train_X = model.w
-        else:
-            train_X = model[:-1].transform(train_Xs)
-        if isinstance(train_X, list):
-            train_X = ConcatenateViews().fit_transform(train_X)
-        if not isinstance(train_X, pd.DataFrame):
-            train_X = pd.DataFrame(train_X, index=y_train.index)
-
-        assert train_X.index.equals(y_train.index)
-        assert train_Xs[0].index.equals(y_train.index)
-
-        if p > 0:
-            best_solution = pd.MultiIndex.from_arrays(
-                [[row_index.get_level_values(level=level)[0]] if level != "missing_percentage" else [0]
-                 for level in row_index.names], names=row_index.names)
-            best_solution = results.loc[best_solution].iloc[0]
-            y_train_total = pd.Series(best_solution["y_true"], index=best_solution["y_pred_idx"])
-            best_solution = pd.Series(best_solution["y_pred"], index=best_solution["y_pred_idx"])
-        else:
-            best_solution = None
-            y_train_total = None
-
-        dict_results = Utils.save_record(train_Xs=train_Xs, train_X=train_X, clusters=clusters, y=y_train, p=p, y_true_total=y_train_total,
-                                   best_solution=best_solution, elapsed_time=elapsed_time, strat=strat,
-                                   random_state=random_state, errors_dict=errors_dict)
-        dict_results = pd.DataFrame(pd.Series(dict_results), columns=row_index).T
-        results.loc[[idx], dict_results.columns] = dict_results
-        results.loc[idx, ["finished", "completed"]] = True
-        results.to_csv(file_path)
-        return results.loc[idx]
-
+        row.to_csv(os.path.join(folder_results, "subresults", f"{'_'.join([str(i) for i in idx])}.csv"))
+        return row
 
     @staticmethod
     def save_record(train_Xs, train_X, clusters, y, p, best_solution, y_true_total, elapsed_time, strat, random_state, errors_dict):
