@@ -89,7 +89,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         """
         Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
         samples = DatasetUtils.get_sample_names(Xs=Xs)
-        missing_view_panel = DatasetUtils.get_missing_view_panel(Xs=Xs)
+        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
 
         if self.num_neighbors is None:
             self.num_neighbors_ = [round(len(X)/self.num_neighbors_ratio) for X in Xs]
@@ -108,7 +108,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
             sim_data += sim_data.T
             affinity_matrix.loc[sim_data.index, sim_data.columns] += sim_data
 
-        affinity_matrix /= missing_view_panel.sum(1)
+        affinity_matrix /= missing_view_profile.sum(1)
 
         self.n_clusters_ = self.n_clusters if isinstance(self.n_clusters, int) else \
             snf.get_n_clusters(arr= affinity_matrix.values, n_clusters= self.n_clusters)[0]

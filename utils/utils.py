@@ -15,7 +15,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler
 from snf import compute
 from validclust import dunn
 
-from imvc.transformers import MultiViewTransformer, ConcatenateViews
+from imvc.transformers import MultiViewTransformer, ConcatenateViews, Ampute
 from imvc.utils import DatasetUtils
 
 
@@ -23,61 +23,46 @@ class Utils:
 
 
     @staticmethod
-    def safe_run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, file_path, logs_file, error_file):
-        print("before", results.shape)
-        try:
-            return Utils.run_iteration(idx=idx, results=results, Xs=Xs, y=y, n_clusters=n_clusters,
-                                      algorithms=algorithms, random_state=random_state, file_path=file_path,
-                                      logs_file=logs_file, error_file=error_file)
-        except KeyboardInterrupt:
-            print("after error", results.shape)
-            results.to_csv(file_path)
-            print("saved_file")
-
-
-
-    @staticmethod
-    def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, folder_results, logs_file, error_file):
+    def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, subresults_path, logs_file, error_file):
         errors_dict = defaultdict(int)
         row = results.loc[[idx]]
         try:
             with open(logs_file, "a") as f:
                 f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {datetime.now()}')
             row_index = row.index
-            alg_name, impute, p, run_n = (
+            alg_name, p, amputation_mechanism, impute, run_n = (
                 row_index.get_level_values("algorithm")[0],
-                row_index.get_level_values("imputation")[0],
                 row_index.get_level_values("missing_percentage")[0] / 100,
+                row_index.get_level_values("amputation_mechanism")[0],
+                row_index.get_level_values("imputation")[0],
                 row_index.get_level_values("run_n")[0])
 
             alg = algorithms[alg_name]
             train_Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state + run_n)
             y_train = y.loc[train_Xs[0].index]
+            strat = False
             if p != 0:
-                try:
-                    assert n_clusters < len(train_Xs[0]) * (1-p)
-                except AssertionError as exception:
-                    raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
-                    # errors_dict[f"{type(exception).__name__}: {exception}; n_clusters < len(train_Xs[0]) * (1-p)"] += 1
-                    # row[["finished", "comments"]] = True, dict(errors_dict)
-                    # with open(error_file, "a") as f:
-                    #     f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
-                try:
-                    train_Xs = DatasetUtils.add_random_noise_to_views(Xs=train_Xs, p=round(p, 2),
-                                                                      random_state=random_state + run_n,
-                                                                      assess_percentage=True, stratify=y_train)
-                    strat = True
-                except ValueError:
-                    train_Xs = DatasetUtils.add_random_noise_to_views(Xs=train_Xs, p=round(p, 2),
-                                                                      random_state=random_state + run_n,
-                                                                      assess_percentage=True)
-                    strat = False
-            else:
-                strat = False
+                if amputation_mechanism == "ED":
+                    try:
+                        assert n_clusters < len(train_Xs[0]) * (1-p)
+                    except AssertionError as exception:
+                        raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
+                    amp = Ampute(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n,
+                                 assess_percentage=True, stratify=y_train)
+                    try:
+                        train_Xs = amp.fit_transform(train_Xs)
+                        strat = True
+                    except ValueError:
+                        amp = Ampute(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n,
+                                     assess_percentage=True)
+                        train_Xs = amp.fit_transform(train_Xs)
+                else:
+                    amp = Ampute(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n)
+                    train_Xs = amp.fit_transform(train_Xs)
 
             if impute:
-                train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(transform="pandas")).fit_transform(
-                    train_Xs)
+                train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(
+                    transform="pandas")).fit_transform(train_Xs)
             else:
                 train_Xs = DatasetUtils.select_complete_samples(Xs=train_Xs)
                 y_train = y_train.loc[train_Xs[0].index]
@@ -141,6 +126,8 @@ class Utils:
                 for level in row_index.names:
                     if level == "missing_percentage":
                         multiidx_value = 0
+                    elif level == "amputation_mechanism":
+                        multiidx_value = "EDM"
                     elif level == "imputation":
                         multiidx_value = False
                     else:
@@ -148,13 +135,11 @@ class Utils:
                     multiidx.append([multiidx_value])
                 best_solution = pd.MultiIndex.from_arrays(multiidx, names=row_index.names)
                 best_solution = results.loc[best_solution].iloc[0]
-                y_train_total = pd.Series(best_solution["y_true"], index=best_solution["y_pred_idx"])
                 best_solution = pd.Series(best_solution["y_pred"], index=best_solution["y_pred_idx"])
             else:
                 best_solution = None
-                y_train_total = None
 
-            dict_results = Utils.save_record(train_Xs=train_Xs, train_X=train_X, clusters=clusters, y=y_train, p=p, y_true_total=y_train_total,
+            dict_results = Utils.save_record(train_Xs=train_Xs, train_X=train_X, clusters=clusters, y=y_train, p=p,
                                        best_solution=best_solution, elapsed_time=elapsed_time, strat=strat,
                                        random_state=random_state, errors_dict=errors_dict)
             dict_results = pd.DataFrame(pd.Series(dict_results), columns=row_index).T
@@ -165,12 +150,13 @@ class Utils:
             row[["finished", "comments"]] = True, dict(errors_dict)
             with open(error_file, "a") as f:
                 f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict}')
+            # raise
 
-        row.to_csv(os.path.join(folder_results, "subresults", f"{'_'.join([str(i) for i in idx])}.csv"))
+        row.to_csv(os.path.join(subresults_path, f"{'_'.join([str(i) for i in idx])}.csv"))
         return row
 
     @staticmethod
-    def save_record(train_Xs, train_X, clusters, y, p, best_solution, y_true_total, elapsed_time, strat, random_state, errors_dict):
+    def save_record(train_Xs, train_X, clusters, y, p, best_solution, elapsed_time, strat, random_state, errors_dict):
 
         missing_clusters_mask = np.invert(np.isnan(clusters))
 
@@ -183,6 +169,7 @@ class Utils:
             "percentage_clustered_samples": 100* missing_clusters_mask.sum() // len(train_X),
             "comments": dict(errors_dict),
             "stratified": strat,
+            "missing_view_profile": DatasetUtils.get_missing_view_profile(Xs=train_Xs).values.tolist(),
         }
 
         if not all(missing_clusters_mask):
@@ -191,20 +178,20 @@ class Utils:
                                                                                     y[missing_clusters_mask])
             clusters_excluding_missing = pd.factorize(clusters_excluding_missing)[0]
             summary_results = Utils.get_result_summary(y_true=y_excluding_missing, y_pred=clusters_excluding_missing,
-                                                 p=p, best_solution=best_solution, y_true_total=y_true_total,
+                                                 p=p, best_solution=best_solution,
                                                  X=X_excluding_missing, random_state=random_state)
             summary_results = {f"{key}_excluding_clusters_missing": value for key, value in summary_results.items()}
             dict_results = {**dict_results, **summary_results}
             clusters[~missing_clusters_mask] = -1
         summary_results = Utils.get_result_summary(y_true=y, y_pred=clusters, p=p, best_solution=best_solution,
-                                             y_true_total=y_true_total, X=train_X, random_state=random_state)
+                                                   X=train_X, random_state=random_state)
         dict_results = {**dict_results, **summary_results}
 
         return dict_results
 
 
     @staticmethod
-    def get_result_summary(y_true, y_pred, p, best_solution, y_true_total, X, random_state):
+    def get_result_summary(y_true, y_pred, p, best_solution, X, random_state):
         assert y_true.index.equals(y_pred.index)
         supervised_metrics = Utils.compute_supervised_metrics(y_true=y_true, y_pred=y_pred)
         if p > 0:
@@ -270,5 +257,19 @@ class Utils:
             'precision': metrics.precision_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0),
             'recall': metrics.recall_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0)}
         return scores
+
+
+    @staticmethod
+    def collect_subresults(results, subresults_path, indexes_names):
+        subresults_files = pd.Series(os.listdir(subresults_path)).apply(lambda x: os.path.join(subresults_path, x))
+        subresults_files = subresults_files[subresults_files.apply(os.path.isfile)]
+        subresults_files = pd.concat(subresults_files.apply(pd.read_csv).to_list())
+        subresults_files = subresults_files.set_index(indexes_names)
+        results.loc[subresults_files.index, subresults_files.columns] = subresults_files
+        drop_columns = ["comments", "stratified"] if "stratified" in results.select_dtypes(object).columns else "comments"
+        results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")
+        for col in results_.columns:
+            results[col] = results_[col].apply(eval)
+        return results
 
 

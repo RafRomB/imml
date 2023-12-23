@@ -59,8 +59,8 @@ for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
         if not results[checking_results].empty:
             continue
 
-    incomplete_Xs = DatasetUtils.add_random_noise_to_views(Xs=Xs, p=p, assess_percentage = True,
-                                                           random_state = random_state + i)
+    incomplete_Xs = DatasetUtils.ampute(Xs=Xs, p=p, assess_percentage = True,
+                                        random_state = random_state + i)
     print(f"Algorithm: {alg_name} \t Dataset: {dataset_name} \t Missing: {p} \t Iteration: {i}")
     if alg_name == "MONET":
         model = alg(random_state = random_state + i, **params)
