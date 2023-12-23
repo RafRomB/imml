@@ -77,7 +77,7 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
         """
 
         Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
-        sample_views = DatasetUtils.get_missing_view_panel(Xs = Xs)
+        sample_views = DatasetUtils.get_missing_view_profile(Xs = Xs)
         missing_views = sample_views == 1
         n_samples = len(missing_views)
 
