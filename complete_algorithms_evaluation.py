@@ -2,7 +2,6 @@ import itertools
 import os.path
 import argparse
 import shutil
-
 import numpy as np
 from pandarallel import pandarallel
 import pandas as pd
@@ -37,8 +36,8 @@ if args.n_jobs > 1:
     pandarallel.initialize(nb_workers= args.n_jobs)
 
 datasets = [
-    # "simulated_InterSIM",
-    # "simulated_netMUG",
+    "simulated_InterSIM",
+    "simulated_netMUG",
     "nutrimouse_genotype",
     "nutrimouse_diet",
     "bbcsport",
@@ -86,7 +85,10 @@ if not args.continue_benchmarking:
     results = pd.DataFrame(datasets, columns= ["dataset"])
     for k,v in {k:v for k,v in indexes_results.items() if k != "dataset"}.items():
         results = results.merge(pd.Series(v, name= k), how= "cross")
+    results.loc[(results["amputation_mechanism"] == "EDM") & (
+                results["missing_percentage"] == 0), "amputation_mechanism"] = "'None'"
     results = results.set_index(indexes_names)
+
     idx_to_drop = results.xs(0, level="missing_percentage",
                              drop_level=False).xs(True, level="imputation", drop_level=False).index
     results = results.drop(idx_to_drop)

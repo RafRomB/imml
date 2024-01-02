@@ -124,7 +124,8 @@ class Ampute(BaseEstimator, TransformerMixin):
                                                                             random_state=self.random_state)
             views_to_remove = pseudo_missing_view_profile.columns[views_to_remove]
 
-            amp = MultivariateAmputation(patterns=[{"incomplete_vars": views_to_remove, "mechanism": self.mechanism}])
+            amp = MultivariateAmputation(patterns=[{"incomplete_vars": views_to_remove, "mechanism": self.mechanism}],
+                                         seed= self.random_state)
             pseudo_missing_view_profile = amp.fit_transform(pseudo_missing_view_profile).fillna(0).astype(int)
             pseudo_missing_view_profile[pseudo_missing_view_profile.notnull()] = 1
             pseudo_missing_view_profile = pseudo_missing_view_profile.fillna(0).astype(int)
