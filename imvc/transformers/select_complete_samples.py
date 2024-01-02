@@ -52,7 +52,7 @@ def select_complete_samples(Xs:list):
     """
 
     Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
-    sample_views = DatasetUtils.get_missing_view_panel(Xs=Xs)
+    sample_views = DatasetUtils.get_missing_view_profile(Xs=Xs)
     complete_samples = sample_views.all(axis= 1)
     transformed_Xs = [X[complete_samples] for X in Xs]
     return transformed_Xs

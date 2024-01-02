@@ -127,7 +127,7 @@ class Utils:
                     if level == "missing_percentage":
                         multiidx_value = 0
                     elif level == "amputation_mechanism":
-                        multiidx_value = "EDM"
+                        multiidx_value = "'None'"
                     elif level == "imputation":
                         multiidx_value = False
                     else:
