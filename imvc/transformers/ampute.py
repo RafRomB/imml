@@ -11,7 +11,7 @@ from imvc.utils import DatasetUtils
 
 class Ampute(BaseEstimator, TransformerMixin):
 
-    def __init__(self, p, mechanism: str = "ED", random_state: int = None,
+    def __init__(self, p, mechanism: str = "EDM", random_state: int = None,
                  assess_percentage: bool = True, stratify=None):
         r"""
         Generate view missingness patterns in complete multi-view datasets.

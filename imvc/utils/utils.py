@@ -3,8 +3,7 @@ import pandas as pd
 from sklearn.utils import check_array
 
 
-def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomplete=False,
-             force_all_finite=True,return_dimensions=False):
+def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, force_all_finite="allow-nan",return_dimensions=False):
     r"""
     Checks Xs and ensures it to be a list of 2D matrices.
     Parameters
@@ -22,11 +21,7 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomple
         the input.
         If False, the returned Xs is a view of the input Xs,
         and operations on the output will change the input.
-    allow_incomplete : boolean, (default=False)
-        If True, different views can have different number of samples.
-        If False, all views must have the same number of samples. An error
-        is raised otherwise.
-    force_all_finite : bool or 'allow-nan', default=True
+    force_all_finite : bool or 'allow-nan', default='allow-nan'
         Whether to raise an error on np.inf, np.nan, pd.NA in array. The possibilities are:
         - True: Force all values of array to be finite.
         - False: accepts np.inf, np.nan, pd.NA in array.
@@ -82,10 +77,9 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, allow_incomple
             )
             raise ValueError(msg)
 
-    if not allow_incomplete:
-        if not len(set([X.shape[0] for X in Xs])) == 1:
-            msg = "All views must have the same number of samples"
-            raise ValueError(msg)
+    if not len(set([X.shape[0] for X in Xs])) == 1:
+        msg = "All views must have the same number of samples"
+        raise ValueError(msg)
 
     pandas_format = True if isinstance(Xs[0],pd.DataFrame) else False
     if pandas_format:
