@@ -54,9 +54,9 @@ class NEMO(BaseEstimator, ClassifierMixin):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.algorithms import MONET
-    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> estimator = NEMO()
+    >>> from imvc.cluster import NEMO
+    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse", p = 0.2)
+    >>> estimator = NEMO(n_clusters = 2)
     >>> labels = estimator.fit_predict(Xs)
     """
 
@@ -78,18 +78,18 @@ class NEMO(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
-        y : array-like, shape (n_samples,)
-            Labels for each sample. Only used by supervised algorithms.
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
-        self :  returns and instance of self.
+        self :  Fitted estimator.
         """
         Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
-        samples = DatasetUtils.get_sample_names(Xs=Xs)
         missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+        samples = missing_view_profile.index
 
         if self.num_neighbors is None:
             self.num_neighbors_ = [round(len(X)/self.num_neighbors_ratio) for X in Xs]
@@ -126,13 +126,13 @@ class NEMO(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
         -------
-        labels : list of array-likes, shape (n_samples,)
-            The predicted data.
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
         """
         return self.labels_
 
@@ -146,13 +146,13 @@ class NEMO(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
         -------
-        labels : ndarray, shape (n_samples,)
-            The predicted data.
+        labels : ndarray of shape (n_samples,)
+            Index of the cluster each sample belongs to.
         """
 
         labels = self.fit(Xs)._predict(Xs)
