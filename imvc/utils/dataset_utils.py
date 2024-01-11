@@ -48,7 +48,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_missing_view_profile(Xs: list):
+    def get_missing_view_profile(Xs: list) -> pd.DataFrame:
         r"""
         Get the missing view panel of an incomplete multi-view dataset.
 
