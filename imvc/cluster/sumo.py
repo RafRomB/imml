@@ -3,7 +3,7 @@ from scipy.cluster.hierarchy import cophenet, linkage
 from scipy.spatial.distance import pdist
 import numpy as np
 
-from ..utils import DatasetUtils, check_Xs
+from ..utils import check_Xs
 from ._sumo.utils import extract_ncut
 from ._sumo.network import MultiplexNet
 from ._sumo.modes.run.solvers.unsupervised_sumo import UnsupervisedSumoNMF
@@ -16,6 +16,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
     SUMO, originally designed for molecular subtyping in multi-omics datasets, utilizes a state-of-the-art
     nonnegative matrix factorization (NMF) algorithm to identify clusters of samples with similar characteristics.
+
+    The authors strongly suggest removing features and samples with a large fraction of missing values (>10%); log
+    transform or a variant stabilizing transform when using count data as input; and standardize each input feature. For
+    more information, read the sumo's documentation: https://python-sumo.readthedocs.io/en/latest/index.html.
 
     Parameters
     ----------
@@ -63,10 +67,8 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Multiview graph.
     nmf_ : None
         The nonnegative matrix factorization (NMF) object.
-    priors_ : None
-        The priors for clustering.
     similarity_ :
-        Object created by SUMO
+        List of adjacency matrix.
     cophenet_list_ :
         Object created by SUMO
     pac_list_ :
@@ -79,14 +81,19 @@ class SUMO(BaseEstimator, ClassifierMixin):
     [paper] Sienkiewicz, K., Chen, J., Chatrath, A., Lawson, J. T., Sheffield, N. C., Zhang, L., & Ratan, A. (2022).
             Detecting molecular subtypes from multi-omics datasets using SUMO. In Cell Reports Methods (Vol. 2, Issue 1,
             p. 100152). Elsevier BV. https://doi.org/10.1016/j.crmeth.2021.100152
+    [documentation] https://python-sumo.readthedocs.io/en/latest/index.html
 
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import SUMO
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse", p = 0.2)
+    >>> from imvc.transformers import MultiViewTransformer
+    >>> from sklearn.pipeline import make_pipeline
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> estimator = SUMO(n_clusters = 2)
-    >>> labels = estimator.fit_predict(Xs)
+    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), estimator)
+    >>> labels = pipeline.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1, alpha: float = 0.5,
@@ -95,20 +102,27 @@ class SUMO(BaseEstimator, ClassifierMixin):
                  h_init: int = None, rep: int = 5, random_state: int = None, verbose: bool = False):
 
         args_method = ['euclidean', 'cosine', 'pearson', 'spearman']
-        if method not in args_method:
-            msg = f"Invalid argument for method. Expected one of: {args_method}"
+        if isinstance(method, str):
+            if method not in args_method:
+                msg = f"Invalid value for 'method'. Expected one of: {args_method}."
+                raise ValueError(msg)
+        elif isinstance(method, list):
+            for method_i in method:
+                if method_i not in args_method:
+                    msg = f"Invalid value for 'method'. Expected one of: {args_method}."
+                    raise ValueError(msg)
+
+        if repetitions < 1:
+            msg = "Incorrect value of 'repetitions' parameter. It must be repetitions > 0."
             raise ValueError(msg)
-        if self.repetitions < 1:
-            raise ValueError("Incorrect value of 'repetitions' parameter")
-        if self.subsample > 0.5 or self.subsample < 0:
+        if subsample > 0.5 or subsample < 0:
             # do not allow for removal of more then 50% of samples in each run
-            raise ValueError("Incorrect value of 'subsample' parameter")
-        if self.rep < 1:
+            msg = "Incorrect value of 'subsample' parameter. It must be 0 < subsample < 0.5."
+            raise ValueError(msg)
+        if rep < 1:
             # number of times additional consensus matrix will be created
-            raise ValueError("Incorrect value of 'rep' parameter")
-        if self.random_state is not None and self.random_state < 0:
-            raise ValueError("Seed value cannot be negative")
-        self.runs_per_con = max(round(self.repetitions * 0.8), 1)  # number of runs per consensus matrix creation
+            msg = "Incorrect value of 'rep' parameter. It must be rep > 1."
+            raise ValueError(msg)
 
 
         self.method = method
@@ -127,10 +141,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         self.rep = rep
         self.random_state = random_state
         self.verbose = verbose
-
-        self.graph_ = None
-        self.nmf_ = None
-        self.priors = None
+        self.runs_per_con = max(round(repetitions * 0.8), 1)  # number of runs per consensus matrix creation
 
 
     def fit(self, Xs, y=None):
@@ -143,14 +154,14 @@ class SUMO(BaseEstimator, ClassifierMixin):
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
-        y : array-like, shape (n_samples,)
-            Labels for each sample. Only used by supervised algorithms.
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
         self :  returns and instance of self.
         """
-        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if len(self.missing) == 1:
             if self.verbose:
                 print(f"#Setting all 'missing' parameters to {self.missing[0]}")
@@ -160,8 +171,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
         elif len(Xs) != len(self.method):
             raise ValueError(
                 "Number of matrices extracted from input files and number of similarity methods does not correspond")
+        self.graph_ = None
+        self.nmf_ = None
 
-        all_samples = DatasetUtils.get_sample_names(Xs=Xs)
+        all_samples = Xs[0].index
         if self.verbose:
             print(f"Total number of unique samples: {len(all_samples)}")
         self.similarity_ = {}
@@ -179,7 +192,6 @@ class SUMO(BaseEstimator, ClassifierMixin):
             # add matrices to output arrays
             adj_matrices.append(a)
             self.similarity_[str(X_idx)] = a
-            self.similarity_[f"f{X_idx}"] = X
 
         ##################################################################
         if self.h_init is not None:
@@ -230,7 +242,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
@@ -251,8 +263,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
@@ -296,7 +310,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
             # extract computed clusters
             if verbose:
                 print(f"#Using {sumo_run.cluster_method} for cluster labels extraction)")
-            result.extract_clusters(method=sumo_run.cluster_method)
+            result.extract_clusters(method=sumo_run.cluster_method, random_state=sumo_run.random_state)
             results.append(result)
 
         # consensus graph
