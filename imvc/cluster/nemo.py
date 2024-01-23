@@ -49,7 +49,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
     References
     ----------
     [paper] Rappoport Nimrod, Shamir Ron. NEMO: Cancer subtyping by integration of partial multi-omic data.
-            Bioinformatics. 2019;35(18):3348–3356. doi: 10.1093/bioinformatics/btz058..
+            Bioinformatics. 2019;35(18):3348–3356. doi: 10.1093/bioinformatics/btz058.
+    [code]  https://github.com/Shamir-Lab/NEMO
 
     Examples
     --------

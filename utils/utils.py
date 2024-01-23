@@ -1,3 +1,4 @@
+import itertools
 import os
 import time
 from collections import defaultdict
@@ -42,7 +43,7 @@ class Utils:
             y_train = y.loc[train_Xs[0].index]
             strat = False
             if p != 0:
-                if amputation_mechanism == "ED":
+                if amputation_mechanism == "EDM":
                     try:
                         assert n_clusters < len(train_Xs[0]) * (1-p)
                     except AssertionError as exception:
@@ -162,6 +163,7 @@ class Utils:
 
         dict_results = {
             "n_samples": len(train_X),
+            "n_views": len(train_Xs),
             "n_incomplete_samples": DatasetUtils.get_n_incomplete_samples(train_Xs),
             "n_complete_samples": DatasetUtils.get_n_complete_samples(train_Xs),
             "time": elapsed_time,
@@ -273,3 +275,34 @@ class Utils:
         return results
 
 
+    @staticmethod
+    def create_results_table(datasets, indexes_results, indexes_names, amputation_mechanisms, two_view_datasets):
+        results = pd.DataFrame(datasets, columns=["dataset"])
+        for k, v in {k: v for k, v in indexes_results.items() if k != "dataset"}.items():
+            results = results.merge(pd.Series(v, name=k), how="cross")
+        results.loc[(results["amputation_mechanism"] == "EDM") & (
+                results["missing_percentage"] == 0), "amputation_mechanism"] = "'None'"
+        results = results.set_index(indexes_names)
+
+        idx_to_drop = results.xs(0, level="missing_percentage",
+                                 drop_level=False).xs(True, level="imputation", drop_level=False).index
+        results = results.drop(idx_to_drop)
+        for amputation_mechanism in amputation_mechanisms[1:]:
+            idx_to_drop = results.xs(0, level="missing_percentage",
+                                     drop_level=False).xs(amputation_mechanism, level="amputation_mechanism",
+                                                          drop_level=False).index
+            results = results.drop(idx_to_drop)
+        results_amputation_mechanism_none = results.xs(0, level="missing_percentage", drop_level=False)
+        results_amputation_mechanism_none_tochange = results_amputation_mechanism_none.index.to_frame()
+        results_amputation_mechanism_none_tochange["amputation_mechanism"] = "None"
+        results.loc[results_amputation_mechanism_none.index].index = pd.MultiIndex.from_frame(
+            results_amputation_mechanism_none_tochange)
+
+        for amputation_mechanism, dataset in itertools.product(["MAR", "MNAR"], two_view_datasets):
+            idx_to_drop = results.xs(dataset, level="dataset",
+                                     drop_level=False).xs(amputation_mechanism, level="amputation_mechanism",
+                                                          drop_level=False).index
+            results = results.drop(idx_to_drop)
+
+        results[["finished", "completed"]] = False
+        return results

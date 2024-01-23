@@ -2,7 +2,8 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 from . import BasePipeline
-from ..transformers import SortData, FillMissingViews, MultiViewTransformer, DFMF
+from ..transformers import SortData, FillMissingViews, MultiViewTransformer
+from ..decomposition import DFMF
 
 
 class DFMFPipeline(BasePipeline):

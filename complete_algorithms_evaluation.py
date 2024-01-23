@@ -1,4 +1,3 @@
-import itertools
 import os.path
 import argparse
 import shutil
@@ -27,6 +26,8 @@ error_file = os.path.join(folder_results, 'error.txt')
 
 random_state = 42
 
+# args = lambda: None
+# args.continue_benchmarking, args.n_jobs = True, 1
 parser = argparse.ArgumentParser()
 parser.add_argument('-continue_benchmarking', default= False, action='store_true')
 parser.add_argument('-n_jobs', default= 1, type= int)
@@ -49,6 +50,7 @@ datasets = [
     "caltech101",
     "nuswide",
 ]
+two_view_datasets = ["nutrimouse_genotype", "nutrimouse_diet", "metabric", "bdgp", "buaa", "simulated_netMUG"]
 amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR']
 probs = np.arange(100, step= 10)
 imputation = [True, False]
@@ -78,41 +80,13 @@ algorithms = {
 indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()), "missing_percentage": probs,
                    "amputation_mechanism": amputation_mechanisms, "imputation": imputation, "run_n": runs_per_alg}
 indexes_names = list(indexes_results.keys())
+results = Utils.create_results_table(datasets=datasets, indexes_results=indexes_results,
+                                     indexes_names=indexes_names, amputation_mechanisms=amputation_mechanisms,
+                                     two_view_datasets=two_view_datasets)
 
 if not args.continue_benchmarking:
     if not eval(input("Are you sure you want to start benchmarking and delete previous results? (True/False)")):
         raise Exception
-    results = pd.DataFrame(datasets, columns= ["dataset"])
-    for k,v in {k:v for k,v in indexes_results.items() if k != "dataset"}.items():
-        results = results.merge(pd.Series(v, name= k), how= "cross")
-    results.loc[(results["amputation_mechanism"] == "EDM") & (
-                results["missing_percentage"] == 0), "amputation_mechanism"] = "'None'"
-    results = results.set_index(indexes_names)
-
-    idx_to_drop = results.xs(0, level="missing_percentage",
-                             drop_level=False).xs(True, level="imputation", drop_level=False).index
-    results = results.drop(idx_to_drop)
-    for amputation_mechanism in amputation_mechanisms[1:]:
-        idx_to_drop = results.xs(0, level="missing_percentage",
-                                 drop_level=False).xs(amputation_mechanism, level="amputation_mechanism", drop_level=False).index
-        results = results.drop(idx_to_drop)
-    results_amputation_mechanism_none = results.xs(0, level="missing_percentage", drop_level=False)
-    results_amputation_mechanism_none_tochange = results_amputation_mechanism_none.index.to_frame()
-    results_amputation_mechanism_none_tochange["amputation_mechanism"] = "None"
-    results.loc[results_amputation_mechanism_none.index].index = pd.MultiIndex.from_frame(results_amputation_mechanism_none_tochange)
-
-    for amputation_mechanism, dataset in itertools.product(["MAR", "MNAR"], ["nutrimouse_genotype",
-                                                                             "nutrimouse_diet",
-                                                                             "metabric",
-                                                                             "bdgp",
-                                                                             "buaa",
-                                                                             # "simulated_netMUG",
-                                                                             ]):
-        idx_to_drop = results.xs(dataset, level="dataset",
-                                 drop_level=False).xs(amputation_mechanism, level="amputation_mechanism", drop_level=False).index
-        results = results.drop(idx_to_drop)
-
-    results[["finished", "completed"]] = False
     results.to_csv(file_path)
 
     shutil.rmtree(subresults_path, ignore_errors=True)
@@ -123,8 +97,9 @@ if not args.continue_benchmarking:
     open(logs_file, 'w').close()
     open(error_file, 'w').close()
 else:
-    results = pd.read_csv(file_path, index_col= indexes_names)
-    results = Utils.collect_subresults(results=results, subresults_path=subresults_path, indexes_names=indexes_names)
+    finished_results = pd.read_csv(file_path, index_col= indexes_names)
+    finished_results = Utils.collect_subresults(results=finished_results, subresults_path=subresults_path, indexes_names=indexes_names)
+    results.loc[finished_results.index, finished_results.columns] = finished_results
 
 unfinished_results = results.loc[~results["finished"]]
 

@@ -134,15 +134,15 @@ class DeepMF(pl.LightningModule):
     def _get_distance(self, data, row_or_col):
         M, N = data.shape
         if row_or_col == 'row':
-            G = torch.mm(data, data.t())
+            G = torch.mm(data, data.t_())
         else:
-            G = torch.mm(data.t(), data)
+            G = torch.mm(data.t_(), data)
         g = torch.diag(G)
         if row_or_col == 'row':
             x = g.repeat(M, 1)
         else:
             x = g.repeat(N, 1)
-        D = x + x.t() - 2*G
+        D = x + x.t_() - 2 * G
         return D
 
 
@@ -159,7 +159,7 @@ class DeepMF(pl.LightningModule):
             penalty = torch.max(data) * 1.0 / M
         if penalty == 0:
             penalty = 1
-        nan_penalty = penalty * (row_or_col_nan + row_or_col_nan.t())
+        nan_penalty = penalty * (row_or_col_nan + row_or_col_nan.t_())
         nan_penalty = nan_penalty.float()
         D = D + nan_penalty - torch.diag(torch.diag(nan_penalty))
 
@@ -205,8 +205,8 @@ class DeepMF(pl.LightningModule):
         self.model[-1].weight.data = V
 
     def _load_U_V(self):
-        U = self.model[0].weight.t()
-        V = self.model[-1].weight.t()
+        U = self.model[0].weight.t_()
+        V = self.model[-1].weight.t_()
         return U, V
 
     def _save_U_V(self):
