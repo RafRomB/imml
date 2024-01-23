@@ -1,5 +1,4 @@
 import copy
-
 import numpy as np
 import pandas as pd
 from pyampute import MultivariateAmputation
@@ -10,44 +9,49 @@ from imvc.utils import DatasetUtils
 
 
 class Ampute(BaseEstimator, TransformerMixin):
+    r"""
+    Generate view missingness patterns in complete multi-view datasets.
+
+    Parameters
+    ----------
+    Xs : list of array-likes
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples, n_features_i)
+        A list of different views.
+    p: list or float
+        The percentaje that each view will have for missing samples. If p is float, all the views will have the
+        same percentaje.
+    mechanism: str, default="EDM"
+        One of ["EDM", 'MCAR', 'MAR', 'MNAR'].
+    random_state: int, default=None
+        If int, random_state is the seed used by the random number generator.
+    assess_percentage: bool
+        If False, each view is dropped independently.
+    stratify: array-like, default=None
+        If not None, data is split in a stratified fashion, using this as the class labels.
+
+    Attributes
+    ----------
+    views_to_remove_ : array-like of shape (n_views * 0.5,)
+        Views that will be removed from samples. Only available if mechanism != 'EDM'.
+
+    Returns
+    -------
+    imvd : list of array-likes
+        - Xs length: n_views
+        - Xs[i] shape: (n_samples, n_features_i)
+        A list of different views.
+
+     Examples
+    --------
+    >>> from imvc.utils import DatasetUtils
+    >>> from imvc.datasets import LoadDataset
+    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
+    >>> Xs = DatasetUtils.ampute(Xs = Xs, p = [0.2, 0.5])
+    """
 
     def __init__(self, p, mechanism: str = "EDM", random_state: int = None,
                  assess_percentage: bool = True, stratify=None):
-        r"""
-        Generate view missingness patterns in complete multi-view datasets.
-
-        Parameters
-        ----------
-        Xs : list of array-likes
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
-        p: list or float
-            The percentaje that each view will have for missing samples. If p is float, all the views will have the
-            same percentaje.
-        mechanism: str, default="EDM"
-            One of ["EDM", 'MCAR', 'MAR', 'MNAR'].
-        random_state: int, default=None
-            If int, random_state is the seed used by the random number generator.
-        assess_percentage: bool
-            If False, each view is dropped independently.
-        stratify: array-like, default=None
-            If not None, data is split in a stratified fashion, using this as the class labels.
-
-        Returns
-        -------
-        imvd : list of array-likes
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
-
-         Examples
-        --------
-        >>> from imvc.utils import DatasetUtils
-        >>> from imvc.datasets import LoadDataset
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
-        >>> Xs = DatasetUtils.ampute(Xs = Xs, p = [0.2, 0.5])
-        """
         possible_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR', 'MAR+MNAR']
         if mechanism not in possible_mechanisms:
             raise ValueError(f"Invalid mechanism. Expected one of: {possible_mechanisms}")
@@ -62,10 +66,26 @@ class Ampute(BaseEstimator, TransformerMixin):
     def fit(self, Xs: list, y=None):
         n_views = len(Xs)
         self.n_views = n_views
-        if not isinstance(self.p, list):
-            self.p = [self.p]
-        if len(self.p) != n_views:
-            self.p *= n_views
+
+        if self.mechanism == "EDM":
+            if not isinstance(self.p, list):
+                self.p = [self.p]
+            if len(self.p) != n_views:
+                self.p *= n_views
+
+        else:
+            if n_views > 2:
+                n_views_to_remove = round(n_views * 0.5 + pd.Series([0.1, -0.1]).sample(1,
+                                                                                        random_state=self.random_state).iloc[0])
+            else:
+                n_views_to_remove = 1
+            views_to_remove = pd.Series(np.arange(n_views))
+            views_to_remove = views_to_remove.sample(n=n_views_to_remove, random_state=self.random_state)
+            self.views_to_remove_ = views_to_remove.index
+            self._amp = MultivariateAmputation(prop = self.p,
+                                               patterns=[{"incomplete_vars": views_to_remove, "mechanism": self.mechanism}],
+                                               seed=self.random_state)
+
         return self
 
 
@@ -114,28 +134,11 @@ class Ampute(BaseEstimator, TransformerMixin):
         else:
             pseudo_missing_view_profile = np.random.default_rng(seed=self.random_state).standard_normal((len(Xs[0]), len(Xs)))
             pseudo_missing_view_profile = pd.DataFrame(pseudo_missing_view_profile)
-
-            if pseudo_missing_view_profile.shape[1] > 2:
-                n_views_to_remove = round(pseudo_missing_view_profile.shape[1] * 0.5 +
-                                          pd.Series([0.1, -0.1]).sample(1, random_state=self.random_state).iloc[0])
-            else:
-                n_views_to_remove = 1
-            views_to_remove = pseudo_missing_view_profile.columns.to_series().sample(n=n_views_to_remove,
-                                                                            random_state=self.random_state)
-            views_to_remove = pseudo_missing_view_profile.columns[views_to_remove]
-
-            amp = MultivariateAmputation(patterns=[{"incomplete_vars": views_to_remove, "mechanism": self.mechanism}],
-                                         seed= self.random_state)
-            pseudo_missing_view_profile = amp.fit_transform(pseudo_missing_view_profile).fillna(0).astype(int)
+            pseudo_missing_view_profile = self._amp.fit_transform(pseudo_missing_view_profile)
             pseudo_missing_view_profile[pseudo_missing_view_profile.notnull()] = 1
             pseudo_missing_view_profile = pseudo_missing_view_profile.fillna(0).astype(int)
             transformed_Xs = DatasetUtils.convert_mvd_in_imvd(Xs=Xs, missing_view_profile=pseudo_missing_view_profile)
 
         return transformed_Xs
-
-
-    # def fit_transform(self, Xs, y=None):
-    #     transformed_Xs = self.fit(Xs=Xs, y=y).transform(Xs=Xs, y=y)
-    #     return transformed_Xs
 
 

@@ -2,6 +2,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from scipy.cluster.hierarchy import cophenet, linkage
 from scipy.spatial.distance import pdist
 import numpy as np
+import multiprocessing as mp
 
 from ..utils import check_Xs
 from ._sumo.utils import extract_ncut
@@ -60,7 +61,9 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Determines the randomness. Use an int to make the randomness deterministic.
     verbose : bool, default=False
         Verbosity mode.
-.
+.    n_jobs : int, default=1
+        Number of threads to run in parallel.
+
     Attributes
     ----------
     graph_ :
@@ -82,6 +85,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
             Detecting molecular subtypes from multi-omics datasets using SUMO. In Cell Reports Methods (Vol. 2, Issue 1,
             p. 100152). Elsevier BV. https://doi.org/10.1016/j.crmeth.2021.100152
     [documentation] https://python-sumo.readthedocs.io/en/latest/index.html
+    [code] https://github.com/ratan-lab/sumo/tree/master
 
     Examples
     --------
@@ -96,10 +100,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1, alpha: float = 0.5,
-                 sparsity: list = [0.1], repetitions: int = 60, cluster_method: str = "max_value",
+    def __init__(self, n_clusters, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1,
+                 alpha: float = 0.5, sparsity: list = [0.1], repetitions: int = 60, cluster_method: str = "max_value",
                  max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05, calc_cost: int = 20,
-                 h_init: int = None, rep: int = 5, random_state: int = None, verbose: bool = False):
+                 h_init: int = None, rep: int = 5, random_state: int = None, verbose: bool = False, n_jobs: int = 1):
 
         args_method = ['euclidean', 'cosine', 'pearson', 'spearman']
         if isinstance(method, str):
@@ -122,6 +126,9 @@ class SUMO(BaseEstimator, ClassifierMixin):
         if rep < 1:
             # number of times additional consensus matrix will be created
             msg = "Incorrect value of 'rep' parameter. It must be rep > 1."
+            raise ValueError(msg)
+        if n_jobs < 1:
+            msg = "Incorrect value of 'n_jobs' parameter. It must be n_jobs > 0."
             raise ValueError(msg)
 
 
@@ -208,9 +215,20 @@ class SUMO(BaseEstimator, ClassifierMixin):
                                         bin_size=self.graph_.nodes - n_sub_samples, rseed=self.random_state)
         global _sumo_run
         _sumo_run = self  # this solves multiprocessing issue with pickling
-        results = [SUMO._run_factorization(sparsity=sparsity, k=self.n_clusters, sumo_run=_sumo_run, verbose=self.verbose) for
-                   sparsity in self.sparsity]
-        sparsity_order = self.sparsity
+
+        if self.n_jobs == 1:
+            results = [SUMO._run_factorization(sparsity=sparsity, k=self.n_clusters, sumo_run=_sumo_run,
+                                               verbose=self.verbose) for sparsity in self.sparsity]
+            sparsity_order = self.sparsity
+        else:
+            pool = mp.Pool(self.t)
+            results = []
+            sparsity_order = []
+            iproc = 1
+            for res in pool.imap_unordered(SUMO.run_thread_wrapper, zip(self.sparsity, self.n_clusters)):
+                results.append(res[0])
+                sparsity_order.append(res[1])
+                iproc += 1
 
         # select best result
         best_result = sorted(results, reverse=True)[0]
@@ -413,5 +431,13 @@ class SUMO(BaseEstimator, ClassifierMixin):
                 print(f"Consider increasing -max_iter and decreasing -tol to achieve better accuracy")
         out_arrays['steps'] = np.array([steps_reached])
         return quality, out_arrays
+
+
+    @staticmethod
+    def run_thread_wrapper(args: tuple):
+        global sumo_run
+        # this solves multiprocessing issue with pickling
+        assert len(args) == 2
+        return SUMO._run_factorization(sparsity=args[0], k=args[1], sumo_run=sumo_run), args[0]
 
 
