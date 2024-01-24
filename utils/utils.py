@@ -5,19 +5,14 @@ from collections import defaultdict
 from datetime import datetime
 import numpy as np
 import pandas as pd
-from bignmf.models.jnmf.integrative import IntegrativeJnmf
-from bignmf.models.jnmf.standard import StandardJnmf
 from reval.utils import kuhn_munkres_algorithm
 from sklearn import metrics
-from sklearn.cluster import spectral_clustering
 from sklearn.impute import SimpleImputer
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, MinMaxScaler
-from snf import compute
 from validclust import dunn
-
 from imvc.transformers import MultiViewTransformer, ConcatenateViews, Ampute
 from imvc.utils import DatasetUtils
+
+from utils.models import Model
 
 
 class Utils:
@@ -69,47 +64,16 @@ class Utils:
                 y_train = y_train.loc[train_Xs[0].index]
 
             start_time = time.perf_counter()
-            if alg_name == "SNF":
-                preprocessing_step = MultiViewTransformer(StandardScaler().set_output(transform="pandas"))
-                train_Xs = preprocessing_step.fit_transform(train_Xs)
-                k_snf = np.ceil(len(y_train)/10).astype(int)
-                affinities = compute.make_affinity(train_Xs, normalize=False, K= k_snf)
-                fused = compute.snf(affinities, K= k_snf)
-                clusters = spectral_clustering(fused, n_clusters=n_clusters, random_state=random_state + run_n)
-            elif alg_name == "intNMF":
-                preprocessing_step = MultiViewTransformer(MinMaxScaler().set_output(transform="pandas"))
-                train_Xs = preprocessing_step.fit_transform(train_Xs)
-                model = IntegrativeJnmf({k: v for k, v in enumerate(train_Xs)}, k=n_clusters, lamb=0.1)
-                model.run(trials=50, iterations=100, verbose=False)
-                model.cluster_data()
-                clusters = np.argmax(model.w_cluster, axis=1)
-            elif alg_name == "jNMF":
-                preprocessing_step = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")))
-                train_Xs = preprocessing_step.fit_transform(train_Xs)
-                model = StandardJnmf({k: v for k, v in enumerate(train_Xs)}, k=n_clusters)
-                model.run(trials=50, iterations=100, verbose=False)
-                model.cluster_data()
-                clusters = np.argmax(model.w_cluster, axis=1)
-            else:
-                model, params = alg["alg"], alg["params"]
-                if alg_name == "GroupPCA":
-                    model[1].set_params(n_components=n_clusters, random_state=random_state + run_n, multiview_output=False)
-                elif alg_name == "AJIVE":
-                    model[1].set_params(random_state=random_state + run_n)
-                if alg_name == "NMFC":
-                    model[-1].set_params(n_components=n_clusters, random_state=random_state + run_n)
-                else:
-                    model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
-                clusters = model.fit_predict(train_Xs)
-
-            clusters = pd.Series(clusters, index=y_train.index)
-
+            clusters, model = Model(alg_name=alg_name, alg=alg).method(train_Xs=train_Xs, y_train=y_train,
+                                                                       n_clusters=n_clusters, random_state=random_state,
+                                                                       run_n=run_n)
             elapsed_time = time.perf_counter() - start_time
+            clusters = pd.Series(clusters, index=y_train.index)
 
             if alg_name in ["NMFC"]:
                 train_X = model.transform(train_Xs)
             elif alg_name in ["SNF"]:
-                train_X = preprocessing_step.transform(train_Xs)
+                train_X = model.transform(train_Xs)
             elif alg_name in ["intNMF", "jNMF"]:
                 train_X = model.w
             else:

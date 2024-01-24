@@ -192,7 +192,7 @@ def concatenate_views(Xs):
     transformed_X : array-like of shape (n_samples, n_features)
     """
 
-    Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+    Xs = check_Xs(Xs, force_all_finite='allow-nan')
     transformed_X = pd.concat(Xs, axis= 1)
     return transformed_X
 
