@@ -13,7 +13,7 @@ from imvc.datasets import LoadDataset
 from imvc.transformers import MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
 
-from utils import Utils
+from utils.getresult import GetResult
 
 
 folder_results = "results"
@@ -22,7 +22,7 @@ filelame = "complete_algorithms_evaluation.csv"
 file_path = os.path.join(folder_results, filelame)
 subresults_path = os.path.join(folder_results, folder_subresults)
 logs_file = os.path.join(folder_results, 'logs.txt')
-error_file = os.path.join(folder_results, 'error.txt')
+error_file = os.path.join(folder_results, 'errors.txt')
 
 random_state = 42
 
@@ -37,6 +37,7 @@ if args.n_jobs > 1:
     pandarallel.initialize(nb_workers= args.n_jobs)
 
 datasets = [
+    "simulated_gm",
     "simulated_InterSIM",
     "simulated_netMUG",
     "nutrimouse_genotype",
@@ -50,7 +51,8 @@ datasets = [
     "caltech101",
     "nuswide",
 ]
-two_view_datasets = ["nutrimouse_genotype", "nutrimouse_diet", "metabric", "bdgp", "buaa", "simulated_netMUG"]
+two_view_datasets = ["simulated_gm", "nutrimouse_genotype", "nutrimouse_diet", "metabric", "bdgp",
+                     "buaa", "simulated_netMUG"]
 amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR']
 probs = np.arange(100, step= 10)
 imputation = [True, False]
@@ -73,16 +75,16 @@ algorithms = {
     "AJIVE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), AJIVE(), MultiViewTransformer(FunctionTransformer(pd.DataFrame)),
                                    ConcatenateViews(), StandardScaler(), KMeans()),
               "params": {}},
-    "SNF": {},
-    "intNMF": {},
-    "jNMF": {},
+    "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
+    "IntNMF": {"alg": MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), "params": {}},
+    "COCA": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
 }
 indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()), "missing_percentage": probs,
                    "amputation_mechanism": amputation_mechanisms, "imputation": imputation, "run_n": runs_per_alg}
 indexes_names = list(indexes_results.keys())
-results = Utils.create_results_table(datasets=datasets, indexes_results=indexes_results,
-                                     indexes_names=indexes_names, amputation_mechanisms=amputation_mechanisms,
-                                     two_view_datasets=two_view_datasets)
+results = GetResult.create_results_table(datasets=datasets, indexes_results=indexes_results,
+                                         indexes_names=indexes_names, amputation_mechanisms=amputation_mechanisms,
+                                         two_view_datasets=two_view_datasets)
 
 if not args.continue_benchmarking:
     if not eval(input("Are you sure you want to start benchmarking and delete previous results? (True/False)")):
@@ -98,7 +100,7 @@ if not args.continue_benchmarking:
     open(error_file, 'w').close()
 else:
     finished_results = pd.read_csv(file_path, index_col= indexes_names)
-    finished_results = Utils.collect_subresults(results=finished_results, subresults_path=subresults_path, indexes_names=indexes_names)
+    finished_results = GetResult.collect_subresults(results=finished_results, subresults_path=subresults_path, indexes_names=indexes_names)
     results.loc[finished_results.index, finished_results.columns] = finished_results
 
 unfinished_results = results.loc[~results["finished"]]
@@ -115,22 +117,22 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
 
     if args.n_jobs == 1:
         iterator = pd.DataFrame(unfinished_results_dataset.index.to_list(), columns=indexes_names)
-        iterator.apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
-                                                     algorithms=algorithms, random_state=random_state, subresults_path=subresults_path,
-                                                     logs_file=logs_file, error_file=error_file), axis= 1)
+        iterator.apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
+                                                         algorithms=algorithms, random_state=random_state, subresults_path=subresults_path,
+                                                         logs_file=logs_file, error_file=error_file), axis= 1)
     else:
         try:
             unfinished_results_dataset_idx = unfinished_results_dataset.xs(0, level="missing_percentage", drop_level=False).index
             iterator = pd.DataFrame(unfinished_results_dataset_idx.to_list(), columns= indexes_names)
-            iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y,
-                                                                  n_clusters=n_clusters,
-                                                                  algorithms=algorithms,
-                                                                  random_state=random_state,
-                                                                  subresults_path=subresults_path,
-                                                                  logs_file=logs_file,
-                                                                  error_file=error_file), axis= 1)
-            results = Utils.collect_subresults(results=results, subresults_path=subresults_path,
-                                               indexes_names=indexes_names)
+            iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+                                                                      n_clusters=n_clusters,
+                                                                      algorithms=algorithms,
+                                                                      random_state=random_state,
+                                                                      subresults_path=subresults_path,
+                                                                      logs_file=logs_file,
+                                                                      error_file=error_file), axis= 1)
+            results = GetResult.collect_subresults(results=results, subresults_path=subresults_path,
+                                                   indexes_names=indexes_names)
             results.to_csv(file_path)
 
             unfinished_results_dataset_idx = unfinished_results_dataset.drop(unfinished_results_dataset_idx).index
@@ -138,14 +140,14 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
         except KeyError:
             iterator = pd.DataFrame(unfinished_results_dataset.index.to_list(), columns=indexes_names)
 
-        iterator.parallel_apply(lambda x: Utils.run_iteration(idx= x, results= results, Xs=Xs, y=y,
-                                                                            n_clusters=n_clusters,
-                                                                            algorithms=algorithms,
-                                                                            random_state=random_state,
-                                                                            subresults_path=subresults_path,
-                                                                            logs_file=logs_file,
-                                                                            error_file=error_file), axis= 1)
-        results = Utils.collect_subresults(results=results, subresults_path=subresults_path,
-                                           indexes_names=indexes_names)
+        iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+                                                                  n_clusters=n_clusters,
+                                                                  algorithms=algorithms,
+                                                                  random_state=random_state,
+                                                                  subresults_path=subresults_path,
+                                                                  logs_file=logs_file,
+                                                                  error_file=error_file), axis= 1)
+        results = GetResult.collect_subresults(results=results, subresults_path=subresults_path,
+                                               indexes_names=indexes_names)
         results.to_csv(file_path)
 

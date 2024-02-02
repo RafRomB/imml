@@ -1,15 +1,15 @@
 import numpy as np
 from sklearn.cluster import spectral_clustering
-from sklearn.preprocessing import StandardScaler
 from snf import compute
+from rpy2.robjects.packages import importr
 
-from imvc.transformers import MultiViewTransformer
+from utils import Utils
 
 
 class Model:
     def __init__(self, alg_name, alg):
         self.alg_name = alg_name.lower() if alg_name in ["GroupPCA", "AJIVE", "NMFC"] else "standard"
-        self.method = alg_name.lower() if alg_name in ["SNF"] else "sklearn_method"
+        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA"] else "sklearn_method"
         self.alg_name = eval(f"self.{self.alg_name.lower()}")
         self.method = eval(f"self.{self.method.lower()}")
         self.alg = alg
@@ -23,13 +23,31 @@ class Model:
 
 
     def snf(self, train_Xs, y_train, n_clusters, random_state, run_n):
-        preprocessing_step = MultiViewTransformer(StandardScaler().set_output(transform="pandas"))
-        train_Xs = preprocessing_step.fit_transform(train_Xs)
+        model = self.alg["alg"]
+        train_Xs = model.fit_transform(train_Xs)
         k_snf = np.ceil(len(y_train) / 10).astype(int)
         affinities = compute.make_affinity(train_Xs, normalize=False, K=k_snf)
         fused = compute.snf(affinities, K=k_snf)
         clusters = spectral_clustering(fused, n_clusters=n_clusters, random_state=random_state + run_n)
-        return clusters, preprocessing_step
+        return clusters, model
+
+
+    def intnmf(self, train_Xs, y_train, n_clusters, random_state, run_n):
+        nmf = importr("IntNMF")
+        model = self.alg["alg"]
+        clusters = nmf.nmf_mnnals(dat=Utils.convert_df_to_r_object(train_Xs), k=n_clusters, seed=random_state + run_n)[-1]
+        clusters = np.array(clusters) - 1
+        return clusters, model
+
+
+    def coca(self, train_Xs, y_train, n_clusters, random_state, run_n):
+        base, coca = importr("base"), importr("coca")
+        model = self.alg["alg"]
+        base.set_seed(random_state + run_n)
+        clusters = coca.buildMOC(Utils.convert_df_to_r_object(train_Xs), M=len(train_Xs), K=n_clusters)[0]
+        clusters = coca.coca(clusters, K=n_clusters)[1]
+        clusters = np.array(clusters) - 1
+        return clusters, model
 
 
     def grouppca(self, model, n_clusters, random_state, run_n):

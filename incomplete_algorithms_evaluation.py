@@ -18,7 +18,7 @@ from imvc.transformers.deepmf import DeepMFDataset, DeepMF
 from imvc.utils import DatasetUtils
 from imvc.transformers import ConcatenateViews
 from imvc.utils.utils import BugInMONET
-from utils.utils import save_record
+from utils.getresult import save_record
 
 random_state = 0
 START_BENCHMARKING = False

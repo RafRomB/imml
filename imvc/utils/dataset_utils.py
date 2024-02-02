@@ -496,8 +496,6 @@ class DatasetUtils:
         return Xs
 
 
-
-
     def select_complete_samples(Xs: list):
         r"""
         Remove samples with missing views from the whole multi-view dataset.
