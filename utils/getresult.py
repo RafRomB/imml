@@ -71,10 +71,8 @@ class GetResult:
 
             if alg_name in ["NMFC"]:
                 train_X = model.transform(train_Xs)
-            elif alg_name in ["SNF"]:
+            elif alg_name in ["SNF", "IntNMF", "COCA"]:
                 train_X = model.transform(train_Xs)
-            elif alg_name in ["intNMF", "jNMF"]:
-                train_X = model.w
             else:
                 train_X = model[:-1].transform(train_Xs)
             if isinstance(train_X, list):

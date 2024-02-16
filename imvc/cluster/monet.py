@@ -145,7 +145,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         -------
         self :  returns and instance of self.
         """
-        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
         samples = DatasetUtils.get_sample_names(Xs)
         data = {}
         if self.similarity_mode == "prob":
