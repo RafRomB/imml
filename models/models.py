@@ -35,6 +35,7 @@ class Model:
     def intnmf(self, train_Xs, y_train, n_clusters, random_state, run_n):
         nmf = importr("IntNMF")
         model = self.alg["alg"]
+        train_Xs = model.fit_transform(train_Xs)
         clusters = nmf.nmf_mnnals(dat=Utils.convert_df_to_r_object(train_Xs), k=n_clusters, seed=random_state + run_n)[-1]
         clusters = np.array(clusters) - 1
         return clusters, model
@@ -43,6 +44,7 @@ class Model:
     def coca(self, train_Xs, y_train, n_clusters, random_state, run_n):
         base, coca = importr("base"), importr("coca")
         model = self.alg["alg"]
+        train_Xs = model.fit_transform(train_Xs)
         base.set_seed(random_state + run_n)
         clusters = coca.buildMOC(Utils.convert_df_to_r_object(train_Xs), M=len(train_Xs), K=n_clusters)[0]
         clusters = coca.coca(clusters, K=n_clusters)[1]

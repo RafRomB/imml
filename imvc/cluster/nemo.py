@@ -88,7 +88,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         -------
         self :  Fitted estimator.
         """
-        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
         missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
         samples = missing_view_profile.index
 
