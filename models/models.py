@@ -15,7 +15,7 @@ class Model:
         self.alg = alg
 
 
-    def sklearn_method(self, train_Xs, y_train, n_clusters, random_state, run_n):
+    def sklearn_method(self, train_Xs, n_clusters, random_state, run_n):
         model, params = self.alg["alg"], self.alg["params"]
         model = self.alg_name(model=model, n_clusters=n_clusters, random_state=random_state, run_n=run_n)
         clusters = model.fit_predict(train_Xs)
@@ -23,17 +23,17 @@ class Model:
         return clusters, model
 
 
-    def snf(self, train_Xs, y_train, n_clusters, random_state, run_n):
+    def snf(self, train_Xs, n_clusters, random_state, run_n):
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
-        k_snf = np.ceil(len(y_train) / 10).astype(int)
+        k_snf = np.ceil(len(train_Xs[0]) / 10).astype(int)
         affinities = compute.make_affinity(train_Xs, normalize=False, K=k_snf)
         fused = compute.snf(affinities, K=k_snf)
         clusters = spectral_clustering(fused, n_clusters=n_clusters, random_state=random_state + run_n)
         return clusters, model
 
 
-    def intnmf(self, train_Xs, y_train, n_clusters, random_state, run_n):
+    def intnmf(self, train_Xs, n_clusters, random_state, run_n):
         nmf = importr("IntNMF")
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
@@ -43,7 +43,7 @@ class Model:
         return clusters, model
 
 
-    def coca(self, train_Xs, y_train, n_clusters, random_state, run_n):
+    def coca(self, train_Xs, n_clusters, random_state, run_n):
         base, coca = importr("base"), importr("coca")
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
