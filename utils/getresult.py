@@ -13,6 +13,7 @@ from imvc.transformers import MultiViewTransformer, ConcatenateViews, Ampute
 from imvc.utils import DatasetUtils
 
 from models import Model
+from utils import dbcv
 
 
 class GetResult:
@@ -63,18 +64,12 @@ class GetResult:
                 y_train = y_train.loc[train_Xs[0].index]
 
             start_time = time.perf_counter()
-            clusters, model = Model(alg_name=alg_name, alg=alg).method(train_Xs=train_Xs, y_train=y_train,
-                                                                       n_clusters=n_clusters, random_state=random_state,
-                                                                       run_n=run_n)
+            clusters, model = Model(alg_name=alg_name, alg=alg).method(train_Xs=train_Xs, n_clusters=n_clusters,
+                                                                       random_state=random_state, run_n=run_n)
             elapsed_time = time.perf_counter() - start_time
             clusters = pd.Series(clusters, index=y_train.index)
 
-            if alg_name in ["NMFC"]:
-                train_X = model.transform(train_Xs)
-            elif alg_name in ["SNF", "IntNMF", "COCA"]:
-                train_X = model.transform(train_Xs)
-            else:
-                train_X = model[:-1].transform(train_Xs)
+            train_X = model.transform(train_Xs)
             if isinstance(train_X, list):
                 train_X = ConcatenateViews().fit_transform(train_X)
             if not isinstance(train_X, pd.DataFrame):
@@ -112,7 +107,6 @@ class GetResult:
             row[["finished", "comments"]] = True, [dict(errors_dict)]
             with open(error_file, "a") as f:
                 f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {errors_dict} \t {datetime.now()}')
-            # raise
 
         row.to_csv(os.path.join(subresults_path, f"{'_'.join([str(i) for i in idx])}.csv"))
         return row
@@ -205,6 +199,7 @@ class GetResult:
                 "silhouette": metrics.silhouette_score(X = X, labels = y_pred, random_state= random_state),
                 "vrc": metrics.calinski_harabasz_score(X = X, labels = y_pred),
                 "db": metrics.davies_bouldin_score(X = X, labels = y_pred),
+                "dbcv": dbcv(X = X.values, labels = y_pred.values),
                 "dunn": dunn(dist = metrics.pairwise_distances(X), labels = y_pred),
             }
         return unsupervised_metrics
@@ -225,15 +220,26 @@ class GetResult:
     @staticmethod
     def collect_subresults(results, subresults_path, indexes_names):
         subresults_files = pd.Series(os.listdir(subresults_path)).apply(lambda x: os.path.join(subresults_path, x))
-        subresults_files = subresults_files[subresults_files.apply(os.path.isfile)]
-        subresults_files = pd.concat(subresults_files.apply(pd.read_csv).to_list())
-        subresults_files = subresults_files.set_index(indexes_names)
-        results.loc[subresults_files.index, subresults_files.columns] = subresults_files
-        drop_columns = ["comments", "stratified"] if "stratified" in results.select_dtypes(object).columns else "comments"
-        results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")
-        for col in results_.columns:
-            results[col] = results_[col].apply(eval)
+        if len(subresults_files) > 0:
+            subresults_files = subresults_files[subresults_files.apply(os.path.isfile)]
+            subresults_files = pd.concat(subresults_files.apply(pd.read_csv).to_list())
+            subresults_files = subresults_files.set_index(indexes_names)
+            subresults_files = subresults_files[subresults_files["completed"]]
+            results.loc[subresults_files.index, subresults_files.columns] = subresults_files
+            drop_columns = ["comments", "stratified"] if "stratified" in results.select_dtypes(object).columns else "comments"
+            results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")
+            results[results_.columns] = results_.applymap(eval)
         return results
+
+
+    @staticmethod
+    def remove_subresults(results, subresults_path):
+        subresults_to_remove = results.index.to_frame()
+        subresults_to_remove = subresults_to_remove.apply(
+            lambda x: os.path.join(subresults_path, f"{'_'.join([str(i) for i in x])}.csv"), axis=1)
+        subresults_to_remove = subresults_to_remove[subresults_to_remove.apply(os.path.exists)]
+        subresults_to_remove = subresults_to_remove.apply(os.remove)
+        return None
 
 
     @staticmethod
