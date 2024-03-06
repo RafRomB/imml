@@ -109,6 +109,34 @@ else:
 results = results.sort_index(level= "missing_percentage", sort_remaining= False)
 unfinished_results = results.loc[~results["finished"]]
 
+datasets_to_run = [
+    "simulated_gm",
+    "simulated_InterSIM",
+    "simulated_netMUG",
+    "nutrimouse_genotype",
+    "nutrimouse_diet",
+    "bbcsport",
+    "buaa",
+    "metabric",
+    "digits",
+    "bdgp",
+    "tcga",
+    "caltech101",
+    "nuswide",
+]
+algorithms_to_run = [
+    'Concat',
+    'NMFC',
+    'MVSpectralClustering',
+    'MVCoRegSpectralClustering',
+    'GroupPCA',
+    'AJIVE',
+    'SNF',
+    'IntNMF',
+    'COCA'
+]
+unfinished_results = unfinished_results.loc[(datasets_to_run, algorithms_to_run), :]
+
 for dataset_name in unfinished_results.index.get_level_values("dataset").unique():
     names = dataset_name.split("_")
     if "simulated" in names:
