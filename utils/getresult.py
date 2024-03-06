@@ -9,7 +9,7 @@ from reval.utils import kuhn_munkres_algorithm
 from sklearn import metrics
 from sklearn.impute import SimpleImputer
 from validclust import dunn
-from imvc.transformers import MultiViewTransformer, ConcatenateViews, Ampute
+from imvc.transformers import MultiViewTransformer, ConcatenateViews, Amputer
 from imvc.utils import DatasetUtils
 
 from models import Model
@@ -44,8 +44,8 @@ class GetResult:
                         assert n_clusters < len(train_Xs[0]) * (1-p)
                     except AssertionError as exception:
                         raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
-                    amp = Ampute(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n,
-                                 assess_percentage=True, stratify=y_train)
+                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n,
+                                  assess_percentage=True, stratify=y_train)
                     try:
                         train_Xs = amp.fit_transform(train_Xs)
                         strat = True
@@ -53,7 +53,7 @@ class GetResult:
                         amp.set_params(**{"stratify": None})
                         train_Xs = amp.fit_transform(train_Xs)
                 else:
-                    amp = Ampute(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n)
+                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n)
                     train_Xs = amp.fit_transform(train_Xs)
 
             if impute:
@@ -220,15 +220,18 @@ class GetResult:
     @staticmethod
     def collect_subresults(results, subresults_path, indexes_names):
         subresults_files = pd.Series(os.listdir(subresults_path)).apply(lambda x: os.path.join(subresults_path, x))
+        subresults_files = subresults_files[subresults_files.apply(os.path.isfile)]
         if len(subresults_files) > 0:
-            subresults_files = subresults_files[subresults_files.apply(os.path.isfile)]
             subresults_files = pd.concat(subresults_files.apply(pd.read_csv).to_list())
             subresults_files = subresults_files.set_index(indexes_names)
             subresults_files = subresults_files[subresults_files["completed"]]
             results.loc[subresults_files.index, subresults_files.columns] = subresults_files
-            drop_columns = ["comments", "stratified"] if "stratified" in results.select_dtypes(object).columns else "comments"
-            results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")
-            results[results_.columns] = results_.applymap(eval)
+        drop_columns = ["comments", "stratified"] if "stratified" in results.select_dtypes(object).columns else "comments"
+        results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")
+        try:
+            results[results_.columns] = results_.parallel_applymap(lambda x: eval(str(x)))
+        except:
+            results[results_.columns] = results_.applymap(lambda x: eval(str(x)))
         return results
 
 
