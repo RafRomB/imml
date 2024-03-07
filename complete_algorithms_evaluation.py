@@ -27,10 +27,11 @@ error_file = os.path.join(folder_results, 'errors.txt')
 random_state = 42
 
 # args = lambda: None
-# args.continue_benchmarking, args.n_jobs = True, 2
+# args.continue_benchmarking, args.n_jobs, args.save_results = True, 2, False
 parser = argparse.ArgumentParser()
 parser.add_argument('-continue_benchmarking', default= False, action='store_true')
 parser.add_argument('-n_jobs', default= 1, type= int)
+parser.add_argument('-save_results', default= False, action='store_true')
 args = parser.parse_args()
 
 if args.n_jobs > 1:
@@ -90,7 +91,8 @@ results = GetResult.create_results_table(datasets=datasets, indexes_results=inde
 if not args.continue_benchmarking:
     if not eval(input("Are you sure you want to start benchmarking and delete previous results? (True/False)")):
         raise Exception
-    results.to_csv(file_path)
+    if args.save_results:
+        results.to_csv(file_path)
 
     shutil.rmtree(subresults_path, ignore_errors=True)
     os.mkdir(subresults_path)
@@ -167,7 +169,9 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
                                                                       error_file=error_file), axis= 1)
             results = GetResult.collect_subresults(results=results.copy(), subresults_path=subresults_path,
                                                    indexes_names=indexes_names)
-            results.to_csv(file_path)
+
+            if args.save_results:
+                results.to_csv(file_path)
 
             unfinished_results_dataset_idx = unfinished_results_dataset.drop(unfinished_results_dataset_idx).index
             iterator = pd.DataFrame(unfinished_results_dataset_idx.to_list(), columns=indexes_names)
@@ -183,6 +187,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
                                                                   error_file=error_file), axis= 1)
         results = GetResult.collect_subresults(results=results.copy(), subresults_path=subresults_path,
                                                indexes_names=indexes_names)
-        results.to_csv(file_path)
+        if args.save_results:
+            results.to_csv(file_path)
         GetResult.remove_subresults(results=results, subresults_path=subresults_path)
 
