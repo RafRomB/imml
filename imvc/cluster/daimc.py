@@ -22,19 +22,25 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     n_clusters : int or list-of-int
         The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
          with this range of number of clusters to choose between.
+    afa : float, default 1e1
+        nonnegative.
+    beta : float, default 1e0
+        Define the trade-off between sparsity and accuracy of regression for the i-th view.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
-.    verbose : bool, default=False
+.   verbose : bool, default=False
         Verbosity mode.
 
     Attributes
     ----------
     labels_ : array-like of shape (n_samples,)
         Predicted modules in training data.
-    n_clusters_ : int
-        Final number of clusters.
-    num_neighbors_ : int
-        Final number of neighbors.
+    u_ : np.array
+        Basis matrix.
+    v_ : np.array
+        Commont latent feature matrix.
+    b_ : np.array
+        Regression coefficient matrices.
 
     References
     ----------
@@ -61,7 +67,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters, afa: float = 0.0001, beta: float = 10000, random_state:int = None, verbose = False):
+    def __init__(self, n_clusters, afa: float = 1e1, beta: float = 1e0, random_state:int = None, verbose = False):
         self.n_clusters = n_clusters
         self.options = {"afa": afa, "beta": beta}
         self.random_state = random_state
@@ -111,6 +117,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)
+        self.u_ = u
+        self.v_ = v
+        self.b_ = b
 
         return self
 
