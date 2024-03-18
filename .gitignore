@@ -130,3 +130,6 @@ dmypy.json
 
 # test
 test.py
+
+# data
+imvc/datasets/data/
