@@ -3,6 +3,7 @@ import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
+from ..transformers import FillIncompleteSamples
 from ..utils import check_Xs, DatasetUtils
 
 
@@ -67,9 +68,11 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters, afa: float = 1e1, beta: float = 1e0, random_state:int = None, verbose = False):
+    def __init__(self, n_clusters: int = 8, afa: float = 1e1, beta: float = 1e0, random_state:int = None,
+                 verbose = False):
         self.n_clusters = n_clusters
-        self.options = {"afa": afa, "beta": beta}
+        self.afa = afa
+        self.beta = beta
         self.random_state = random_state
         self.verbose = verbose
 
@@ -107,13 +110,14 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
         missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-        transformed_train_Xs = [X.T for X in Xs]
+        transformed_train_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
+        transformed_train_Xs = [X.T for X in transformed_train_Xs]
         transformed_train_Xs = tuple(transformed_train_Xs)
 
         w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
         u_0, v_0, b_0 = oc.newinit(transformed_train_Xs, w, self.n_clusters, len(transformed_train_Xs), nout=3)
         u, v, b, f, p, n = oc.DAIMC(transformed_train_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
-                                    len(transformed_train_Xs), self.options, nout=6)
+                                    len(transformed_train_Xs), {"afa": self.afa, "beta": self.beta}, nout=6)
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)

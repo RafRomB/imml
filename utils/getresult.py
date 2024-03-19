@@ -20,7 +20,8 @@ class GetResult:
 
 
     @staticmethod
-    def run_iteration(idx, results, Xs, y, n_clusters, algorithms, random_state, subresults_path, logs_file, error_file):
+    def run_iteration(idx, results, Xs, y, n_clusters, algorithms, incomplete_algorithms,
+                      random_state, subresults_path, logs_file, error_file):
         errors_dict = defaultdict(int)
         row = results.loc[[idx]]
         try:
@@ -59,7 +60,7 @@ class GetResult:
             if impute:
                 train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(
                     transform="pandas")).fit_transform(train_Xs)
-            else:
+            elif not incomplete_algorithms:
                 train_Xs = DatasetUtils.select_complete_samples(Xs=train_Xs)
                 y_train = y_train.loc[train_Xs[0].index]
 
@@ -72,6 +73,8 @@ class GetResult:
             train_X = model.transform(train_Xs)
             if isinstance(train_X, list):
                 train_X = ConcatenateViews().fit_transform(train_X)
+            if train_X.isna().any().any():
+                train_X = SimpleImputer(strategy="mean").fit_transform(train_X)
             if not isinstance(train_X, pd.DataFrame):
                 train_X = pd.DataFrame(train_X, index=y_train.index)
 

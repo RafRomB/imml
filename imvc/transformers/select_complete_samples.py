@@ -24,9 +24,9 @@ class SelectCompleteSamples(FunctionTransformer):
     --------
     >>> from imvc.datasets import LoadDataset
 
-    >>> from imvc.transformers import FillMissingViews
+    >>> from imvc.transformers import FillIncompleteSamples
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> transformer = FillMissingViews()
+    >>> transformer = FillIncompleteSamples()
     >>> transformer.fit_transform(Xs)
     """
 

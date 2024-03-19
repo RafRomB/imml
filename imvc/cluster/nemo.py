@@ -61,7 +61,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters, num_neighbors = None, num_neighbors_ratio:int = 6, metric='sqeuclidean',
+    def __init__(self, n_clusters: int = 8, num_neighbors = None, num_neighbors_ratio:int = 6, metric='sqeuclidean',
                  random_state:int = None, verbose = False):
         self.n_clusters = n_clusters
         self.num_neighbors = num_neighbors
@@ -100,9 +100,10 @@ class NEMO(BaseEstimator, ClassifierMixin):
             self.num_neighbors_ = self.num_neighbors
 
         affinity_matrix = pd.DataFrame(np.zeros((len(samples), len(samples))), columns = samples, index = samples)
-        for X, neigh in zip(Xs, self.num_neighbors_):
+        for X, neigh, view_idx in zip(Xs, self.num_neighbors_, range(len(Xs))):
+            X = X.loc[missing_view_profile[view_idx].astype(bool)]
             sim_data = pd.DataFrame(snf.make_affinity(X, metric = self.metric, K=neigh, normalize=False),
-                                    index= X.index, columns= X.index)
+                                        index= X.index, columns= X.index)
             sim_data = sim_data.apply(pd.Series.nlargest, n=neigh, axis=1).fillna(0)
             row_sum = sim_data.sum(1)
             sim_data /= row_sum

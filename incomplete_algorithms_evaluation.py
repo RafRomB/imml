@@ -1,120 +1,175 @@
-import itertools
 import os.path
-import time
-from collections import defaultdict
+import argparse
+import shutil
 import numpy as np
+from pandarallel import pandarallel
 import pandas as pd
-import torch
-from pytorch_lightning import Trainer
-from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import LabelEncoder
-from torch.utils.data import DataLoader
-
-from imvc.pipelines import MOFAPipeline, MONETPipeline, MSNEPipeline, SUMOPipeline, DeepMFPipeline, DFMFPipeline, \
-    NEMOPipeline
+from sklearn.preprocessing import StandardScaler, FunctionTransformer
 from imvc.datasets import LoadDataset
-from imvc.transformers.deepmf import DeepMFDataset, DeepMF
-from imvc.utils import DatasetUtils
-from imvc.transformers import ConcatenateViews
-from imvc.utils.utils import BugInMONET
-from utils.getresult import save_record
+from imvc.transformers import MultiViewTransformer
+from imvc.cluster import NEMO, DAIMC
 
-random_state = 0
-START_BENCHMARKING = False
-folder_name = "results"
+from utils.getresult import GetResult
+
+
+folder_results = "results"
+folder_subresults = "incomplete_subresults"
 filelame = "incomplete_algorithms_evaluation.csv"
-file_path = os.path.join(folder_name, filelame)
+file_path = os.path.join(folder_results, filelame)
+subresults_path = os.path.join(folder_results, folder_subresults)
+logs_file = os.path.join(folder_results, 'incomplete_logs.txt')
+error_file = os.path.join(folder_results, 'incomplete_errors.txt')
 
-Xs, y = LoadDataset.load_incomplete_nutrimouse(p = 0, return_y = True, random_state = random_state)
-nutrimouse_genotype = Xs, LabelEncoder().fit_transform(y[0]), y[0].squeeze().nunique(), "nutrimouse_genotype"
-nutrimouse_diet = Xs, LabelEncoder().fit_transform(y[1]), y[1].squeeze().nunique(), "nutrimouse_diet"
-datasets = [nutrimouse_genotype, nutrimouse_diet]
-probs = np.arange(0., 1., step= 0.1).round(1)
+random_state = 42
+
+# args = lambda: None
+# args.continue_benchmarking, args.n_jobs, args.save_results = True, 2, False
+parser = argparse.ArgumentParser()
+parser.add_argument('-continue_benchmarking', default= False, action='store_true')
+parser.add_argument('-n_jobs', default= 1, type= int)
+parser.add_argument('-save_results', default= False, action='store_true')
+args = parser.parse_args()
+
+if args.n_jobs > 1:
+    pandarallel.initialize(nb_workers= args.n_jobs)
+
+datasets = [
+    "simulated_gm",
+    "simulated_InterSIM",
+    "simulated_netMUG",
+    "nutrimouse_genotype",
+    "nutrimouse_diet",
+    "bbcsport",
+    "buaa",
+    "metabric",
+    "digits",
+    "bdgp",
+    "tcga",
+    "caltech101",
+    "nuswide",
+]
+two_view_datasets = ["simulated_gm", "nutrimouse_genotype", "nutrimouse_diet", "metabric", "bdgp",
+                     "buaa", "simulated_netMUG"]
+amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR']
+probs = np.arange(100, step= 10)
+imputation = [True, False]
+runs_per_alg = np.arange(25)
 algorithms = {
-    "MOFA": {"alg": MOFAPipeline, "params": {}},
-    "MONET": {"alg": MONETPipeline, "params": {"n_jobs":8}},
-    "DFMF": {"alg": DFMFPipeline, "params": {}},
-    "MSNE": {"alg": MSNEPipeline, "params": {"n_jobs":8}},
-    "SUMO": {"alg": SUMOPipeline, "params": {"sumo__neighbours": 0.1}},
-    "NEMO": {"alg": NEMOPipeline, "params": {}},
-    # "DeepMF": {"alg": DeepMFPipeline, "params": {"max_epochs":10}},
+    "NEMO": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
+                                  NEMO()),
+                                  "params": {}},
+    "DAIMC": {"alg": make_pipeline(
+        MultiViewTransformer(FunctionTransformer(lambda x: x.divide(x.pow(2).sum(axis=1).pow(1/2), axis= 0))),
+        DAIMC()),
+        "params": {}},
 }
-runs_per_alg = np.arange(10).tolist()
+incomplete_algorithms = True
+indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()), "missing_percentage": probs,
+                   "amputation_mechanism": amputation_mechanisms, "imputation": imputation, "run_n": runs_per_alg}
+indexes_names = list(indexes_results.keys())
+results = GetResult.create_results_table(datasets=datasets, indexes_results=indexes_results,
+                                         indexes_names=indexes_names, amputation_mechanisms=amputation_mechanisms,
+                                         two_view_datasets=two_view_datasets)
 
-iterations = itertools.product(algorithms.items(), datasets, probs, runs_per_alg)
+if not args.continue_benchmarking:
+    if not eval(input("Are you sure you want to start benchmarking and delete previous results? (True/False)")):
+        raise Exception
+    if args.save_results:
+        results.to_csv(file_path)
 
-if START_BENCHMARKING:
-    results = pd.DataFrame()
+    shutil.rmtree(subresults_path, ignore_errors=True)
+    os.mkdir(subresults_path)
+
+    os.remove(logs_file) if os.path.exists(logs_file) else None
+    os.remove(error_file) if os.path.exists(error_file) else None
+    open(logs_file, 'w').close()
+    open(error_file, 'w').close()
 else:
-    results = pd.read_csv(file_path)
+    finished_results = pd.read_csv(file_path, index_col= indexes_names)
+    results.loc[finished_results.index, finished_results.columns] = finished_results
+    finished_results = GetResult.collect_subresults(results=results.copy(), subresults_path=subresults_path,
+                                                    indexes_names=indexes_names)
+    results.loc[finished_results.index, finished_results.columns] = finished_results
 
-for (alg_name, alg_comp), (Xs, y, n_clusters, dataset_name), p, i in iterations:
-    alg = alg_comp["alg"]
-    params = alg_comp["params"]
+results = results.xs(False, level="imputation", drop_level=False)
+results = results.sort_index(level= "missing_percentage", sort_remaining= False)
+unfinished_results = results.loc[~results["finished"]]
 
-    if not START_BENCHMARKING:
-        checking_results = ((results["alg"] == alg_name) & (results["dataset"] == dataset_name)
-                            & (results["% incomplete samples"] == int(100*p)) & (results["execution"] == i))
-        if not results[checking_results].empty:
-            continue
+datasets_to_run = [
+    "simulated_gm",
+    "simulated_InterSIM",
+    "simulated_netMUG",
+    "nutrimouse_genotype",
+    "nutrimouse_diet",
+    "bbcsport",
+    "buaa",
+    "metabric",
+    "digits",
+    "bdgp",
+    "tcga",
+    "caltech101",
+    "nuswide",
+]
+algorithms_to_run = [
+    'NEMO',
+    'DAIMC'
+]
+unfinished_results = unfinished_results.loc[(datasets_to_run, algorithms_to_run), :]
 
-    incomplete_Xs = DatasetUtils.ampute(Xs=Xs, p=p, assess_percentage = True,
-                                        random_state = random_state + i)
-    print(f"Algorithm: {alg_name} \t Dataset: {dataset_name} \t Missing: {p} \t Iteration: {i}")
-    if alg_name == "MONET":
-        model = alg(random_state = random_state + i, **params)
-    elif alg_name in ["DeepMF"]:
-        X = model[:-2].fit_transform(Xs)
-        X = torch.from_numpy(X.values)
-        train_data = DeepMFDataset(X=X)
-        train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
-        trainer = Trainer(**params, logger=False, enable_checkpointing=False)
-        ann = DeepMF(X=X)
-        trainer.fit(ann, train_dataloader)
-        incomplete_Xs = trainer.predict(ann, train_dataloader)
-        model = model[-2:]
+for dataset_name in unfinished_results.index.get_level_values("dataset").unique():
+    names = dataset_name.split("_")
+    if "simulated" in names:
+        names = ["_".join(names)]
+    x_name,y_name = names if len(names) > 1 else (names[0], "0")
+    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle= False)
+    y = y[y_name]
+    n_clusters = y.nunique()
+    unfinished_results_dataset = unfinished_results.loc[[dataset_name]]
 
+    if args.n_jobs == 1:
+        iterator = pd.DataFrame(unfinished_results_dataset.index.to_list(), columns=indexes_names)
+        iterator.apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
+                                                         algorithms=algorithms,
+                                                         incomplete_algorithms=incomplete_algorithms,
+                                                         random_state=random_state,
+                                                         subresults_path=subresults_path, logs_file=logs_file,
+                                                         error_file=error_file), axis= 1)
     else:
-        model = alg(n_clusters=n_clusters, random_state = random_state + i, **params)
-    errors_dict = defaultdict(int)
-    while True:
-        try:
-            start_time = time.perf_counter()
-            clusters = model.fit_predict(incomplete_Xs)
-            break
-        except BugInMONET as exception:
-            model.estimator.set_params(random_state=model.estimator.random_state + 1)
-            errors_dict[type(exception).__name__] += 1
-            print(errors_dict)
-            if sum(errors_dict.values()) == 100:
-                break
-        except NameError as exception:
-            model.estimator.set_params(random_state=model.estimator.random_state + 1)
-            errors_dict[type(exception).__name__] += 1
-            print(errors_dict)
-            if sum(errors_dict.values()) == 100:
-                break
-    if sum(errors_dict.values()) == 100:
-        continue
-    elapsed_time = time.perf_counter() - start_time
-    if alg_name in ["MOFA", "DFMF"]:
-        X = make_pipeline(*model.transformers).transform(incomplete_Xs)
-    elif alg_name in ["DeepMF"]:
-        continue
-    else:
-        X = make_pipeline(*model.transformers).transform(incomplete_Xs)
-        X = make_pipeline(ConcatenateViews(), SimpleImputer().set_output(transform="pandas")).fit_transform(X)
+        if 0 in unfinished_results_dataset.index.get_level_values("missing_percentage"):
+            unfinished_results_dataset_idx = unfinished_results_dataset.xs(0, level="missing_percentage",
+                                                                           drop_level=False).index
+            iterator = pd.DataFrame(unfinished_results_dataset_idx.to_list(), columns= indexes_names)
+            iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+                                                                      n_clusters=n_clusters,
+                                                                      algorithms=algorithms,
+                                                                      incomplete_algorithms=incomplete_algorithms,
+                                                                      random_state=random_state,
+                                                                      subresults_path=subresults_path,
+                                                                      logs_file=logs_file,
+                                                                      error_file=error_file), axis= 1)
+            results = GetResult.collect_subresults(results=results.copy(), subresults_path=subresults_path,
+                                                   indexes_names=indexes_names)
 
-    mask = ~np.isnan(clusters)
-    labels_pred = np.nan_to_num(clusters, nan = -1).astype(int)
-    labels_pred = pd.factorize(labels_pred)[0]
-    random_preds = [pd.Series(y).value_counts().index[0]] * len(y)
+            if args.save_results:
+                results.to_csv(file_path)
 
-    dict_results = save_record(clusters_excluding_missing=labels_pred, y=y, X=X, random_state=random_state, alg_name=alg_name,
-                               dataset_name=dataset_name, p=p, elapsed_time=elapsed_time, i=i, random_preds=random_preds,
-                               clusters=clusters, mask=mask, errors_dict=errors_dict)
+            unfinished_results_dataset_idx = unfinished_results_dataset.drop(unfinished_results_dataset_idx).index
+            iterator = pd.DataFrame(unfinished_results_dataset_idx.to_list(), columns=indexes_names)
+        else:
+            iterator = pd.DataFrame(unfinished_results_dataset.index.to_list(), columns=indexes_names)
 
-    results = pd.concat([results, pd.DataFrame([dict_results])])
-    results.to_csv(file_path, index=False)
+        iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+                                                                  n_clusters=n_clusters,
+                                                                  algorithms=algorithms,
+                                                                  incomplete_algorithms=incomplete_algorithms,
+                                                                  random_state=random_state,
+                                                                  subresults_path=subresults_path,
+                                                                  logs_file=logs_file,
+                                                                  error_file=error_file), axis= 1)
+        results = GetResult.collect_subresults(results=results.copy(), subresults_path=subresults_path,
+                                               indexes_names=indexes_names)
+        if args.save_results:
+            results.to_csv(file_path)
+        GetResult.remove_subresults(results=results, subresults_path=subresults_path)
 

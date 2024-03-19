@@ -176,10 +176,14 @@ class Amputer(BaseEstimator, TransformerMixin):
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
             mask = self.MNAR_self_mask_logistic(X=X, p=self.p)
         elif self.mechanism == "MCAR":
-            mask = (np.random.default_rng(self.random_state).random(X.shape) < self.p)
+            mask = np.random.default_rng(self.random_state).random(X.shape) < self.p
         else:
             raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
 
+        views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1], size=len(X))
+        samples_to_fix = (mask == True).all(1)
+        for view_idx in np.unique(views_to_fix):
+            mask[samples_to_fix, view_idx] = False
         X[mask.astype(bool)] = np.nan
         return X
 

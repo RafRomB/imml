@@ -1,5 +1,5 @@
 from . import BasePipeline
-from ..transformers import ConvertToNM, FillMissingViews, MultiViewTransformer, ConcatenateViews, SortData
+from ..transformers import ConvertToNM, FillIncompleteSamples, MultiViewTransformer, ConcatenateViews, SortData
 from ..algorithms import NMFC
 
 
@@ -43,6 +43,6 @@ class NMFCPipeline(BasePipeline):
 
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = NMFC(n_components=n_clusters, random_state=random_state).set_output(transform='pandas')
-        transformers = [FillMissingViews(value="mean"), MultiViewTransformer(ConvertToNM()), ConcatenateViews()]
+        transformers = [FillIncompleteSamples(value="mean"), MultiViewTransformer(ConvertToNM()), ConcatenateViews()]
         super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose,
                          random_state=random_state, **args)

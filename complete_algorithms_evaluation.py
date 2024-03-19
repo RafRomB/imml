@@ -81,6 +81,7 @@ algorithms = {
     "IntNMF": {"alg": MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), "params": {}},
     "COCA": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
 }
+incomplete_algorithms = False
 indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()), "missing_percentage": probs,
                    "amputation_mechanism": amputation_mechanisms, "imputation": imputation, "run_n": runs_per_alg}
 indexes_names = list(indexes_results.keys())
@@ -152,7 +153,9 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
     if args.n_jobs == 1:
         iterator = pd.DataFrame(unfinished_results_dataset.index.to_list(), columns=indexes_names)
         iterator.apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
-                                                         algorithms=algorithms, random_state=random_state,
+                                                         algorithms=algorithms,
+                                                         incomplete_algorithms=incomplete_algorithms,
+                                                         random_state=random_state,
                                                          subresults_path=subresults_path, logs_file=logs_file,
                                                          error_file=error_file), axis= 1)
     else:
@@ -163,6 +166,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
             iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
                                                                       n_clusters=n_clusters,
                                                                       algorithms=algorithms,
+                                                                      incomplete_algorithms=incomplete_algorithms,
                                                                       random_state=random_state,
                                                                       subresults_path=subresults_path,
                                                                       logs_file=logs_file,
@@ -181,6 +185,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
         iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
                                                                   n_clusters=n_clusters,
                                                                   algorithms=algorithms,
+                                                                  incomplete_algorithms=incomplete_algorithms,
                                                                   random_state=random_state,
                                                                   subresults_path=subresults_path,
                                                                   logs_file=logs_file,
