@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler, FunctionTransformer
 
 from . import BasePipeline
-from ..transformers import SortData, FillMissingViews, MultiViewTransformer
+from ..transformers import SortData, FillIncompleteSamples, MultiViewTransformer
 
 
 class DeepMFPipeline(BasePipeline):
@@ -40,7 +40,7 @@ class DeepMFPipeline(BasePipeline):
 
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
-        transformers = [SortData(), FillMissingViews(value="mean"),
+        transformers = [SortData(), FillIncompleteSamples(value="mean"),
                         StandardScaler().set_output(transform='pandas'),
                         MultiViewTransformer(FunctionTransformer(lambda x: torch.from_numpy(x.values).float()))]
         super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose,

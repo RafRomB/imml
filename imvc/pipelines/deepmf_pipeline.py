@@ -2,7 +2,7 @@ import numpy as np
 from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler, FunctionTransformer
 
-from ..transformers import FillMissingViews, SortData, ConcatenateViews
+from ..transformers import FillIncompleteSamples, SortData, ConcatenateViews
 from . import BasePipeline
 
 
@@ -50,7 +50,7 @@ class DeepMFPipeline(BasePipeline):
 
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
-        transformers = [SortData(), FillMissingViews(value="mean"), ConcatenateViews(),
+        transformers = [SortData(), FillIncompleteSamples(value="mean"), ConcatenateViews(),
                         StandardScaler().set_output(transform='pandas'), FunctionTransformer(np.concatenate),
                         StandardScaler().set_output(transform='pandas')]
         super().__init__(estimator = estimator, transformers = transformers, memory = memory, verbose = verbose,

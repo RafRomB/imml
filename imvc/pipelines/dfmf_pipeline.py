@@ -2,7 +2,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 from . import BasePipeline
-from ..transformers import SortData, FillMissingViews, MultiViewTransformer
+from ..transformers import SortData, FillIncompleteSamples, MultiViewTransformer
 from ..decomposition import DFMF
 
 
@@ -40,7 +40,7 @@ class DFMFPipeline(BasePipeline):
 
     def __init__(self, n_clusters: int = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = KMeans(n_clusters = n_clusters, random_state=random_state)
-        transformers = [SortData(), FillMissingViews(value="mean"),
+        transformers = [SortData(), FillIncompleteSamples(value="mean"),
                         MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas')),
                         DFMF().set_output(transform='pandas'),
                         StandardScaler().set_output(transform='pandas')]

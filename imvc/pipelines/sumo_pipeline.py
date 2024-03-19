@@ -2,7 +2,7 @@ from sklearn.preprocessing import StandardScaler
 
 from ..algorithms import SUMO
 from . import BasePipeline
-from ..transformers import SortData, MultiViewTransformer, FillMissingViews
+from ..transformers import SortData, MultiViewTransformer, FillIncompleteSamples
 
 
 class SUMOPipeline(BasePipeline):
@@ -37,7 +37,7 @@ class SUMOPipeline(BasePipeline):
 
     def __init__(self, n_clusters = None, memory=None, verbose=False, random_state : int = None, **args):
         estimator = SUMO(n_clusters= n_clusters, random_state=random_state)
-        transformers = [SortData(), FillMissingViews(value="mean"),
+        transformers = [SortData(), FillIncompleteSamples(value="mean"),
                         MultiViewTransformer(transformer=StandardScaler().set_output(transform='pandas'))]
         super().__init__(estimator=estimator, transformers=transformers, memory=memory, verbose=verbose,
                          n_clusters=estimator.n_clusters, random_state=random_state, **args)

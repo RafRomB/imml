@@ -32,9 +32,9 @@ class BasePipeline(Pipeline):
     >>> from imvc.datasets import LoadDataset
 
     >>> from imvc.pipelines import BasePipeline
-    >>> from imvc.transformers import FillMissingViews, ConcatenateViews
+    >>> from imvc.transformers import FillIncompleteSamples, ConcatenateViews
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> pipeline = BasePipeline(n_clusters = 3, transformers = [FillMissingViews(value='mean'), ConcatenateViews()])
+    >>> pipeline = BasePipeline(n_clusters = 3, transformers = [FillIncompleteSamples(value='mean'), ConcatenateViews()])
     >>> pipeline.fit_predict(Xs)
     """
 

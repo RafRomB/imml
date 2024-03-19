@@ -5,26 +5,31 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from ..utils import DatasetUtils, check_Xs
 
 
-class FillMissingViews(BaseEstimator, TransformerMixin):
+class FillIncompleteSamples(BaseEstimator, TransformerMixin):
     r"""
-    Fill missing samples in different views of a dataset using a specified method.
+    Fill incomplete samples of a dataset using a specified method.
+
     Parameters
     ----------
     value : str, optional (default='mean')
-        The method to use for filling missing samples. Possible values:
+        The method to use for filling missing views. Possible values:
         - 'mean': replace missing samples with the mean of each feature in the corresponding view
         - 'zeros': replace missing samples with zeros
         - 'nan': replace missing samples with NaN
+
     Attributes
     ----------
     features_view_mean_list_ : array-like of shape (n_views,)
         The mean value of each feature in the corresponding view, if value='mean'
     Examples
     --------
+    >>> from imvc.utils import DatasetUtils
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import FillMissingViews
-    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> transformer = FillMissingViews(value = 'mean')
+    >>> from imvc.transformers import FillIncompleteSamples, Amputer
+    >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
+    >>> amp = Amputer(p=0.3, mechanism="EDM")
+    >>> Xs = amp.fit_transform(Xs)
+    >>> transformer = FillIncompleteSamples(value = 'mean')
     >>> transformer.fit_transform(Xs)
     """
 
@@ -40,6 +45,7 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
     def fit(self, Xs, y=None):
         r"""
         Fit the transformer to the input data.
+
         Parameters
         ----------
         Xs : list of array-likes
@@ -53,7 +59,7 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
         self :  returns and instance of self.
         """
 
-        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if self.value == "mean":
             self.features_view_mean_list_ = [X.mean() for X in Xs]
         elif self.value == "zeros":
@@ -64,6 +70,7 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
     def transform(self, Xs):
         r"""
         Transform the input data by filling missing samples.
+
         Parameters
         ----------
         Xs : list of array-likes
@@ -76,9 +83,9 @@ class FillMissingViews(BaseEstimator, TransformerMixin):
             The transformed data with filled missing samples.
         """
 
-        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
-        sample_views = DatasetUtils.get_missing_view_profile(Xs = Xs)
-        missing_views = sample_views == 1
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs = Xs)
+        missing_views = missing_view_profile == 1
         n_samples = len(missing_views)
 
         transformed_Xs = []
