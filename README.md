@@ -56,6 +56,10 @@ for clustering datasets and provide step-by-step instructions for each example.
 For more details on the usage and available options for each class, please refer 
 to the documentation.
 
+## Solutions
+
+If you need to run algorithms in Octave (MATLAB), you will need to have it in your system. A common way to install it is using: apt install octave.
+
 ## Contributing
 
 This package is open-source and contributions are welcome! If you find any issues or 
