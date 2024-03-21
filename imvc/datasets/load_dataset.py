@@ -1,8 +1,9 @@
 import os
 from os.path import dirname
 import pandas as pd
-from imvc.utils import DatasetUtils
 import json
+
+from ..utils import DatasetUtils
 
 
 class LoadDataset:
