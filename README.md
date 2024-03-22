@@ -7,14 +7,30 @@ It implements different transformers, algorithms and pipelines for
 this task.
 
 IMC is usually a hard problem because of the following reasons:
-- **Heterogeneity of views**: IMC deals with data represented by multiple views, each of which may have a different representation or encoding of the same underlying information. This heterogeneity can make it challenging to compare and integrate the different views, especially when some of the views are missing. 
-- **Missing data**: In IMC, some views may be missing for some samples, making it challenging to determine how to cluster the data. This missing data can lead to incomplete or biased representations of the underlying patterns in the data. 
-- **Dimensionality**: IMC often involves high-dimensional data, which can make it difficult to extract meaningful patterns and identify clusters in the data. Moreover, different views may have different dimensions, which can further complicate the clustering process. 
-- **Scalability**: IMC may involve large amounts of data, making it computationally expensive and challenging to scale to larger datasets.
+- **Heterogeneity of views**: IMC deals with data represented by multiple views, each of which may have a different 
+representation or encoding of the same underlying information. This heterogeneity can make it challenging to compare
+and integrate the different views, especially when some of the views are missing. 
+- **Missing data**: In IMC, some views may be missing for some samples, making it challenging to determine how to 
+cluster the data. This missing data can lead to incomplete or biased representations of the underlying patterns in 
+the data. 
+- **Dimensionality**: IMC often involves high-dimensional data, which can make it difficult to extract meaningful 
+patterns and identify clusters in the data. Moreover, different views may have different dimensions, which can further
+complicate the clustering process. 
+- **Scalability**: IMC may involve large amounts of data, making it computationally expensive and challenging to scale
+to larger datasets.
 
-Addressing these challenges requires the development of specialized algorithms and techniques that can effectively handle incomplete multi-view data and extract meaningful patterns and clusters from it.
+Addressing these challenges requires the development of specialized algorithms and techniques that can effectively
+handle incomplete multi-view data and extract meaningful patterns and clusters from it.
 
 ## Installation
+
+As a prerequisite, you will need to have Octave (MATLAB) and R in your machine. You can install them using the 
+following commandas:
+
+```bash
+apt install octave
+sudo apt install r-base r-base-dev -y
+```
 
 The easiest way to install this package is using pip. Simply run the following command:
 
@@ -55,10 +71,6 @@ started with using this package. These notebooks demonstrate how to use the pack
 for clustering datasets and provide step-by-step instructions for each example. 
 For more details on the usage and available options for each class, please refer 
 to the documentation.
-
-## Solutions
-
-If you need to run algorithms in Octave (MATLAB), you will need to have it in your system. A common way to install it is using: apt install octave.
 
 ## Contributing
 

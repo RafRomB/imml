@@ -3,6 +3,8 @@ import pandas as pd
 import snf
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import SpectralClustering
+from rpy2.robjects.packages import importr
+
 
 from ..utils import DatasetUtils, check_Xs
 
@@ -34,6 +36,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
         multiple arrays a provided an equal number of metrics may be supplied.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
+    engine : str, default=matlab
+        Engine to use for computing the model.
 .    verbose : bool, default=False
         Verbosity mode.
 
@@ -62,12 +66,13 @@ class NEMO(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, n_clusters: int = 8, num_neighbors = None, num_neighbors_ratio:int = 6, metric='sqeuclidean',
-                 random_state:int = None, verbose = False):
+                 random_state:int = None, engine: str = "python", verbose = False):
         self.n_clusters = n_clusters
         self.num_neighbors = num_neighbors
         self.num_neighbors_ratio = num_neighbors_ratio
         self.metric = metric
         self.random_state = random_state
+        self.engine = engine
         self.verbose = verbose
 
 
@@ -89,34 +94,48 @@ class NEMO(BaseEstimator, ClassifierMixin):
         self :  Fitted estimator.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
-        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-        samples = missing_view_profile.index
 
-        if self.num_neighbors is None:
-            self.num_neighbors_ = [round(len(X)/self.num_neighbors_ratio) for X in Xs]
-        elif not isinstance(self.num_neighbors, list):
-            self.num_neighbors_ = [self.num_neighbors]*len(Xs)
+        if self.engine == 'python':
+            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+            samples = missing_view_profile.index
+
+            if self.num_neighbors is None:
+                self.num_neighbors_ = [round(len(X)/self.num_neighbors_ratio) for X in Xs]
+            elif not isinstance(self.num_neighbors, list):
+                self.num_neighbors_ = [self.num_neighbors]*len(Xs)
+            else:
+                self.num_neighbors_ = self.num_neighbors
+
+            affinity_matrix = pd.DataFrame(np.zeros((len(samples), len(samples))), columns = samples, index = samples)
+            for X, neigh, view_idx in zip(Xs, self.num_neighbors_, range(len(Xs))):
+                X = X.loc[missing_view_profile[view_idx].astype(bool)]
+                sim_data = pd.DataFrame(snf.make_affinity(X, metric = self.metric, K=neigh, normalize=False),
+                                            index= X.index, columns= X.index)
+                sim_data = sim_data.apply(pd.Series.nlargest, n=neigh, axis=1).fillna(0)
+                row_sum = sim_data.sum(1)
+                sim_data /= row_sum
+                sim_data += sim_data.T
+                affinity_matrix.loc[sim_data.index, sim_data.columns] += sim_data
+
+            affinity_matrix /= missing_view_profile.sum(1)
+
+            self.n_clusters_ = self.n_clusters if isinstance(self.n_clusters, int) else \
+                snf.get_n_clusters(arr= affinity_matrix.values, n_clusters= self.n_clusters)[0]
+
+            model = SpectralClustering(n_clusters= self.n_clusters_, random_state= self.random_state)
+            labels = model.fit_predict(X= affinity_matrix)
+
+        elif self.engine == "R":
+            nemo = importr("nemo")
+            clustering = nemo.nemo_clustering(omics_list = Xs, num_clusters= self.n_clusters,
+                                              num_neighbors= self.num_neighbors)
+            #todo
+            labels = clustering
+
         else:
-            self.num_neighbors_ = self.num_neighbors
+            raise ValueError("Only supports R and python engines.")
 
-        affinity_matrix = pd.DataFrame(np.zeros((len(samples), len(samples))), columns = samples, index = samples)
-        for X, neigh, view_idx in zip(Xs, self.num_neighbors_, range(len(Xs))):
-            X = X.loc[missing_view_profile[view_idx].astype(bool)]
-            sim_data = pd.DataFrame(snf.make_affinity(X, metric = self.metric, K=neigh, normalize=False),
-                                        index= X.index, columns= X.index)
-            sim_data = sim_data.apply(pd.Series.nlargest, n=neigh, axis=1).fillna(0)
-            row_sum = sim_data.sum(1)
-            sim_data /= row_sum
-            sim_data += sim_data.T
-            affinity_matrix.loc[sim_data.index, sim_data.columns] += sim_data
-
-        affinity_matrix /= missing_view_profile.sum(1)
-
-        self.n_clusters_ = self.n_clusters if isinstance(self.n_clusters, int) else \
-            snf.get_n_clusters(arr= affinity_matrix.values, n_clusters= self.n_clusters)[0]
-
-        model = SpectralClustering(n_clusters= self.n_clusters_, random_state= self.random_state)
-        self.labels_ = model.fit_predict(X= affinity_matrix)
+        self.labels_ = labels
 
         return self
 

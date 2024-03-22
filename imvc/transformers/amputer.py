@@ -175,15 +175,24 @@ class Amputer(BaseEstimator, TransformerMixin):
             mask = self._MNAR_mask_quantiles(X=X, p=self.p, q=self.q, p_params=1 - self.p_obs, cut='both', MCAR=False)
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
             mask = self.MNAR_self_mask_logistic(X=X, p=self.p)
-        elif self.mechanism == "MCAR":
+        elif self.mechanism == "MCAR" or self.mechanism == "PM":
             mask = np.random.default_rng(self.random_state).random(X.shape) < self.p
         else:
             raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
 
-        views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1], size=len(X))
+        if self.mechanism == "PM":
+            mask[:, np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1])] = False
+
         samples_to_fix = (mask == True).all(1)
-        for view_idx in np.unique(views_to_fix):
-            mask[samples_to_fix, view_idx] = False
+        if samples_to_fix.any():
+            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1], size=len(X))
+            for view_idx in np.unique(views_to_fix):
+                mask[samples_to_fix, view_idx] = False
+
+            #todo
+            samples_to_fix = mask.sum(1) >= 2
+            mask[samples_to_fix, :]
+
         X[mask.astype(bool)] = np.nan
         return X
 

@@ -29,6 +29,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Define the trade-off between sparsity and accuracy of regression for the i-th view.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
+    engine : str, default=matlab
+        Engine to use for computing the model.
 .   verbose : bool, default=False
         Verbosity mode.
 
@@ -55,25 +57,25 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from sklearn.impute import SimpleImputer
-    >>> from sklearn.preprocessing import Normalizer
+    >>> from sklearn.preprocessing import Normalizer, FunctionTransformer
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import DAIMC
     >>> from imvc.transformers import MultiViewTransformer
 
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> pipeline = MultiViewTransformer(make_pipeline(Normalizer().set_output(transform="pandas"),
-                    SimpleImputer(strategy="constant", fill_value=0).set_output(transform="pandas")))
-    >>> Xs = pipeline.fit_transform(Xs)
+    >>> normalizer = lambda x: x.divide(x.pow(2).sum(axis=1).pow(1/2), axis= 0)
     >>> estimator = DAIMC(n_clusters = 2)
-    >>> labels = estimator.fit_predict(Xs)
+    >>> pipeline = make_pipeline(MultiViewTransformer(FunctionTransformer(normalizer), estimator)
+    >>> labels = pipeline.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, afa: float = 1e1, beta: float = 1e0, random_state:int = None,
-                 verbose = False):
+                 engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
         self.afa = afa
         self.beta = beta
         self.random_state = random_state
+        self.engine = engine
         self.verbose = verbose
 
 
@@ -96,28 +98,31 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
-        oc = oct2py.Oct2Py(temp_dir="imvc/cluster/_daimc/")
-        with open(os.path.join("imvc", "cluster", "_daimc", "newinit.m")) as f:
-            oc.eval(f.read())
-        with open(os.path.join("imvc", "cluster", "_daimc", "litekmeans.m")) as f:
-            oc.eval(f.read())
-        with open(os.path.join("imvc", "cluster", "_daimc", "DAIMC.m")) as f:
-            oc.eval(f.read())
-        with open(os.path.join("imvc", "cluster", "_daimc", "UpdateV_DAIMC.m")) as f:
-            oc.eval(f.read())
-        oc.eval("pkg load statistics")
-        oc.eval("pkg load control")
-        oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
+        if self.engine=="matlab":
+            oc = oct2py.Oct2Py(temp_dir="imvc/cluster/_daimc/")
+            with open(os.path.join("imvc", "cluster", "_daimc", "newinit.m")) as f:
+                oc.eval(f.read())
+            with open(os.path.join("imvc", "cluster", "_daimc", "litekmeans.m")) as f:
+                oc.eval(f.read())
+            with open(os.path.join("imvc", "cluster", "_daimc", "DAIMC.m")) as f:
+                oc.eval(f.read())
+            with open(os.path.join("imvc", "cluster", "_daimc", "UpdateV_DAIMC.m")) as f:
+                oc.eval(f.read())
+            oc.eval("pkg load statistics")
+            oc.eval("pkg load control")
+            oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
-        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-        transformed_train_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
-        transformed_train_Xs = [X.T for X in transformed_train_Xs]
-        transformed_train_Xs = tuple(transformed_train_Xs)
+            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+            transformed_train_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
+            transformed_train_Xs = [X.T for X in transformed_train_Xs]
+            transformed_train_Xs = tuple(transformed_train_Xs)
 
-        w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
-        u_0, v_0, b_0 = oc.newinit(transformed_train_Xs, w, self.n_clusters, len(transformed_train_Xs), nout=3)
-        u, v, b, f, p, n = oc.DAIMC(transformed_train_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
-                                    len(transformed_train_Xs), {"afa": self.afa, "beta": self.beta}, nout=6)
+            w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
+            u_0, v_0, b_0 = oc.newinit(transformed_train_Xs, w, self.n_clusters, len(transformed_train_Xs), nout=3)
+            u, v, b, f, p, n = oc.DAIMC(transformed_train_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
+                                        len(transformed_train_Xs), {"afa": self.afa, "beta": self.beta}, nout=6)
+        else:
+            raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)
