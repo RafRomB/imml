@@ -48,7 +48,7 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
@@ -73,12 +73,12 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples_i, n_features_i)
+        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
             A list of transformed views of data, one for each input view.
         """
 

@@ -1,12 +1,10 @@
 import networkx as nx
-import numpy as np
-import pandas as pd
-from scipy import stats
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ._aux_msne import Embedding
-from ..utils import check_Xs
+from ._msne._aux_msne import Embedding
+from ._msne.based import similarity
+from imvc.utils import check_Xs
 
 
 class MSNE(BaseEstimator, ClassifierMixin):
@@ -42,19 +40,22 @@ class MSNE(BaseEstimator, ClassifierMixin):
 .
     Attributes
     ----------
-    labels_ : array-like of shape (n_views,)
-        Predicted modules in training data.
+    labels_ : array-like of shape (n_samples,)
+        Labels of each point in training data.
+    embeddings_ : array-like of shape (n_views,)
+        Representation of embedding vectors.
 
     References
     ----------
     [paper] Xu, H., Gao, L., Huang, M., and Duan, R. (2021). A network embedding based method for partial multi-omics
-        integration in cancer subtyping. Methods. 192, 67–76. doi: 10.1016/j.ymeth.2020.08.001.
+            integration in cancer subtyping. Methods. 192, 67–76. doi: 10.1016/j.ymeth.2020.08.001.
+    [code] https://github.com/GaoLabXDU/MSNE
 
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.algorithms import MSNE
-    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+    >>> from imvc.cluster import MSNE
+    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> estimator = MSNE(n_clusters = 3)
     >>> labels = estimator.fit_predict(Xs)
     """
@@ -81,7 +82,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
@@ -90,10 +91,10 @@ class MSNE(BaseEstimator, ClassifierMixin):
         -------
         self :  returns and instance of self.
         """
-        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
         S = []
         for X in Xs:
-            s = self._similarity(X, k=self.k)
+            s = similarity(X, k=self.k)
             S.append(nx.DiGraph(s))
         if self.verbose:
             print("construct similarity networks finished")
@@ -105,6 +106,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
         embeddings = model.get_embeddings()
         self.labels_ = KMeans(n_clusters=self.n_clusters, n_init=100, verbose=self.verbose,
                               random_state=self.random_state).fit_predict(embeddings)
+        self.embeddings_ = embeddings
         return self
 
 
@@ -116,7 +118,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
@@ -137,7 +139,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
@@ -148,56 +150,3 @@ class MSNE(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
-
-
-    @staticmethod
-    def _norm2distance(df):
-        temp = (df ** 2).sum(axis=1, keepdims=True).repeat(df.shape[0], axis=1)
-        distance = temp + temp.T - 2 * df @ df.T
-        return distance
-
-
-    @staticmethod
-    def _similarity(df, k=20, sig=0.5, ktop=True, high=True):
-        assert isinstance(df, pd.DataFrame)
-        samples = df.index
-        df = df.values
-        distance = MSNE._norm2distance(df)
-        distance = (distance + distance.T) / 2
-        knear = distance.argsort()[:, 1:k + 1]
-        x = np.repeat(np.arange(distance.shape[0]).reshape(-1, 1), k, axis=1)
-        delta0 = distance[x, knear].mean(axis=1)
-        delta = delta0.reshape(-1, 1).repeat(distance.shape[0], axis=1)
-        delta = sig * (delta + delta.T + distance) / 3
-        s = stats.norm(0, delta).pdf(distance)
-        if (ktop == True):
-            ag = s.argsort()[:, :-(k + 1)]
-            x = np.repeat(np.arange(ag.shape[0]).reshape(-1, 1), ag.shape[1], axis=1)
-            s[x, ag] = 0
-        s = (s + s.T) / 2
-        s = MSNE._normalize(s)
-        if (high):
-            s = MSNE._high_order(s)
-        s = pd.DataFrame(s, index=samples, columns=samples)
-        return s
-
-
-    @staticmethod
-    def _normalize(s):
-        ispd = isinstance(s, pd.DataFrame)
-        if (ispd):
-            index = s.index
-            col = s.columns
-            s = s.values
-        s = s / s.sum(axis=1).reshape(-1, 1)
-        if (ispd):
-            s = pd.DataFrame(s, index=index, columns=col)
-        return (s + s.T) / 2
-
-
-    @staticmethod
-    def _high_order(s, n=5):
-        for i in range(n):
-            s = s @ s
-        s = (s + s.T) / 2
-        return MSNE._normalize(s)

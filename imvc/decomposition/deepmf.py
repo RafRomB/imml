@@ -43,7 +43,7 @@ class DeepMF(pl.LightningModule):
     Parameters
     ----------
     latent_dim : int, default=10
-        Number of components to keep.
+        Number of dimensions to keep.
     n_layers : int, default=3
         Number of layers in the deep encoder.
     learning_rate : float, default=1e-2

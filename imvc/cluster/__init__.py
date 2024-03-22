@@ -1,4 +1,4 @@
 from .nemo import NEMO
 from .sumo import SUMO
 from .daimc import DAIMC
-from .monet import .
+from .msne import MSNE

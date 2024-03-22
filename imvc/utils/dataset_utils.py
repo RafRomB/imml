@@ -27,7 +27,7 @@ class DatasetUtils:
         -------
         imvd : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
          Examples
@@ -107,35 +107,6 @@ class DatasetUtils:
         return n_views
 
 
-    # @staticmethod
-    # def get_sample_names(Xs: list):
-    #     r"""
-    #     Get all the samples in a multi-view dataset.
-    #
-    #     Parameters
-    #     ----------
-    #     Xs : list of array-likes
-    #         - Xs length: n_views
-    #         - Xs[i] shape: (n_samples_i, n_features_i)
-    #         A list of different views.
-    #
-    #     Returns
-    #     -------
-    #     samples: pd.Index with all samples.
-    #
-    #     Examples
-    #     --------
-    #     >>> from imvc.utils import DatasetUtils
-    #     >>> from imvc.datasets import LoadDataset
-    #
-    #     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    #     >>> samples = DatasetUtils.get_sample_names(Xs = Xs)
-    #     """
-    #
-    #     samples = pd.Index(set(sum([X.index.to_list() for X in Xs], [])))
-    #     return samples
-
-
     @staticmethod
     def get_complete_sample_names(Xs: list):
         r"""
@@ -194,35 +165,6 @@ class DatasetUtils:
         samples = DatasetUtils.get_missing_view_profile(Xs=Xs)
         samples = samples[~samples.all(1)].index
         return samples
-
-
-    # @staticmethod
-    # def get_n_samples(Xs: list):
-    #     r"""
-    #     Get the number of samples in a multi-view dataset.
-    #
-    #     Parameters
-    #     ----------
-    #     Xs : list of array-likes
-    #         - Xs length: n_views
-    #         - Xs[i] shape: (n_samples_i, n_features_i)
-    #         A list of different views.
-    #
-    #     Returns
-    #     -------
-    #     int: number of samples.
-    #
-    #     Examples
-    #     --------
-    #     >>> from imvc.utils import DatasetUtils
-    #     >>> from imvc.datasets import LoadDataset
-    #
-    #     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    #     >>> samples = DatasetUtils.get_n_samples(Xs = Xs)
-    #     """
-    #
-    #     n_samples = len(DatasetUtils.get_sample_names(Xs=Xs))
-    #     return n_samples
 
 
     @staticmethod
@@ -376,35 +318,6 @@ class DatasetUtils:
         return Xs
 
 
-    # @staticmethod
-    # def sort_y_based_on_imvd(Xs: list, y):
-    #     r"""
-    #     Order the target based on a multi-view dataset.
-    #
-    #     Parameters
-    #     ----------
-    #     Xs : list of array-likes
-    #         - Xs length: n_views
-    #         - Xs[i] shape: (n_samples_i, n_features_i)
-    #         A list of different views.
-    #
-    #     Returns
-    #     -------
-    #     y : pd.Series
-    #         Array with labels
-    #
-    #     Examples
-    #     --------
-    #     >>> from imvc.utils import DatasetUtils
-    #     >>> from imvc.datasets import LoadDataset
-    #     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    #     >>> Xs = DatasetUtils.sort_y_based_on_imvd(Xs = Xs, y = y)
-    #     """
-    #
-    #     y = y.loc[pd.concat([y.loc[X.index] for X in Xs]).index.drop_duplicates()]
-    #     return y
-
-
     def remove_missing_sample_from_view(Xs: list):
         r"""
         Remove missing samples from each specific views.
@@ -435,7 +348,7 @@ class DatasetUtils:
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
@@ -459,7 +372,7 @@ class DatasetUtils:
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
@@ -481,14 +394,14 @@ class DatasetUtils:
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
         -------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
         """
 
