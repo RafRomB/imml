@@ -42,7 +42,7 @@ def select_complete_samples(Xs:list):
     ----------
     Xs : list of array-likes
         - Xs length: n_views
-        - Xs[i] shape: (n_samples_i, n_features_i)
+        - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
     Returns

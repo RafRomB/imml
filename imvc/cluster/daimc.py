@@ -37,7 +37,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     Attributes
     ----------
     labels_ : array-like of shape (n_samples,)
-        Predicted modules in training data.
+        Labels of each point in training data.
     u_ : np.array
         Basis matrix.
     v_ : np.array

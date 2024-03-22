@@ -20,7 +20,7 @@ class DropView(FunctionTransformer):
     -------
     transformed_Xs : list of array-likes
         - Xs length: n_views - 1
-        - Xs[i] shape: (n_samples_i, n_features_i)
+        - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
     Examples
@@ -142,7 +142,7 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        X : array-like of shape (n_samples_i, n_features_i)
+        X : array-like of shape (n_samples, n_features_i)
 
         Returns
         -------
@@ -160,7 +160,7 @@ class SortData(FunctionTransformer):
 
     Returns
     -------
-    transformed_X : list of array-likes (n_samples_i, n_features_i)
+    transformed_X : list of array-likes (n_samples, n_features_i)
 
     Examples
     --------
@@ -184,7 +184,7 @@ def concatenate_views(Xs):
     ----------
     Xs : list of array-likes
         - Xs length: n_views
-        - Xs[i] shape: (n_samples_i, n_features_i)
+        - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
     Returns
@@ -205,7 +205,7 @@ def drop_view(Xs, X_idx : int = 0):
     ----------
     Xs : list of array-likes
         - Xs length: n_views
-        - Xs[i] shape: (n_samples_i, n_features_i)
+        - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
     Returns
@@ -226,7 +226,7 @@ def single_view(Xs, X_idx : int = 0):
     ----------
     Xs : list of array-likes
         - Xs length: n_views
-        - Xs[i] shape: (n_samples_i, n_features_i)
+        - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
     Returns
@@ -269,12 +269,12 @@ def sort_data(Xs):
     ----------
     Xs : list of array-likes
         - Xs length: n_views
-        - Xs[i] shape: (n_samples_i, n_features_i)
+        - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
     Returns
     -------
-    transformed_X : list of array-likes (n_samples_i, n_features_i)
+    transformed_X : list of array-likes (n_samples, n_features_i)
     """
 
     Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')

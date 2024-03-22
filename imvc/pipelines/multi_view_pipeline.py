@@ -59,7 +59,7 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
@@ -82,12 +82,12 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples_i, n_features_i)
+        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
         """
 
         transformed_Xs = [self.pipeline_list_[X_idx].transform(X) for X_idx, X in enumerate(Xs)]
@@ -102,7 +102,7 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns
@@ -122,7 +122,7 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
         Returns

@@ -76,8 +76,8 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Object created by SUMO
     pac_list_ :
         Object created by SUMO
-    labels_ : ndarray of shape (n_samples,)
-        Labels of each point
+    labels_ : array-like of shape (n_samples,)
+        Labels of each point in training data.
 
     References
     ----------
