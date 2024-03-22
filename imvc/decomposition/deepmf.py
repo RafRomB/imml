@@ -36,53 +36,101 @@ class DeepMFDataset(torch.utils.data.Dataset):
 
 
 class DeepMF(pl.LightningModule):
+    r"""
+    DeepMF, a deep neural network-based factorization model, elucidates the association between
+    feature-associated and sample-associated latent matrices, and is robust to noisy and missing values.
 
-    def __init__(self, X, K=10, n_layers:int =3, learning_rate:float =1e-2, alpha:float = 0.01,
-                 neighbor_proximity='Lap', problem='regression'):
+    Parameters
+    ----------
+    latent_dim : int, default=10
+        Number of components to keep.
+    n_layers : int, default=3
+        Number of layers in the deep encoder.
+    learning_rate : float, default=1e-2
+        Learning rate.
+    alpha: float, default=0.01
+        Hyperparameter to control the loss function.
+    neighbor_proximity : str, default='Lap'
+        Penalty when similar features and similar samples are embedded far away in the latent space. One of 'Lap', 'MSE'
+         or 'KL'.
+    loss_fun : func, default=torch.nn.MSELoss()
+        Loss function.
+    sigmoid : bool, default=False
+        If applying sigmoid function to the last layer.
+
+    Attributes
+    ----------
+    model_ : torch.nn.Sequential
+        Torch model.
+    U_ : torch.tensor
+        Feature latent factor matrix.
+    V_: torch.tensor
+        Sample latent factor matrix.
+
+    References
+    ----------
+    [paper] Chen, L., Xu, J. & Li, S.C. DeepMF: deciphering the latent patterns in omics profiles with a deep learning
+            method. BMC Bioinformatics 20 (Suppl 23), 648 (2019). https://doi.org/10.1186/s12859-019-3291-6.
+    [code] https://github.com/paprikachan/DeepMF
+
+    Examples
+    --------
+    >>> from imvc.datasets import LoadDataset
+    >>> from imvc.decomposition import DeepMF, DeepMFDataset
+    >>> from imvc.transformers import MultiViewTransformer
+    >>> from sklearn.pipeline import make_pipeline
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> from sklearn.cluster import KMeans
+    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> dfmf = DFMF(n_components = 5)
+    >>> estimator = KMeans(n_clusters = 3)
+    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), dfmf, estimator)
+    >>> labels = pipeline.fit_predict(Xs)
+    """
+
+    def __init__(self, X, latent_dim: int =10, n_layers: int = 3, learning_rate: float = 1e-2, alpha: float = 0.01,
+                 neighbor_proximity='Lap', loss_fun = torch.nn.MSELoss(), sigmoid: bool = False):
         super().__init__()
         self.M, self.N = X.shape
         self.n_layers = n_layers
         self.learning_rate = learning_rate
         self.alpha = alpha
         self.neighbor_proximity = neighbor_proximity
-        self.problem = problem
+        self.loss_fun = loss_fun
+        self.sigmoid = sigmoid
 
-        if self.problem == 'regression':
-            self.loss_fun = torch.nn.MSELoss()
-        else:
-            self.loss_fun = torch.nn.BCELoss()
-
-        layers = [_SparseLinear(self.M, K)]
+        layers = [_SparseLinear(self.M, latent_dim)]
         for i in range(n_layers):
-            layers.append(torch.nn.Linear(K, K))
+            layers.append(torch.nn.Linear(latent_dim, latent_dim))
             if n_layers > 1:
                 layers.append(torch.nn.ReLU())
-        layers.append(torch.nn.Linear(K, self.N))
-        if self.problem == 'classification':
+        layers.append(torch.nn.Linear(latent_dim, self.N))
+        if sigmoid:
             layers.append(torch.nn.Sigmoid())
 
-        self.model = torch.nn.Sequential(*layers)
+        self.model_ = torch.nn.Sequential(*layers)
         self.Su, self.Du = self._get_similarity(X, 'row')
         self.Sv, self.Dv = self._get_similarity(X, 'col')
 
 
     def configure_optimizers(self):
-        return torch.optim.Adam(self.model.parameters(), lr=self.learning_rate, weight_decay=0.0001)
+        return torch.optim.Adam(self.model_.parameters(), lr=self.learning_rate, weight_decay=0.0001)
 
 
     def training_step(self, batch, batch_idx):
         x, y = batch
-        y_pred = self.model(x)
+        y_pred = self.model_(x)
         y_pred, local_y = self._clean_y(y_pred, y)
         loss = self.loss_fun(y_pred, local_y)
         u_loss, v_loss = self._U_V_loss(self.Su, self.Sv, self.Du, self.Dv)
         loss = (1 - self.alpha) * loss + self.alpha * (u_loss + v_loss)
+        self.U_, self.V_ = self._load_U_V()
         return loss
 
 
     def validation_step(self, batch, batch_idx):
         x, y = batch
-        y_pred = self.model(x)
+        y_pred = self.model_(x)
         y_pred, local_y = self._clean_y(y_pred, y)
         loss = self.loss_fun(y_pred, local_y)
         u_loss, v_loss = self._U_V_loss(self.Su, self.Sv, self.Du, self.Dv)
@@ -92,7 +140,7 @@ class DeepMF(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         x, y = batch
-        y_pred = self.model(x)
+        y_pred = self.model_(x)
         y_pred, local_y = self._clean_y(y_pred, y)
         loss = self.loss_fun(y_pred, local_y)
         u_loss, v_loss = self._U_V_loss(self.Su, self.Sv, self.Du, self.Dv)
@@ -102,10 +150,7 @@ class DeepMF(pl.LightningModule):
 
     def predict_step(self, batch, batch_idx, dataloader_idx: int = 0):
         x, _ = batch
-        pred = self.model(x)
-        if self.problem == 'classification':
-            pred[pred <= 0.5] = 0
-            pred[pred > 0.5] = 1
+        pred = self.model_(x)
         return pred
 
 
@@ -201,12 +246,12 @@ class DeepMF(pl.LightningModule):
         V = model.fit_transform(np.nan_to_num(data).T)
         V = torch.tensor(V, dtype=torch.float)
 
-        self.model[0].weight.data = U.t()
-        self.model[-1].weight.data = V
+        self.model_[0].weight.data = U.t()
+        self.model_[-1].weight.data = V
 
     def _load_U_V(self):
-        U = self.model[0].weight.t_()
-        V = self.model[-1].weight.t_()
+        U = self.model_[0].weight.t_()
+        V = self.model_[-1].weight.t_()
         return U, V
 
     def _save_U_V(self):

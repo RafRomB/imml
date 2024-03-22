@@ -8,7 +8,7 @@ from ._skfusion import fusion
 class DFMF(TransformerMixin, BaseEstimator):
     r"""
     DMFM is a data fusion approach with penalized matrix tri-factorization (DFMF) that simultaneously factorizes
-    data matrices to reveal hidden associations.
+    data matrices to reveal hidden associations. This method can deal with both view- and single-wise missing.
 
     Parameters
     ----------
@@ -65,7 +65,7 @@ class DFMF(TransformerMixin, BaseEstimator):
     >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.cluster import KMeans
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> dfmf = DFMF(n_components = 5)
+    >>> dfmf = DFMF(n_components = 5).set_output(transform="pandas")
     >>> estimator = KMeans(n_clusters = 3)
     >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), dfmf, estimator)
     >>> labels = pipeline.fit_predict(Xs)
