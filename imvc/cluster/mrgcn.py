@@ -25,7 +25,6 @@ class MRGCNDataset(torch.utils.data.Dataset):
         return Xs
 
 
-
 class MRGCN(pl.LightningModule):
     def __init__(self, kmeans, Xs = None, k_num:int = 10, learning_rate:float = 0.001, reg2:int = 1, reg3:int = 1, **args):
         super(MRGCN, self).__init__()
