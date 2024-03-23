@@ -65,9 +65,9 @@ class DFMF(TransformerMixin, BaseEstimator):
     >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.cluster import KMeans
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> dfmf = DFMF(n_components = 5).set_output(transform="pandas")
+    >>> transformer = DFMF(n_components = 5).set_output(transform="pandas")
     >>> estimator = KMeans(n_clusters = 3)
-    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), dfmf, estimator)
+    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), transformer, estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 

@@ -1,14 +1,13 @@
 import copy
-
-from ._mofa.run.entry_point import entry_point
 import os
 import contextlib
 import pandas as pd
 import numpy as np
 
+from ._mofa.run.entry_point import entry_point
 from ._mofa._mofax import core as mfx
 from ._mofa.core._BayesNet import BayesNet, StochasticBayesNet, _ModifiedBayesNet, _ModifiedStochasticBayesNet
-from imvc.utils import check_Xs
+from ..utils import check_Xs
 
 
 class MOFA:
