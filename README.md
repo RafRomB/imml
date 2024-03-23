@@ -1,4 +1,4 @@
-# Incomplete Multi-View Clustering
+# uimv-learn: A Python package for unsupervised incomplete multi-view learning
 
 This package is designed for Incomplete Multi-View Clustering (IMC), which is a 
 technique used to cluster data that is represented by multiple views or 
@@ -25,11 +25,11 @@ handle incomplete multi-view data and extract meaningful patterns and clusters f
 ## Installation
 
 As a prerequisite, you will need to have Octave (MATLAB) and R in your machine. You can install them using the 
-following commandas:
+following commands:
 
 ```bash
-apt install octave
-sudo apt install r-base r-base-dev -y
+apt install octave # octave
+sudo apt install r-base r-base-dev -y # R
 ```
 
 The easiest way to install this package is using pip. Simply run the following command:

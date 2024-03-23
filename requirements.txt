@@ -9,3 +9,5 @@ rpy2==3.5.14
 torch==2.0.1
 lightning==2.0.2
 gensim==4.3.1
+h5py==3.8.0
+
