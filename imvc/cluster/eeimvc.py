@@ -18,8 +18,6 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
     n_clusters : int, default=8
         The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
          with this range of number of clusters to choose between.
-    normalize : bool, default True
-        If True, it will normalize and center the kernel.
     kernel : str or callable, default="default"
         Specifies the kernel type to be used in the algorithm. Currently only "default" and "precomputed" are accepted.
     lambda_reg : float, default=1.
@@ -31,8 +29,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
-        Engine to use for computing the model. If engine == 'matlab', package 'statistics' should be installed in
-        Octave. In linux, you can run: sudo apt-get install octave-statistics.
+        Engine to use for computing the model.
 .   verbose : bool, default=False
         Verbosity mode.
 
@@ -53,7 +50,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
     References
     ----------
-    [paper1] X. Liu et al., "Efficient and Effective Regularized Incomplete Multi-View Clustering," in IEEE
+    [paper] X. Liu et al., "Efficient and Effective Regularized Incomplete Multi-View Clustering," in IEEE
              Transactions on Pattern Analysis and Machine Intelligence, vol. 43, no. 8, pp. 2634-2646, 1 Aug. 2021,
              doi: 10.1109/TPAMI.2020.2974828.
     [code]   https://github.com/xinwangliu/TPAMI_EEIMVC
@@ -67,10 +64,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, normalize: bool = True, kernel = "default", lambda_reg: float = 1.,
-                 qnorm: float = 2., random_state:int = None, engine: str ="matlab", verbose = False):
+    def __init__(self, n_clusters: int = 8, kernel = "default", lambda_reg: float = 1.,
+                 qnorm: float = 2., random_state: int = None, engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
-        self.normalize = normalize
         self.qnorm = qnorm
         self.kernel = kernel
         self.kernel_function = kernel if callable(kernel) else eval(f"self._kernel_{kernel}")
@@ -117,8 +113,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
             H_normalized,WP,HP,beta,obj = oc.incompleteLateFusionMKCOrthHp_lambda(transformed_Xs, s, self.n_clusters,
-                                                                                  self.qnorm, self.lambda_reg,
-                                                                                  int(self.normalize), nout=5)
+                                                                                  self.qnorm, self.lambda_reg, nout=5)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
