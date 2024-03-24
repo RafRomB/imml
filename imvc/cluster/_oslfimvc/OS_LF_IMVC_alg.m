@@ -1,4 +1,4 @@
-function [Y,C,WP,beta,obj] = OS_LF_IMVC_alg(KH,S,k,lambda,normalize, random_state)
+function [Y,C,WP,beta,obj] = OS_LF_IMVC_alg(KH,S,k,lambda,normalize)
 
 if normalize
     KH = kcenter(KH);
