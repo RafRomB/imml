@@ -24,13 +24,19 @@ handle incomplete multi-view data and extract meaningful patterns and clusters f
 
 ## Installation
 
-As a prerequisite, you will need to have Octave (MATLAB) and R in your machine. You can install them using the 
+As a prerequisite, you will need to have Octave (MATLAB) and R in your machine. In linux, you can install them using the 
 following commands:
 
 ```bash
-apt install octave # octave
+sudo apt install octave # octave
 sudo apt install r-base r-base-dev -y # R
 ```
+
+For other platforms, please refer to the official guides:
+
+https://octave.org/download;
+
+https://cran.r-project.org/doc/manuals/r-release/R-admin.html
 
 The easiest way to install this package is using pip. Simply run the following command:
 

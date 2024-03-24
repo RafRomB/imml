@@ -9,7 +9,7 @@ from ..utils import Utils, check_Xs
 
 class jNMF(TransformerMixin, BaseEstimator):
     r"""
-    jNMF (Joint Non-negative Matrix Factorization Algorithms).
+    Joint Non-negative Matrix Factorization Algorithms (jNMF).
 
     jNMF decompose the matrices to two low-dimensional factor matrices. It can deal with both view- and
     single-wise missing.
@@ -55,6 +55,8 @@ class jNMF(TransformerMixin, BaseEstimator):
         Determines the randomness. Use an int to make the randomness deterministic.
     verbose : bool, default=False
         Verbosity mode.
+    engine : str, default='r'
+        Engine to use for computing the model.
 
     Attributes
     ----------
@@ -103,7 +105,7 @@ class jNMF(TransformerMixin, BaseEstimator):
                  l1_W: float = 1e-10, l1_V: float = 1e-10, l1_H: float = 1e-10,
                  l2_W: float = 1e-10, l2_V: float = 1e-10, l2_H: float = 1e-10, weights = None,
                  beta_loss = ["Frobenius", "KL", "IS", "PLTF"], p: float = 1., tol: float = 1e-10, max_iter: int = 100,
-                 verbose=0, random_state: int = None):
+                 verbose=0, random_state: int = None, engine: str = "r"):
         self.n_components = n_components
         self.init_W = init_W
         self.init_V = init_V
@@ -121,6 +123,7 @@ class jNMF(TransformerMixin, BaseEstimator):
         self.max_iter = max_iter
         self.verbose = bool(verbose)
         self.random_state = random_state
+        self.engine = engine
         self.transform_ = None
 
 
@@ -144,25 +147,28 @@ class jNMF(TransformerMixin, BaseEstimator):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         samples = Xs[0].index
 
-        nnTensor = importr("nnTensor")
-        transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
-            Xs=Xs, beta_loss=self.beta_loss, init_W=self.init_W, init_V=self.init_V, init_H=self.init_H,
-            weights=self.weights)
-        if self.random_state is not None:
-            base = importr("base")
-            base.set_seed(self.random_state)
+        if self.engine=="r":
+            nnTensor = importr("nnTensor")
+            transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
+                Xs=Xs, beta_loss=self.beta_loss, init_W=self.init_W, init_V=self.init_V, init_H=self.init_H,
+                weights=self.weights)
+            if self.random_state is not None:
+                base = importr("base")
+                base.set_seed(self.random_state)
 
-        W, V, H, recerror, train_recerror, test_recerror, relchange = nnTensor.jNMF(
-            X= transformed_Xs, M=transformed_mask, J=self.n_components,
-            initW=init_W, initV=init_V, initH=init_H, fixW=False, fixV=False, fixH=False,
-            L1_W=self.l1_W, L1_V=self.l1_V, L1_H=self.l1_H, L2_W=self.l2_W, L2_V= self.l2_V, L2_H=self.l2_H,
-            w=weights, algorithm=beta_loss, p=self.p, thr = self.tol, num_iter=self.max_iter, verbose=self.verbose)
+            W, V, H, recerror, train_recerror, test_recerror, relchange = nnTensor.jNMF(
+                X= transformed_Xs, M=transformed_mask, J=self.n_components,
+                initW=init_W, initV=init_V, initH=init_H, fixW=False, fixV=False, fixH=False,
+                L1_W=self.l1_W, L1_V=self.l1_V, L1_H=self.l1_H, L2_W=self.l2_W, L2_V= self.l2_V, L2_H=self.l2_H,
+                w=weights, algorithm=beta_loss, p=self.p, thr = self.tol, num_iter=self.max_iter, verbose=self.verbose)
 
-        H = [np.array(mat) for mat in H]
-        if self.transform_ == "pandas":
-            H = [pd.DataFrame(mat) for mat in H]
+            H = [np.array(mat) for mat in H]
+            if self.transform_ == "pandas":
+                H = [pd.DataFrame(mat) for mat in H]
+        else:
+            raise ValueError("Only engine=='r' is currently supported.")
 
-        self.H_ = V, H
+        self.H_ = H
         self.reconstruction_err_ = list(recerror)
         self.observed_reconstruction_err_ = list(train_recerror)
         self.missing_reconstruction_err_ = list(test_recerror)
