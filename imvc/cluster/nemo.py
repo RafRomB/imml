@@ -11,7 +11,7 @@ from ..utils import DatasetUtils, check_Xs
 
 class NEMO(BaseEstimator, ClassifierMixin):
     r"""
-    NEMO (NEighborhood based Multi-Omics clustering).
+    NEighborhood based Multi-Omics clustering (NEMO).
 
     NEMO is a method used for clustering data from multiple views sources. This algorithm operates
     through three main stages. Initially, it constructs a similarity matrix for each modality that represents the
@@ -36,8 +36,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
         multiple arrays a provided an equal number of metrics may be supplied.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
-    engine : str, default=matlab
-        Engine to use for computing the model.
+    engine : str, default='python'
+        Engine to use for computing the model. Must be one of ["python", "R"].
 .    verbose : bool, default=False
         Verbosity mode.
 
@@ -126,11 +126,11 @@ class NEMO(BaseEstimator, ClassifierMixin):
             labels = model.fit_predict(X= affinity_matrix)
 
         elif self.engine == "R":
-            nemo = importr("nemo")
-            clustering = nemo.nemo_clustering(omics_list = Xs, num_clusters= self.n_clusters,
-                                              num_neighbors= self.num_neighbors)
+            raise NotImplementedError
             #todo
-            labels = clustering
+            # clustering = nemo.nemo_clustering(omics_list = Xs, num_clusters= self.n_clusters,
+            #                                   num_neighbors= self.num_neighbors)
+            # labels = clustering
 
         else:
             raise ValueError("Only supports R and python engines.")

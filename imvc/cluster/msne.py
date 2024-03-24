@@ -9,7 +9,7 @@ from imvc.utils import check_Xs
 
 class MSNE(BaseEstimator, ClassifierMixin):
     r"""
-    MSNE (Multiple Similarity Network Embedding).
+    Multiple Similarity Network Embedding (MSNE).
 
     Created originally as a partial multi-omics integrative method for cancer subtyping, MSNE integrates the
     multi-views information by embedding the neighbor relations of samples defined by the random walk on multiple

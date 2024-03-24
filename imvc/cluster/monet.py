@@ -19,7 +19,7 @@ from ..utils import check_Xs, DatasetUtils
 
 class MONET(BaseEstimator, ClassifierMixin):
     r"""
-    MONET (Multi Omic clustering by Non-Exhaustive Types).
+    Multi Omic clustering by Non-Exhaustive Types (MONET).
 
     MONET operates in two distinct phases to extract meaningful information from multi-omics datasets. In the first
     phase, it constructs an edge-weighted graph for each omic, where the nodes represent individual samples, and the

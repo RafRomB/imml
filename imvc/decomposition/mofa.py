@@ -12,6 +12,8 @@ from ..utils import check_Xs
 
 class MOFA:
     r"""
+    Multi-Omics Factor Analysis (MOFA).
+
     MOFA is a factor analysis model that provides a general framework for the integration of (originally, multi-omic
     data sets) incomplete multi-view datasets, in an unsupervised fashion. Intuitively, MOFA can be viewed as a
     versatile and statistically rigorous generalization of principal component analysis to multi-views data. Given

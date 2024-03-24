@@ -20,7 +20,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    n_clusters : int or list-of-int
+    n_clusters : int, default=8
         The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
          with this range of number of clusters to choose between.
     afa : float, default 1e1
@@ -30,7 +30,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
-        Engine to use for computing the model.
+        Engine to use for computing the model. If engine == 'matlab', packages 'statistics' and 'control' should be
+        installed in Octave. In linux, you can run: sudo apt-get install octave-statistics; sudo apt-get install octave-control.
 .   verbose : bool, default=False
         Verbosity mode.
 
@@ -38,11 +39,11 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    u_ : np.array
+    U_ : np.array
         Basis matrix.
-    v_ : np.array
+    V_ : np.array
         Commont latent feature matrix.
-    b_ : np.array
+    B_ : np.array
         Regression coefficient matrices.
 
     References
@@ -56,12 +57,10 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     Examples
     --------
     >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.impute import SimpleImputer
-    >>> from sklearn.preprocessing import Normalizer, FunctionTransformer
+    >>> from sklearn.preprocessing import FunctionTransformer
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import DAIMC
     >>> from imvc.transformers import MultiViewTransformer
-
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = lambda x: x.divide(x.pow(2).sum(axis=1).pow(1/2), axis= 0)
     >>> estimator = DAIMC(n_clusters = 2)
@@ -99,15 +98,12 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            oc = oct2py.Oct2Py(temp_dir="imvc/cluster/_daimc/")
-            with open(os.path.join("imvc", "cluster", "_daimc", "newinit.m")) as f:
-                oc.eval(f.read())
-            with open(os.path.join("imvc", "cluster", "_daimc", "litekmeans.m")) as f:
-                oc.eval(f.read())
-            with open(os.path.join("imvc", "cluster", "_daimc", "DAIMC.m")) as f:
-                oc.eval(f.read())
-            with open(os.path.join("imvc", "cluster", "_daimc", "UpdateV_DAIMC.m")) as f:
-                oc.eval(f.read())
+            matlab_folder = os.path.join("imvc", "cluster", "_daimc")
+            matlab_files = ["newinit.m", "litekmeans.m", "DAIMC.m", "UpdateV_DAIMC.m"]
+            oc = oct2py.Oct2Py(temp_dir= matlab_folder)
+            for matlab_file in matlab_files:
+                with open(os.path.join(matlab_folder, matlab_file)) as f:
+                    oc.eval(f.read())
             oc.eval("pkg load statistics")
             oc.eval("pkg load control")
             oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
@@ -126,9 +122,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)
-        self.u_ = u
-        self.v_ = v
-        self.b_ = b
+        self.U_ = u
+        self.V_ = v
+        self.B_ = b
 
         return self
 

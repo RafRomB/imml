@@ -1,4 +1,3 @@
-from matplotlib import rcParams
 from sklearn.cluster import KMeans, SpectralClustering
 from sklearn.metrics import adjusted_rand_score, mutual_info_score
 from sklearn.metrics.cluster import entropy
@@ -6,11 +5,9 @@ from .constants import LOG_LEVELS, CLUSTER_METRICS, COLOR_CODES
 from sys import stdout
 from typing import Union
 import logging
-import matplotlib.pyplot as plt
 import numpy as np
 import os
 import pandas as pd
-import seaborn as sns
 import warnings
 
 
@@ -118,70 +115,6 @@ def save_arrays_to_npz(data: Union[dict, list], file_path: str):
     else:
         args = {str(i): arrays[i] for i in range(len(arrays))}
         np.savez(file=file_path, **args)
-
-
-def plot_heatmap_seaborn(a: np.ndarray, labels: np.ndarray = None, title: str = None, file_path: str = None):
-    assert check_matrix_symmetry(a)
-
-    plt.figure()
-    ax = plt.axes()
-
-    if labels is not None:
-        rcParams.update({'figure.autolayout': True})
-        assert a.shape[0] == labels.shape[0]
-        a = pd.DataFrame(a, columns=labels, index=labels)
-    p = sns.heatmap(a, vmin=np.nanpercentile(a, 1), vmax=np.nanpercentile(a, 99), cmap="coolwarm", ax=ax)
-
-    if title:
-        ax.set_title(title)
-
-    if not file_path:
-        plt.show()
-    else:
-        if os.path.dirname(file_path):
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        fig = p.get_figure()
-        fig.savefig(file_path)
-        plt.close()
-
-
-def plot_metric(x: list, y: list, xlabel="x", ylabel="y", title="", file_path: str = None, color="blue",
-                allow_omit_xticks: bool = False):
-    """ Create plot of median metric values, with ribbon between min and max values for each x"""
-    if color not in COLOR_CODES.keys():
-        raise ValueError("Color not found.")
-
-    fig = plt.figure()
-
-    data = np.array(y)
-    if len(data.shape) > 1:
-        medians = np.nanmedian(data, axis=1)
-        indices = ~np.isnan(medians)
-        medians = medians[indices]
-        mins = np.nanmin(data, axis=1)[indices]
-        maxes = np.nanmax(data, axis=1)[indices]
-    else:
-        indices = ~np.isnan(data)
-        medians, mins, maxes = data[indices], data[indices], data[indices]
-
-    org_x = x
-    x = np.array(x)[indices]
-
-    plt.plot(x, medians, marker='o', color=COLOR_CODES[color]['dark'])
-    plt.fill_between(x, mins, maxes, color=COLOR_CODES[color]['light'], alpha=0.25)
-    plt.xlabel(xlabel)
-    plt.ylabel(ylabel)
-    plt.title(title)
-    if not allow_omit_xticks:
-        plt.xticks(org_x)
-
-    if not file_path:
-        plt.show()
-    else:
-        if os.path.dirname(file_path):
-            os.makedirs(os.path.dirname(file_path), exist_ok=True)
-        fig.savefig(file_path)
-        plt.close()
 
 
 def extract_ncut(a: np.ndarray, k: int):
