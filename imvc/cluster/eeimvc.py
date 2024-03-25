@@ -46,7 +46,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
     beta_ : array-like
         Adaptive weights of clustering matrices.
     loss_ : float
-        Value of the loss function
+        Value of the loss function.
 
     References
     ----------

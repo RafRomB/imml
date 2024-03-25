@@ -4,4 +4,5 @@ from .multi_view_transformer import MultiViewTransformer
 from .amputer import Amputer
 from .fill_incomplete_samples import FillIncompleteSamples
 from .select_complete_samples import SelectCompleteSamples, select_complete_samples
+from .normalizer_nan import NormalizerNaN
 
