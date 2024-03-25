@@ -1,10 +1,11 @@
 import os
 import numpy as np
+from sklearn.gaussian_process import kernels
 import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..utils import check_Xs, DatasetUtils
+from ..utils import check_Xs
 
 
 class LFIMVC(BaseEstimator, ClassifierMixin):
@@ -17,12 +18,11 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
     Parameters
     ----------
     n_clusters : int, default=8
-        The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
-         with this range of number of clusters to choose between.
-    normalize : bool, default True
+        The number of clusters to generate.
+    normalize : bool, default=True
         If True, it will normalize and center the kernel.
-    kernel : str or callable, default="default"
-        Specifies the kernel type to be used in the algorithm. Currently only "default" and "precomputed" are accepted.
+    kernel : callable, default=kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
+        Specifies the kernel type to be used in the algorithm.
     lambda_reg : float, default=1.
         Regularization parameter. The algorithm demonstrated stable performance across a wide range of
         this hyperparameter.
@@ -61,12 +61,12 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, normalize: bool = True, kernel = "default", lambda_reg: float = 1.,
+    def __init__(self, n_clusters: int = 8, normalize: bool = True,
+                 kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()), lambda_reg: float = 1.,
                  random_state:int = None, engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
         self.normalize = normalize
         self.kernel = kernel
-        self.kernel_function = kernel if callable(kernel) else eval(f"self._kernel_{kernel}")
         self.lambda_reg = lambda_reg
         self.random_state = random_state
         self.engine = engine
@@ -101,7 +101,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            transformed_Xs = self.kernel_function(Xs=Xs)
+            transformed_Xs = [self.kernel(X) for X in Xs]
+            transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
+            transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
 
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
@@ -157,15 +159,3 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
-
-
-    @staticmethod
-    def _kernel_default(Xs):
-        transformed_Xs = [(X @ X.T).fillna(0) for X in Xs]
-        transformed_Xs = np.array(transformed_Xs).swapaxes(0,-1)
-        return transformed_Xs
-
-
-    @staticmethod
-    def _kernel_precomputed(self, Xs):
-        return Xs
