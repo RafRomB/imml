@@ -7,14 +7,12 @@ from ..transformers import FillIncompleteSamples
 from ..utils import check_Xs, DatasetUtils
 
 
-class DAIMC(BaseEstimator, ClassifierMixin):
+class IMSR(BaseEstimator, ClassifierMixin):
     r"""
-    Doubly Aligned Incomplete Multi-view Clustering (DAIMC).
+    Self-representation Subspace Clustering for Incomplete Multi-view Data (IMSR).
 
-    The DAIMC algorithm integrates weighted semi-nonnegative matrix factorization (semi-NMF) to address incomplete
-    multi-view clustering challenges. It leverages instance alignment information to learn a unified latent feature
-    matrix across views and employs L2,1-Norm regularized regression to establish a consensus basis matrix, minimizing
-    the impact of missing instances.
+    IMSR performs feature extraction, imputation and self-representation learning to obtain a low-rank regularized
+    consensus coefficient matrix.
 
     It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
     this algorithm.
@@ -24,10 +22,10 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     n_clusters : int, default=8
         The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
          with this range of number of clusters to choose between.
-    afa : float, default 1e1
-        nonnegative.
-    beta : float, default 1e0
-        Define the trade-off between sparsity and accuracy of regression for the i-th view.
+    lbd : float, default 1
+        Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
+    gamma : float, default 1
+        Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
@@ -40,39 +38,45 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    U_ : np.array
-        Basis matrix.
-    V_ : np.array
-        Commont latent feature matrix.
-    B_ : np.array
-        Regression coefficient matrices.
+    Z_ : np.array
+        Consensus coefficient matrix.
+    loss_ : array-like of shape (n_views,)
+        Value of the loss function.
 
     References
     ----------
-    [paper1] Menglei Hu and Songcan Chen. 2018. Doubly aligned incomplete multi-view clustering. In Proceedings of the
-            27th International Joint Conference on Artificial Intelligence (IJCAI'18). AAAI Press, 2262–2268.
-    [paper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on Incomplete
-             Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
-    [code]  https://github.com/DarrenZZhang/Survey_IMC
+    [paper] Jiyuan Liu, Xinwang Liu, Yi Zhang, Pei Zhang, Wenxuan Tu, Siwei Wang, Sihang Zhou, Weixuan Liang, Siqi
+            Wang, and Yuexiang Yang. 2021. Self-Representation Subspace Clustering for Incomplete Multi-view Data. In
+            Proceedings of the 29th ACM International Conference on Multimedia (MM '21). Association for Computing
+            Machinery, New York, NY, USA, 2726–2734. https://doi.org/10.1145/3474085.3475379.
+    [code]  https://github.com/liujiyuan13/IMSR-code_release
 
     Examples
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.cluster import DAIMC
+    >>> from imvc.cluster import IMSR
     >>> from imvc.transformers import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
-    >>> estimator = DAIMC(n_clusters = 2)
+    >>> estimator = IMSR(n_clusters = 2)
     >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN, estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, afa: float = 1e1, beta: float = 1e0, random_state:int = None,
+    def __init__(self, n_clusters: int = 8, lbd : float = 1, gamma: float = 1, random_state:int = None,
                  engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
-        self.afa = afa
-        self.beta = beta
+        try:
+            assert lbd > 0
+        except AssertionError:
+            raise ValueError("lbd should be a positive value.")
+        try:
+            assert gamma > 0
+        except AssertionError:
+            raise ValueError("gamma should be a positive value.")
+        self.lbd = lbd
+        self.gamma = gamma
         self.random_state = random_state
         self.engine = engine
         self.verbose = verbose
@@ -98,37 +102,31 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_daimc")
-            matlab_files = ["newinit.m", "litekmeans.m", "DAIMC.m", "UpdateV_DAIMC.m"]
+            matlab_folder = os.path.join("imvc", "cluster", "_imsr")
+            matlab_files = ["IMSC.m", "update_Z.m", "update_X.m", "update_F.m", "init_Z.m",
+                            "cal_obj.m", "baseline_spectral_onkernel.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
-            oc.eval("pkg load statistics")
-            oc.eval("pkg load control")
-            oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
             missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+            missing_view_profile = [missing_view[missing_view == 0].index.to_list() for _, missing_view in missing_view_profile.items()]
             transformed_train_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
             transformed_train_Xs = [X.T for X in transformed_train_Xs]
-            transformed_train_Xs = tuple(transformed_train_Xs)
 
-            w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            u_0, v_0, b_0 = oc.newinit(transformed_train_Xs, w, self.n_clusters, len(transformed_train_Xs), nout=3)
-            u, v, b, f, p, n = oc.DAIMC(transformed_train_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
-                                        len(transformed_train_Xs), {"afa": self.afa, "beta": self.beta}, nout=6)
+            Z, obj = oc.IMSC(transformed_train_Xs, missing_view_profile, self.n_clusters, self.lbd, self.gamma, nout=2)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
-        self.labels_ = model.fit_predict(X= v)
-        self.U_ = u
-        self.V_ = v
-        self.B_ = b
+        self.labels_ = model.fit_predict(X= Z)
+        self.Z_, self.loss_ = Z, obj
 
         return self
+
 
     def _predict(self, Xs):
         r"""
@@ -169,4 +167,3 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
-
