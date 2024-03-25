@@ -20,8 +20,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
     Parameters
     ----------
     n_clusters : int, default=8
-        The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
-         with this range of number of clusters to choose between.
+        The number of clusters to generate.
     lbd : float, default 1
         Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
     gamma : float, default 1

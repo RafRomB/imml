@@ -8,13 +8,11 @@ from sklearn.gaussian_process import kernels
 from ..utils import check_Xs, DatasetUtils
 
 
-class OSLFIMVC(BaseEstimator, ClassifierMixin):
+class MKKMIF(BaseEstimator, ClassifierMixin):
     r"""
-    One-Stage Incomplete Multi-view Clustering via Late Fusion (OS-LF-IMVC).
+    Efficient and Effective Incomplete Multi-view Clustering (EE-IMVC).
 
-    OS-LF-IMVC integrates the processes of imputing incomplete views and clustering into a cohesive optimization
-    procedure. This approach enables the direct utilization of the learned consensus partition matrix to enhance
-    the final clustering task.
+    EE-IMVC impute missing views with a consensus clustering matrix that is regularized with prior knowledge.
 
     Parameters
     ----------
@@ -27,11 +25,13 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
     lambda_reg : float, default=1.
         Regularization parameter. The algorithm demonstrated stable performance across a wide range of
         this hyperparameter.
+    qnorm : float, default=2.
+        Regularization parameter. The algorithm demonstrated stable performance across a wide range of
+        this hyperparameter.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
-        Engine to use for computing the model. If engine == 'matlab', package 'statistics' should be installed in
-        Octave. In linux, you can run: sudo apt-get install octave-statistics.
+        Engine to use for computing the model.
 .   verbose : bool, default=False
         Verbosity mode.
 
@@ -41,43 +41,47 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     H_ : array-like
         Consensus clustering matrix.
-    WP_ : array-like
-        p-th permutation matrix.
-    C_ : array-like
-        Centroids.
-    beta_ : array-like
-        Adaptive weights of clustering matrices.
+    gamma_ : array-like
+        Kernel weights.
+    K_ : array-like
+        Kernel sub-matrix.
     loss_ : float
         Value of the loss function.
 
     References
     ----------
-    [paper] Yi Zhang, Xinwang Liu, Siwei Wang, Jiyuan Liu, Sisi Dai, and En Zhu. 2021. One-Stage Incomplete
-             Multi-view Clustering via Late Fusion. In Proceedings of the 29th ACM International Conference on
-             Multimedia (MM '21). Association for Computing Machinery, New York, NY, USA, 2717–2725.
-             https://doi.org/10.1145/3474085.3475204.
-    [code]   https://github.com/ethan-yizhang/OSLF-IMVC
+    [paper] X. Liu et al., "Multiple Kernel $k$k-Means with Incomplete Kernels," in IEEE Transactions on Pattern
+            Analysis and Machine Intelligence, vol. 42, no. 5, pp. 1191-1204, 1 May 2020,
+            doi: 10.1109/TPAMI.2019.2892416.
+    [code]  https://github.com/wangsiwei2010/multiple_kernel_clustering_with_absent_kernel
 
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.cluster import OSLFIMVC
+    >>> from imvc.cluster import MKKMIF
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> estimator = OSLFIMVC(n_clusters = 2)
+    >>> estimator = MKKMIF(n_clusters = 2)
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, normalize: bool = True,
-                 kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()), lambda_reg: float = 1.,
-                 random_state:int = None, engine: str ="matlab", verbose = False):
+    def __init__(self, n_clusters: int = 8, normalize: bool = True, kernel_initialization: str = "zeros",
+                 kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
+                 qnorm: float = 2., random_state: int = None, engine: str = "matlab", verbose=False):
+
+        kernel_initializations = ['zeros', 'mean', 'knn', 'em', 'laplacian']
+        if kernel_initialization not in kernel_initializations:
+            raise ValueError(f"Invalid kernel_initialization. Expected one of: {kernel_initializations}")
+
         self.n_clusters = n_clusters
         self.normalize = normalize
+        self.kernel_initialization = kernel_initialization
+        self.qnorm = qnorm
         self.kernel = kernel
-        self.lambda_reg = lambda_reg
         self.random_state = random_state
         self.engine = engine
         self.verbose = verbose
-
+        self.kernel_initializations = {"zeros": "algorithm2", "mean": "algorithm3", "knn": "algorithm0",
+                                       "em": "algorithm6", "laplacian": "algorithm4"}
 
     def fit(self, Xs, y=None):
         r"""
@@ -98,37 +102,40 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
-        if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_oslfimvc")
-            matlab_files = ['initializeKH.m', 'mycombFun.m', 'myInitialization.m', 'myInitializationC.m',
-                            'mykernelkmeans.m', 'mySolving.m', 'OS_LF_IMVC_alg.m', 'updateBeta_OSLFIMVC.m',
-                            'updateWP_OSLFIMVC.m', "kcenter.m", "knorm.m"]
-            oc = oct2py.Oct2Py(temp_dir= matlab_folder)
+        if self.engine == "matlab":
+            matlab_folder = os.path.join("imvc", "cluster", "_mkkm_ik")
+            matlab_files = ['absentKernelImputation.m', 'mycombFun.m', 'mykernelkmeans.m', 'calObjV2.m',
+                            'algorithm0.m', 'algorithm2.m', 'algorithm3.m', 'algorithm4.m', 'algorithm6.m',
+                            'updateabsentkernelweightsV2.m', 'myabsentmultikernelclustering.m', "kcenter.m", "knorm.m"]
+            oc = oct2py.Oct2Py(temp_dir=matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
-                    oc.eval(f.read())
-            oc.eval("pkg load statistics")
+                    try:
+                        oc.eval(f.read())
+                    except:
+                        print(matlab_file)
 
             missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-            s = [view[view == 0].index.values for _,view in missing_view_profile.items()]
+            s = [view[view == 0].index.values for _, view in missing_view_profile.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
             s = tuple([{"indx": i} for i in s])
+            kernel = self.kernel_initializations[self.kernel_initialization]
 
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            U, C, WP, beta, obj = oc.OS_LF_IMVC_alg(transformed_Xs, s, self.n_clusters, self.lambda_reg,
-                                                    int(self.normalize), nout=5)
+            H_normalized,gamma,obj,KA = oc.myabsentmultikernelclustering(transformed_Xs, s, self.n_clusters,
+                                                                         self.qnorm, kernel,
+                                                                         int(self.normalize), nout=4)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
-        model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
-        self.labels_ = model.fit_predict(X= U)
-        self.H_, self.WP_, self.C_, self.beta_, self.loss_ = U, WP, C, beta, obj
+        model = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
+        self.labels_ = model.fit_predict(X=H_normalized)
+        self.H_, self.gamma_, self.KA_, self.loss_ = H_normalized, gamma, KA, obj
 
         return self
-
 
     def _predict(self, Xs):
         r"""
@@ -147,7 +154,6 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
             Index of the cluster each sample belongs to.
         """
         return self.labels_
-
 
     def fit_predict(self, Xs, y=None):
         r"""
@@ -169,4 +175,3 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
-

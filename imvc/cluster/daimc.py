@@ -22,8 +22,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     Parameters
     ----------
     n_clusters : int, default=8
-        The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
-         with this range of number of clusters to choose between.
+        The number of clusters to generate.
     afa : float, default 1e1
         nonnegative.
     beta : float, default 1e0

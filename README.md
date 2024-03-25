@@ -3,7 +3,7 @@
 This package is designed for Incomplete Multi-View Clustering (IMC), which is a 
 technique used to cluster data that is represented by multiple views or 
 modalities where some of the views are missing for some of the samples.
-It implements different transformers, algorithms and pipelines for 
+It implements different algorithms, transformers, and datasets for 
 this task.
 
 IMC is usually a hard problem because of the following reasons:
@@ -57,19 +57,24 @@ We show a simple example of how it works.
 
 ```python
 from imvc.datasets import LoadDataset
-from imvc.pipelines import NMFCPipeline
+from imvc.cluster import DAIMC
+from imvc.transformers import Amputer
 
 # Load an incomplete multi-view dataset
-Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
 
-# Create an instance of a pipeline using a Non-negative matrix factorization with 3 clusters
-pipeline = NMFCPipeline(n_clusters = 3)
+# Create an instance of an algorithm with 3 clusters
+estimator = DAIMC(n_clusters = 3)
 
-# Fit the model with the data and missing views
-pipeline.fit(Xs)
+# Fit the model and get predictions
+labels = estimator.fit_predict(Xs)
 
-# Get predictions
-pipeline.predict(Xs)
+# you can also add missing views
+transformer = Amputer(p=0.2, mechanism="MCAR", random_state=42)
+Xs = transformer.fit_transform(Xs)
+
+# Fit the model and get predictions
+labels = estimator.fit_predict(Xs)
 ```
 
 We also provide some Jupyter notebooks in the examples/ directory to help you get 
