@@ -1,16 +1,20 @@
 import os
+
+import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..transformers import FillIncompleteSamples
+from ..transformers import FillIncompleteSamples, select_complete_samples
 from ..utils import check_Xs, DatasetUtils
 
 
-class DAIMC(BaseEstimator, ClassifierMixin):
+class SIMCADC(BaseEstimator, ClassifierMixin):
     r"""
-    Doubly Aligned Incomplete Multi-view Clustering (DAIMC).
+    Scalable Incomplete Mulstiview Clustering with Adaptive Data Completion (SIMC-ADC).
 
+    #todo
     The DAIMC algorithm integrates weighted semi-nonnegative matrix factorization (semi-NMF) to address incomplete
     multi-view clustering challenges. It leverages instance alignment information to learn a unified latent feature
     matrix across views and employs L2,1-Norm regularized regression to establish a consensus basis matrix, minimizing
@@ -23,10 +27,14 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    alpha : float, default=1
-        nonnegative.
+    lambda_parameter : float, default=1
+        Balance the influence between anchor graph generation and alignment term.
+    n_anchors : int, default=None
+        Number of anchors. If None, use n_clusters.
     beta : float, default=1
-        Define the trade-off between sparsity and accuracy of regression for the i-th view.
+        Balance the influence between anchor graph generation and alignment term.
+    gamma : float, default=1
+        Balance the influence between anchor graph generation and alignment term.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
@@ -58,20 +66,24 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.cluster import DAIMC
+    >>> from imvc.cluster import SIMCADC
     >>> from imvc.transformers import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
-    >>> estimator = DAIMC(n_clusters = 2)
+    >>> estimator = SIMCADC(n_clusters = 2)
     >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN, estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, alpha: float = 1, beta: float = 1, random_state:int = None,
+    def __init__(self, n_clusters: int = 8, lambda_parameter: float = 1, n_anchors: int = None,
+                 beta: float = 1, gamma: float = 1, eps: float = 1e-25, random_state:int = None,
                  engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
-        self.alpha = alpha
+        self.lambda_parameter = lambda_parameter
         self.beta = beta
+        self.gamma = gamma
+        self.eps = eps
+        self.n_anchors = n_clusters if n_anchors is None else n_anchors
         self.random_state = random_state
         self.engine = engine
         self.verbose = verbose
@@ -97,32 +109,38 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_daimc")
-            matlab_files = ["newinit.m", "litekmeans.m", "DAIMC.m", "UpdateV_DAIMC.m"]
+            matlab_folder = os.path.join("imvc", "cluster", "_simcadc")
+            matlab_files = ["SIMC.m", "EProjSimplex_new.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
-            oc.eval("pkg load statistics")
-            oc.eval("pkg load control")
-            oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
-            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+            mean_view_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
+            incomplete_samples = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
+            mean_view_profile = [pd.DataFrame(np.repeat(means, len(incom), axis= 1), columns=incom).values for means, incom in
+                                  zip(mean_view_profile, incomplete_samples)]
+
             transformed_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
-            transformed_Xs = [X.T for X in transformed_Xs]
-            transformed_Xs = tuple(transformed_Xs)
+            transformed_Xs, mean_view_profile = tuple(transformed_Xs), tuple(mean_view_profile)
 
-            w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
+            w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]
+            w = [eye.loc[samples,:].values for eye, samples in zip(w, incomplete_samples)]
+            w = tuple(w)
+
+            n_incomplete_samples_view = list(len(incomplete_sample) for incomplete_sample in incomplete_samples)
+
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            u_0, v_0, b_0 = oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)
-            u, v, b, f, p, n = oc.DAIMC(transformed_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
-                                        len(transformed_Xs), {"afa": self.alpha, "beta": self.beta}, nout=6)
+            UU,V,A,W,Z_final,iter,obj = oc.SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
+                                                self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
+                                                mean_view_profile, self.beta, self.gamma, nout=7)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
-        self.labels_ = model.fit_predict(X= v)
+        self.labels_ = model.fit_predict(X= UU)
+        # todo
         self.U_ = u
         self.V_ = v
         self.B_ = b

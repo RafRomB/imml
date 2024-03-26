@@ -21,9 +21,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    lbd : float, default 1
+    lbd : float, default=1
         Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
-    gamma : float, default 1
+    gamma : float, default=1
         Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
@@ -111,12 +111,12 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
             missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
             missing_view_profile = [missing_view[missing_view == 0].index.to_list() for _, missing_view in missing_view_profile.items()]
-            transformed_train_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
-            transformed_train_Xs = [X.T for X in transformed_train_Xs]
+            transformed_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
+            transformed_Xs = [X.T for X in transformed_Xs]
 
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            Z, obj = oc.IMSC(transformed_train_Xs, missing_view_profile, self.n_clusters, self.lbd, self.gamma, nout=2)
+            Z, obj = oc.IMSC(transformed_Xs, missing_view_profile, self.n_clusters, self.lbd, self.gamma, nout=2)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 

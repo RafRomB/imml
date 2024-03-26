@@ -45,7 +45,7 @@ class NormalizerNaN(Normalizer):
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features_i)
             Training vector, where n_samples is the number of samples and n_features is the number of features.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
@@ -64,12 +64,12 @@ class NormalizerNaN(Normalizer):
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features)
+        X : array-like of shape (n_samples, n_features_i)
             Training vector, where n_samples is the number of samples and n_features is the number of features.
 
         Returns
         -------
-        transformed_Xs : array-like of shape (n_samples, n_features)
+        transformed_Xs : array-like of shape (n_samples, n_features_i)
             Transformed data.
         """
 

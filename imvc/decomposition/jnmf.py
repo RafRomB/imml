@@ -189,7 +189,7 @@ class jNMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features)
+        transformed_Xs : list of array-likes, shape (n_samples, n_components)
             The projected data.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')

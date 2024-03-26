@@ -131,7 +131,7 @@ class DFMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features)
+        transformed_Xs : list of array-likes, shape (n_samples, n_components)
             The projected data.
         """
 
