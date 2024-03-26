@@ -6,18 +6,16 @@ from rpy2.robjects.packages import importr
 from rpy2.robjects import pandas2ri
 
 
-def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, force_all_finite="allow-nan",return_dimensions=False):
+def check_Xs(Xs, enforce_views=None, copy=False, force_all_finite="allow-nan",return_dimensions=False):
     r"""
     Checks Xs and ensures it to be a list of 2D matrices.
+
     Parameters
     ----------
     Xs : nd-array, list
         Input data.
-    multiview : boolean, (default=False)
-        If True, throws error if just 1 data matrix given.
     enforce_views : int, (default=not checked)
-        If provided, ensures this number of views in Xs. Otherwise not
-        checked.
+        If provided, ensures this number of views in Xs. Otherwise not checked.
     copy : boolean, (default=False)
         If True, the returned Xs is a copy of the input Xs,
         and operations on the output will not affect
@@ -70,15 +68,14 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, force_all_fini
         msg = "Length of input list must be greater than 0"
         raise ValueError(msg)
 
-    if multiview:
-        if n_views == 1:
-            msg = "Must provide at least two data matrices"
-            raise ValueError(msg)
-        if enforce_views is not None and n_views != enforce_views:
-            msg = "Wrong number of views. Expected {} but found {}".format(
-                enforce_views, n_views
-            )
-            raise ValueError(msg)
+    if n_views == 1:
+        msg = "Must provide at least two data matrices"
+        raise ValueError(msg)
+    if enforce_views is not None and n_views != enforce_views:
+        msg = "Wrong number of views. Expected {} but found {}".format(
+            enforce_views, n_views
+        )
+        raise ValueError(msg)
 
     if not len(set([X.shape[0] for X in Xs])) == 1:
         msg = "All views must have the same number of samples"
@@ -86,8 +83,8 @@ def check_Xs(Xs, multiview=False, enforce_views=None, copy=False, force_all_fini
 
     pandas_format = True if isinstance(Xs[0],pd.DataFrame) else False
     if pandas_format:
-        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, force_all_finite=force_all_finite), index=X.index, \
-                           columns=X.columns) for X_idx, X in enumerate(Xs)]
+        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, force_all_finite=force_all_finite),
+                           index=X.index, columns=X.columns) for X_idx, X in enumerate(Xs)]
     else:
         Xs = [check_array(X, allow_nd=False, copy=copy, force_all_finite=force_all_finite) for X in Xs]
 

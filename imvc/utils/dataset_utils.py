@@ -10,7 +10,7 @@ class DatasetUtils:
     """
 
     @staticmethod
-    def convert_mvd_in_imvd(Xs: list, missing_view_profile = pd.DataFrame):
+    def convert_mvd_in_imvd(Xs: list, missing_view_profile: pd.DataFrame) -> list:
         r"""
         Generate view missingness patterns in complete multi-view datasets.
 
@@ -25,17 +25,20 @@ class DatasetUtils:
 
         Returns
         -------
-        imvd : list of array-likes
+        transformed_Xs : list of array-likes
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
 
          Examples
         --------
+        >>> import pandas as pd
+        >>> import numpy as np
         >>> from imvc.utils import DatasetUtils
         >>> from imvc.datasets import LoadDataset
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
-        >>> Xs = DatasetUtils.ampute(Xs = Xs, p = [0.2, 0.5])
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> missing_view_profile = pd.DataFrame(np.random.choice([0, 1], size=(len(Xs[0]),len(Xs)))
+        >>> DatasetUtils.convert_mvd_in_imvd(Xs = Xs, missing_view_profile = missing_view_profile)
         """
         transformed_Xs = []
         for X_idx, X in enumerate(Xs):
@@ -50,7 +53,7 @@ class DatasetUtils:
     @staticmethod
     def get_missing_view_profile(Xs: list) -> pd.DataFrame:
         r"""
-        Get the missing view panel of an incomplete multi-view dataset.
+        Get the missing view profile of an incomplete multi-view dataset.
 
         Parameters
         ----------
@@ -67,10 +70,11 @@ class DatasetUtils:
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> missing_view_profile = DatasetUtils.get_missing_view_profile(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_missing_view_profile(Xs = Xs)
         """
 
         missing_view_profile = pd.concat([X.isna().all(1) for X in Xs], axis = 1)
@@ -79,7 +83,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_n_views(Xs: list):
+    def get_n_views(Xs: list) -> int:
         r"""
         Get the number of views of a multi-view dataset.
 
@@ -92,15 +96,15 @@ class DatasetUtils:
 
         Returns
         -------
-        n_views: number of views.
+        n_views: int
+            Number of views.
 
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> missing_view_profile = DatasetUtils.get_n_views(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> DatasetUtils.get_n_views(Xs = Xs)
         """
 
         n_views = len(Xs)
@@ -108,7 +112,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_complete_sample_names(Xs: list):
+    def get_complete_sample_names(Xs: list) -> pd.Index:
         r"""
         Get complete samples in a multi-view dataset.
 
@@ -121,15 +125,17 @@ class DatasetUtils:
 
         Returns
         -------
-        samples: pd.Index with complete samples.
+        samples: pd.Index
+            Sample names with full data.
 
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> samples = DatasetUtils.get_complete_sample_names(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_complete_sample_names(Xs = Xs)
         """
 
         samples = DatasetUtils.get_missing_view_profile(Xs=Xs)
@@ -138,7 +144,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_incomplete_sample_names(Xs: list):
+    def get_incomplete_sample_names(Xs: list) -> pd.Index:
         r"""
         Get incomplete samples in a multi-view dataset.
 
@@ -151,15 +157,17 @@ class DatasetUtils:
 
         Returns
         -------
-        samples: pd.Index with all samples.
+        samples: pd.Index
+            Sample names with incomplete data.
 
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> samples = DatasetUtils.get_incomplete_sample_names(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_incomplete_sample_names(Xs = Xs)
         """
 
         samples = DatasetUtils.get_missing_view_profile(Xs=Xs)
@@ -168,9 +176,9 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_n_incomplete_samples(Xs: list):
+    def get_samples_by_view(Xs: list, return_as_list: bool = True) -> list|dict:
         r"""
-        Get the number of incomplete samples in a multi-view dataset.
+        Get the samples for each view in a multi-view dataset.
 
         Parameters
         ----------
@@ -178,26 +186,73 @@ class DatasetUtils:
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
+        return_as_list : bool, default=True
+            If True, the function will return a list; a dict otherwise.
 
         Returns
         -------
-        int: number of incomplete samples.
+        samples: list or dict of pd.Index
+            If list, each element in the list is the sample names for each view. If dict, keys are the views and the
+            values are the sample names.
 
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> samples = DatasetUtils.get_n_incomplete_samples(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_samples_by_view(Xs = Xs)
         """
 
-        n_samples = len(DatasetUtils.get_incomplete_sample_names(Xs=Xs))
-        return n_samples
+        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+        if return_as_list:
+            samples = [view_profile[view_profile == 1].index for X_idx, view_profile in missing_view_profile.items()]
+        else:
+            samples = {X_idx: view_profile[view_profile == 1].index for X_idx, view_profile in missing_view_profile.items()}
+        return samples
 
 
     @staticmethod
-    def get_n_complete_samples(Xs: list):
+    def get_missing_samples_by_view(Xs: list, return_as_list: bool = True) -> list|dict:
+        r"""
+        Get the samples not present in each view in a multi-view dataset.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views.
+        return_as_list : bool, default=True
+            If list, each element in the list is the sample names for each view. If dict, keys are the views and the
+            values are the sample names.
+
+        Returns
+        -------
+        samples: dict of pd.Index
+            Dictionary of missing samples for each view.
+
+        Examples
+        --------
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
+        >>> from imvc.datasets import LoadDataset
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_missing_samples_by_view(Xs = Xs)
+        """
+
+        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+        if return_as_list:
+            samples = [view_profile[view_profile == 0].index for X_idx, view_profile in missing_view_profile.items()]
+        else:
+            samples = {X_idx: view_profile[view_profile == 0].index for X_idx, view_profile in missing_view_profile.items()}
+        return samples
+
+
+    @staticmethod
+    def get_n_complete_samples(Xs: list) -> int:
         r"""
         Get the number of complete samples in a multi-view dataset.
 
@@ -215,10 +270,11 @@ class DatasetUtils:
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> samples = DatasetUtils.get_n_complete_samples(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_n_complete_samples(Xs = Xs)
         """
 
         n_samples = len(DatasetUtils.get_complete_sample_names(Xs=Xs))
@@ -226,7 +282,37 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_percentage_complete_samples(Xs: list):
+    def get_n_incomplete_samples(Xs: list) -> int:
+        r"""
+        Get the number of incomplete samples in a multi-view dataset.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views.
+
+        Returns
+        -------
+        int: number of incomplete samples.
+
+        Examples
+        --------
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
+        >>> from imvc.datasets import LoadDataset
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_n_incomplete_samples(Xs = Xs)
+        """
+
+        n_samples = len(DatasetUtils.get_incomplete_sample_names(Xs=Xs))
+        return n_samples
+
+
+    @staticmethod
+    def get_percentage_complete_samples(Xs: list) -> float:
         r"""
         Get the percentage of complete samples in a multi-view dataset.
 
@@ -239,24 +325,24 @@ class DatasetUtils:
 
         Returns
         -------
-        int: percentage of complete samples.
+        float: percentage of complete samples.
 
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> samples = DatasetUtils.get_percentage_complete_samples(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_percentage_complete_samples(Xs = Xs)
         """
 
         percentage_samples = DatasetUtils.get_n_complete_samples(Xs=Xs) / len(Xs[0]) * 100
-        percentage_samples = int(percentage_samples)
         return percentage_samples
 
 
     @staticmethod
-    def get_percentage_incomplete_samples(Xs: list):
+    def get_percentage_incomplete_samples(Xs: list) -> float:
         r"""
         Get the percentage of incomplete samples in a multi-view dataset.
 
@@ -269,26 +355,26 @@ class DatasetUtils:
 
         Returns
         -------
-        int: percentage of incomplete samples.
+        float: percentage of incomplete samples.
 
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
         >>> from imvc.datasets import LoadDataset
-
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> samples = DatasetUtils.get_percentage_incomplete_samples(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.get_percentage_incomplete_samples(Xs = Xs)
         """
 
         percentage_samples = DatasetUtils.get_n_incomplete_samples(Xs=Xs) / len(Xs[0]) * 100
-        percentage_samples = int(percentage_samples)
         return percentage_samples
 
 
     @staticmethod
-    def shuffle_imvd(Xs: list, random_state: int = None):
+    def shuffle_imvd(Xs: list, random_state: int = None) -> list:
         r"""
-        Shuffle the dataset.
+        Consistently Shuffle all the views in a multi-view dataset.
 
         Parameters
         ----------
@@ -296,29 +382,31 @@ class DatasetUtils:
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
         -------
-        Xs: list of array-likes.
-            Incomplete multi-view dataset with shuffled samples.
+        transformed_Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views.
 
         Examples
         --------
         >>> from imvc.utils import DatasetUtils
         >>> from imvc.datasets import LoadDataset
-        >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-        >>> Xs = DatasetUtils.shuffle_imvd(Xs = Xs)
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> DatasetUtils.shuffle_imvd(Xs = Xs)
         """
 
         missing_view_profile = DatasetUtils.get_missing_view_profile(Xs)
         samples = missing_view_profile.sample(frac = 1., random_state = random_state).index
-        Xs = [X.loc[samples.intersection(X.index)] for X in Xs]
-        return Xs
+        transformed_Xs = [X.loc[samples.intersection(X.index)] for X in Xs]
+        return transformed_Xs
 
 
-    def remove_missing_sample_from_view(Xs: list):
+    def remove_missing_sample_from_view(Xs: list) -> list:
         r"""
         Remove missing samples from each specific views.
 
@@ -331,13 +419,23 @@ class DatasetUtils:
 
         Returns
         -------
-        Xs: list of array-likes.
+        transformed_Xs: list of array-likes.
             - Xs length: n_views
             - Xs[i] shape: (n_samples_i, n_features_i)
+            A list of different views.
+
+        Examples
+        --------
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.transformers import Amputer
+        >>> from imvc.datasets import LoadDataset
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> DatasetUtils.remove_missing_sample_from_view(Xs = Xs)
         """
 
-        Xs = [X.loc[X.isna().all(1).index] for X in Xs]
-        return Xs
+        transformed_Xs = [X.loc[X.isna().all(1).index] for X in Xs]
+        return transformed_Xs
 
 
     def force_all_samples(Xs: list):

@@ -21,13 +21,13 @@ class LoadDataset:
         p: list or float
             The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
         assess_percentage: bool
             If False, each view is dropped independently.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
@@ -70,15 +70,15 @@ class LoadDataset:
         p: list or float
             The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        return_metadata: bool, default False
+        return_metadata: bool, default=False
             If True, return the metadata.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
         assess_percentage: bool
             If False, each view is dropped independently.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
@@ -120,15 +120,15 @@ class LoadDataset:
         p: list or float
             The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        return_metadata: bool, default False
+        return_metadata: bool, default=False
             If True, return the metadata.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
         assess_percentage: bool
             If False, each view is dropped independently.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
@@ -173,15 +173,15 @@ class LoadDataset:
         p: list or float
             The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        return_metadata: bool, default False
+        return_metadata: bool, default=False
             If True, return the metadata.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
         assess_percentage: bool
             If False, each view is dropped independently.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
@@ -227,13 +227,13 @@ class LoadDataset:
         p: list or float
             The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
         assess_percentage: bool
             If False, each view is dropped independently.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
@@ -276,15 +276,15 @@ class LoadDataset:
         p: list or float
             The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        return_metadata: bool, default False
+        return_metadata: bool, default=False
             If True, return the metadata.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
         assess_percentage: bool
             If False, each view is dropped independently.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
@@ -331,15 +331,15 @@ class LoadDataset:
         p: list or float
             The percentaje that each view will have for missing samples. If p is float, all the views will have the
             same percentaje.
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        return_metadata: bool, default False
+        return_metadata: bool, default=False
             If True, return the metadata.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
         assess_percentage: bool
             If False, each view is dropped independently.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns
@@ -380,13 +380,13 @@ class LoadDataset:
 
         Parameters
         ----------
-        return_y: bool, default False
+        return_y: bool, default=False
             If True, return the label too.
-        return_metadata: bool, default False
+        return_metadata: bool, default=False
             If True, return the metadata.
-        shuffle: bool, default False
+        shuffle: bool, default=False
             If True, shuffle the dataset.
-        random_state: int, default None
+        random_state: int, default=None
             If int, random_state is the seed used by the random number generator.
 
         Returns

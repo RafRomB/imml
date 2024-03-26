@@ -79,7 +79,7 @@ class FillIncompleteSamples(BaseEstimator, TransformerMixin):
             A list of different views.
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features)
+        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
             The transformed data with filled missing samples.
         """
 

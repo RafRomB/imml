@@ -8,11 +8,13 @@ from sklearn.gaussian_process import kernels
 from ..utils import check_Xs, DatasetUtils
 
 
-class MKKMIF(BaseEstimator, ClassifierMixin):
+class MKKMIK(BaseEstimator, ClassifierMixin):
     r"""
-    Efficient and Effective Incomplete Multi-view Clustering (EE-IMVC).
+    Multiple Kernel k-Means with Incomplete Kernels (MKKM-IK).
 
-    EE-IMVC impute missing views with a consensus clustering matrix that is regularized with prior knowledge.
+    MKKM-IK integrates imputation and clustering into a single optimization procedure. Thus, the clustering result
+    guides the missing kernel imputation, and the latter is used to conduct the subsequent clustering. Both procedures
+    will be performed until convergence.
 
     Parameters
     ----------
@@ -50,7 +52,7 @@ class MKKMIF(BaseEstimator, ClassifierMixin):
 
     References
     ----------
-    [paper] X. Liu et al., "Multiple Kernel $k$k-Means with Incomplete Kernels," in IEEE Transactions on Pattern
+    [paper] X. Liu et al., "Multiple Kernel k-Means with Incomplete Kernels," in IEEE Transactions on Pattern
             Analysis and Machine Intelligence, vol. 42, no. 5, pp. 1191-1204, 1 May 2020,
             doi: 10.1109/TPAMI.2019.2892416.
     [code]  https://github.com/wangsiwei2010/multiple_kernel_clustering_with_absent_kernel
@@ -58,9 +60,9 @@ class MKKMIF(BaseEstimator, ClassifierMixin):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.cluster import MKKMIF
+    >>> from imvc.cluster import MKKMIK
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> estimator = MKKMIF(n_clusters = 2)
+    >>> estimator = MKKMIK(n_clusters = 2)
     >>> labels = estimator.fit_predict(Xs)
     """
 
@@ -110,17 +112,13 @@ class MKKMIF(BaseEstimator, ClassifierMixin):
             oc = oct2py.Oct2Py(temp_dir=matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
-                    try:
-                        oc.eval(f.read())
-                    except:
-                        print(matlab_file)
+                    oc.eval(f.read())
 
-            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-            s = [view[view == 0].index.values for _, view in missing_view_profile.items()]
+            s = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
+            s = tuple([{"indx": i} for i in s])
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
-            s = tuple([{"indx": i} for i in s])
             kernel = self.kernel_initializations[self.kernel_initialization]
 
             if self.random_state is not None:

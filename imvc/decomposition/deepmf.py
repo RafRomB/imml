@@ -277,7 +277,7 @@ class DeepMF(pl.LightningModule):
 
         Parameters
         ----------
-        X : array-likes of shape (n_samples, n_features)
+        X : array-likes of shape (n_samples, latent_dim)
                 New data to transform.
 
         Returns
