@@ -12,13 +12,11 @@ from ..utils import check_Xs, DatasetUtils
 
 class SIMCADC(BaseEstimator, ClassifierMixin):
     r"""
-    Scalable Incomplete Mulstiview Clustering with Adaptive Data Completion (SIMC-ADC).
+    Scalable Incomplete Multiview Clustering with Adaptive Data Completion (SIMC-ADC).
 
-    #todo
-    The DAIMC algorithm integrates weighted semi-nonnegative matrix factorization (semi-NMF) to address incomplete
-    multi-view clustering challenges. It leverages instance alignment information to learn a unified latent feature
-    matrix across views and employs L2,1-Norm regularized regression to establish a consensus basis matrix, minimizing
-    the impact of missing instances.
+    The SIMC-ADC algorithm captures the complementary information from different views by building a view-specific
+    anchor graph. The anchor graph construction and a structure alignment are jointly optimized to enhance
+    clustering quality.
 
     It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
     this algorithm.
@@ -51,16 +49,20 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Basis matrix.
     V_ : np.array
         Commont latent feature matrix.
-    B_ : np.array
-        Regression coefficient matrices.
+    A_ : np.array
+        Learned anchors.
+    Z_ : np.array
+        View-specific anchor graph.
+    loss_ : float
+        Value of the loss function.
+    iter_ : int
+        Number of iterations.
 
     References
     ----------
-    [paper1] Menglei Hu and Songcan Chen. 2018. Doubly aligned incomplete multi-view clustering. In Proceedings of the
-            27th International Joint Conference on Artificial Intelligence (IJCAI'18). AAAI Press, 2262–2268.
-    [paper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on Incomplete
-             Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
-    [code]  https://github.com/DarrenZZhang/Survey_IMC
+    [paper] He, W.-J., Zhang, Z., & Wei, Y. (2023). Scalable incomplete multi-view clustering with adaptive data
+            completion. Information Sciences, 649, 119562. doi:10.1016/j.ins.2023.119562.
+    [code]  https://github.com/DarrenZZhang/INS23-SIMC_ADC
 
     Examples
     --------
@@ -132,20 +134,22 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            UU,V,A,W,Z_final,iter,obj = oc.SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
+            u,v,a,w,z,iter,obj = oc.SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
                                                 self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
                                                 mean_view_profile, self.beta, self.gamma, nout=7)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
-        self.labels_ = model.fit_predict(X= UU)
+        self.labels_ = model.fit_predict(X= u)
         # todo
         self.U_ = u
         self.V_ = v
-        self.B_ = b
+        self.A_ = a
+        self.Z_, self.loss_, self.iter_ = z, obj, iter
 
         return self
+
 
     def _predict(self, Xs):
         r"""

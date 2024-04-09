@@ -19,6 +19,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
     this algorithm.
 
+    octave-control and octave-statistics should be installed. You can install them with
+    'sudo apt install octave-control' and 'sudo apt install octave-statistics'.
+
     Parameters
     ----------
     n_clusters : int, default=8
