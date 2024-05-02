@@ -1,3 +1,4 @@
+import itertools
 import os
 import time
 
@@ -63,24 +64,23 @@ if os.path.exists(file_path):
 else:
     results = pd.DataFrame(0, index=datasets, columns=algorithms.keys())
 
-for dataset_name in datasets:
-    for alg_name, alg in algorithms.items():
-        if results.loc[dataset_name, alg_name] > 0:
-            continue
-        names = dataset_name.split("_")
-        if "simulated" in names:
-            names = ["_".join(names)]
-        x_name, y_name = names if len(names) > 1 else (names[0], "0")
-        Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle=True)
-        y = y[y_name]
-        n_clusters = y.nunique()
+for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
+    if results.loc[dataset_name, alg_name] > 0:
+        continue
+    names = dataset_name.split("_")
+    if "simulated" in names:
+        names = ["_".join(names)]
+    x_name, y_name = names if len(names) > 1 else (names[0], "0")
+    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle=True)
+    y = y[y_name]
+    n_clusters = y.nunique()
 
-        start_time = time.perf_counter()
-        clusters, _ = Model(alg_name=alg_name, alg=alg).method(train_Xs=Xs, n_clusters=n_clusters,
-                                                                   random_state=random_state, run_n=0)
-        elapsed_time = time.perf_counter() - start_time
+    start_time = time.perf_counter()
+    clusters, _ = Model(alg_name=alg_name, alg=alg).method(train_Xs=Xs, n_clusters=n_clusters,
+                                                               random_state=random_state, run_n=0)
+    elapsed_time = time.perf_counter() - start_time
 
-        results.loc[dataset_name, alg_name] = elapsed_time
-        results.to_csv(os.path.join(folder_results, filelame))
+    results.loc[dataset_name, alg_name] = elapsed_time
+    results.to_csv(os.path.join(folder_results, filelame))
 
 
