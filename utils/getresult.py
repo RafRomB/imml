@@ -211,9 +211,11 @@ class GetResult:
     @staticmethod
     def get_supervised_metrics(y_true, y_pred):
         perm_clust_labels = kuhn_munkres_algorithm(true_lab=y_true, pred_lab=y_pred)
+        mcc, p_value = GetResult.compute_mcc(y_true=y_true, y_pred=perm_clust_labels)
         scores = {
             'ACC': metrics.accuracy_score(y_true=y_true, y_pred=perm_clust_labels),
-            'MCC': metrics.matthews_corrcoef(y_true=y_true, y_pred=perm_clust_labels),
+            'MCC': mcc,
+            'MCC (p-value)': p_value,
             'F1': metrics.f1_score(y_true=y_true, y_pred=perm_clust_labels, average='macro'),
             'precision': metrics.precision_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0),
             'recall': metrics.recall_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0)}
@@ -280,3 +282,12 @@ class GetResult:
         results[["finished", "completed"]] = False
         return results
 
+    @staticmethod
+    def compute_mcc(y_true, y_pred, n_permutations=1000):
+        y_true, y_pred = pd.Series(y_true), pd.Series(y_pred)
+        estimate = metrics.matthews_corrcoef(y_true=y_true, y_pred=y_pred)
+        p_values = [metrics.matthews_corrcoef(y_true=y_true.sample(frac=1, random_state=i),
+                                              y_pred=y_pred.sample(frac=1, random_state=i))
+                    for i in range(n_permutations)]
+        p_values = (pd.Series(p_values) > estimate) / len(p_values)
+        return estimate, p_values

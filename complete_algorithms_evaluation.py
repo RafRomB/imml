@@ -1,3 +1,4 @@
+import itertools
 import os.path
 import argparse
 import shutil
@@ -24,7 +25,9 @@ subresults_path = os.path.join(folder_results, folder_subresults)
 logs_file = os.path.join(folder_results, 'logs.txt')
 error_file = os.path.join(folder_results, 'errors.txt')
 
+
 random_state = 42
+TIME_LIMIT = 100000
 
 # args = lambda: None
 # args.continue_benchmarking, args.n_jobs, args.save_results = True, 2, False
@@ -102,6 +105,15 @@ if not args.continue_benchmarking:
     os.remove(error_file) if os.path.exists(error_file) else None
     open(logs_file, 'w').close()
     open(error_file, 'w').close()
+
+    results["Run"] = True
+    time_filename = "time_evaluation.csv"
+    time_file_path = os.path.join(folder_results, time_filename)
+    time_results = pd.read_csv(time_file_path, index_col=0)
+
+    for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
+        if time_results.loc[dataset_name, alg_name] > TIME_LIMIT:
+            results.loc[(dataset_name, alg_name), "Run"] = False
 else:
     finished_results = pd.read_csv(file_path, index_col= indexes_names)
     results.loc[finished_results.index, finished_results.columns] = finished_results
