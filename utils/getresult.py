@@ -1,4 +1,5 @@
 import itertools
+import json
 import os
 import time
 from collections import defaultdict
@@ -28,34 +29,21 @@ class GetResult:
             with open(logs_file, "a") as f:
                 f.write(f'\n {row.drop(columns=row.columns).reset_index().to_dict(orient="records")[0]} \t {datetime.now()}')
             row_index = row.index
-            alg_name, p, amputation_mechanism, impute, run_n = (
+            dataset_name, alg_name, p, amputation_mechanism, impute, run_n = (
+                row_index.get_level_values("dataset")[0],
                 row_index.get_level_values("algorithm")[0],
-                row_index.get_level_values("missing_percentage")[0] / 100,
+                row_index.get_level_values("missing_percentage")[0],
                 row_index.get_level_values("amputation_mechanism")[0],
                 row_index.get_level_values("imputation")[0],
                 row_index.get_level_values("run_n")[0])
-
             alg = algorithms[alg_name]
-            train_Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state + run_n)
+
+            with open(os.path.join("results", 'indxs.json')) as f:
+                indxs = json.load(f)[dataset_name][p][amputation_mechanism][run_n]
+            missing_view_profile = indxs["missing_view_profile"]
+            train_Xs = DatasetUtils.convert_mvd_in_imvd(Xs=Xs, missing_view_profile=missing_view_profile)
+            train_Xs = [X.loc[missing_view_profile.index] for X in train_Xs]
             y_train = y.loc[train_Xs[0].index]
-            strat = False
-            if p != 0:
-                if amputation_mechanism == "EDM":
-                    try:
-                        assert n_clusters < len(train_Xs[0]) * (1-p)
-                    except AssertionError as exception:
-                        raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
-                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n,
-                                  assess_percentage=True, stratify=y_train)
-                    try:
-                        train_Xs = amp.fit_transform(train_Xs)
-                        strat = True
-                    except ValueError:
-                        amp.set_params(**{"stratify": None})
-                        train_Xs = amp.fit_transform(train_Xs)
-                else:
-                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n)
-                    train_Xs = amp.fit_transform(train_Xs)
 
             if impute:
                 train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(
@@ -128,8 +116,6 @@ class GetResult:
             "n_clustered_samples": missing_clusters_mask.sum(),
             "percentage_clustered_samples": 100* missing_clusters_mask.sum() // len(train_X),
             "comments": dict(errors_dict),
-            "stratified": strat,
-            "missing_view_profile": DatasetUtils.get_missing_view_profile(Xs=train_Xs).values.tolist(),
         }
 
         if not all(missing_clusters_mask):
@@ -269,7 +255,7 @@ class GetResult:
             results = results.drop(idx_to_drop)
         results_amputation_mechanism_none = results.xs(0, level="missing_percentage", drop_level=False)
         results_amputation_mechanism_none_tochange = results_amputation_mechanism_none.index.to_frame()
-        results_amputation_mechanism_none_tochange["amputation_mechanism"] = "None"
+        results_amputation_mechanism_none_tochange["amputation_mechanism"] = "'None'"
         results.loc[results_amputation_mechanism_none.index].index = pd.MultiIndex.from_frame(
             results_amputation_mechanism_none_tochange)
 
