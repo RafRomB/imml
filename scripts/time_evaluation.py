@@ -59,8 +59,6 @@ algorithms = {
                                    StandardScaler(), KMeans()),
               "params": {}},
     "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
-    "IntNMF": {"alg": MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), "params": {}},
-    "COCA": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
 }
 
 if os.path.exists(file_path):
