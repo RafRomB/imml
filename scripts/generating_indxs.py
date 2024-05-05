@@ -6,10 +6,10 @@ import numpy as np
 from imvc.datasets import LoadDataset
 from imvc.transformers import Amputer
 from imvc.utils import DatasetUtils
-from settings import INDEXES_PATH
+from settings import PROFILES_PATH
 
-if os.path.exists(INDEXES_PATH):
-    os.remove(INDEXES_PATH)
+if os.path.exists(PROFILES_PATH):
+    os.remove(PROFILES_PATH)
 
 random_state = 42
 
@@ -80,9 +80,9 @@ for dataset_name in datasets:
             "missing_view_profile": DatasetUtils.get_missing_view_profile(train_Xs).to_dict(),
         }
 
-        with open(INDEXES_PATH, 'w') as fp:
+        with open(PROFILES_PATH, 'w') as fp:
             json.dump(dict_indxs, fp)
 
-
+print("Completed successfully!")
 
 

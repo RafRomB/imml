@@ -175,8 +175,11 @@ class Amputer(BaseEstimator, TransformerMixin):
             mask = self._MNAR_mask_quantiles(X=X, p=self.p, q=self.q, p_params=1 - self.p_obs, cut='both', MCAR=False)
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
             mask = self.MNAR_self_mask_logistic(X=X, p=self.p)
-        elif self.mechanism == "MCAR" or self.mechanism == "PM":
+        elif self.mechanism == "MCAR":
             mask = np.random.default_rng(self.random_state).random(X.shape) < self.p
+        elif self.mechanism == "PM":
+            mask = np.random.default_rng(self.random_state).random((len(X), X.shape[1] -1)) < self.p
+            np.insert(mask, np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1] -1), False, axis=1)
         else:
             raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
 
@@ -189,7 +192,7 @@ class Amputer(BaseEstimator, TransformerMixin):
             for view_idx in np.unique(views_to_fix):
                 mask[samples_to_fix, view_idx] = False
 
-            #todo
+            #todo assert probabilities after fixing samples
             samples_to_fix = mask.sum(1) >= 2
             mask[samples_to_fix, :]
 
