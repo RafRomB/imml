@@ -14,15 +14,7 @@ from imvc.datasets import LoadDataset
 from imvc.transformers import MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
 from models import Model
-
-
-folder_results = "results"
-filelame = "time_evaluation.csv"
-file_path = os.path.join(folder_results, filelame)
-logs_file = os.path.join(folder_results, 'time_logs.txt')
-error_file = os.path.join(folder_results, 'time_errors.txt')
-
-random_state = 42
+from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
 
 datasets = [
     "simulated_gm",
@@ -61,14 +53,14 @@ algorithms = {
     "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
 }
 
-if os.path.exists(file_path):
-    results = pd.read_csv(file_path, index_col=0)
+if os.path.exists(TIME_RESULTS_PATH):
+    results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
 else:
-    results = pd.DataFrame(0, index=datasets, columns=algorithms.keys())
-    os.remove(logs_file) if os.path.exists(logs_file) else None
-    os.remove(error_file) if os.path.exists(error_file) else None
-    open(logs_file, 'w').close()
-    open(error_file, 'w').close()
+    results = pd.DataFrame(0, index=algorithms.keys(), columns= datasets)
+    os.remove(TIME_LOGS_PATH) if os.path.exists(TIME_LOGS_PATH) else None
+    os.remove(TIME_ERRORS_PATH) if os.path.exists(TIME_ERRORS_PATH) else None
+    open(TIME_LOGS_PATH, 'w').close()
+    open(TIME_ERRORS_PATH, 'w').close()
 
 errors_dict = defaultdict(int)
 
@@ -82,25 +74,28 @@ for dataset_name in datasets:
     n_clusters = y.nunique()
 
     for alg_name, alg in algorithms.items():
-        time_execution = results.loc[dataset_name, alg_name]
+        time_execution = results.loc[alg_name, dataset_name]
         if (time_execution > 0) or np.isnan(time_execution):
             continue
-        with open(logs_file, "a") as f:
+        with open(TIME_LOGS_PATH, "a") as f:
             f.write(f'\n {dataset_name} \t {alg_name} \t {datetime.now()}')
 
         try:
             start_time = time.perf_counter()
             clusters, _ = Model(alg_name=alg_name, alg=alg).method(train_Xs=Xs, n_clusters=n_clusters,
-                                                                       random_state=random_state, run_n=0)
+                                                                       random_state=RANDOM_STATE, run_n=0)
             elapsed_time = time.perf_counter() - start_time
         except Exception as exception:
             errors_dict[f"{type(exception).__name__}: {exception}"] += 1
-            with open(error_file, "a") as f:
+            with open(TIME_ERRORS_PATH, "a") as f:
                 f.write(
                     f'\n {dataset_name} \t {alg_name} \t {errors_dict} \t {datetime.now()}')
             elapsed_time = np.nan
 
-        results.loc[dataset_name, alg_name] = elapsed_time
-        results.to_csv(os.path.join(folder_results, filelame))
+        results.loc[alg_name, dataset_name] = elapsed_time
+        results.to_csv(TIME_RESULTS_PATH)
 
+print("Completed successfully!")
+with open(TIME_ERRORS_PATH, "a") as f:
+    f.write(f'\n Completed successfully \t {datetime.now()}')
 

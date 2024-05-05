@@ -2,6 +2,8 @@ import itertools
 import os.path
 import argparse
 import shutil
+from datetime import datetime
+
 import numpy as np
 from pandarallel import pandarallel
 import pandas as pd
@@ -195,4 +197,8 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
         if args.save_results:
             results.to_csv(COMPLETE_RESULTS_PATH)
         GetResult.remove_subresults(results=results, subresults_path=SUBRESULTS_PATH)
+
+print("Completed successfully!")
+with open(COMPLETE_LOGS_PATH, "a") as f:
+    f.write(f'\n Completed successfully \t {datetime.now()}')
 
