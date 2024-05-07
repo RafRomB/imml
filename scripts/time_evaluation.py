@@ -57,6 +57,7 @@ if os.path.exists(TIME_RESULTS_PATH):
     results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
 else:
     results = pd.DataFrame(0, index=algorithms.keys(), columns= datasets)
+    results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF"], "nuswide"] = np.nan
     os.remove(TIME_LOGS_PATH) if os.path.exists(TIME_LOGS_PATH) else None
     os.remove(TIME_ERRORS_PATH) if os.path.exists(TIME_ERRORS_PATH) else None
     open(TIME_LOGS_PATH, 'w').close()
