@@ -1,7 +1,7 @@
 import os
 
 RANDOM_STATE = 42
-TIME_LIMIT = 100000
+TIME_LIMIT = 1800
 
 RESULTS_FOLDER = 'results'
 SUBRESULTS_FOLDER = 'subresults'
