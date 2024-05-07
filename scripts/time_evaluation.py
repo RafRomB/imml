@@ -2,7 +2,6 @@ import os
 import time
 from collections import defaultdict
 from datetime import datetime
-
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import make_pipeline
@@ -10,8 +9,10 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransfor
 from sklearn.cluster import KMeans
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
+
+from imvc.cluster import DAIMC, EEIMVC, IMSR, LFIMVC, MKKMIK, MSNE, OSLFIMVC, SIMCADC
 from imvc.datasets import LoadDataset
-from imvc.transformers import MultiViewTransformer, ConcatenateViews
+from imvc.transformers import MultiViewTransformer, ConcatenateViews, NormalizerNaN
 from imvc.algorithms import NMFC
 from models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
@@ -51,10 +52,29 @@ algorithms = {
                                    StandardScaler(), KMeans()),
               "params": {}},
     "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
+    "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   DAIMC()), "params": {}},
+    "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    EEIMVC()), "params": {}},
+    "IMSR": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                  IMSR()), "params": {}},
+    "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    LFIMVC()), "params": {}},
+    "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    MKKMIK()), "params": {}},
+    "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                  MSNE()), "params": {}},
+    "OSLFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                      OSLFIMVC()), "params": {}},
+    "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                     SIMCADC()), "params": {}},
 }
 
 if os.path.exists(TIME_RESULTS_PATH):
     results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
+    results_1 = pd.DataFrame(0, index=algorithms.keys(), columns=datasets)
+    results_1.loc[results.index, results.columns] = results
+    results = results_1.copy()
 else:
     results = pd.DataFrame(0, index=algorithms.keys(), columns= datasets)
     results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF"], "nuswide"] = np.nan
