@@ -114,7 +114,7 @@ class MOFA:
         -------
         self :  returns and instance of self.
         """
-        Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if self.verbose:
             self._run_mofa(data = [[view] for view in Xs])
         else:
