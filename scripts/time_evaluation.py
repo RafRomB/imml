@@ -12,6 +12,7 @@ from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralC
 
 from imvc.cluster import DAIMC, EEIMVC, IMSR, LFIMVC, MKKMIK, MSNE, OSLFIMVC, SIMCADC
 from imvc.datasets import LoadDataset
+from imvc.decomposition import DeepMF, DFMF, MOFA
 from imvc.transformers import MultiViewTransformer, ConcatenateViews, NormalizerNaN
 from imvc.algorithms import NMFC
 from models import Model
@@ -68,13 +69,20 @@ algorithms = {
                                       OSLFIMVC()), "params": {}},
     "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
                                      SIMCADC()), "params": {}},
+    # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
+    #                                 DeepMF(), StandardScaler(), KMeans()),
+    #              "params": {}},
+    "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), DFMF(), StandardScaler(), KMeans()),
+                 "params": {}},
+    "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), MOFA(), ConcatenateViews(),
+                                  StandardScaler(), KMeans()),
+                 "params": {}},
 }
 
 if os.path.exists(TIME_RESULTS_PATH):
     results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
     results_1 = pd.DataFrame(0, index=algorithms.keys(), columns=datasets)
-    results_1.loc[results.index, results.columns] = results
-    results = results_1.copy()
+    results = pd.concat([results, results_1.loc[results_1.index.difference(results.index)]])
 else:
     results = pd.DataFrame(0, index=algorithms.keys(), columns= datasets)
     results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF"], "nuswide"] = np.nan
