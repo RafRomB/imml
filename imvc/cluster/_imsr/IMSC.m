@@ -6,6 +6,9 @@ max_iter = 100;
 
 % init 
 beta = ones(V,1)/V;
+for v=1:V
+    X{v}(:,Im{v}) = 0;
+end
 [Z] = init_Z(X, beta, lbd);
 
 t = 0;
