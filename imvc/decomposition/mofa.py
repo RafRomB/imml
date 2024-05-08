@@ -3,6 +3,7 @@ import os
 import contextlib
 import pandas as pd
 import numpy as np
+from sklearn.base import TransformerMixin, BaseEstimator
 
 from ._mofa.run.entry_point import entry_point
 from ._mofa._mofax import core as mfx
@@ -10,7 +11,7 @@ from ._mofa.core._BayesNet import BayesNet, StochasticBayesNet, _ModifiedBayesNe
 from ..utils import check_Xs
 
 
-class MOFA:
+class MOFA(TransformerMixin, BaseEstimator):
     r"""
     Multi-Omics Factor Analysis (MOFA).
 
@@ -87,13 +88,13 @@ class MOFA:
         else:
             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
                 self.mofa_ = entry_point()
-        self.data_options_args = data_options
-        self.data_matrix_args = data_matrix
-        self.model_options_args = model_options
-        self.train_options_args = train_options
-        self.stochastic_options_args = stochastic_options
-        self.covariates_args = covariates
-        self.smooth_options_args = smooth_options
+        self.data_options = data_options
+        self.data_matrix = data_matrix
+        self.model_options = model_options
+        self.train_options = train_options
+        self.stochastic_options = stochastic_options
+        self.covariates = covariates
+        self.smooth_options = smooth_options
         self.transform_ = None
 
         
@@ -116,10 +117,10 @@ class MOFA:
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if self.verbose:
-            self._run_mofa(data = [[view] for view in Xs])
+            self._run_mofa(data = [[X] for X in Xs])
         else:
             with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
-                self._run_mofa(data = [[view] for view in Xs])
+                self._run_mofa(data = [[X] for X in Xs])
         outfile = "tmp.hdf5"
         with open(os.devnull, "w") as f, contextlib.redirect_stdout(f):
             self.mofa_.save(outfile=outfile, save_data=True, save_parameters=False, expectations=None)
@@ -166,14 +167,14 @@ class MOFA:
 
     
     def _run_mofa(self, data):
-        self.mofa_.set_data_options(**self.data_options_args)
-        self.mofa_.set_data_matrix(data = data, **self.data_matrix_args)
-        self.mofa_.set_model_options(factors = self.factors, **self.model_options_args)
-        self.mofa_.set_train_options(seed = self.random_state, verbose = self.verbose, **self.train_options_args)
-        self.mofa_.set_stochastic_options(**self.stochastic_options_args)
-        if self.covariates_args:
-            self.mofa_.set_covariates(**self.covariates_args)
-            self.mofa_.set_smooth_options(**self.smooth_options_args)
+        self.mofa_.set_data_options(**self.data_options)
+        self.mofa_.set_data_matrix(data = data, **self.data_matrix)
+        self.mofa_.set_model_options(factors = self.factors, **self.model_options)
+        self.mofa_.set_train_options(seed = self.random_state, verbose = self.verbose, **self.train_options)
+        self.mofa_.set_stochastic_options(**self.stochastic_options)
+        if self.covariates:
+            self.mofa_.set_covariates(**self.covariates)
+            self.mofa_.set_smooth_options(**self.smooth_options)
         self.mofa_.build()
         if isinstance(self.mofa_.model, BayesNet):
             self.mofa_.model = _ModifiedBayesNet(self.mofa_.model.dim, self.mofa_.model.nodes)
@@ -181,8 +182,11 @@ class MOFA:
             self.mofa_.model = _ModifiedStochasticBayesNet(self.mofa_.model.dim, self.mofa_.model.nodes)
         self.mofa_.run()
         return None
-    
-    
+
+
+    def get_feature_names_out(self, *args, **params):
+        return self._columns
+
     def set_output(self, *, transform=None):
         self.transform_ = "pandas"
         return self

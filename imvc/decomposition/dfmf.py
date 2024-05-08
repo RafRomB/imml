@@ -1,5 +1,6 @@
 import pandas as pd
 from sklearn.base import TransformerMixin, BaseEstimator
+from sklearn.utils.validation import _generate_get_feature_names_out
 
 from ..utils import check_Xs
 from ._skfusion import fusion
@@ -67,7 +68,7 @@ class DFMF(TransformerMixin, BaseEstimator):
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> transformer = DFMF(n_components = 5).set_output(transform="pandas")
     >>> estimator = KMeans(n_clusters = 3)
-    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), transformer, estimator)
+    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), transformer, StandardScaler(), estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 
@@ -82,6 +83,18 @@ class DFMF(TransformerMixin, BaseEstimator):
             init_type *= 2
 
         self.n_components = n_components
+        self.callback = callback
+        self.max_iter = max_iter
+        self.init_type = init_type
+        self.n_run = n_run
+        self.stopping = stopping
+        self.stopping_system = stopping_system
+        self.verbose = verbose
+        self.compute_err = compute_err
+        self.random_state = random_state
+        self.n_jobs = n_jobs
+        self.fill_value = fill_value
+
         self.fuser_ = fusion.Dfmf(max_iter=max_iter, init_type=init_type[0], n_run=n_run, stopping=stopping,
                                   stopping_system=stopping_system, verbose=verbose, compute_err=compute_err,
                                   callback=callback, random_state=random_state, n_jobs=n_jobs)
@@ -147,4 +160,8 @@ class DFMF(TransformerMixin, BaseEstimator):
     def set_output(self, *, transform=None):
         self.transform_ = "pandas"
         return self
+
+
+    def get_feature_names_out(self, input_features=None):
+        return _generate_get_feature_names_out(self, self.n_components, input_features=input_features)
 

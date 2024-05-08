@@ -9,12 +9,12 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransfor
 from sklearn.cluster import KMeans
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-
 from imvc.cluster import DAIMC, EEIMVC, IMSR, LFIMVC, MKKMIK, MSNE, OSLFIMVC, SIMCADC
 from imvc.datasets import LoadDataset
 from imvc.decomposition import DeepMF, DFMF, MOFA
 from imvc.transformers import MultiViewTransformer, ConcatenateViews, NormalizerNaN
 from imvc.algorithms import NMFC
+
 from models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
 
@@ -53,30 +53,31 @@ algorithms = {
                                    StandardScaler(), KMeans()),
               "params": {}},
     "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
-    "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-                                   DAIMC()), "params": {}},
-    "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                    EEIMVC()), "params": {}},
-    "IMSR": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-                                  IMSR()), "params": {}},
-    "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                    LFIMVC()), "params": {}},
-    "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                    MKKMIK()), "params": {}},
-    "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                  MSNE()), "params": {}},
-    "OSLFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                      OSLFIMVC()), "params": {}},
-    "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-                                     SIMCADC()), "params": {}},
-    # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
-    #                                 DeepMF(), StandardScaler(), KMeans()),
-    #              "params": {}},
-    "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), DFMF(), StandardScaler(), KMeans()),
-                 "params": {}},
-    "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), MOFA(), ConcatenateViews(),
-                                  StandardScaler(), KMeans()),
-                 "params": {}},
+    # "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+    #                                DAIMC()), "params": {}},
+    # "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+    #                                 EEIMVC()), "params": {}},
+    # "IMSR": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+    #                               IMSR()), "params": {}},
+    # "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+    #                                 LFIMVC()), "params": {}},
+    # "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+    #                                 MKKMIK()), "params": {}},
+    # "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+    #                               MSNE()), "params": {}},
+    # "OSLFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+    #                                   OSLFIMVC()), "params": {}},
+    # "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+    #                                  SIMCADC()), "params": {}},
+    # # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
+    # #                                 DeepMF(), StandardScaler(), KMeans()),
+    # #              "params": {}},
+    "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), DFMF().set_output(transform="pandas"),
+                                  StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
+    "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), MOFA().set_output(transform="pandas"),
+                                  ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
 }
 
 if os.path.exists(TIME_RESULTS_PATH):
@@ -98,7 +99,7 @@ for dataset_name in datasets:
     if "simulated" in names:
         names = ["_".join(names)]
     x_name, y_name = names if len(names) > 1 else (names[0], "0")
-    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle=True)
+    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle=True, random_state=RANDOM_STATE)
     y = y[y_name]
     n_clusters = y.nunique()
 
@@ -117,8 +118,7 @@ for dataset_name in datasets:
         except Exception as exception:
             errors_dict[f"{type(exception).__name__}: {exception}"] += 1
             with open(TIME_ERRORS_PATH, "a") as f:
-                f.write(
-                    f'\n {dataset_name} \t {alg_name} \t {errors_dict} \t {datetime.now()}')
+                f.write(f'\n {dataset_name} \t {alg_name} \t {errors_dict} \t {datetime.now()}')
             elapsed_time = np.nan
 
         results.loc[alg_name, dataset_name] = elapsed_time

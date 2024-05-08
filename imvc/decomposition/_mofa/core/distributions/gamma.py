@@ -4,6 +4,7 @@ import scipy.special as special
 from .basic_distributions import Distribution
 
 from ..utils import *
+from ... import config
 
 
 class Gamma(Distribution):
