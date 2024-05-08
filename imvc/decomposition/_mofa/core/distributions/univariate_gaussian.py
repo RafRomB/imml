@@ -4,6 +4,7 @@ import scipy.stats as stats
 from .basic_distributions import Distribution
 
 from ..utils import *
+from ... import config
 
 
 class UnivariateGaussian(Distribution):

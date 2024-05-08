@@ -22,16 +22,18 @@ class NormalizerNaN(Normalizer):
     --------
     >>> from imvc.utils import DatasetUtils
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import FillIncompleteSamples, Amputer
+    >>> from imvc.transformers import NormalizerNaN, Amputer, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
     >>> amp = Amputer(p=0.3, mechanism="EDM")
     >>> Xs = amp.fit_transform(Xs)
-    >>> transformer = FillIncompleteSamples(value = 'mean')
+    >>> transformer = MultiViewTransformer(NormalizerNaN())
     >>> transformer.fit_transform(Xs)
     """
 
 
     def __init__(self, norm : str = 'l2'):
+
+        super().__init__(norm)
 
         values = ['l1', 'l2', 'max']
         if norm not in values:
@@ -45,31 +47,31 @@ class NormalizerNaN(Normalizer):
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features_i)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where n_samples is the number of samples and n_features is the number of features.
-        y : array-like, shape (n_samples,)
-            Labels for each sample. Only used by supervised algorithms.
+        y : Ignored
+                Not used, present here for API consistency by convention.
         Returns
         -------
         self :  returns and instance of self.
         """
 
-        check_array(X, force_all_finite='allow-nan')
+        self._validate_data(X, **{"force_all_finite":'allow-nan'})
         return self
 
 
     def transform(self, X):
         r"""
-        Transform the input data by filling missing samples.
+        Scale each non zero row of X to unit norm.
 
         Parameters
         ----------
-        X : array-like of shape (n_samples, n_features_i)
+        X : array-like of shape (n_samples, n_features)
             Training vector, where n_samples is the number of samples and n_features is the number of features.
 
         Returns
         -------
-        transformed_Xs : array-like of shape (n_samples, n_features_i)
+        transformed_X : array-like of shape (n_samples, n_features)
             Transformed data.
         """
 
@@ -84,14 +86,9 @@ class NormalizerNaN(Normalizer):
         else:
             raise ValueError(f"Invalid value. Expected one of: ['l1', 'l2', 'max']")
         norms[norms == 0] = 1.
-        transformed_Xs = X / norms[:,None]
+        transformed_X = X / norms[:,None]
 
-        if self.transform_ == "pandas":
-            return pd.DataFrame(transformed_Xs, index= idxs, columns= cols)
-        return transformed_Xs
-
-
-    def set_output(self, *, transform=None):
-        self.transform_ = "pandas"
-        return self
+        # if self.transform_ == "pandas":
+        #     return pd.DataFrame(transformed_X, index= idxs, columns= cols)
+        return transformed_X
 
