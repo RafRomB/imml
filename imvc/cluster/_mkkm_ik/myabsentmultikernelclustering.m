@@ -24,7 +24,6 @@ iter = 0;
 while flag
     iter = iter + 1;
     %% update H with KC
-    fprintf(1, 'running iteration of the proposed algorithm %d...\n', iter);
     H = mykernelkmeans(KC,cluster_count);
    %% updata base kernels
     KA = zeros(num,num,nbkernel);

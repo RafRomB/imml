@@ -95,7 +95,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
         S = []
         for X in Xs:
             s = similarity(X, k=self.k)
-            S.append(nx.DiGraph(s))
+            S.append(nx.DiGraph(s.values))
         if self.verbose:
             print("construct similarity networks finished")
         model = Embedding(S, workers=self.n_jobs, verbose=self.verbose, random_state=self.random_state)

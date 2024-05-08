@@ -111,12 +111,11 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
             missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
             missing_view_profile = [missing_view[missing_view == 0].index.to_list() for _, missing_view in missing_view_profile.items()]
-            transformed_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
-            transformed_Xs = [X.T for X in transformed_Xs]
+            transformed_Xs = [X.T for X in Xs]
 
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            Z, obj = oc.IMSC(transformed_Xs, missing_view_profile, self.n_clusters, self.lbd, self.gamma, nout=2)
+            Z, obj = oc.IMSC(transformed_Xs, tuple(missing_view_profile), self.n_clusters, self.lbd, self.gamma, nout=2)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
