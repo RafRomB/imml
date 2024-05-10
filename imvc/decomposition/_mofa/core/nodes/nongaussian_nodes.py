@@ -24,8 +24,8 @@ from .basic_nodes import *
 from .Y_nodes import Y_Node
 from .Tau_nodes import TauD_Node
 
-from mofapy2.core import gpu_utils
-from mofapy2.core.utils import sigmoid, lambdafn
+from .. import gpu_utils
+from ..utils import sigmoid, lambdafn
 
 
 ##############################

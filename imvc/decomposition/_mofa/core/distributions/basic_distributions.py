@@ -16,8 +16,8 @@ TO-DO:
 import scipy as s
 import numpy as np
 
-# from mofapy2.config import settings
-# from mofapy2.core.utils import *  # TODO prob not necessary ?
+# from ...config import settings
+# from ...utils import *  # TODO prob not necessary ?
 
 
 # General class for probability distributions

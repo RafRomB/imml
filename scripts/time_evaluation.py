@@ -7,8 +7,8 @@ import pandas as pd
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
 from sklearn.cluster import KMeans
-from mvlearn.decomposition import AJIVE, GroupPCA
-from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
+# from mvlearn.decomposition import AJIVE, GroupPCA
+# from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from imvc.cluster import DAIMC, EEIMVC, IMSR, LFIMVC, MKKMIK, MSNE, OSLFIMVC, SIMCADC
 from imvc.datasets import LoadDataset
 from imvc.decomposition import DeepMF, DFMF, MOFA
@@ -34,25 +34,25 @@ datasets = [
     "nuswide",
 ]
 algorithms = {
-    "Concat": {"alg": make_pipeline(ConcatenateViews(),
-                                    StandardScaler().set_output(transform='pandas'),
-                                    KMeans()), "params": {}},
-    "NMFC": {"alg": make_pipeline(ConcatenateViews(),
-                                  MinMaxScaler().set_output(transform='pandas'),
-                                  NMFC().set_output(transform='pandas')), "params": {}},
-    "MVSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-                                                  MultiviewSpectralClustering()),
-                             "params": {}},
-    "MVCoRegSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-                                                       MultiviewCoRegSpectralClustering()),
-                                  "params": {}},
-    "GroupPCA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), GroupPCA(), StandardScaler(), KMeans()),
-                 "params": {}},
-    "AJIVE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), AJIVE(),
-                                   MultiViewTransformer(FunctionTransformer(pd.DataFrame)), ConcatenateViews(),
-                                   StandardScaler(), KMeans()),
-              "params": {}},
-    "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
+    # "Concat": {"alg": make_pipeline(ConcatenateViews(),
+    #                                 StandardScaler().set_output(transform='pandas'),
+    #                                 KMeans()), "params": {}},
+    # "NMFC": {"alg": make_pipeline(ConcatenateViews(),
+    #                               MinMaxScaler().set_output(transform='pandas'),
+    #                               NMFC().set_output(transform='pandas')), "params": {}},
+    # "MVSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
+    #                                               MultiviewSpectralClustering()),
+    #                          "params": {}},
+    # "MVCoRegSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
+    #                                                    MultiviewCoRegSpectralClustering()),
+    #                               "params": {}},
+    # "GroupPCA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), GroupPCA(), StandardScaler(), KMeans()),
+    #              "params": {}},
+    # "AJIVE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), AJIVE(),
+    #                                MultiViewTransformer(FunctionTransformer(pd.DataFrame)), ConcatenateViews(),
+    #                                StandardScaler(), KMeans()),
+    #           "params": {}},
+    # "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
     # "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
     #                                DAIMC()), "params": {}},
     # "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),

@@ -14,9 +14,8 @@ from imvc.transformers import MultiViewTransformer
 from imvc.cluster import NEMO, DAIMC
 from settings import INCOMPLETE_RESULTS_PATH, SUBRESULTS_PATH, INCOMPLETE_LOGS_PATH, INCOMPLETE_ERRORS_PATH, \
     RANDOM_STATE, TIME_LIMIT, TIME_RESULTS_PATH
-
-from utils.getresult import GetResult
-
+from utils.create_result_table import CreateResultTable
+from utils.run_clustering import RunClustering
 
 # args = lambda: None
 # args.continue_benchmarking, args.n_jobs, args.save_results = True, 2, False
@@ -63,7 +62,7 @@ incomplete_algorithms = True
 indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()), "missing_percentage": probs,
                    "amputation_mechanism": amputation_mechanisms, "imputation": imputation, "run_n": runs_per_alg}
 indexes_names = list(indexes_results.keys())
-results = GetResult.create_results_table(datasets=datasets, indexes_results=indexes_results,
+results = CreateResultTable.create_results_table(datasets=datasets, indexes_results=indexes_results,
                                          indexes_names=indexes_names, amputation_mechanisms=amputation_mechanisms,
                                          two_view_datasets=two_view_datasets)
 
@@ -90,7 +89,7 @@ if not args.continue_benchmarking:
 else:
     finished_results = pd.read_csv(INCOMPLETE_RESULTS_PATH, index_col= indexes_names)
     results.loc[finished_results.index, finished_results.columns] = finished_results
-    finished_results = GetResult.collect_subresults(results=results.copy(), subresults_path=SUBRESULTS_PATH,
+    finished_results = CreateResultTable.collect_subresults(results=results.copy(), subresults_path=SUBRESULTS_PATH,
                                                     indexes_names=indexes_names)
     results.loc[finished_results.index, finished_results.columns] = finished_results
 
@@ -131,7 +130,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
 
     if args.n_jobs == 1:
         iterator = pd.DataFrame(unfinished_results_dataset.index.to_list(), columns=indexes_names)
-        iterator.apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
+        iterator.apply(lambda x: RunClustering.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
                                                          algorithms=algorithms,
                                                          incomplete_algorithms=incomplete_algorithms,
                                                          random_state=RANDOM_STATE,
@@ -142,7 +141,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
             unfinished_results_dataset_idx = unfinished_results_dataset.xs(0, level="missing_percentage",
                                                                            drop_level=False).index
             iterator = pd.DataFrame(unfinished_results_dataset_idx.to_list(), columns= indexes_names)
-            iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+            iterator.parallel_apply(lambda x: RunClustering.run_iteration(idx= x, results= results, Xs=Xs, y=y,
                                                                       n_clusters=n_clusters,
                                                                       algorithms=algorithms,
                                                                       incomplete_algorithms=incomplete_algorithms,
@@ -150,7 +149,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
                                                                       subresults_path=SUBRESULTS_PATH,
                                                                       logs_file=INCOMPLETE_LOGS_PATH,
                                                                       error_file=INCOMPLETE_ERRORS_PATH), axis= 1)
-            results = GetResult.collect_subresults(results=results.copy(), subresults_path=SUBRESULTS_PATH,
+            results = CreateResultTable.collect_subresults(results=results.copy(), subresults_path=SUBRESULTS_PATH,
                                                    indexes_names=indexes_names)
 
             if args.save_results:
@@ -161,7 +160,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
         else:
             iterator = pd.DataFrame(unfinished_results_dataset.index.to_list(), columns=indexes_names)
 
-        iterator.parallel_apply(lambda x: GetResult.run_iteration(idx= x, results= results, Xs=Xs, y=y,
+        iterator.parallel_apply(lambda x: RunClustering.run_iteration(idx= x, results= results, Xs=Xs, y=y,
                                                                   n_clusters=n_clusters,
                                                                   algorithms=algorithms,
                                                                   incomplete_algorithms=incomplete_algorithms,
@@ -169,11 +168,12 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
                                                                   subresults_path=SUBRESULTS_PATH,
                                                                   logs_file=INCOMPLETE_LOGS_PATH,
                                                                   error_file=INCOMPLETE_ERRORS_PATH), axis= 1)
-        results = GetResult.collect_subresults(results=results.copy(), subresults_path=SUBRESULTS_PATH,
+        results = CreateResultTable.collect_subresults(results=results.copy(), subresults_path=SUBRESULTS_PATH,
                                                indexes_names=indexes_names)
         if args.save_results:
             results.to_csv(INCOMPLETE_RESULTS_PATH)
-        GetResult.remove_subresults(results=results, subresults_path=SUBRESULTS_PATH)
+        shutil.rmtree(SUBRESULTS_PATH)
+        os.mkdir(SUBRESULTS_PATH)
 
 print("Completed successfully!")
 with open(INCOMPLETE_LOGS_PATH, "a") as f:

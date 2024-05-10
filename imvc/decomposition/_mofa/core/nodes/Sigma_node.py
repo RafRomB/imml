@@ -9,14 +9,14 @@ import copy
 
 # import gpytorch
 # import torch
-# from mofapy2.core.distributions.multi_task_GP import MultitaskGPModel, ELBO, myMultitaskGaussianLikelihood
+# from ..distributions.multi_task_GP import MultitaskGPModel, ELBO, myMultitaskGaussianLikelihood
 # from gpytorch.likelihoods import MultitaskGaussianLikelihood
-import mofapy2.core.gp_utils as gp_utils
-from mofapy2.core.nodes.variational_nodes import *
-from mofapy2.core.nodes.Kc_node import Kc_Node
-from mofapy2.core.nodes.Kg_node import Kg_Node
-from mofapy2.core.gp_utils import *
-from mofapy2.core import gpu_utils
+from .. import gp_utils
+from ..nodes.variational_nodes import *
+from ..nodes.Kc_node import Kc_Node
+from ..nodes.Kg_node import Kg_Node
+from ..gp_utils import *
+from .. import gpu_utils
 
 
 # TODO:
