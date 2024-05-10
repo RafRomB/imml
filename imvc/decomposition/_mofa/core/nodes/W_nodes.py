@@ -4,8 +4,8 @@ import numpy as np
 import scipy as s
 import math
 
-from mofapy2.core.utils import *
-from mofapy2.core import gpu_utils
+from ..utils import *
+from .. import gpu_utils
 
 from time import time
 

@@ -3,9 +3,9 @@ from __future__ import division
 import scipy as s
 import numpy as np
 
-from mofapy2.core.nodes.variational_nodes import *
-from mofapy2.core.gp_utils import *
-from mofapy2.core import gpu_utils
+from ..nodes.variational_nodes import *
+from ..gp_utils import *
+from .. import gpu_utils
 
 
 class Kc_Node(Node):

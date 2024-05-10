@@ -1,6 +1,6 @@
 from __future__ import division
-from mofapy2.core import gpu_utils
-from mofapy2.core.distributions import *
+from .. import gpu_utils
+from ..distributions import *
 import scipy as s
 import numpy as np
 
