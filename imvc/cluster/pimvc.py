@@ -3,7 +3,6 @@ import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..transformers import FillIncompleteSamples
 from ..utils import check_Xs, DatasetUtils
 
 
@@ -18,9 +17,6 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
     It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
     this algorithm.
-
-    octave-control and octave-statistics should be installed. You can install them with
-    'sudo apt install octave-control' and 'sudo apt install octave-statistics'.
 
     Parameters
     ----------
@@ -42,20 +38,16 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    U_ : np.array
-        Basis matrix.
     V_ : np.array
         Commont latent feature matrix.
-    B_ : np.array
-        Regression coefficient matrices.
+    loss_ : float
+        Value of the loss function.
 
     References
     ----------
-    [paper1] Menglei Hu and Songcan Chen. 2018. Doubly aligned incomplete multi-view clustering. In Proceedings of the
-            27th International Joint Conference on Artificial Intelligence (IJCAI'18). AAAI Press, 2262–2268.
-    [paper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on Incomplete
-             Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
-    [code]  https://github.com/DarrenZZhang/Survey_IMC
+    [paper] S. Deng, J. Wen, C. Liu, K. Yan, G. Xu and Y. Xu, "Projective Incomplete Multi-View Clustering," in IEEE
+            Transactions on Neural Networks and Learning Systems, doi: 10.1109/TNNLS.2023.3242473.
+    [code]  https://github.com/Dshijie/PIMVC
 
     Examples
     --------
@@ -66,15 +58,21 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
     >>> estimator = PIMVC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN, estimator)
+    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer, estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, alpha: float = 1, beta: float = 1, random_state:int = None,
-                 engine: str ="matlab", verbose = False):
+    def __init__(self, n_clusters: int = 8, dele: float = 0.1, lamb: int = 100000, beta: int = 1, k: int = 3,
+                 neighbor_mode: str = 'KNN', weight_mode: str = 'Binary', max_iter: int = 100,
+                 random_state: int = None, engine: str = "matlab", verbose = False):
         self.n_clusters = n_clusters
-        self.alpha = alpha
+        self.dele = dele
+        self.lamb = lamb
         self.beta = beta
+        self.k = k
+        self.neighbor_mode = neighbor_mode
+        self.weight_mode = weight_mode
+        self.max_iter = max_iter
         self.random_state = random_state
         self.engine = engine
         self.verbose = verbose
@@ -100,35 +98,29 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_daimc")
-            matlab_files = ["newinit.m", "litekmeans.m", "DAIMC.m", "UpdateV_DAIMC.m"]
+            matlab_folder = os.path.join("imvc", "cluster", "_pimvc")
+            matlab_files = ["PIMVC.m", "constructW.m", "EuDist2.m", "PCA1.m", "mySVD.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
-            oc.eval("pkg load statistics")
-            oc.eval("pkg load control")
-            oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
             missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-            transformed_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
-            transformed_Xs = [X.T for X in transformed_Xs]
-            transformed_Xs = tuple(transformed_Xs)
+            transformed_Xs = tuple([X.T for X in Xs])
 
-            w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            u_0, v_0, b_0 = oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)
-            u, v, b, f, p, n = oc.DAIMC(transformed_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
-                                        len(transformed_Xs), {"afa": self.alpha, "beta": self.beta}, nout=6)
+            v, loss = oc.PIMVC(transformed_Xs, self.n_clusters, missing_view_profile, self.lamb, self.beta,
+                               self.max_iter,
+                               {"NeighborMode": self.neighbor_mode, "WeightMode": self.weight_mode, "k": self.k}, nout=2)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
+        v = v.T
         self.labels_ = model.fit_predict(X= v)
-        self.U_ = u
         self.V_ = v
-        self.B_ = b
+        self.loss_ = loss
 
         return self
 

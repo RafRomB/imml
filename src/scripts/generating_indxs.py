@@ -6,6 +6,7 @@ import numpy as np
 from imvc.datasets import LoadDataset
 from imvc.transformers import Amputer
 from imvc.utils import DatasetUtils
+
 from settings import PROFILES_PATH
 
 if os.path.exists(PROFILES_PATH):
@@ -73,7 +74,7 @@ for dataset_name in datasets:
                 amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state + run_n)
                 train_Xs = amp.fit_transform(train_Xs)
         else:
-            amputation_mechanism = "'None'"
+            amputation_mechanism = "No"
 
         dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
             "stratify": strat,

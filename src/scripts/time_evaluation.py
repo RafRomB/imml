@@ -5,17 +5,14 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
-from sklearn.cluster import KMeans
+from sklearn.preprocessing import StandardScaler
 # from mvlearn.decomposition import AJIVE, GroupPCA
 # from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from imvc.cluster import DAIMC, EEIMVC, IMSR, LFIMVC, MKKMIK, MSNE, OSLFIMVC, SIMCADC
+from imvc.cluster import OSLFIMVC
 from imvc.datasets import LoadDataset
-from imvc.decomposition import DeepMF, DFMF, MOFA
-from imvc.transformers import MultiViewTransformer, ConcatenateViews, NormalizerNaN
-from imvc.algorithms import NMFC
+from imvc.transformers import MultiViewTransformer
 
-from models import Model
+from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
 
 datasets = [
@@ -33,6 +30,7 @@ datasets = [
     "caltech101",
     "nuswide",
 ]
+
 algorithms = {
     # "Concat": {"alg": make_pipeline(ConcatenateViews(),
     #                                 StandardScaler().set_output(transform='pandas'),
@@ -67,6 +65,8 @@ algorithms = {
                                       OSLFIMVC()), "params": {}},
     # "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
     #                                  SIMCADC()), "params": {}},
+    # "PIMVC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+    #                                PIMVC()), "params": {}},
     # # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
     # #                                 DeepMF(), StandardScaler(), KMeans()),
     # #              "params": {}},
