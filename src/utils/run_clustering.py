@@ -9,8 +9,8 @@ from sklearn.impute import SimpleImputer
 from imvc.transformers import MultiViewTransformer, ConcatenateViews
 from imvc.utils import DatasetUtils
 
-from models import Model
-from utils import GetMetrics
+from src.models import Model
+from src.utils import GetMetrics
 
 
 class RunClustering:

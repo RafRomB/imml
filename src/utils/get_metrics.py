@@ -4,7 +4,7 @@ from sklearn import metrics
 from validclust import dunn
 from reval.utils import kuhn_munkres_algorithm
 
-from utils import dbcv
+from src.utils import dbcv
 
 
 class GetMetrics:

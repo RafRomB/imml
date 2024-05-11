@@ -3,7 +3,7 @@ from sklearn.cluster import spectral_clustering
 from snf import compute
 from rpy2.robjects.packages import importr
 
-from utils import Utils
+from src.utils import Utils
 
 
 class Model:

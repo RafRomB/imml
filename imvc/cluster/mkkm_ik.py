@@ -24,6 +24,8 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         If True, it will normalize and center the kernel.
     kernel : callable, default=kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
         Specifies the kernel type to be used in the algorithm.
+    kernel_initialization : str, default="zeros"
+        Specifies the algorithm to initialize the kernel. It should be one of ['zeros', 'mean', 'knn', 'em', 'laplacian'].
     lambda_reg : float, default=1.
         Regularization parameter. The algorithm demonstrated stable performance across a wide range of
         this hyperparameter.
