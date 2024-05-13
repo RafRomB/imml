@@ -105,12 +105,12 @@ class PIMVC(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
             transformed_Xs = tuple([X.T for X in Xs])
 
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            v, loss = oc.PIMVC(transformed_Xs, self.n_clusters, missing_view_profile, self.lamb, self.beta,
+            v, loss = oc.PIMVC(transformed_Xs, self.n_clusters, observed_view_indicator, self.lamb, self.beta,
                                self.max_iter,
                                {"NeighborMode": self.neighbor_mode, "WeightMode": self.weight_mode, "k": self.k}, nout=2)
         else:

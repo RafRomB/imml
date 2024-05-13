@@ -109,13 +109,13 @@ class IMSR(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-            missing_view_profile = [missing_view[missing_view == 0].index.to_list() for _, missing_view in missing_view_profile.items()]
+            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+            observed_view_indicator = [missing_view[missing_view == 0].index.to_list() for _, missing_view in observed_view_indicator.items()]
             transformed_Xs = [X.T for X in Xs]
 
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
-            Z, obj = oc.IMSC(transformed_Xs, tuple(missing_view_profile), self.n_clusters, self.lbd, self.gamma, nout=2)
+            Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 

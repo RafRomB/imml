@@ -36,9 +36,9 @@ class RunClustering:
 
             with open(os.path.join("results", 'indxs.json')) as f:
                 indxs = json.load(f)[dataset_name][p][amputation_mechanism][run_n]
-            missing_view_profile = indxs["missing_view_profile"]
-            train_Xs = DatasetUtils.convert_mvd_in_imvd(Xs=Xs, missing_view_profile=missing_view_profile)
-            train_Xs = [X.loc[missing_view_profile.index] for X in train_Xs]
+            observed_view_indicator = indxs["observed_view_indicator"]
+            train_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=observed_view_indicator)
+            train_Xs = [X.loc[observed_view_indicator.index] for X in train_Xs]
             y_train = y.loc[train_Xs[0].index]
 
             if impute:

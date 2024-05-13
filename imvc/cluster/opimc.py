@@ -111,12 +111,12 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         oc.eval("pkg load control")
         oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
-        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+        observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
         transformed_train_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
         transformed_train_Xs = [X.T for X in transformed_train_Xs]
         transformed_train_Xs = tuple(transformed_train_Xs)
 
-        w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
+        w = tuple([oc.diag(missing_view) for _, missing_view in observed_view_indicator.items()])
         u_0, v_0, b_0 = oc.newinit(transformed_train_Xs, w, self.n_clusters, len(transformed_train_Xs), nout=3)
         u, v, b, f, p, n = oc.OPIMC(transformed_train_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
                                         len(transformed_train_Xs), {"afa": self.afa, "beta": self.beta}, nout=6)

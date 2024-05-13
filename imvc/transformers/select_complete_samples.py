@@ -47,7 +47,7 @@ def select_complete_samples(Xs: list):
     """
 
     Xs = check_Xs(Xs, force_all_finite='allow-nan')
-    sample_views = DatasetUtils.get_missing_view_profile(Xs=Xs)
+    sample_views = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
     complete_samples = sample_views.all(axis= 1)
     transformed_Xs = [X[complete_samples] for X in Xs]
     return transformed_Xs
