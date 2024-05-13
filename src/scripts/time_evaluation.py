@@ -12,7 +12,7 @@ from sklearn.utils import shuffle
 # from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from imvc.cluster import OSLFIMVC
 from imvc.datasets import LoadDataset
-from imvc.transformers import MultiViewTransformer
+from imvc.preprocessing import MultiViewTransformer
 
 from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE

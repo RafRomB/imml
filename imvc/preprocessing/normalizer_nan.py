@@ -1,5 +1,4 @@
 import numpy as np
-import pandas as pd
 from sklearn.preprocessing import Normalizer
 from sklearn.utils import check_array
 
@@ -22,7 +21,8 @@ class NormalizerNaN(Normalizer):
     --------
     >>> from imvc.utils import DatasetUtils
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import NormalizerNaN, Amputer, MultiViewTransformer
+    >>> from imvc.ampute import Amputer
+    >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
     >>> amp = Amputer(p=0.3, mechanism="EDM")
     >>> Xs = amp.fit_transform(Xs)
@@ -60,7 +60,7 @@ class NormalizerNaN(Normalizer):
         return self
 
 
-    def transform(self, X):
+    def transform(self, X, y=None):
         r"""
         Scale each non zero row of X to unit norm.
 
@@ -68,6 +68,8 @@ class NormalizerNaN(Normalizer):
         ----------
         X : array-like of shape (n_samples, n_features)
             Training vector, where n_samples is the number of samples and n_features is the number of features.
+        y : Ignored
+                Not used, present here for API consistency by convention.
 
         Returns
         -------

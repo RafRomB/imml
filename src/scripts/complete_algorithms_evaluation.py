@@ -13,7 +13,7 @@ from sklearn.cluster import KMeans
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from imvc.datasets import LoadDataset
-from imvc.transformers import MultiViewTransformer, ConcatenateViews
+from imvc.preprocessing import MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
 from settings import SUBRESULTS_PATH, COMPLETE_RESULTS_PATH, COMPLETE_LOGS_PATH, COMPLETE_ERRORS_PATH, TIME_LIMIT, \
     TIME_RESULTS_PATH, RANDOM_STATE

@@ -89,7 +89,7 @@ class jNMF(TransformerMixin, BaseEstimator):
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.decomposition import jNMF
-    >>> from imvc.transformers import MultiViewTransformer
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> from sklearn.pipeline import make_pipeline
     >>> from sklearn.preprocessing import MinMaxScaler
     >>> from sklearn.cluster import KMeans

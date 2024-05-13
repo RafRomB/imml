@@ -3,7 +3,7 @@ from sklearn.cluster import KMeans
 from sklearn.preprocessing import StandardScaler
 
 from . import MultiViewPipeline
-from ..transformers import AddMissingViews
+from ..preprocessing import AddMissingViews
 
 
 class MSVPipeline(MultiViewPipeline):
@@ -20,10 +20,10 @@ class MSVPipeline(MultiViewPipeline):
     random_state : int (default=None)
         Determines the randomness. Use an int to make the randomness deterministic.
     memory : str or object with the joblib.Memory interface, default=None
-        Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
-        given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
+        Used to cache the fitted preprocessing of the pipeline. By default, no caching is performed. If a string is
+        given, it is the path to the caching directory. Enabling caching triggers a clone of the preprocessing before
         fitting. Therefore, the transformer instance given to the pipeline cannot be inspected directly. Use the
-        attribute named_steps or steps to inspect estimators within the pipeline. Caching the transformers is
+        attribute named_steps or steps to inspect estimators within the pipeline. Caching the preprocessing is
         advantageous when fitting is time consuming.
     verbose : bool, default=False
         If True, the time elapsed while fitting each step will be printed as it is completed.

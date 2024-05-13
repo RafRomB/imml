@@ -1,5 +1,6 @@
 from sklearn.preprocessing import FunctionTransformer
 
+from ..impute import ObservedViewIndicator, get_observed_view_indicator
 from ..utils import check_Xs, DatasetUtils
 
 
@@ -18,7 +19,8 @@ class SelectCompleteSamples(FunctionTransformer):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import SelectCompleteSamples, Amputer
+    >>> from imvc.preprocessing import SelectCompleteSamples
+    >>> from imvc.ampute import Amputer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
     >>> transformer = SelectCompleteSamples()
@@ -47,9 +49,9 @@ def select_complete_samples(Xs: list):
     """
 
     Xs = check_Xs(Xs, force_all_finite='allow-nan')
-    sample_views = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+    sample_views = get_observed_view_indicator(Xs)
     complete_samples = sample_views.all(axis= 1)
-    transformed_Xs = [X[complete_samples] for X in Xs]
+    transformed_Xs = [X.loc[complete_samples] for X in Xs]
     return transformed_Xs
 
 

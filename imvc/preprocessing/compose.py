@@ -26,7 +26,7 @@ class DropView(FunctionTransformer):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import DropView
+    >>> from imvc.preprocessing import DropView
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = DropView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
@@ -49,7 +49,7 @@ class ConcatenateViews(FunctionTransformer):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import DropView
+    >>> from imvc.preprocessing import DropView
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = ConcatenateView()
     >>> transformer.fit_transform(Xs)
@@ -76,7 +76,7 @@ class SingleView(FunctionTransformer):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import SingleView
+    >>> from imvc.preprocessing import SingleView
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = SingleView(X_idx = 1)
     >>> transformer.fit_transform(Xs)
@@ -105,7 +105,7 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import AddMissingViews, MultiViewTransformer
+    >>> from imvc.preprocessing import AddMissingViews, MultiViewTransformer
     >>> from imvc.utils import DatasetUtils
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> samples = DatasetUtils.get_sample_names(Xs= Xs)
@@ -120,7 +120,7 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
 
     def fit(self, X, y=None):
         r"""
-        Just for compatibility with other Scikit-learn transformers.
+        Just for compatibility with other Scikit-learn preprocessing.
 
         Parameters
         ----------
@@ -165,7 +165,7 @@ class SortData(FunctionTransformer):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.transformers import SortData
+    >>> from imvc.preprocessing import SortData
     >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
     >>> transformer = SortData()
     >>> transformer.fit_transform(Xs)

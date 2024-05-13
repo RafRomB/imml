@@ -6,7 +6,8 @@ import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..transformers import FillIncompleteSamples, select_complete_samples
+from ..impute import simple_view_imputer
+from ..preprocessing import select_complete_samples
 from ..utils import check_Xs, DatasetUtils
 
 
@@ -69,7 +70,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import SIMCADC
-    >>> from imvc.transformers import NormalizerNaN, MultiViewTransformer
+    >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
     >>> estimator = SIMCADC(n_clusters = 2)
@@ -123,7 +124,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             mean_view_profile = [pd.DataFrame(np.repeat(means, len(incom), axis= 1), columns=incom).values for means, incom in
                                   zip(mean_view_profile, incomplete_samples)]
 
-            transformed_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
+            transformed_Xs = simple_view_imputer(Xs, value="zeros")
             transformed_Xs, mean_view_profile = tuple(transformed_Xs), tuple(mean_view_profile)
 
             w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]

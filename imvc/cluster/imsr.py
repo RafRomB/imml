@@ -3,8 +3,8 @@ import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..transformers import FillIncompleteSamples
-from ..utils import check_Xs, DatasetUtils
+from ..impute import get_observed_view_indicator
+from ..utils import check_Xs
 
 
 class IMSR(BaseEstimator, ClassifierMixin):
@@ -55,7 +55,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import IMSR
-    >>> from imvc.transformers import NormalizerNaN, MultiViewTransformer
+    >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
     >>> estimator = IMSR(n_clusters = 2)
@@ -109,7 +109,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+            observed_view_indicator = get_observed_view_indicator(Xs)
             observed_view_indicator = [missing_view[missing_view == 0].index.to_list() for _, missing_view in observed_view_indicator.items()]
             transformed_Xs = [X.T for X in Xs]
 

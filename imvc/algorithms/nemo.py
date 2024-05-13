@@ -89,7 +89,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         """
         Xs = check_Xs(Xs, allow_incomplete=True, force_all_finite='allow-nan')
         samples = DatasetUtils.get_sample_names(Xs=Xs)
-        observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs=Xs)
+        observed_view_indicator = get_observed_view_indicator(Xs=Xs)
 
         if self.num_neighbors is None:
             self.num_neighbors_ = [round(len(X)/self.num_neighbors_ratio) for X in Xs]

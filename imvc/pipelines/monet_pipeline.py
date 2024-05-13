@@ -2,7 +2,7 @@ from sklearn.preprocessing import StandardScaler
 
 from . import BasePipeline
 from ..algorithms import MONET
-from ..transformers import MultiViewTransformer, SortData
+from ..preprocessing import MultiViewTransformer, SortData
 
 
 class MONETPipeline(BasePipeline):
@@ -18,10 +18,10 @@ class MONETPipeline(BasePipeline):
         The number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means
         using all processors.
     memory : str or object with the joblib.Memory interface, default=None
-        Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
-        given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
+        Used to cache the fitted preprocessing of the pipeline. By default, no caching is performed. If a string is
+        given, it is the path to the caching directory. Enabling caching triggers a clone of the preprocessing before
         fitting. Therefore, the transformer instance given to the pipeline cannot be inspected directly. Use the
-        attribute named_steps or steps to inspect estimators within the pipeline. Caching the transformers is
+        attribute named_steps or steps to inspect estimators within the pipeline. Caching the preprocessing is
         advantageous when fitting is time consuming.
     verbose : bool, default=False
         If True, the time elapsed while fitting each step will be printed as it is completed.
