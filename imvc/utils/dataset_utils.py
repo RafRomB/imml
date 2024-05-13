@@ -2,7 +2,7 @@ import copy
 import numpy as np
 import pandas as pd
 
-from ..impute import ObservedViewIndicator
+from ..impute.observed_view_indicator import get_observed_view_indicator
 
 
 class DatasetUtils:
@@ -41,7 +41,7 @@ class DatasetUtils:
         >>> transformer = make_pipeline(Amputer(p=0.2, mechanism="MCAR", random_state=42),
                                         ObservedViewIndicator().set_output(transformed="pandas"))
         >>> Xs = transformer.fit_transform(Xs)
-        >>> observed_view_indicator = ObservedViewIndicator().fit_transform(Xs)
+        >>> observed_view_indicator = get_observed_view_indicator(Xs)
         >>> DatasetUtils.convert_to_imvd(Xs = Xs, observed_view_indicator = observed_view_indicator)
         """
         transformed_Xs = []
@@ -110,7 +110,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_n_samples_by_view(Xs = Xs)
         """
 
-        n_samples_by_view = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+        n_samples_by_view = get_observed_view_indicator(Xs)
         n_samples_by_view = n_samples_by_view.sum(axis=0)
         return n_samples_by_view
 
@@ -142,7 +142,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_complete_sample_names(Xs = Xs)
         """
 
-        samples = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+        samples = get_observed_view_indicator(Xs)
         samples = samples[samples.all(1)].index
         return samples
 
@@ -174,7 +174,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_incomplete_sample_names(Xs = Xs)
         """
 
-        samples = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+        samples = get_observed_view_indicator(Xs)
         samples = samples[~samples.all(1)].index
         return samples
 
@@ -209,7 +209,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_samples_by_view(Xs = Xs)
         """
 
-        observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+        observed_view_indicator = get_observed_view_indicator(Xs)
         if return_as_list:
             samples = [view_profile[view_profile == 1].index for X_idx, view_profile in observed_view_indicator.items()]
         else:
@@ -247,7 +247,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_missing_samples_by_view(Xs = Xs)
         """
 
-        observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+        observed_view_indicator = get_observed_view_indicator(Xs)
         if return_as_list:
             samples = [view_profile[view_profile == 0].index for X_idx, view_profile in observed_view_indicator.items()]
         else:

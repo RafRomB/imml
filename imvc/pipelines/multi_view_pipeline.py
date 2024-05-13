@@ -13,10 +13,10 @@ class MultiViewPipeline(BaseEstimator, ClassifierMixin):
         List of the scikit-learn estimators that are chained together to estimate each view of data. If a list of list
         is provided, each pipeline will be applied on each view, otherwise the same pipeline will be applied on each view.
     memory : str or object with the joblib.Memory interface, default=None
-        Used to cache the fitted transformers of the pipeline. By default, no caching is performed. If a string is
-        given, it is the path to the caching directory. Enabling caching triggers a clone of the transformers before
+        Used to cache the fitted preprocessing of the pipeline. By default, no caching is performed. If a string is
+        given, it is the path to the caching directory. Enabling caching triggers a clone of the preprocessing before
         fitting. Therefore, the transformer instance given to the pipeline cannot be inspected directly. Use the
-        attribute named_steps or steps to inspect estimators within the pipeline. Caching the transformers is
+        attribute named_steps or steps to inspect estimators within the pipeline. Caching the preprocessing is
         advantageous when fitting is time consuming.
     verbose : bool, default=False
         If True, the time elapsed while fitting each step will be printed as it is completed.

@@ -61,7 +61,7 @@ class DFMF(TransformerMixin, BaseEstimator):
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.decomposition import DFMF
-    >>> from imvc.transformers import MultiViewTransformer
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> from sklearn.pipeline import make_pipeline
     >>> from sklearn.preprocessing import StandardScaler
     >>> from sklearn.cluster import KMeans

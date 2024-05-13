@@ -109,7 +109,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
                     oc.eval(f.read())
             oc.eval("pkg load statistics")
 
-            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+            observed_view_indicator = get_observed_view_indicator(Xs)
             s = [view[view == 0].index.values for _,view in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)

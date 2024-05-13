@@ -16,20 +16,19 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    transformer_list_ : list of transformers (n_views,)
-        A list of transformers, one for each view of data.
+    transformer_list_ : list of preprocessing (n_views,)
+        A list of preprocessing, one for each view of data.
     same_transformer_ : boolean
         A booleaing indicating if the same transformer will be applied on each view of data.
 
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-
-    >>> from imvc.transformers import MultiViewTransformer
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> from sklearn.impute import SimpleImputer
-    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
-    >>> mv_transformer = MultiViewTransformer(transformer = SimpleImputer.set_output(transform = 'pandas'))
-    >>> mv_transformer.fit_transform(Xs)
+    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> transformer = MultiViewTransformer(transformer = SimpleImputer.set_output(transform = 'pandas'))
+    >>> transformer.fit_transform(Xs)
     """
 
 
@@ -67,7 +66,7 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
 
     def transform(self, Xs):
         r"""
-        Transform the input data using the transformers.
+        Transform the input data using the preprocessing.
 
         Parameters
         ----------

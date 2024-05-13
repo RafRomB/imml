@@ -80,7 +80,7 @@ for dataset_name in datasets:
 
         dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
             "stratify": strat,
-            "observed_view_indicator": ObservedViewIndicator().set_output(transform="pandas").fit_transform(train_Xs).to_dict(),
+            "observed_view_indicator": get_observed_view_indicator(train_Xs).to_dict(),
         }
 
         with open(PROFILES_PATH, 'w') as fp:

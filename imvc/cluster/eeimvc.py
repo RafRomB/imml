@@ -105,7 +105,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+            observed_view_indicator = get_observed_view_indicator(Xs)
             s = [view[view == 0].index.values for _,view in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)

@@ -91,7 +91,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import SUMO
-    >>> from imvc.transformers import MultiViewTransformer
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> from sklearn.pipeline import make_pipeline
     >>> from sklearn.preprocessing import StandardScaler
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")

@@ -10,7 +10,7 @@ import pandas as pd
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, FunctionTransformer
 from imvc.datasets import LoadDataset
-from imvc.transformers import MultiViewTransformer
+from imvc.preprocessing import MultiViewTransformer
 from imvc.cluster import NEMO, DAIMC
 from settings import INCOMPLETE_RESULTS_PATH, SUBRESULTS_PATH, INCOMPLETE_LOGS_PATH, INCOMPLETE_ERRORS_PATH, \
     RANDOM_STATE, TIME_LIMIT, TIME_RESULTS_PATH

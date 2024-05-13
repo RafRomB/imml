@@ -96,7 +96,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine == 'python':
-            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+            observed_view_indicator = get_observed_view_indicator(Xs)
             samples = observed_view_indicator.index
 
             if self.num_neighbors is None:

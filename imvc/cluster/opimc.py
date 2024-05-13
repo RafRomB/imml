@@ -3,7 +3,7 @@ import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..transformers import FillIncompleteSamples
+from ..preprocessing import FillIncompleteSamples
 from ..utils import check_Xs, DatasetUtils
 
 
@@ -60,7 +60,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
     >>> from sklearn.preprocessing import FunctionTransformer
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import OPIMC
-    >>> from imvc.transformers import MultiViewTransformer
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = lambda x: x.divide(x.pow(2).sum(axis=1).pow(1/2), axis= 0)
     >>> estimator = DAIMC(n_clusters = 2)
@@ -111,7 +111,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         oc.eval("pkg load control")
         oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
-        observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+        observed_view_indicator = get_observed_view_indicator(Xs)
         transformed_train_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
         transformed_train_Xs = [X.T for X in transformed_train_Xs]
         transformed_train_Xs = tuple(transformed_train_Xs)

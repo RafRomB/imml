@@ -3,7 +3,8 @@ import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..utils import check_Xs, DatasetUtils
+from ..impute import get_observed_view_indicator
+from ..utils import check_Xs
 
 
 class PIMVC(BaseEstimator, ClassifierMixin):
@@ -54,7 +55,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import PIMVC
-    >>> from imvc.transformers import NormalizerNaN, MultiViewTransformer
+    >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
     >>> estimator = PIMVC(n_clusters = 2)
@@ -105,7 +106,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+            observed_view_indicator = get_observed_view_indicator(Xs)
             transformed_Xs = tuple([X.T for X in Xs])
 
             if self.random_state is not None:

@@ -3,8 +3,8 @@ import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..transformers import FillIncompleteSamples
-from ..utils import check_Xs, DatasetUtils
+from ..impute import get_observed_view_indicator, simple_view_imputer
+from ..utils import check_Xs
 
 
 class DAIMC(BaseEstimator, ClassifierMixin):
@@ -62,7 +62,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import DAIMC
-    >>> from imvc.transformers import NormalizerNaN, MultiViewTransformer
+    >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
     >>> estimator = DAIMC(n_clusters = 2)
@@ -110,8 +110,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             oc.eval("pkg load control")
             oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
-            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
-            transformed_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
+            observed_view_indicator = get_observed_view_indicator(Xs)
+            transformed_Xs = simple_view_imputer(Xs, value="zeros")
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = tuple(transformed_Xs)
 
