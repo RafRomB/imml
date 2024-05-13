@@ -58,7 +58,7 @@ We show a simple example of how it works.
 ```python
 from imvc.datasets import LoadDataset
 from imvc.cluster import DAIMC
-from imvc.transformers import Amputer
+from imvc.ampute import Amputer
 
 # Load an incomplete multi-view dataset
 Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")

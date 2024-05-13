@@ -3,8 +3,10 @@ import json
 import os.path
 from collections import defaultdict
 import numpy as np
+from sklearn.utils import shuffle
+
 from imvc.datasets import LoadDataset
-from imvc.transformers import Amputer
+from imvc.ampute import Amputer
 from imvc.utils import DatasetUtils
 
 from settings import PROFILES_PATH
@@ -44,14 +46,14 @@ for dataset_name in datasets:
     if "simulated" in names:
         names = ["_".join(names)]
     x_name,y_name = names if len(names) > 1 else (names[0], "0")
-    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle= False)
+    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True)
     y = y[y_name]
     n_clusters = y.nunique()
 
     for prob, amputation_mechanism, run_n in itertools.product(probs, amputation_mechanisms, runs_per_alg):
         if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
             continue
-        train_Xs = DatasetUtils.shuffle_imvd(Xs=Xs, random_state=random_state + run_n)
+        train_Xs = shuffle(Xs, random_state=random_state + run_n)
         y_train = y.loc[train_Xs[0].index]
         strat = False
         p = prob/100
@@ -78,7 +80,7 @@ for dataset_name in datasets:
 
         dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
             "stratify": strat,
-            "missing_view_profile": DatasetUtils.get_missing_view_profile(train_Xs).to_dict(),
+            "observed_view_indicator": ObservedViewIndicator().set_output(transform="pandas").fit_transform(train_Xs).to_dict(),
         }
 
         with open(PROFILES_PATH, 'w') as fp:

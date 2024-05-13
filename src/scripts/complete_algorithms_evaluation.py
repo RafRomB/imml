@@ -146,7 +146,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
     if "simulated" in names:
         names = ["_".join(names)]
     x_name,y_name = names if len(names) > 1 else (names[0], "0")
-    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle= False)
+    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True)
     y = y[y_name]
     n_clusters = y.nunique()
     unfinished_results_dataset = unfinished_results.loc[[dataset_name]]

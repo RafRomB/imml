@@ -96,8 +96,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine == 'python':
-            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
-            samples = missing_view_profile.index
+            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
+            samples = observed_view_indicator.index
 
             if self.num_neighbors is None:
                 self.num_neighbors_ = [round(len(X)/self.num_neighbors_ratio) for X in Xs]
@@ -108,7 +108,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
             affinity_matrix = pd.DataFrame(np.zeros((len(samples), len(samples))), columns = samples, index = samples)
             for X, neigh, view_idx in zip(Xs, self.num_neighbors_, range(len(Xs))):
-                X = X.loc[missing_view_profile[view_idx].astype(bool)]
+                X = X.loc[observed_view_indicator[view_idx].astype(bool)]
                 sim_data = pd.DataFrame(snf.make_affinity(X, metric = self.metric, K=neigh, normalize=False),
                                             index= X.index, columns= X.index)
                 sim_data = sim_data.apply(pd.Series.nlargest, n=neigh, axis=1).fillna(0)
@@ -117,7 +117,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
                 sim_data += sim_data.T
                 affinity_matrix.loc[sim_data.index, sim_data.columns] += sim_data
 
-            affinity_matrix /= missing_view_profile.sum(1)
+            affinity_matrix /= observed_view_indicator.sum(1)
 
             self.n_clusters_ = self.n_clusters if isinstance(self.n_clusters, int) else \
                 snf.get_n_clusters(arr= affinity_matrix.values, n_clusters= self.n_clusters)[0]

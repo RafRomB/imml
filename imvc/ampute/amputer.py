@@ -129,12 +129,12 @@ class Amputer(BaseEstimator, TransformerMixin):
                     transformed_Xs.append(X_)
 
         else:
-            pseudo_missing_view_profile = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]), self.n_views))
-            pseudo_missing_view_profile = self._produce_missing(X= pseudo_missing_view_profile)
-            pseudo_missing_view_profile = pd.DataFrame(pseudo_missing_view_profile, index=Xs[0].index)
-            pseudo_missing_view_profile[pseudo_missing_view_profile.notnull()] = 1
-            pseudo_missing_view_profile = pseudo_missing_view_profile.fillna(0).astype(int)
-            transformed_Xs = DatasetUtils.convert_mvd_in_imvd(Xs=Xs, missing_view_profile=pseudo_missing_view_profile)
+            pseudo_observed_view_indicator = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]), self.n_views))
+            pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator)
+            pseudo_observed_view_indicator = pd.DataFrame(pseudo_observed_view_indicator, index=Xs[0].index)
+            pseudo_observed_view_indicator[pseudo_observed_view_indicator.notnull()] = 1
+            pseudo_observed_view_indicator = pseudo_observed_view_indicator.fillna(0).astype(int)
+            transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
 
         return transformed_Xs
 

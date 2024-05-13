@@ -6,6 +6,8 @@ import numpy as np
 import pandas as pd
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
+from sklearn.utils import shuffle
+
 # from mvlearn.decomposition import AJIVE, GroupPCA
 # from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from imvc.cluster import OSLFIMVC
@@ -97,7 +99,8 @@ for dataset_name in datasets:
     if "simulated" in names:
         names = ["_".join(names)]
     x_name, y_name = names if len(names) > 1 else (names[0], "0")
-    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True, shuffle=True, random_state=RANDOM_STATE)
+    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True)
+    Xs, y = shuffle(*Xs, y, random_state=RANDOM_STATE)
     y = y[y_name]
     n_clusters = y.nunique()
 

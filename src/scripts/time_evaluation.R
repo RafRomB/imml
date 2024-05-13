@@ -32,7 +32,7 @@ for (dataset_name in datasets) {
   y_name <- ifelse(length(names) > 1, names[2], "X0")
   
   
-  data = load_dataset(dataset_name=x_name, return_y=T, shuffle=RANDOM_STATE)
+  data = load_dataset(dataset_name=x_name, return_y=T, shuffle=TRUE, seed= RANDOM_STATE)
   Xs <- data[["X"]]
   y <- data[["y"]]
   y <- y[,y_name]

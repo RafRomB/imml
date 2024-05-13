@@ -84,8 +84,8 @@ class FillIncompleteSamples(BaseEstimator, TransformerMixin):
         """
 
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
-        missing_view_profile = DatasetUtils.get_missing_view_profile(Xs = Xs)
-        missing_views = missing_view_profile == 1
+        observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs = Xs)
+        missing_views = observed_view_indicator == 1
         n_samples = len(missing_views)
 
         transformed_Xs = []

@@ -110,12 +110,12 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             oc.eval("pkg load control")
             oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
-            missing_view_profile = DatasetUtils.get_missing_view_profile(Xs=Xs)
+            observed_view_indicator = ObservedViewIndicator().set_output(transform="pandas").fit_transform(Xs)
             transformed_Xs = FillIncompleteSamples(value="zeros").fit_transform(Xs)
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = tuple(transformed_Xs)
 
-            w = tuple([oc.diag(missing_view) for _, missing_view in missing_view_profile.items()])
+            w = tuple([oc.diag(missing_view) for _, missing_view in observed_view_indicator.items()])
             if self.random_state is not None:
                 oc.rand("seed", self.random_state)
             u_0, v_0, b_0 = oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)
