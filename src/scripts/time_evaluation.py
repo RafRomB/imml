@@ -1,18 +1,21 @@
+import argparse
 import os
 import time
 from collections import defaultdict
 from datetime import datetime
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils import shuffle
 
 # from mvlearn.decomposition import AJIVE, GroupPCA
 # from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from imvc.cluster import OSLFIMVC
+from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC
 from imvc.datasets import LoadDataset
-from imvc.preprocessing import MultiViewTransformer
+from imvc.decomposition import DFMF, MOFA
+from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
 
 from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
@@ -53,44 +56,56 @@ algorithms = {
     #                                StandardScaler(), KMeans()),
     #           "params": {}},
     # "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
-    # "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-    #                                DAIMC()), "params": {}},
-    # "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                                 EEIMVC()), "params": {}},
-    # "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                                 LFIMVC()), "params": {}},
-    # "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                                 MKKMIK()), "params": {}},
-    # "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                               MSNE()), "params": {}},
+    "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   DAIMC()), "params": {}},
+    "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    EEIMVC()), "params": {}},
+    "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    LFIMVC()), "params": {}},
+    "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    MKKMIK()), "params": {}},
+    "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                  MSNE()), "params": {}},
     "OSLFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                       OSLFIMVC()), "params": {}},
-    # "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-    #                                  SIMCADC()), "params": {}},
-    # "PIMVC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-    #                                PIMVC()), "params": {}},
-    # # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
-    # #                                 DeepMF(), StandardScaler(), KMeans()),
-    # #              "params": {}},
-    # "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), DFMF().set_output(transform="pandas"),
-    #                               StandardScaler().set_output(transform="pandas"), KMeans()),
-    #          "params": {}},
-    # "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), MOFA().set_output(transform="pandas"),
-    #                               ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
-    #          "params": {}},
+    "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                     SIMCADC()), "params": {}},
+    "PIMVC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   PIMVC()), "params": {}},
+    # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
+    #                                 DeepMF(), StandardScaler(), KMeans()),
+    #              "params": {}},
+    "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), DFMF().set_output(transform="pandas"),
+                                  StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
+    "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), MOFA().set_output(transform="pandas"),
+                                  ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
 }
+
+# args = lambda: None
+# args.continue_benchmarking, args.n_jobs, args.save_results = True, 2, False
+parser = argparse.ArgumentParser()
+parser.add_argument('-save_results', default= False, action='store_true')
+args = parser.parse_args()
+
 
 if os.path.exists(TIME_RESULTS_PATH):
     results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
     results_1 = pd.DataFrame(0, index=algorithms.keys(), columns=datasets)
     results = pd.concat([results, results_1.loc[results_1.index.difference(results.index)]])
 else:
-    results = pd.DataFrame(0, index=algorithms.keys(), columns= datasets)
+    results = pd.DataFrame(-1, index=algorithms.keys(), columns= datasets)
     results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF"], "nuswide"] = np.nan
+    results.loc[["intNMF"], ["bbcsport", "digits", "bdgp", "tcga", "caltech101"]] = np.nan
+    results.loc[["NEMO"], ["metabric", "tcga"]] = np.nan
+    results.loc[["AJIVE", "DFMF"], "simulated_gm"] = np.nan
+    results.loc[["PIMVC"], "digits"] = np.nan
     os.remove(TIME_LOGS_PATH) if os.path.exists(TIME_LOGS_PATH) else None
     os.remove(TIME_ERRORS_PATH) if os.path.exists(TIME_ERRORS_PATH) else None
-    open(TIME_LOGS_PATH, 'w').close()
-    open(TIME_ERRORS_PATH, 'w').close()
+    if args.save_results:
+        open(TIME_LOGS_PATH, 'w').close()
+        open(TIME_ERRORS_PATH, 'w').close()
 
 errors_dict = defaultdict(int)
 
@@ -100,7 +115,7 @@ for dataset_name in datasets:
         names = ["_".join(names)]
     x_name, y_name = names if len(names) > 1 else (names[0], "0")
     Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True)
-    Xs, y = shuffle(*Xs, y, random_state=RANDOM_STATE)
+    *Xs, y = shuffle(*Xs, y, random_state=RANDOM_STATE)
     y = y[y_name]
     n_clusters = y.nunique()
 
@@ -108,8 +123,9 @@ for dataset_name in datasets:
         time_execution = results.loc[alg_name, dataset_name]
         if (time_execution > 0) or np.isnan(time_execution):
             continue
-        with open(TIME_LOGS_PATH, "a") as f:
-            f.write(f'\n {dataset_name} \t {alg_name} \t {datetime.now()}')
+        if args.save_results:
+            with open(TIME_LOGS_PATH, "a") as f:
+                f.write(f'\n {dataset_name} \t {alg_name} \t {datetime.now()}')
 
         try:
             start_time = time.perf_counter()
@@ -118,12 +134,14 @@ for dataset_name in datasets:
             elapsed_time = time.perf_counter() - start_time
         except Exception as exception:
             errors_dict[f"{type(exception).__name__}: {exception}"] += 1
-            with open(TIME_ERRORS_PATH, "a") as f:
-                f.write(f'\n {dataset_name} \t {alg_name} \t {errors_dict} \t {datetime.now()}')
+            if args.save_results:
+                with open(TIME_ERRORS_PATH, "a") as f:
+                    f.write(f'\n {dataset_name} \t {alg_name} \t {errors_dict} \t {datetime.now()}')
             elapsed_time = np.nan
 
         results.loc[alg_name, dataset_name] = elapsed_time
-        results.to_csv(TIME_RESULTS_PATH)
+        if args.save_results:
+            results.to_csv(TIME_RESULTS_PATH)
 
 print("Completed successfully!")
 with open(TIME_ERRORS_PATH, "a") as f:
