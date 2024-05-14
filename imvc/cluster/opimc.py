@@ -3,8 +3,8 @@ import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..preprocessing import FillIncompleteSamples
-from ..utils import check_Xs, DatasetUtils
+from ..impute import get_observed_view_indicator
+from ..utils import check_Xs
 
 
 class OPIMC(BaseEstimator, ClassifierMixin):

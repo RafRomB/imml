@@ -5,7 +5,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
 
-from ..utils import check_Xs, DatasetUtils
+from ..impute import get_observed_view_indicator
+from ..utils import check_Xs
 
 
 class EEIMVC(BaseEstimator, ClassifierMixin):
