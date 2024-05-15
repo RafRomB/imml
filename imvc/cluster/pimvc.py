@@ -110,7 +110,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
             transformed_Xs = tuple([X.T for X in Xs])
 
             if self.random_state is not None:
-                oc.rand("seed", self.random_state)
+                oc.rng(self.random_state)
             v, loss = oc.PIMVC(transformed_Xs, self.n_clusters, observed_view_indicator, self.lamb, self.beta,
                                self.max_iter,
                                {"NeighborMode": self.neighbor_mode, "WeightMode": self.weight_mode, "k": self.k}, nout=2)

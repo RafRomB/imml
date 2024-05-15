@@ -113,7 +113,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
             s = tuple([{"indx": i} for i in s])
 
             if self.random_state is not None:
-                oc.rand("seed", self.random_state)
+                oc.rng(self.random_state)
             H_normalized,WP,HP,beta,obj = oc.incompleteLateFusionMKCOrthHp_lambda(transformed_Xs, s, self.n_clusters,
                                                                                   self.qnorm, self.lambda_reg, nout=5)
         else:

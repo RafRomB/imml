@@ -9,3 +9,4 @@ from .imsr import IMSR
 from .mkkm_ik import MKKMIK
 from .simcadc import SIMCADC
 from .pimvc import PIMVC
+from .omvc import OMVC

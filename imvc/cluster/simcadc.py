@@ -134,7 +134,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             n_incomplete_samples_view = list(len(incomplete_sample) for incomplete_sample in incomplete_samples)
 
             if self.random_state is not None:
-                oc.rand("seed", self.random_state)
+                oc.rng(self.random_state)
             u,v,a,w,z,iter,obj = oc.SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
                                                 self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
                                                 mean_view_profile, self.beta, self.gamma, nout=7)

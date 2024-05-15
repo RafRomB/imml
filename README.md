@@ -1,4 +1,4 @@
-# uimv-learn: A Python package for unsupervised incomplete multi-view learning
+# imv-ulearn: A Python package for unsupervised incomplete multi-view learning
 
 This package is designed for Incomplete Multi-View Clustering (IMC), which is a 
 technique used to cluster data that is represented by multiple views or 
@@ -24,6 +24,8 @@ handle incomplete multi-view data and extract meaningful patterns and clusters f
 
 ## Installation
 
+### Prerequisites
+
 As a prerequisite, you will need to have Octave (MATLAB) and R in your machine. In linux, you can install them using the 
 following commands:
 
@@ -38,10 +40,12 @@ https://octave.org/download;
 
 https://cran.r-project.org/doc/manuals/r-release/R-admin.html
 
+### Installation
+
 The easiest way to install this package is using pip. Simply run the following command:
 
 ```bash
-pip install imvc
+pip install imv_ulearn
 ```
 
 ## Usage
@@ -56,9 +60,9 @@ for each sample.
 We show a simple example of how it works.
 
 ```python
-from imvc.datasets import LoadDataset
-from imvc.cluster import DAIMC
-from imvc.ampute import Amputer
+from imv_ulearn.datasets import LoadDataset
+from imv_ulearn.cluster import DAIMC
+from imv_ulearn.ampute import Amputer
 
 # Load an incomplete multi-view dataset
 Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
@@ -91,7 +95,7 @@ Github repository.
 
 ## Citation
 
-If you use this package in your research, please consider citing the 
+If you use this package in your project, please consider citing the 
 following paper:
 
 [INSERT CITATION HERE]

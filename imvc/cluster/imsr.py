@@ -114,7 +114,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
             transformed_Xs = [X.T for X in Xs]
 
             if self.random_state is not None:
-                oc.rand("seed", self.random_state)
+                oc.rng(self.random_state)
             Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")

@@ -117,7 +117,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
             s = tuple([{"indx": i} for i in s])
 
             if self.random_state is not None:
-                oc.rand("seed", self.random_state)
+                oc.rng(self.random_state)
             U, C, WP, beta, obj = oc.OS_LF_IMVC_alg(transformed_Xs, s, self.n_clusters, self.lambda_reg,
                                                     int(self.normalize), nout=5)
         else:
