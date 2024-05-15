@@ -7,11 +7,12 @@ import numpy as np
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
 from sklearn.utils import shuffle
 
-# from mvlearn.decomposition import AJIVE, GroupPCA
-# from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
+from imvc.algorithms import NMFC
+from mvlearn.decomposition import AJIVE, GroupPCA
+from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC
 from imvc.datasets import LoadDataset
 from imvc.decomposition import DFMF, MOFA
@@ -21,41 +22,45 @@ from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
 
 datasets = [
-    "simulated_gm",
-    "simulated_InterSIM",
-    "simulated_netMUG",
-    "nutrimouse_genotype",
-    "nutrimouse_diet",
-    "bbcsport",
-    "buaa",
-    "metabric",
-    "digits",
-    "bdgp",
-    "tcga",
-    "caltech101",
-    "nuswide",
+    'bbcsport',
+    'bdgp',
+    'buaa',
+    'caltech101',
+    'digits',
+    'metabric',
+    'nuswide',
+    'nutrimouse_diet',
+    'nutrimouse_genotype',
+    'sensIT300',
+    'simulated_InterSIM',
+    'simulated_gm',
+    'simulated_netMUG',
+    'statlog',
+    'tcga',
+    'webkb',
+    'wisconsin',
 ]
 
 algorithms = {
-    # "Concat": {"alg": make_pipeline(ConcatenateViews(),
-    #                                 StandardScaler().set_output(transform='pandas'),
-    #                                 KMeans()), "params": {}},
-    # "NMFC": {"alg": make_pipeline(ConcatenateViews(),
-    #                               MinMaxScaler().set_output(transform='pandas'),
-    #                               NMFC().set_output(transform='pandas')), "params": {}},
-    # "MVSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-    #                                               MultiviewSpectralClustering()),
-    #                          "params": {}},
-    # "MVCoRegSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-    #                                                    MultiviewCoRegSpectralClustering()),
-    #                               "params": {}},
-    # "GroupPCA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), GroupPCA(), StandardScaler(), KMeans()),
-    #              "params": {}},
-    # "AJIVE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), AJIVE(),
-    #                                MultiViewTransformer(FunctionTransformer(pd.DataFrame)), ConcatenateViews(),
-    #                                StandardScaler(), KMeans()),
-    #           "params": {}},
-    # "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
+    "Concat": {"alg": make_pipeline(ConcatenateViews(),
+                                    StandardScaler().set_output(transform='pandas'),
+                                    KMeans()), "params": {}},
+    "NMFC": {"alg": make_pipeline(ConcatenateViews(),
+                                  MinMaxScaler().set_output(transform='pandas'),
+                                  NMFC().set_output(transform='pandas')), "params": {}},
+    "MVSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
+                                                  MultiviewSpectralClustering()),
+                             "params": {}},
+    "MVCoRegSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
+                                                       MultiviewCoRegSpectralClustering()),
+                                  "params": {}},
+    "GroupPCA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), GroupPCA(), StandardScaler(), KMeans()),
+                 "params": {}},
+    "AJIVE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), AJIVE(),
+                                   MultiViewTransformer(FunctionTransformer(pd.DataFrame)), ConcatenateViews(),
+                                   StandardScaler(), KMeans()),
+              "params": {}},
+    "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
     "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
                                    DAIMC()), "params": {}},
     "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
@@ -88,24 +93,40 @@ algorithms = {
 parser = argparse.ArgumentParser()
 parser.add_argument('-save_results', default= False, action='store_true')
 args = parser.parse_args()
-
+if not args.save_results:
+    TIME_RESULTS_PATH = os.path.join("test", "time_evaluation.csv")
+    TIME_LOGS_PATH = os.path.join("test", "time_logs.txt")
+    TIME_ERRORS_PATH = os.path.join("test", "time_errors.txt")
 
 if os.path.exists(TIME_RESULTS_PATH):
     results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
-    results_1 = pd.DataFrame(0, index=algorithms.keys(), columns=datasets)
+    results_1 = pd.DataFrame(-1, index=algorithms.keys(), columns=datasets)
     results = pd.concat([results, results_1.loc[results_1.index.difference(results.index)]])
 else:
     results = pd.DataFrame(-1, index=algorithms.keys(), columns= datasets)
-    results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF"], "nuswide"] = np.nan
-    results.loc[["intNMF"], ["bbcsport", "digits", "bdgp", "tcga", "caltech101"]] = np.nan
-    results.loc[["NEMO"], ["metabric", "tcga"]] = np.nan
+    results.loc["intNMF", ["bbcsport", "digits", "bdgp", "tcga", "caltech101"]] = np.nan
     results.loc[["AJIVE", "DFMF"], "simulated_gm"] = np.nan
-    results.loc[["PIMVC"], "digits"] = np.nan
+    results.loc["NEMO", "metabric"] = np.nan
+    results.loc["PIMVC", "digits"] = np.nan
+    results.loc["NEMO", "bdgp"] = np.nan
+    results.loc["NEMO", "tcga"] = np.nan
+    results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF", "MSNE"], "nuswide"] = np.nan
+    results.loc["MSNE", "caltech101"] = np.nan
+
+    results.loc["MVSpectralClustering", "caltech101"] = 5110.28558228724
+    results.loc["MVCoRegSpectralClustering", "caltech101"] = 2289.54476389848
+    results.loc["SNF", "caltech101"] = 1101.32710023597
+    results.loc["COCA", "caltech101"] = 82455.47900033
+    results.loc["intNMF", "nuswide"] = 291433.874071121
+    results.loc["COCA", "nuswide"] = 181943.081603289
+    results.loc["COCA", "nuswide"] = 291433.874071121
+    results.loc["intNMF", "metabric"] = 1761.39254188538
+    results.loc["intNMF", "simulated_netMUG"] = 676.233826160431
+
     os.remove(TIME_LOGS_PATH) if os.path.exists(TIME_LOGS_PATH) else None
     os.remove(TIME_ERRORS_PATH) if os.path.exists(TIME_ERRORS_PATH) else None
-    if args.save_results:
-        open(TIME_LOGS_PATH, 'w').close()
-        open(TIME_ERRORS_PATH, 'w').close()
+    open(TIME_LOGS_PATH, 'w').close()
+    open(TIME_ERRORS_PATH, 'w').close()
 
 errors_dict = defaultdict(int)
 
@@ -123,9 +144,8 @@ for dataset_name in datasets:
         time_execution = results.loc[alg_name, dataset_name]
         if (time_execution > 0) or np.isnan(time_execution):
             continue
-        if args.save_results:
-            with open(TIME_LOGS_PATH, "a") as f:
-                f.write(f'\n {dataset_name} \t {alg_name} \t {datetime.now()}')
+        with open(TIME_LOGS_PATH, "a") as f:
+            f.write(f'\n {dataset_name} \t {alg_name} \t {datetime.now()}')
 
         try:
             start_time = time.perf_counter()
@@ -134,14 +154,12 @@ for dataset_name in datasets:
             elapsed_time = time.perf_counter() - start_time
         except Exception as exception:
             errors_dict[f"{type(exception).__name__}: {exception}"] += 1
-            if args.save_results:
-                with open(TIME_ERRORS_PATH, "a") as f:
-                    f.write(f'\n {dataset_name} \t {alg_name} \t {errors_dict} \t {datetime.now()}')
+            with open(TIME_ERRORS_PATH, "a") as f:
+                f.write(f'\n {dataset_name} \t {alg_name} \t {errors_dict} \t {datetime.now()}')
             elapsed_time = np.nan
 
         results.loc[alg_name, dataset_name] = elapsed_time
-        if args.save_results:
-            results.to_csv(TIME_RESULTS_PATH)
+        results.to_csv(TIME_RESULTS_PATH)
 
 print("Completed successfully!")
 with open(TIME_ERRORS_PATH, "a") as f:
