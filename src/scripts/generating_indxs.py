@@ -4,10 +4,9 @@ import os.path
 from collections import defaultdict
 import numpy as np
 from sklearn.utils import shuffle
-
 from imvc.datasets import LoadDataset
 from imvc.ampute import Amputer
-from imvc.utils import DatasetUtils
+from imvc.impute import get_observed_view_indicator
 
 from settings import PROFILES_PATH
 
@@ -53,8 +52,7 @@ for dataset_name in datasets:
     for prob, amputation_mechanism, run_n in itertools.product(probs, amputation_mechanisms, runs_per_alg):
         if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
             continue
-        train_Xs = shuffle(Xs, random_state=random_state + run_n)
-        y_train = y.loc[train_Xs[0].index]
+        *train_Xs, y_train = shuffle(*Xs, y, random_state=random_state + run_n)
         strat = False
         p = prob/100
 

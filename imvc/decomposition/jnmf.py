@@ -4,7 +4,7 @@ from rpy2.robjects.packages import importr
 import rpy2.robjects as ro
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from ..utils import Utils, check_Xs
+from ..utils import check_Xs, _convert_df_to_r_object
 
 
 class jNMF(TransformerMixin, BaseEstimator):
@@ -203,7 +203,7 @@ class jNMF(TransformerMixin, BaseEstimator):
             base.set_seed(self.random_state)
 
         transformed_X = nnTensor.jNMF(X= transformed_Xs, M=transformed_mask, J=self.n_components,
-                                      initW=init_W, initV=init_V, initH=Utils._convert_df_to_r_object(self.H_),
+                                      initW=init_W, initV=init_V, initH=_convert_df_to_r_object(self.H_),
                                       fixW=False, fixV=False, fixH=True,
                                       L1_W=self.l1_W, L1_V=self.l1_V, L1_H=self.l1_H,
                                       L2_W=self.l2_W, L2_V= self.l2_V, L2_H=self.l2_H,
@@ -225,7 +225,7 @@ class jNMF(TransformerMixin, BaseEstimator):
     @staticmethod
     def _prepare_variables(Xs, beta_loss, init_W, init_V, init_H, weights):
         mask = [X.notnull().astype(int) for X in Xs]
-        transformed_Xs, transformed_mask = Utils._convert_df_to_r_object(Xs), Utils._convert_df_to_r_object(mask)
+        transformed_Xs, transformed_mask = _convert_df_to_r_object(Xs), _convert_df_to_r_object(mask)
         if beta_loss is not None:
             beta_loss = ro.vectors.StrVector(beta_loss)
         init_W = ro.NULL if init_W is None else init_W

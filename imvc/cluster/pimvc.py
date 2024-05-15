@@ -9,12 +9,15 @@ from ..utils import check_Xs
 
 class PIMVC(BaseEstimator, ClassifierMixin):
     r"""
-    Doubly Aligned Incomplete Multi-view Clustering (DAIMC).
+    Projective Incomplete Multi-View Clustering (PIMVC).
 
-    The DAIMC algorithm integrates weighted semi-nonnegative matrix factorization (semi-NMF) to address incomplete
-    multi-view clustering challenges. It leverages instance alignment information to learn a unified latent feature
-    matrix across views and employs L2,1-Norm regularized regression to establish a consensus basis matrix, minimizing
-    the impact of missing instances.
+    The objective of PIMVC is to simultaneously discover the projection matrix for each view and establish a unified
+    feature representation shared across incomplete multiple views, facilitating clustering. Essentially, PIMVC
+    transforms the traditional multi-view matrix factorization model into a multi-view projection learning model. By
+    consolidating various view-specific objective losses into a cohesive subspace of equal dimensions, it adeptly
+    handles the challenge where a single view might overly influence consensus representation learning due to
+    imbalanced information across views stemming from diverse dimensions. Furthermore, to capture the data geometric
+    structure, PIMVC incorporates a penalty term for graph regularization.
 
     It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
     this algorithm.
@@ -23,15 +26,24 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    alpha : float, default=1
+    dele : float, default=0.1
         nonnegative.
+    lamb : float, default=100000
+        Penalty parameters. Should be greather than 0.
     beta : float, default=1
-        Define the trade-off between sparsity and accuracy of regression for the i-th view.
+        Trade-off parameter.
+    k : int, default=3
+        Parameter k of KNN graph.
+    neighbor_mode : str, default='KNN'
+        Indicates how to construct the graph. Options are 'KNN' (default), and 'Supervised'.
+    weight_mode : str, default='Binary'
+        Indicates how to assign weights for each edge in the graph. Options are 'Binary' (default), 'Cosine' and 'HeatKernel'.
+    max_iter : int, default=3
+        Maximum number of iterations.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
-        Engine to use for computing the model. If engine == 'matlab', packages 'statistics' and 'control' should be
-        installed in Octave. In linux, you can run: sudo apt-get install octave-statistics; sudo apt-get install octave-control.
+        Engine to use for computing the model. Currently only 'matlab' is supported.
 .   verbose : bool, default=False
         Verbosity mode.
 

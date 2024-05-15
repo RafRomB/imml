@@ -3,10 +3,9 @@ import pandas as pd
 import snf
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import SpectralClustering
-from rpy2.robjects.packages import importr
 
-
-from ..utils import DatasetUtils, check_Xs
+from ..impute import get_observed_view_indicator
+from ..utils import check_Xs
 
 
 class NEMO(BaseEstimator, ClassifierMixin):
