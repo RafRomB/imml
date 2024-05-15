@@ -1,30 +1,32 @@
 import os
+import numpy as np
 import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..impute import get_observed_view_indicator
-from ..utils import check_Xs
+from ..utils import check_Xs, DatasetUtils
 
 
-class IMSR(BaseEstimator, ClassifierMixin):
+class OMVC(BaseEstimator, ClassifierMixin):
     r"""
-    Self-representation Subspace Clustering for Incomplete Multi-view Data (IMSR).
+    Online multi-view clustering (OMVC).
 
-    IMSR performs feature extraction, imputation and self-representation learning to obtain a low-rank regularized
-    consensus coefficient matrix.
-
-    It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
-    this algorithm.
+    OMVC aims to learn latent feature matrices for all views while driving them towards a consensus. To enhance the
+    robustness of these learned matrices, it incorporates lasso regularization. Additionally, to mitigate the impact of
+    incomplete data, it introduces dynamic weight adjustment.
 
     Parameters
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    lbd : float, default=1
-        Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
-    gamma : float, default=1
-        Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
+    max_iter : int, default=3
+        Maximum number of iterations.
+    tol : float, default=1e-4
+        Tolerance of the stopping condition.
+    block_size : int, default=50
+        Size of the chunk.
+    n_pass : int, default=2
+        Number of passes.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
@@ -37,45 +39,40 @@ class IMSR(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    Z_ : np.array
-        Consensus coefficient matrix.
-    loss_ : array-like of shape (n_views,)
+    U_ : np.array
+        Basis matrix.
+    V_ : np.array
+        Latent feature matrix.
+    U_star_loss_ : np.array
+        Common consensus, latent feature matrix across all the views.
+    loss_ : float
         Value of the loss function.
 
     References
     ----------
-    [paper] Jiyuan Liu, Xinwang Liu, Yi Zhang, Pei Zhang, Wenxuan Tu, Siwei Wang, Sihang Zhou, Weixuan Liang, Siqi
-            Wang, and Yuexiang Yang. 2021. Self-Representation Subspace Clustering for Incomplete Multi-view Data. In
-            Proceedings of the 29th ACM International Conference on Multimedia (MM '21). Association for Computing
-            Machinery, New York, NY, USA, 2726–2734. https://doi.org/10.1145/3474085.3475379.
-    [code]  https://github.com/liujiyuan13/IMSR-code_release
+    [paper] W. Shao, L. He, C. -t. Lu and P. S. Yu, "Online multi-view clustering with incomplete views," 2016 IEEE
+             International Conference on Big Data (Big Data), Washington, DC, USA, 2016, pp. 1012-1017,
+             doi: 10.1109/BigData.2016.7840701.
+    [code]  https://github.com/software-shao/online-multiview-clustering-with-incomplete-view
 
     Examples
     --------
-    >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.cluster import IMSR
-    >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
+    >>> from imvc.cluster import OMVC
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN()
-    >>> estimator = IMSR(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN, estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> estimator = OMVC(n_clusters = 2)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, lbd : float = 1, gamma: float = 1, random_state:int = None,
+    def __init__(self, n_clusters: int = 8, max_iter: int = 200, tol: float = 1e-4, decay: float = 1,
+                 block_size: int = 50, n_pass: int = 2, random_state:int = None,
                  engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
-        try:
-            assert lbd > 0
-        except AssertionError:
-            raise ValueError("lbd should be a positive value.")
-        try:
-            assert gamma > 0
-        except AssertionError:
-            raise ValueError("gamma should be a positive value.")
-        self.lbd = lbd
-        self.gamma = gamma
+        self.max_iter = max_iter
+        self.tol = tol
+        self.decay = decay
+        self.block_size = block_size
+        self.n_pass = n_pass
         self.random_state = random_state
         self.engine = engine
         self.verbose = verbose
@@ -101,27 +98,38 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_imsr")
-            matlab_files = ["IMSC.m", "update_Z.m", "update_X.m", "update_F.m", "init_Z.m",
-                            "cal_obj.m", "baseline_spectral_onkernel.m"]
+            matlab_folder = os.path.join("imvc", "cluster", "_omvc")
+            matlab_files = ["objective_ONMF_Multi.m", "ONMF_Multi_PGD_search.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            observed_view_indicator = get_observed_view_indicator(Xs)
-            observed_view_indicator = [missing_view[missing_view == 0].index.to_list() for _, missing_view in observed_view_indicator.items()]
-            transformed_Xs = [X.T for X in Xs]
+            n_views = len(Xs)
+            ones = np.ones((n_views, 1))
+            option = {"k": self.n_clusters, "maxiter": self.max_iter, "tol": self.tol, "num_cluster": self.n_clusters,
+                      "decay": self.decay, "alpha": 1e-2*ones, "beta": 1e-7*ones,
+                      "pass": self.n_pass}
+
+            missing_samples_by_view = DatasetUtils.get_missing_samples_by_view(Xs, return_as_list=True)
+            missing_samples_by_view = tuple([np.array(missing_samples) for missing_samples in missing_samples_by_view])
+            transformed_Xs = [np.clip(X, a_min=0, a_max=None) for X in Xs]
+            transformed_Xs = [np.nan_to_num(X, nan=0.0)/(X.sum().sum()) for X in transformed_Xs]
 
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)
-            Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
+            u, v, u_star_loss, loss = oc.ONMF_Multi_PGD_search(transformed_Xs, option, len(Xs[0]),
+                                                               missing_samples_by_view, self.block_size, nout=4)
+            u_star_loss = u_star_loss[self.n_pass-1]
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
-        self.labels_ = model.fit_predict(X= Z)
-        self.Z_, self.loss_ = Z, obj
+        self.labels_ = model.fit_predict(X= u_star_loss)
+        self.U_ = u
+        self.V_ = v
+        self.U_star_loss_ = u_star_loss
+        self.loss_ = loss
 
         return self
 

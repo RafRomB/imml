@@ -117,7 +117,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
             w = tuple([oc.diag(missing_view) for _, missing_view in observed_view_indicator.items()])
             if self.random_state is not None:
-                oc.rng(self.random_state)
+                oc.rand('seed', self.random_state)
             u_0, v_0, b_0 = oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)
             u, v, b, f, p, n = oc.DAIMC(transformed_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
                                         len(transformed_Xs), {"afa": self.alpha, "beta": self.beta}, nout=6)
