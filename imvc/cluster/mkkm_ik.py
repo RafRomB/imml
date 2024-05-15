@@ -124,7 +124,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             kernel = self.kernel_initializations[self.kernel_initialization]
 
             if self.random_state is not None:
-                oc.rand("seed", self.random_state)
+                oc.rng(self.random_state)
             H_normalized,gamma,obj,KA = oc.myabsentmultikernelclustering(transformed_Xs, s, self.n_clusters,
                                                                          self.qnorm, kernel,
                                                                          int(self.normalize), nout=4)
