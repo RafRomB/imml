@@ -106,7 +106,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
 
             if self.random_state is not None:
-                oc.rng(self.random_state)
+                oc.rand('seed', self.random_state)
             U, WP,HP, obj = oc.IncompleteMultikernelLatefusionclusteringV1Hv(transformed_Xs, self.n_clusters,
                                                                              self.lambda_reg, int(self.normalize),
                                                                              nout=4)

@@ -249,9 +249,11 @@ class DatasetUtils:
 
         observed_view_indicator = get_observed_view_indicator(Xs)
         if return_as_list:
-            samples = [view_profile[view_profile == 0].index for X_idx, view_profile in observed_view_indicator.items()]
+            samples = [view_profile[view_profile == 0].index.to_list()
+                       for X_idx, view_profile in observed_view_indicator.items()]
         else:
-            samples = {X_idx: view_profile[view_profile == 0].index for X_idx, view_profile in observed_view_indicator.items()}
+            samples = {X_idx: view_profile[view_profile == 0].index.to_list()
+                       for X_idx, view_profile in observed_view_indicator.items()}
         return samples
 
 

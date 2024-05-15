@@ -38,7 +38,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Indicates how to construct the graph. Options are 'KNN' (default), and 'Supervised'.
     weight_mode : str, default='Binary'
         Indicates how to assign weights for each edge in the graph. Options are 'Binary' (default), 'Cosine' and 'HeatKernel'.
-    max_iter : int, default=3
+    max_iter : int, default=100
         Maximum number of iterations.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
@@ -122,7 +122,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
             transformed_Xs = tuple([X.T for X in Xs])
 
             if self.random_state is not None:
-                oc.rng(self.random_state)
+                oc.rand('seed', self.random_state)
             v, loss = oc.PIMVC(transformed_Xs, self.n_clusters, observed_view_indicator, self.lamb, self.beta,
                                self.max_iter,
                                {"NeighborMode": self.neighbor_mode, "WeightMode": self.weight_mode, "k": self.k}, nout=2)
