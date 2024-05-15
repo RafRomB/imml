@@ -1,92 +1,128 @@
+import argparse
 import os
 import time
 from collections import defaultdict
 from datetime import datetime
 import numpy as np
 import pandas as pd
+from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler
+from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
 from sklearn.utils import shuffle
 
-# from mvlearn.decomposition import AJIVE, GroupPCA
-# from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from imvc.cluster import OSLFIMVC
+from imvc.algorithms import NMFC
+from mvlearn.decomposition import AJIVE, GroupPCA
+from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
+from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC
 from imvc.datasets import LoadDataset
-from imvc.preprocessing import MultiViewTransformer
+from imvc.decomposition import DFMF, MOFA
+from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
 
 from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
 
 datasets = [
-    "simulated_gm",
-    "simulated_InterSIM",
-    "simulated_netMUG",
-    "nutrimouse_genotype",
-    "nutrimouse_diet",
-    "bbcsport",
-    "buaa",
-    "metabric",
-    "digits",
-    "bdgp",
-    "tcga",
-    "caltech101",
-    "nuswide",
+    'bbcsport',
+    'bdgp',
+    'buaa',
+    'caltech101',
+    'digits',
+    'metabric',
+    'nuswide',
+    'nutrimouse_diet',
+    'nutrimouse_genotype',
+    'sensIT300',
+    'simulated_InterSIM',
+    'simulated_gm',
+    'simulated_netMUG',
+    'statlog',
+    'tcga',
+    'webkb',
+    'wisconsin',
 ]
 
 algorithms = {
-    # "Concat": {"alg": make_pipeline(ConcatenateViews(),
-    #                                 StandardScaler().set_output(transform='pandas'),
-    #                                 KMeans()), "params": {}},
-    # "NMFC": {"alg": make_pipeline(ConcatenateViews(),
-    #                               MinMaxScaler().set_output(transform='pandas'),
-    #                               NMFC().set_output(transform='pandas')), "params": {}},
-    # "MVSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-    #                                               MultiviewSpectralClustering()),
-    #                          "params": {}},
-    # "MVCoRegSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-    #                                                    MultiviewCoRegSpectralClustering()),
-    #                               "params": {}},
-    # "GroupPCA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), GroupPCA(), StandardScaler(), KMeans()),
-    #              "params": {}},
-    # "AJIVE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), AJIVE(),
-    #                                MultiViewTransformer(FunctionTransformer(pd.DataFrame)), ConcatenateViews(),
-    #                                StandardScaler(), KMeans()),
-    #           "params": {}},
-    # "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
-    # "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-    #                                DAIMC()), "params": {}},
-    # "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                                 EEIMVC()), "params": {}},
-    # "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                                 LFIMVC()), "params": {}},
-    # "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                                 MKKMIK()), "params": {}},
-    # "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-    #                               MSNE()), "params": {}},
+    "Concat": {"alg": make_pipeline(ConcatenateViews(),
+                                    StandardScaler().set_output(transform='pandas'),
+                                    KMeans()), "params": {}},
+    "NMFC": {"alg": make_pipeline(ConcatenateViews(),
+                                  MinMaxScaler().set_output(transform='pandas'),
+                                  NMFC().set_output(transform='pandas')), "params": {}},
+    "MVSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
+                                                  MultiviewSpectralClustering()),
+                             "params": {}},
+    "MVCoRegSpectralClustering": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
+                                                       MultiviewCoRegSpectralClustering()),
+                                  "params": {}},
+    "GroupPCA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), GroupPCA(), StandardScaler(), KMeans()),
+                 "params": {}},
+    "AJIVE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), AJIVE(),
+                                   MultiViewTransformer(FunctionTransformer(pd.DataFrame)), ConcatenateViews(),
+                                   StandardScaler(), KMeans()),
+              "params": {}},
+    "SNF": {"alg": MultiViewTransformer(StandardScaler().set_output(transform="pandas")), "params": {}},
+    "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   DAIMC()), "params": {}},
+    "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    EEIMVC()), "params": {}},
+    "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    LFIMVC()), "params": {}},
+    "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    MKKMIK()), "params": {}},
+    "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                  MSNE()), "params": {}},
     "OSLFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                       OSLFIMVC()), "params": {}},
-    # "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-    #                                  SIMCADC()), "params": {}},
-    # "PIMVC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-    #                                PIMVC()), "params": {}},
-    # # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
-    # #                                 DeepMF(), StandardScaler(), KMeans()),
-    # #              "params": {}},
-    # "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), DFMF().set_output(transform="pandas"),
-    #                               StandardScaler().set_output(transform="pandas"), KMeans()),
-    #          "params": {}},
-    # "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), MOFA().set_output(transform="pandas"),
-    #                               ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
-    #          "params": {}},
+    "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                     SIMCADC()), "params": {}},
+    "PIMVC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   PIMVC()), "params": {}},
+    # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
+    #                                 DeepMF(), StandardScaler(), KMeans()),
+    #              "params": {}},
+    "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), DFMF().set_output(transform="pandas"),
+                                  StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
+    "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), MOFA().set_output(transform="pandas"),
+                                  ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
 }
+
+# args = lambda: None
+# args.continue_benchmarking, args.n_jobs, args.save_results = True, 2, False
+parser = argparse.ArgumentParser()
+parser.add_argument('-save_results', default= False, action='store_true')
+args = parser.parse_args()
+if not args.save_results:
+    TIME_RESULTS_PATH = os.path.join("test", "time_evaluation.csv")
+    TIME_LOGS_PATH = os.path.join("test", "time_logs.txt")
+    TIME_ERRORS_PATH = os.path.join("test", "time_errors.txt")
 
 if os.path.exists(TIME_RESULTS_PATH):
     results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
-    results_1 = pd.DataFrame(0, index=algorithms.keys(), columns=datasets)
+    results_1 = pd.DataFrame(-1, index=algorithms.keys(), columns=datasets)
     results = pd.concat([results, results_1.loc[results_1.index.difference(results.index)]])
 else:
-    results = pd.DataFrame(0, index=algorithms.keys(), columns= datasets)
-    results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF"], "nuswide"] = np.nan
+    results = pd.DataFrame(-1, index=algorithms.keys(), columns= datasets)
+    results.loc["intNMF", ["bbcsport", "digits", "bdgp", "tcga", "caltech101"]] = np.nan
+    results.loc[["AJIVE", "DFMF"], "simulated_gm"] = np.nan
+    results.loc["NEMO", "metabric"] = np.nan
+    results.loc["PIMVC", "digits"] = np.nan
+    results.loc["NEMO", "bdgp"] = np.nan
+    results.loc["NEMO", "tcga"] = np.nan
+    results.loc[["MVSpectralClustering", "MVCoRegSpectralClustering", "SNF", "MSNE"], "nuswide"] = np.nan
+    results.loc["MSNE", "caltech101"] = np.nan
+
+    results.loc["MVSpectralClustering", "caltech101"] = 5110.28558228724
+    results.loc["MVCoRegSpectralClustering", "caltech101"] = 2289.54476389848
+    results.loc["SNF", "caltech101"] = 1101.32710023597
+    results.loc["COCA", "caltech101"] = 82455.47900033
+    results.loc["intNMF", "nuswide"] = 291433.874071121
+    results.loc["COCA", "nuswide"] = 181943.081603289
+    results.loc["COCA", "nuswide"] = 291433.874071121
+    results.loc["intNMF", "metabric"] = 1761.39254188538
+    results.loc["intNMF", "simulated_netMUG"] = 676.233826160431
+
     os.remove(TIME_LOGS_PATH) if os.path.exists(TIME_LOGS_PATH) else None
     os.remove(TIME_ERRORS_PATH) if os.path.exists(TIME_ERRORS_PATH) else None
     open(TIME_LOGS_PATH, 'w').close()
@@ -100,7 +136,7 @@ for dataset_name in datasets:
         names = ["_".join(names)]
     x_name, y_name = names if len(names) > 1 else (names[0], "0")
     Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True)
-    Xs, y = shuffle(*Xs, y, random_state=RANDOM_STATE)
+    *Xs, y = shuffle(*Xs, y, random_state=RANDOM_STATE)
     y = y[y_name]
     n_clusters = y.nunique()
 
