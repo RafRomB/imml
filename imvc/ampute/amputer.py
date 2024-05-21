@@ -165,7 +165,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         A dictionnary containing:
         'X_init': the initial data matrix.
         'X_incomp': the data with the generated missing values.
-        'mask': a matrix indexing the generated missing values.s
+        'mask': a matrix indexing the generated missing values.
         """
 
         if self.mechanism == "MAR":
@@ -177,6 +177,11 @@ class Amputer(BaseEstimator, TransformerMixin):
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
             mask = self.MNAR_self_mask_logistic(X=X, p=self.p)
         elif self.mechanism == "MCAR":
+            try:
+                assert self.p <= (1 - 1/X.shape[1])
+            except AssertionError:
+                raise AssertionError("p is too large for the size of the dataset. Try a smaller p.")
+
             mask = np.random.default_rng(self.random_state).random(X.shape) < self.p
         elif self.mechanism == "PM":
             mask = np.random.default_rng(self.random_state).random((len(X), X.shape[1] -1)) < self.p
@@ -186,13 +191,29 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         samples_to_fix = (mask == True).all(1)
         if samples_to_fix.any():
-            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1], size=len(X))
+            # samples_to_fix = mask[samples_to_fix]
+            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1], size=len(samples_to_fix))
+            samples_to_fix = pd.Series(samples_to_fix)
+            mask = pd.DataFrame(mask)
             for view_idx in np.unique(views_to_fix):
-                mask[samples_to_fix, view_idx] = False
+                samples = views_to_fix == view_idx
+                samples = samples_to_fix[samples].index
+                mask.loc[samples, view_idx] = False
 
-            #todo assert probabilities after fixing samples
-            samples_to_fix = mask.sum(1) >= 2
-            mask[samples_to_fix, :]
+            samples_to_compensate = (~mask).sum(1) >= 2
+            samples_to_compensate = mask[samples_to_compensate]
+            try:
+                samples_to_compensate = samples_to_compensate.sample(samples_to_fix.sum(), random_state=self.random_state)
+            except ValueError:
+                raise Exception("p is too large for the size of the dataset. Try a smaller p.")
+            samples_to_compensate = samples_to_compensate.apply(
+                lambda x: pd.Series(x.index[~x]).sample(1, random_state=self.random_state + x.name), axis= 1)
+            samples_to_compensate = samples_to_compensate.max(1).astype(int)
+            for view_idx in np.unique(views_to_fix):
+                samples = samples_to_compensate[samples_to_compensate == view_idx].index
+                mask.loc[samples, view_idx] = True
+
+            mask = mask.values
 
         X[mask.astype(bool)] = np.nan
         return X
