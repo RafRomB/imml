@@ -22,7 +22,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         The percentaje that each view will have for missing samples. If p is float, all the views will have the
         same percentaje.
     mechanism: str, default="EDM"
-        One of ["EDM", 'MCAR', 'MAR', 'MNAR'].
+        One of ["EDM", 'MCAR', 'MAR', 'MNAR', 'PM'].
     random_state: int, default=None
         If int, random_state is the seed used by the random number generator.
     assess_percentage: bool
@@ -44,10 +44,11 @@ class Amputer(BaseEstimator, TransformerMixin):
 
      Examples
     --------
-    >>> from imvc.utils import DatasetUtils
+    >>> from imvc.ampute import Amputer
     >>> from imvc.datasets import LoadDataset
-    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0)
-    >>> Xs = DatasetUtils.ampute(Xs = Xs, p = [0.2, 0.5])
+    >>> Xs = LoadDataset.load_dataset("nutrimouse_genotype")
+    >>> transformer = Amputer(p= 0.2)
+    >>> transformer.fit_transform(Xs)
     """
 
     def __init__(self, p, mechanism: str = "EDM", random_state: int = None,
@@ -182,9 +183,6 @@ class Amputer(BaseEstimator, TransformerMixin):
             np.insert(mask, np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1] -1), False, axis=1)
         else:
             raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
-
-        if self.mechanism == "PM":
-            mask[:, np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1])] = False
 
         samples_to_fix = (mask == True).all(1)
         if samples_to_fix.any():
