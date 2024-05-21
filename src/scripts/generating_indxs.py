@@ -37,37 +37,45 @@ for dataset_name in datasets:
     n_clusters = y.nunique()
 
     for prob, amputation_mechanism, run_n in itertools.product(probs, amputation_mechanisms, runs_per_alg):
-        random_state = RANDOM_STATE + run_n
-        if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
-            continue
-        *train_Xs, y_train = shuffle(*Xs, y, random_state=random_state)
-        strat = False
-        p = prob/100
+        try:
+            random_state = RANDOM_STATE + run_n
+            if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
+                raise AssertionError(f"{dataset_name} with two vies is incompatible with {amputation_mechanism}")
+            *train_Xs, y_train = shuffle(*Xs, y, random_state=random_state)
+            strat = False
+            p = prob/100
 
-        if p != 0:
-            if amputation_mechanism == "EDM":
-                try:
-                    assert n_clusters < len(train_Xs[0]) * (1 - p)
-                except AssertionError as exception:
-                    raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
-                amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state,
-                              assess_percentage=True, stratify=y_train)
-                try:
-                    train_Xs = amp.fit_transform(train_Xs)
-                    strat = True
-                except ValueError:
-                    amp.set_params(**{"stratify": None})
+            if p != 0:
+                if amputation_mechanism == "EDM":
+                    try:
+                        assert n_clusters < len(train_Xs[0]) * (1 - p)
+                    except AssertionError as exception:
+                        raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
+                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state,
+                                  assess_percentage=True, stratify=y_train)
+                    try:
+                        train_Xs = amp.fit_transform(train_Xs)
+                        strat = True
+                    except ValueError:
+                        amp.set_params(**{"stratify": None})
+                        train_Xs = amp.fit_transform(train_Xs)
+                else:
+                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)
                     train_Xs = amp.fit_transform(train_Xs)
             else:
-                amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)
-                train_Xs = amp.fit_transform(train_Xs)
-        else:
-            amputation_mechanism = "No"
+                amputation_mechanism = "No"
 
-        dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
-            "stratify": strat,
-            "observed_view_indicator": get_observed_view_indicator(train_Xs).to_dict(),
-        }
+            dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
+                "stratify": strat,
+                "observed_view_indicator": get_observed_view_indicator(train_Xs).to_dict(),
+                "valid": True,
+            }
+
+        except AssertionError as exception:
+            dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
+                "valid" : False,
+                "error": exception,
+            }
 
         with open(PROFILES_PATH, 'w') as fp:
             json.dump(dict_indxs, fp)
