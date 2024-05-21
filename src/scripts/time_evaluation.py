@@ -19,27 +19,12 @@ from imvc.decomposition import DFMF, MOFA
 from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
 
 from src.models import Model
-from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE
+from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE, DATASET_TABLE_PATH
 
-datasets = [
-    'bbcsport',
-    'bdgp',
-    'buaa',
-    'caltech101',
-    'digits',
-    'metabric',
-    'nuswide',
-    'nutrimouse_diet',
-    'nutrimouse_genotype',
-    'sensIT300',
-    'simulated_InterSIM',
-    'simulated_gm',
-    'simulated_netMUG',
-    'statlog',
-    'tcga',
-    'webkb',
-    'wisconsin',
-]
+datasets = pd.read_csv(DATASET_TABLE_PATH)["dataset"].to_list()
+if "nutrimouse" in datasets:
+    pos = datasets.index('nutrimouse')
+    datasets[pos:pos + 1] = ('nutrimouse_genotype', 'nutrimouse_diet')
 
 algorithms = {
     "Concat": {"alg": make_pipeline(ConcatenateViews(),
@@ -162,6 +147,6 @@ for dataset_name in datasets:
         results.to_csv(TIME_RESULTS_PATH)
 
 print("Completed successfully!")
-with open(TIME_ERRORS_PATH, "a") as f:
+with open(TIME_LOGS_PATH, "a") as f:
     f.write(f'\n Completed successfully \t {datetime.now()}')
 

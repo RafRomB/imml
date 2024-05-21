@@ -11,10 +11,12 @@ COMPLETE_RESULTS_FILE = 'complete_algorithms_evaluation.csv'
 INCOMPLETE_RESULTS_FILE = 'incomplete_algorithms_evaluation.csv'
 TIME_RESULTS_FILE = 'time_evaluation.csv'
 PROFILES_FILE = 'profiles.json'
+DATASET_TABLE = "dataset_table.csv"
 COMPLETE_RESULTS_PATH = os.path.join(RESULTS_FOLDER, COMPLETE_RESULTS_FILE)
 INCOMPLETE_RESULTS_PATH = os.path.join(RESULTS_FOLDER, INCOMPLETE_RESULTS_FILE)
 TIME_RESULTS_PATH = os.path.join(RESULTS_FOLDER, TIME_RESULTS_FILE)
 PROFILES_PATH = os.path.join(RESULTS_FOLDER, PROFILES_FILE)
+DATASET_TABLE_PATH = os.path.join(RESULTS_FOLDER, DATASET_TABLE)
 
 COMPLETE_LOGS_FILE = 'complete_logs.txt'
 INCOMPLETE_LOGS_FILE = 'incomplete_logs.txt'
