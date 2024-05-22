@@ -8,6 +8,7 @@ import pandas as pd
 from sklearn.impute import SimpleImputer
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews
 from imvc.utils import DatasetUtils
+from settings import PROFILES_PATH
 
 from src.models import Model
 from src.utils import GetMetrics
@@ -34,7 +35,7 @@ class RunClustering:
                 row_index.get_level_values("run_n")[0])
             alg = algorithms[alg_name]
 
-            with open(os.path.join("results", 'indxs.json')) as f:
+            with open(PROFILES_PATH) as f:
                 indxs = json.load(f)[dataset_name][p][amputation_mechanism][run_n]
             observed_view_indicator = indxs["observed_view_indicator"]
             train_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=observed_view_indicator)

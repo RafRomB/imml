@@ -185,13 +185,12 @@ class Amputer(BaseEstimator, TransformerMixin):
             mask = np.random.default_rng(self.random_state).random(X.shape) < self.p
         elif self.mechanism == "PM":
             mask = np.random.default_rng(self.random_state).random((len(X), X.shape[1] -1)) < self.p
-            np.insert(mask, np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1] -1), False, axis=1)
+            mask = np.insert(mask, np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1] -1), False, axis=1)
         else:
             raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
 
         samples_to_fix = (mask == True).all(1)
         if samples_to_fix.any():
-            # samples_to_fix = mask[samples_to_fix]
             views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1], size=len(samples_to_fix))
             samples_to_fix = pd.Series(samples_to_fix)
             mask = pd.DataFrame(mask)

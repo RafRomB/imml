@@ -18,7 +18,7 @@ dataset_table = pd.read_csv(DATASET_TABLE_PATH)
 dataset_table = dataset_table.reindex(dataset_table.index.append(dataset_table.index[dataset_table["dataset"]=="nutrimouse"])).sort_index().reset_index(drop=True)
 dataset_table.loc[dataset_table["dataset"] == "nutrimouse", "dataset"] = ["nutrimouse_genotype", "nutrimouse_diet"]
 datasets = dataset_table["dataset"].to_list()
-two_view_datasets = dataset_table[dataset_table["n_features"].apply(lambda x: len(x) == 2)]
+two_view_datasets = dataset_table[dataset_table["n_features"].apply(lambda x: len(eval(x)) == 2)]["dataset"].to_list()
 amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR', "PM"]
 probs = np.arange(100, step= 10)
 runs_per_alg = np.arange(50)
@@ -40,7 +40,7 @@ for dataset_name in datasets:
         try:
             random_state = RANDOM_STATE + run_n
             if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
-                raise AssertionError(f"{dataset_name} with two vies is incompatible with {amputation_mechanism}")
+                continue
             *train_Xs, y_train = shuffle(*Xs, y, random_state=random_state)
             strat = False
             p = prob/100
@@ -74,7 +74,7 @@ for dataset_name in datasets:
         except AssertionError as exception:
             dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
                 "valid" : False,
-                "error": exception,
+                "error": str(exception),
             }
 
         with open(PROFILES_PATH, 'w') as fp:

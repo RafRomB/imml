@@ -40,7 +40,7 @@ dataset_table = pd.read_csv(DATASET_TABLE_PATH)
 dataset_table = dataset_table.reindex(dataset_table.index.append(dataset_table.index[dataset_table["dataset"]=="nutrimouse"])).sort_index().reset_index(drop=True)
 dataset_table.loc[dataset_table["dataset"] == "nutrimouse", "dataset"] = ["nutrimouse_genotype", "nutrimouse_diet"]
 datasets = dataset_table["dataset"].to_list()
-two_view_datasets = dataset_table[dataset_table["n_features"].apply(lambda x: len(x) == 2)]
+two_view_datasets = dataset_table[dataset_table["n_features"].apply(lambda x: len(eval(x)) == 2)]["dataset"].to_list()
 
 amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR', "PM"]
 probs = np.arange(100, step= 10)
@@ -105,7 +105,8 @@ else:
 results["Run"] = True
 time_results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
 for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
-    if time_results.loc[dataset_name, alg_name] > TIME_LIMIT:
+    time_alg_dat = time_results.loc[dataset_name, alg_name]
+    if (time_alg_dat > TIME_LIMIT) and (time_alg_dat <= 0):
         results.loc[(dataset_name, alg_name), "Run"] = False
 
 results = results.xs(False, level="imputation", drop_level=False)
