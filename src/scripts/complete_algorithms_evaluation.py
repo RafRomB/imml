@@ -3,7 +3,7 @@ import os.path
 import argparse
 import shutil
 from datetime import datetime
-
+import dill
 import numpy as np
 from pandarallel import pandarallel
 import pandas as pd
@@ -16,7 +16,7 @@ from imvc.datasets import LoadDataset
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
 from settings import SUBRESULTS_PATH, COMPLETE_RESULTS_PATH, COMPLETE_LOGS_PATH, COMPLETE_ERRORS_PATH, TIME_LIMIT, \
-    TIME_RESULTS_PATH, RANDOM_STATE, DATASET_TABLE_PATH
+    TIME_RESULTS_PATH, RANDOM_STATE, DATASET_TABLE_PATH, PROFILES_PATH
 from src.utils.create_result_table import CreateResultTable
 from src.utils.run_clustering import RunClustering
 
@@ -36,6 +36,9 @@ if not args.save_results:
 
 if args.n_jobs > 1:
     pandarallel.initialize(nb_workers= args.n_jobs)
+
+with open(PROFILES_PATH, 'rb') as f:
+    profile_missing = dill.load(f)
 
 dataset_table = pd.read_csv(DATASET_TABLE_PATH)
 dataset_table = dataset_table.reindex(dataset_table.index.append(dataset_table.index[dataset_table["dataset"]=="nutrimouse"])).sort_index().reset_index(drop=True)
@@ -150,7 +153,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
         iterator.apply(lambda x: RunClustering.run_iteration(idx= x, results= results, Xs=Xs, y=y, n_clusters=n_clusters,
                                                          algorithms=algorithms,
                                                          incomplete_algorithms=incomplete_algorithms,
-                                                         random_state=RANDOM_STATE,
+                                                         random_state=RANDOM_STATE, profile_missing=profile_missing,
                                                          subresults_path=SUBRESULTS_PATH, logs_file=COMPLETE_LOGS_PATH,
                                                          error_file=COMPLETE_ERRORS_PATH), axis= 1)
     else:
@@ -163,6 +166,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
                                                                       algorithms=algorithms,
                                                                       incomplete_algorithms=incomplete_algorithms,
                                                                       random_state=RANDOM_STATE,
+                                                                      profile_missing=profile_missing,
                                                                       subresults_path=SUBRESULTS_PATH,
                                                                       logs_file=COMPLETE_LOGS_PATH,
                                                                       error_file=COMPLETE_ERRORS_PATH), axis= 1)
@@ -181,7 +185,7 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
                                                                   n_clusters=n_clusters,
                                                                   algorithms=algorithms,
                                                                   incomplete_algorithms=incomplete_algorithms,
-                                                                  random_state=RANDOM_STATE,
+                                                                  random_state=RANDOM_STATE, profile_missing=profile_missing,
                                                                   subresults_path=SUBRESULTS_PATH,
                                                                   logs_file=COMPLETE_LOGS_PATH,
                                                                   error_file=COMPLETE_ERRORS_PATH), axis= 1)

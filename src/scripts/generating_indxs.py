@@ -1,7 +1,7 @@
 import itertools
-import json
 import os.path
 from collections import defaultdict
+import dill
 import numpy as np
 import pandas as pd
 from sklearn.utils import shuffle
@@ -37,6 +37,7 @@ for dataset_name in datasets:
     n_clusters = y.nunique()
 
     for prob, amputation_mechanism, run_n in itertools.product(probs, amputation_mechanisms, runs_per_alg):
+        print(dataset_name, prob, amputation_mechanism, run_n)
         try:
             random_state = RANDOM_STATE + run_n
             if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
@@ -50,7 +51,7 @@ for dataset_name in datasets:
                     try:
                         assert n_clusters < len(train_Xs[0]) * (1 - p)
                     except AssertionError as exception:
-                        raise AssertionError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
+                        raise ValueError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
                     amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state,
                                   assess_percentage=True, stratify=y_train)
                     try:
@@ -65,20 +66,22 @@ for dataset_name in datasets:
             else:
                 amputation_mechanism = "No"
 
+            observed_view_indicator = get_observed_view_indicator(train_Xs)
+            observed_view_indicator.index = observed_view_indicator.index.astype(np.int8)
             dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
                 "stratify": strat,
-                "observed_view_indicator": get_observed_view_indicator(train_Xs).to_dict(),
+                "observed_view_indicator": observed_view_indicator.to_dict(),
                 "valid": True,
             }
 
-        except AssertionError as exception:
+        except ValueError as exception:
             dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
                 "valid" : False,
                 "error": str(exception),
             }
 
-        with open(PROFILES_PATH, 'w') as fp:
-            json.dump(dict_indxs, fp)
+with open(PROFILES_PATH, 'wb') as fp:
+    dill.dump(dict_indxs, fp, dill.HIGHEST_PROTOCOL)
 
 print("Completed successfully!")
 
