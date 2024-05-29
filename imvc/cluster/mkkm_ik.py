@@ -117,7 +117,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
                     oc.eval(f.read())
 
             s = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
-            s = tuple([{"indx": i.to_list()} for i in s])
+            s = tuple([{"indx": i} for i in s])
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)

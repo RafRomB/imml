@@ -48,7 +48,7 @@ class DatasetUtils:
         if not isinstance(Xs, pd.DataFrame):
             observed_view_indicator = pd.DataFrame(observed_view_indicator)
         for X_idx, X in enumerate(Xs):
-            idxs_to_remove = observed_view_indicator[observed_view_indicator[X_idx] == 0].index
+            idxs_to_remove = observed_view_indicator[observed_view_indicator[X_idx] == False].index
             transformed_X = copy.deepcopy(X)
             transformed_X.loc[idxs_to_remove] = np.nan
             transformed_Xs.append(transformed_X)
