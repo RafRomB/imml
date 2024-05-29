@@ -19,7 +19,7 @@ class RunClustering:
 
     @staticmethod
     def run_iteration(idx, results, Xs, y, n_clusters, algorithms, incomplete_algorithms,
-                      random_state, subresults_path, logs_file, error_file):
+                      random_state, subresults_path, profile_missing, logs_file, error_file):
         errors_dict = defaultdict(int)
         row = results.loc[[idx]]
         try:
@@ -35,8 +35,8 @@ class RunClustering:
                 row_index.get_level_values("run_n")[0])
             alg = algorithms[alg_name]
 
-            with open(PROFILES_PATH) as f:
-                observed_view_indicator = json.load(f)[dataset_name][str(p)][amputation_mechanism][str(run_n)]["observed_view_indicator"]
+            indxs = profile_missing[dataset_name][str(p)][amputation_mechanism][str(run_n)]
+            observed_view_indicator = indxs["observed_view_indicator"]
             observed_view_indicator = pd.DataFrame.from_dict(observed_view_indicator)
             observed_view_indicator.index = observed_view_indicator.index.astype(int)
             observed_view_indicator.columns = observed_view_indicator.columns.astype(int)

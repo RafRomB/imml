@@ -180,7 +180,7 @@ class Amputer(BaseEstimator, TransformerMixin):
             try:
                 assert self.p <= (1 - 1/X.shape[1])
             except AssertionError:
-                raise AssertionError("p is too large for the size of the dataset. Try a smaller p.")
+                raise ValueError("p is too large for the size of the dataset. Try a smaller p.")
 
             mask = np.random.default_rng(self.random_state).random(X.shape) < self.p
         elif self.mechanism == "PM":
@@ -204,7 +204,7 @@ class Amputer(BaseEstimator, TransformerMixin):
             try:
                 samples_to_compensate = samples_to_compensate.sample(samples_to_fix.sum(), random_state=self.random_state)
             except ValueError:
-                raise Exception("p is too large for the size of the dataset. Try a smaller p.")
+                raise ValueError("p is too large for the size of the dataset. Try a smaller p.")
             samples_to_compensate = samples_to_compensate.apply(
                 lambda x: pd.Series(x.index[~x]).sample(1, random_state=self.random_state + x.name), axis= 1)
             samples_to_compensate = samples_to_compensate.max(1).astype(int)
