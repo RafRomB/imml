@@ -20,6 +20,7 @@ from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateV
 
 from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE, DATASET_TABLE_PATH
+from src.utils import CommonOperations
 
 datasets = pd.read_csv(DATASET_TABLE_PATH)["dataset"].to_list()
 if "nutrimouse" in datasets:
@@ -116,14 +117,7 @@ else:
 errors_dict = defaultdict(int)
 
 for dataset_name in datasets:
-    names = dataset_name.split("_")
-    if "simulated" in names:
-        names = ["_".join(names)]
-    x_name, y_name = names if len(names) > 1 else (names[0], "0")
-    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True)
-    *Xs, y = shuffle(*Xs, y, random_state=RANDOM_STATE)
-    y = y[y_name]
-    n_clusters = y.nunique()
+    Xs, y, n_clusters = CommonOperations.get_dataset_by_name(dataset_name=dataset_name)
 
     for alg_name, alg in algorithms.items():
         time_execution = results.loc[alg_name, dataset_name]

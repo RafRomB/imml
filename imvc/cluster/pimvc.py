@@ -137,6 +137,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
         return self
 
+
     def _predict(self, Xs):
         r"""
         Return clustering results for samples.

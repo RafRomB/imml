@@ -3,38 +3,23 @@ import os.path
 from collections import defaultdict
 import dill
 import numpy as np
-import pandas as pd
 from sklearn.utils import shuffle
-from imvc.datasets import LoadDataset
 from imvc.ampute import Amputer
 from imvc.impute import get_observed_view_indicator
 
-from settings import PROFILES_PATH, DATASET_TABLE_PATH, RANDOM_STATE
+from settings import PROFILES_PATH, DATASET_TABLE_PATH, RANDOM_STATE, probs, amputation_mechanisms, runs_per_alg
+from src.utils import CommonOperations
 
 if os.path.exists(PROFILES_PATH):
     os.remove(PROFILES_PATH)
 
-dataset_table = pd.read_csv(DATASET_TABLE_PATH)
-dataset_table = dataset_table.reindex(dataset_table.index.append(dataset_table.index[dataset_table["dataset"]=="nutrimouse"])).sort_index().reset_index(drop=True)
-dataset_table.loc[dataset_table["dataset"] == "nutrimouse", "dataset"] = ["nutrimouse_genotype", "nutrimouse_diet"]
-datasets = dataset_table["dataset"].to_list()
-two_view_datasets = dataset_table[dataset_table["n_features"].apply(lambda x: len(eval(x)) == 2)]["dataset"].to_list()
-amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR', "PM"]
-probs = np.arange(100, step= 10)
-runs_per_alg = np.arange(50)
-
+datasets, two_view_datasets = CommonOperations.get_datasets(DATASET_TABLE_PATH)
 infinite_defaultdict = lambda: defaultdict(infinite_defaultdict)
 dict_indxs = infinite_defaultdict()
 
 
 for dataset_name in datasets:
-    names = dataset_name.split("_")
-    if "simulated" in names:
-        names = ["_".join(names)]
-    x_name,y_name = names if len(names) > 1 else (names[0], "0")
-    Xs, y = LoadDataset.load_dataset(dataset_name=x_name, return_y=True)
-    y = y[y_name]
-    n_clusters = y.nunique()
+    Xs, y, n_clusters = CommonOperations.get_dataset_by_name(dataset_name=dataset_name)
 
     for prob, amputation_mechanism, run_n in itertools.product(probs, amputation_mechanisms, runs_per_alg):
         print(dataset_name, prob, amputation_mechanism, run_n)
