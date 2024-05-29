@@ -1,5 +1,7 @@
 import os
 
+import numpy as np
+
 RANDOM_STATE = 42
 TIME_LIMIT = 1800
 
@@ -10,7 +12,7 @@ SUBRESULTS_PATH = os.path.join(RESULTS_FOLDER, SUBRESULTS_FOLDER)
 COMPLETE_RESULTS_FILE = 'complete_algorithms_evaluation.csv'
 INCOMPLETE_RESULTS_FILE = 'incomplete_algorithms_evaluation.csv'
 TIME_RESULTS_FILE = 'time_evaluation.csv'
-PROFILES_FILE = 'profiles.pickle'
+PROFILES_FILE = 'profiles.dill'
 DATASET_TABLE = "dataset_table.csv"
 COMPLETE_RESULTS_PATH = os.path.join(RESULTS_FOLDER, COMPLETE_RESULTS_FILE)
 INCOMPLETE_RESULTS_PATH = os.path.join(RESULTS_FOLDER, INCOMPLETE_RESULTS_FILE)
@@ -32,4 +34,8 @@ COMPLETE_ERRORS_PATH = os.path.join(RESULTS_FOLDER, COMPLETE_ERRORS_FILE)
 INCOMPLETE_ERRORS_PATH = os.path.join(RESULTS_FOLDER, INCOMPLETE_ERRORS_FILE)
 TIME_ERRORS_PATH = os.path.join(RESULTS_FOLDER, TIME_ERRORS_FILE)
 
+amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR', "PM"]
+probs = np.arange(100, step= 10)
+imputation = [True, False]
+runs_per_alg = np.arange(50)
 

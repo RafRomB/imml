@@ -35,7 +35,7 @@ class RunClustering:
                 row_index.get_level_values("run_n")[0])
             alg = algorithms[alg_name]
 
-            indxs = profile_missing[dataset_name][str(p)][amputation_mechanism][str(run_n)]
+            indxs = profile_missing[dataset_name][p][amputation_mechanism][run_n]
             observed_view_indicator = indxs["observed_view_indicator"]
             observed_view_indicator = pd.DataFrame.from_dict(observed_view_indicator)
             observed_view_indicator.index = observed_view_indicator.index.astype(int)
