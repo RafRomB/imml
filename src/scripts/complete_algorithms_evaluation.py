@@ -16,7 +16,7 @@ from imvc.datasets import LoadDataset
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
 from settings import SUBRESULTS_PATH, COMPLETE_RESULTS_PATH, COMPLETE_LOGS_PATH, COMPLETE_ERRORS_PATH, TIME_LIMIT, \
-    TIME_RESULTS_PATH, RANDOM_STATE
+    TIME_RESULTS_PATH, RANDOM_STATE, DATASET_TABLE_PATH
 from src.utils.create_result_table import CreateResultTable
 from src.utils.run_clustering import RunClustering
 
@@ -28,30 +28,25 @@ parser.add_argument('-n_jobs', default= 1, type= int)
 parser.add_argument('-save_results', default= False, action='store_true')
 args = parser.parse_args()
 
+if not args.save_results:
+    INCOMPLETE_RESULTS_PATH = os.path.join("test", "incomplete_algorithms_evaluation.csv")
+    INCOMPLETE_LOGS_PATH = os.path.join("test", "incomplete_logs.txt")
+    INCOMPLETE_ERRORS_PATH = os.path.join("test", "incomplete_errors.txt")
+    SUBRESULTS_PATH = os.path.join("test", "subresults")
+
 if args.n_jobs > 1:
     pandarallel.initialize(nb_workers= args.n_jobs)
 
-datasets = [
-    "simulated_gm",
-    "simulated_InterSIM",
-    "simulated_netMUG",
-    "nutrimouse_genotype",
-    "nutrimouse_diet",
-    "bbcsport",
-    "buaa",
-    "metabric",
-    "digits",
-    "bdgp",
-    "tcga",
-    "caltech101",
-    "nuswide",
-]
-two_view_datasets = ["simulated_gm", "nutrimouse_genotype", "nutrimouse_diet", "metabric", "bdgp",
-                     "buaa", "simulated_netMUG"]
+dataset_table = pd.read_csv(DATASET_TABLE_PATH)
+dataset_table = dataset_table.reindex(dataset_table.index.append(dataset_table.index[dataset_table["dataset"]=="nutrimouse"])).sort_index().reset_index(drop=True)
+dataset_table.loc[dataset_table["dataset"] == "nutrimouse", "dataset"] = ["nutrimouse_genotype", "nutrimouse_diet"]
+datasets = dataset_table["dataset"].to_list()
+two_view_datasets = dataset_table[dataset_table["n_features"].apply(lambda x: len(eval(x)) == 2)]["dataset"].to_list()
+
 amputation_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR', "PM"]
 probs = np.arange(100, step= 10)
 imputation = [True, False]
-runs_per_alg = np.arange(25)
+runs_per_alg = np.arange(50)
 algorithms = {
     "Concat": {"alg": make_pipeline(ConcatenateViews(),
                                     StandardScaler().set_output(transform='pandas'),
@@ -86,23 +81,15 @@ results = CreateResultTable.create_results_table(datasets=datasets, indexes_resu
 if not args.continue_benchmarking:
     if not eval(input("Are you sure you want to start benchmarking and delete previous results? (True/False)")):
         raise Exception
-    if args.save_results:
-        results.to_csv(COMPLETE_RESULTS_PATH)
 
     shutil.rmtree(SUBRESULTS_PATH, ignore_errors=True)
     os.mkdir(SUBRESULTS_PATH)
+    results.to_csv(COMPLETE_RESULTS_PATH)
 
     os.remove(COMPLETE_LOGS_PATH) if os.path.exists(COMPLETE_LOGS_PATH) else None
     os.remove(COMPLETE_ERRORS_PATH) if os.path.exists(COMPLETE_ERRORS_PATH) else None
     open(COMPLETE_LOGS_PATH, 'w').close()
     open(COMPLETE_ERRORS_PATH, 'w').close()
-
-    results["Run"] = True
-    time_results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
-
-    for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
-        if time_results.loc[dataset_name, alg_name] > TIME_LIMIT:
-            results.loc[(dataset_name, alg_name), "Run"] = False
 else:
     finished_results = pd.read_csv(COMPLETE_RESULTS_PATH, index_col= indexes_names)
     results.loc[finished_results.index, finished_results.columns] = finished_results
@@ -110,8 +97,15 @@ else:
                                                     indexes_names=indexes_names)
     results.loc[finished_results.index, finished_results.columns] = finished_results
 
+results["time_limited"] = True
+time_results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
+for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
+    time_alg_dat = time_results.loc[alg_name, dataset_name]
+    if (time_alg_dat > TIME_LIMIT) and (time_alg_dat <= 0):
+        results.loc[(dataset_name, alg_name), "time_limited"] = False
+
 results = results.sort_index(level= "missing_percentage", sort_remaining= False)
-unfinished_results = results.loc[~results["finished"]]
+unfinished_results = results.loc[~results["finished"] & results["time_limited"]]
 
 datasets_to_run = [
     "simulated_gm",

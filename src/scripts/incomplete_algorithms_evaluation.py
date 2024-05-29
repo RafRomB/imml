@@ -9,7 +9,7 @@ from pandarallel import pandarallel
 import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, FunctionTransformer
+from sklearn.preprocessing import StandardScaler
 from imvc.datasets import LoadDataset
 from imvc.decomposition import DFMF, MOFA
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews, NormalizerNaN
@@ -31,7 +31,7 @@ if not args.save_results:
     INCOMPLETE_RESULTS_PATH = os.path.join("test", "incomplete_algorithms_evaluation.csv")
     INCOMPLETE_LOGS_PATH = os.path.join("test", "incomplete_logs.txt")
     INCOMPLETE_ERRORS_PATH = os.path.join("test", "incomplete_errors.txt")
-
+    SUBRESULTS_PATH = os.path.join("test", "subresults")
 
 if args.n_jobs > 1:
     pandarallel.initialize(nb_workers= args.n_jobs)
@@ -84,11 +84,10 @@ results = CreateResultTable.create_results_table(datasets=datasets, indexes_resu
 if not args.continue_benchmarking:
     if not eval(input("Are you sure you want to start benchmarking and delete previous results? (True/False)")):
         raise Exception
-    if args.save_results:
-        results.to_csv(INCOMPLETE_RESULTS_PATH)
 
     shutil.rmtree(SUBRESULTS_PATH, ignore_errors=True)
     os.mkdir(SUBRESULTS_PATH)
+    results.to_csv(INCOMPLETE_RESULTS_PATH)
 
     os.remove(INCOMPLETE_LOGS_PATH) if os.path.exists(INCOMPLETE_LOGS_PATH) else None
     os.remove(INCOMPLETE_ERRORS_PATH) if os.path.exists(INCOMPLETE_ERRORS_PATH) else None
@@ -102,16 +101,16 @@ else:
                                                     indexes_names=indexes_names)
     results.loc[finished_results.index, finished_results.columns] = finished_results
 
-results["Run"] = True
-time_results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
-for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
-    time_alg_dat = time_results.loc[dataset_name, alg_name]
-    if (time_alg_dat > TIME_LIMIT) and (time_alg_dat <= 0):
-        results.loc[(dataset_name, alg_name), "Run"] = False
+results["time_limited"] = True
+# time_results = pd.read_csv(TIME_RESULTS_PATH, index_col=0)
+# for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
+#     time_alg_dat = time_results.loc[alg_name, dataset_name]
+#     if (time_alg_dat > TIME_LIMIT) and (time_alg_dat <= 0):
+#         results.loc[(dataset_name, alg_name), "time_limited"] = False
 
 results = results.xs(False, level="imputation", drop_level=False)
 results = results.sort_index(level= "missing_percentage", sort_remaining= False)
-unfinished_results = results.loc[~results["finished"]]
+unfinished_results = results.loc[~results["finished"] & results["time_limited"]]
 
 for dataset_name in unfinished_results.index.get_level_values("dataset").unique():
     names = dataset_name.split("_")
@@ -131,6 +130,13 @@ for dataset_name in unfinished_results.index.get_level_values("dataset").unique(
                                                          random_state=RANDOM_STATE,
                                                          subresults_path=SUBRESULTS_PATH, logs_file=INCOMPLETE_LOGS_PATH,
                                                          error_file=INCOMPLETE_ERRORS_PATH), axis= 1)
+        results = CreateResultTable.collect_subresults(results=results.copy(), subresults_path=SUBRESULTS_PATH,
+                                               indexes_names=indexes_names)
+        if args.save_results:
+            results.to_csv(INCOMPLETE_RESULTS_PATH)
+        shutil.rmtree(SUBRESULTS_PATH)
+        os.mkdir(SUBRESULTS_PATH)
+
     else:
         if 0 in unfinished_results_dataset.index.get_level_values("missing_percentage"):
             unfinished_results_dataset_idx = unfinished_results_dataset.xs(0, level="missing_percentage",

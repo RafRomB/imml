@@ -36,8 +36,10 @@ class RunClustering:
             alg = algorithms[alg_name]
 
             with open(PROFILES_PATH) as f:
-                indxs = json.load(f)[dataset_name][p][amputation_mechanism][run_n]
-            observed_view_indicator = indxs["observed_view_indicator"]
+                observed_view_indicator = json.load(f)[dataset_name][str(p)][amputation_mechanism][str(run_n)]["observed_view_indicator"]
+            observed_view_indicator = pd.DataFrame.from_dict(observed_view_indicator)
+            observed_view_indicator.index = observed_view_indicator.index.astype(int)
+            observed_view_indicator.columns = observed_view_indicator.columns.astype(int)
             train_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=observed_view_indicator)
             train_Xs = [X.loc[observed_view_indicator.index] for X in train_Xs]
             y_train = y.loc[train_Xs[0].index]
@@ -67,7 +69,7 @@ class RunClustering:
             assert train_Xs[0].index.equals(y_train.index)
             assert clusters.index.equals(y_train.index)
 
-            dict_results = RunClustering.save_record(train_Xs=train_Xs, train_X=train_X, y_pred=clusters, y_true=y_train, p=p,
+            dict_results = RunClustering.save_record(train_Xs=train_Xs, train_X=train_X, y_pred=clusters, y_true=y_train,
                                                      elapsed_time=elapsed_time, random_state=random_state,
                                                      errors_dict=errors_dict)
             dict_results = pd.DataFrame(pd.Series(dict_results), columns=row_index).T
@@ -84,7 +86,7 @@ class RunClustering:
 
 
     @staticmethod
-    def save_record(train_Xs, train_X, y_pred, y_true, p, elapsed_time, random_state, errors_dict):
+    def save_record(train_Xs, train_X, y_pred, y_true, elapsed_time, random_state, errors_dict):
         missing_clusters_mask = np.invert(np.isnan(y_pred))
 
         dict_results = {
@@ -104,7 +106,7 @@ class RunClustering:
             "y_pred": y_pred.to_list(),
             "y_true_idx": y_true.index.to_list(),
             "y_pred_idx": y_pred.index.to_list(),
-            **GetMetrics.compute_unsupervised_metrics(X=X, y_pred=y_pred, random_state=random_state)
+            **GetMetrics.compute_unsupervised_metrics(X=train_X, y_pred=y_pred, random_state=random_state)
         }
 
         if not all(missing_clusters_mask):
