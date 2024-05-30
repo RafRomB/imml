@@ -405,7 +405,7 @@ class DatasetUtils:
         >>> DatasetUtils.remove_missing_sample_from_view(Xs = Xs)
         """
 
-        transformed_Xs = [X.loc[X.isna().all(1).index] for X in Xs]
+        transformed_Xs = [X[np.invert(np.isnan(X).all(1))] for X in Xs]
         return transformed_Xs
 
 

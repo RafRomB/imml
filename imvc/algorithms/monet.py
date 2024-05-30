@@ -10,7 +10,7 @@ from sklearn.cluster import SpectralClustering
 from sklearn.metrics import silhouette_score
 from sklearn.mixture import GaussianMixture
 
-from ..algorithms._aux_monet import _best_samples_to_add, _which_sample_to_remove, _which_view_to_add_to_module, \
+from imvc.cluster._monet._aux_monet import _best_samples_to_add, _which_sample_to_remove, _which_view_to_add_to_module, \
     _which_view_to_remove_from_module, _score_of_split_module, _weight_of_split_and_add_view, \
     _weight_of_split_and_remove_view, _weight_of_new_module, _top_samples_to_switch, \
     _weight_of_spreading_module, _weight_of_merged_modules, _Globals, _Sample, _Module, _View, _switch_2_samples

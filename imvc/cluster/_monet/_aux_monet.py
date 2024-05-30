@@ -3,8 +3,6 @@ import heapq
 import networkx as nx
 import numpy as np
 
-from ..utils.utils import BugInMONET
-
 
 class _Globals:
     """
@@ -100,7 +98,7 @@ class _Module:
             self.samples.pop(sam.get_name())
         except:
             # This error should never occur!
-            import pdb;
+            import pdb
             pdb.set_trace()
             exit(1)
         return self.weight
@@ -461,7 +459,7 @@ def _switch_2_samples(sam, mod1, mod2, glob_var):
         mod1.add_sample(sam)
     else:
         # This should never occur!
-        raise BugInMONET
+        import pdb;pdb.set_trace()
     return
 
 
