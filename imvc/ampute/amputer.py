@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 from scipy import optimize
 
-from imvc.utils import DatasetUtils
+from ..utils import DatasetUtils
 
 
 class Amputer(BaseEstimator, TransformerMixin):
@@ -109,9 +109,11 @@ class Amputer(BaseEstimator, TransformerMixin):
         missing_X = X[missing_samples]
 
         if self.mechanism == "MAR":
-            missing_X = np.insert(missing_X, 0, missing_X[:, 0], axis=1)
+            missing_X = np.insert(missing_X, 0, np.random.default_rng(self.random_state).random(len(missing_X)), axis=1)
             mask = self._MAR_mask(X=missing_X, p=self.p, p_obs=self.p_obs)
             mask = mask[:, ~np.all(mask[1:] == mask[:-1], axis=0)]
+            if mask.shape[1] != X.shape[1]:
+                raise ValueError("p is to small for this dataset.") from None
         elif self.mechanism == "MNAR" and self.opt == "logistic":
             mask = self._MNAR_mask_logistic(X=missing_X, p=self.p, p_params=self.p_params, exclude_inputs=self.exclude_inputs)
         elif self.mechanism == "MNAR" and self.opt == "quantile":
@@ -166,9 +168,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         samples_to_fix = mask.nunique(axis=1).eq(1)
         if samples_to_fix.any():
             samples_to_fix = samples_to_fix[samples_to_fix]
-            views_to_fix = np.random.default_rng(self.random_state).integers(low=0,
-                                                                             high=pseudo_observed_view_indicator.shape[
-                                                                                 1],
+            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_views,
                                                                              size=len(samples_to_fix))
             for view_idx in np.unique(views_to_fix):
                 samples = views_to_fix == view_idx
@@ -190,12 +190,12 @@ class Amputer(BaseEstimator, TransformerMixin):
         else:
             rand = np.random.default_rng(self.random_state)
             mask = rand.choice(2, size=(len(idxs_to_remove), self.n_views -1))
-            mask = pd.DataFrame(mask, index=idxs_to_remove, columns=np.random.default_rng(self.random_state).choice(
-                self.n_views, size=self.n_views-1))
+            mask = pd.DataFrame(mask, index=idxs_to_remove, columns=rand.choice(self.n_views, size=self.n_views-1,
+                                                                                replace=False))
             samples_to_fix = mask.nunique(axis=1).eq(1)
             if samples_to_fix.any():
                 samples_to_fix = samples_to_fix[samples_to_fix]
-                views_to_fix = rand.integers(low=0, high= self.n_views, size=len(samples_to_fix))
+                views_to_fix = rand.choice(mask.columns, size=len(samples_to_fix))
                 for view_idx in np.unique(views_to_fix):
                     samples = views_to_fix == view_idx
                     samples = samples_to_fix[samples].index
