@@ -64,7 +64,6 @@ class CreateResultTable:
             subresults_files = subresults_files[subresults_files["completed"]]
             # add them to our result df
             results.loc[subresults_files.index, subresults_files.columns] = subresults_files
-        # avoid errors with columns ["comments", "stratified"]
         drop_columns = "comments"
         # fix nan values
         results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")

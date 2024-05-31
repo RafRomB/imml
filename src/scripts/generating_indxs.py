@@ -28,33 +28,17 @@ for dataset_name in datasets:
             if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
                 continue
             *train_Xs, y_train = shuffle(*Xs, y, random_state=random_state)
-            strat = False
             p = prob/100
 
             if p != 0:
-                if amputation_mechanism == "EDM":
-                    try:
-                        assert n_clusters < len(train_Xs[0]) * (1 - p)
-                    except AssertionError as exception:
-                        raise ValueError(f"{exception}; n_clusters < len(train_Xs[0]) * (1-p)")
-                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state,
-                                  assess_percentage=True, stratify=y_train)
-                    try:
-                        train_Xs = amp.fit_transform(train_Xs)
-                        strat = True
-                    except ValueError:
-                        amp.set_params(**{"stratify": None})
-                        train_Xs = amp.fit_transform(train_Xs)
-                else:
-                    amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)
-                    train_Xs = amp.fit_transform(train_Xs)
+                amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)
+                train_Xs = amp.fit_transform(train_Xs)
             else:
                 amputation_mechanism = "No"
 
             observed_view_indicator = get_observed_view_indicator(train_Xs)
             observed_view_indicator.index = observed_view_indicator.index.astype(np.int8)
             dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
-                "stratify": strat,
                 "observed_view_indicator": observed_view_indicator.to_dict(),
                 "valid": True,
             }
