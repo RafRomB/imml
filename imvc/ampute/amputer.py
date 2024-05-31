@@ -2,7 +2,6 @@ import copy
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from sklearn.model_selection import train_test_split
 from scipy import optimize
 
 from imvc.utils import DatasetUtils
@@ -18,43 +17,26 @@ class Amputer(BaseEstimator, TransformerMixin):
         - Xs length: n_views
         - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
-    p: list or float
-        The percentaje that each view will have for missing samples. If p is float, all the views will have the
-        same percentaje.
+    p: float
+        Percentaje of incomplete samples.
     mechanism: str, default="EDM"
         One of ["EDM", 'MCAR', 'MAR', 'MNAR', 'PM'].
     random_state: int, default=None
         If int, random_state is the seed used by the random number generator.
-    assess_percentage: bool
-        If False, each view is dropped independently.
-    stratify: array-like, default=None
-        If not None, data is split in a stratified fashion, using this as the class labels.
+    #todo fill args
 
-    Attributes
-    ----------
-    views_to_remove_ : array-like of shape (n_views * 0.5,)
-        Views that will be removed from samples. Only available if mechanism != 'EDM'.
-
-    Returns
-    -------
-    imvd : list of array-likes
-        - Xs length: n_views
-        - Xs[i] shape: (n_samples, n_features_i)
-        A list of different views.
-
-     Examples
+    Examples
     --------
     >>> from imvc.ampute import Amputer
     >>> from imvc.datasets import LoadDataset
-    >>> Xs = LoadDataset.load_dataset("nutrimouse_genotype")
+    >>> Xs = LoadDataset.load_dataset("nutrimouse")
     >>> transformer = Amputer(p= 0.2)
     >>> transformer.fit_transform(Xs)
     """
 
-    def __init__(self, p, mechanism: str = "EDM", random_state: int = None,
-                 assess_percentage: bool = True, stratify=None,
+    def __init__(self, p:float, mechanism: str = "EDM", random_state: int = None,
                  opt:str = "logistic", p_obs:float = 0.1, q= 0.3, exclude_inputs:bool = True,
-                 p_params= 0.3, cut='both', mcar=False):
+                 p_params= 0.3, cut='both', mcar:bool = False):
         possible_mechanisms = ["EDM", 'MCAR', 'MAR', 'MNAR', "PM"]
         if mechanism not in possible_mechanisms:
             raise ValueError(f"Invalid mechanism. Expected one of: {possible_mechanisms}")
@@ -62,8 +44,6 @@ class Amputer(BaseEstimator, TransformerMixin):
         self.p = p
         self.mechanism = mechanism
         self.random_state = random_state
-        self.assess_percentage = assess_percentage
-        self.stratify = stratify
         self.opt = opt
         self.p_obs = p_obs
         self.q = q
@@ -74,73 +54,30 @@ class Amputer(BaseEstimator, TransformerMixin):
 
 
     def fit(self, Xs: list, y=None):
-        n_views = len(Xs)
-        self.n_views = n_views
-
-        if self.mechanism == "EDM":
-            if not isinstance(self.p, list):
-                self.p = [self.p]
-            if len(self.p) != n_views:
-                self.p *= n_views
-
+        self.n_views = len(Xs)
         return self
 
 
     def transform(self, Xs: list, y=None):
+        sample_names = Xs[0].index
 
         if self.mechanism == "EDM":
-            if self.assess_percentage:
-                p = [prob / len(self.p) for prob in self.p]
-                sample_names = Xs[0].index
-                total_len = len(sample_names)
-                common_samples, _ = train_test_split(sample_names, train_size=round(1 - sum(p), 2),
-                                                     random_state=self.random_state, shuffle=True,
-                                                     stratify=self.stratify)
-                sampled_names = copy.deepcopy(common_samples)
-
-                if len(set(p)) == 1:
-                    n_unique_samples = total_len - len(common_samples)
-                    n_unique_samples_view = [n_unique_samples // self.n_views] * self.n_views
-                    n_unique_samples_view = np.full(self.n_views, n_unique_samples_view)
-                    n_unique_samples_view[:n_unique_samples % self.n_views] += 1
-                else:
-                    n_unique_samples_view = [int(p_view * total_len) for p_view in p]
-
-                transformed_Xs = []
-                for X_idx, X in enumerate(Xs):
-                    x_per_view = X.drop(sampled_names).index
-                    if X_idx != self.n_views - 1:
-                        x_per_view, _ = train_test_split(x_per_view, train_size=n_unique_samples_view[X_idx],
-                                                         random_state=self.random_state, shuffle=True,
-                                                         stratify=self.stratify.loc[
-                                                             x_per_view] if self.stratify is not None else None)
-                    sampled_names = sampled_names.append(x_per_view)
-                    idxs_to_remove = common_samples.append(x_per_view)
-                    idxs_to_remove = X.index.difference(idxs_to_remove)
-                    X_ = copy.deepcopy(X)
-                    X_.loc[idxs_to_remove] = np.nan
-                    transformed_Xs.append(X_)
-            else:
-                transformed_Xs = []
-                for X_idx, X in enumerate(Xs):
-                    idxs_to_remove = X.sample(frac=self.p[X_idx] / self.n_views,
-                                              random_state=self.random_state + X_idx if self.random_state is not None else self.random_state).index
-                    X_ = copy.deepcopy(X)
-                    X_.loc[idxs_to_remove] = np.nan
-                    transformed_Xs.append(X_)
-
+            pseudo_observed_view_indicator = self._edm_mask(sample_names=sample_names)
+        elif self.mechanism == "MCAR":
+            pseudo_observed_view_indicator = self._mcar_mask(sample_names=sample_names)
+        elif self.mechanism == "PM":
+            pseudo_observed_view_indicator = self._pm_mask(sample_names=sample_names)
         else:
             pseudo_observed_view_indicator = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]), self.n_views))
-            pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator)
-            pseudo_observed_view_indicator = pd.DataFrame(pseudo_observed_view_indicator, index=Xs[0].index)
-            pseudo_observed_view_indicator[pseudo_observed_view_indicator.notnull()] = 1
-            pseudo_observed_view_indicator = pseudo_observed_view_indicator.fillna(0).astype(int)
-            transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
+            pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator, sample_names=sample_names)
+
+        pseudo_observed_view_indicator = pseudo_observed_view_indicator.astype(bool)
+        transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
 
         return transformed_Xs
 
 
-    def _produce_missing(self, X):
+    def _produce_missing(self, X, sample_names):
         """
         Generate missing values for specifics missing-data mechanism and proportion of missing values.
 
@@ -167,55 +104,105 @@ class Amputer(BaseEstimator, TransformerMixin):
         'X_incomp': the data with the generated missing values.
         'mask': a matrix indexing the generated missing values.
         """
+        missing_samples = pd.Series(sample_names, index=sample_names).sample(frac=self.p, replace=False,
+                                                                             random_state=self.random_state).index
+        missing_X = X[missing_samples]
 
         if self.mechanism == "MAR":
-            mask = self._MAR_mask(X=X, p=self.p, p_obs=self.p_obs)
+            missing_X = np.insert(missing_X, 0, missing_X[:, 0], axis=1)
+            mask = self._MAR_mask(X=missing_X, p=self.p, p_obs=self.p_obs)
+            mask = mask[:, ~np.all(mask[1:] == mask[:-1], axis=0)]
         elif self.mechanism == "MNAR" and self.opt == "logistic":
-            mask = self._MNAR_mask_logistic(X=X, p=self.p, p_params=self.p_obs, exclude_inputs=self.exclude_inputs)
+            mask = self._MNAR_mask_logistic(X=missing_X, p=self.p, p_params=self.p_params, exclude_inputs=self.exclude_inputs)
         elif self.mechanism == "MNAR" and self.opt == "quantile":
-            mask = self._MNAR_mask_quantiles(X=X, p=self.p, q=self.q, p_params=1 - self.p_obs, cut='both', MCAR=False)
+            mask = self._MNAR_mask_quantiles(X=missing_X, p=self.p, q=self.q, p_params=self.p_params, cut=self.cut, MCAR=self.mcar)
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
-            mask = self.MNAR_self_mask_logistic(X=X, p=self.p)
-        elif self.mechanism == "MCAR":
-            try:
-                assert self.p <= (1 - 1/X.shape[1])
-            except AssertionError:
-                raise ValueError("p is too large for the size of the dataset. Try a smaller p.")
-
-            mask = np.random.default_rng(self.random_state).random(X.shape) < self.p
-        elif self.mechanism == "PM":
-            mask = np.random.default_rng(self.random_state).random((len(X), X.shape[1] -1)) < self.p
-            mask = np.insert(mask, np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1] -1), False, axis=1)
+            mask = self.MNAR_self_mask_logistic(X=missing_X, p=self.p)
         else:
             raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
 
-        samples_to_fix = (mask == True).all(1)
+        mask = pd.DataFrame(mask, index=missing_samples)
+        samples_to_fix = mask.nunique(axis=1).eq(1)
         if samples_to_fix.any():
-            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=X.shape[1], size=len(samples_to_fix))
-            samples_to_fix = pd.Series(samples_to_fix)
-            mask = pd.DataFrame(mask)
+            samples_to_fix = samples_to_fix[samples_to_fix]
+            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_views,
+                                                                             size=len(samples_to_fix))
             for view_idx in np.unique(views_to_fix):
                 samples = views_to_fix == view_idx
                 samples = samples_to_fix[samples].index
-                mask.loc[samples, view_idx] = False
+                mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool))
 
-            samples_to_compensate = (~mask).sum(1) >= 2
-            samples_to_compensate = mask[samples_to_compensate]
-            try:
-                samples_to_compensate = samples_to_compensate.sample(samples_to_fix.sum(), random_state=self.random_state)
-            except ValueError:
-                raise ValueError("p is too large for the size of the dataset. Try a smaller p.")
-            samples_to_compensate = samples_to_compensate.apply(
-                lambda x: pd.Series(x.index[~x]).sample(1, random_state=self.random_state + x.name), axis= 1)
-            samples_to_compensate = samples_to_compensate.max(1).astype(int)
-            for view_idx in np.unique(views_to_fix):
-                samples = samples_to_compensate[samples_to_compensate == view_idx].index
-                mask.loc[samples, view_idx] = True
-
-            mask = mask.values
-
-        X[mask.astype(bool)] = np.nan
+        X = pd.DataFrame(np.ones_like(X), index=sample_names)
+        X.loc[mask.index] = mask.astype(int)
         return X
+
+    def _edm_mask(self, sample_names):
+        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
+                                                                            random_state=self.random_state).index
+        sampled_names = copy.deepcopy(common_samples)
+        n_missing = int(len(sample_names.difference(sampled_names)) / self.n_views)
+        for X_idx in range(self.n_views):
+            x_per_view = sample_names.difference(sampled_names)
+            if X_idx != self.n_views - 1:
+                x_per_view = pd.Series(x_per_view, index=x_per_view).sample(n=n_missing,
+                                                                            replace=False,
+                                                                            random_state=self.random_state).index
+            sampled_names = sampled_names.append(x_per_view)
+            idxs_to_remove = common_samples.append(x_per_view)
+            idxs_to_remove = sample_names.difference(idxs_to_remove)
+            pseudo_observed_view_indicator.loc[idxs_to_remove, X_idx] = 0
+        return pseudo_observed_view_indicator
+
+
+    def _mcar_mask(self, sample_names):
+        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
+                                                                            random_state=self.random_state).index
+        idxs_to_remove = sample_names.difference(common_samples)
+        shape = pseudo_observed_view_indicator.loc[idxs_to_remove].shape
+        mask = np.random.default_rng(self.random_state).choice(2, size=shape)
+        mask = pd.DataFrame(mask, index=idxs_to_remove)
+        samples_to_fix = mask.nunique(axis=1).eq(1)
+        if samples_to_fix.any():
+            samples_to_fix = samples_to_fix[samples_to_fix]
+            views_to_fix = np.random.default_rng(self.random_state).integers(low=0,
+                                                                             high=pseudo_observed_view_indicator.shape[
+                                                                                 1],
+                                                                             size=len(samples_to_fix))
+            for view_idx in np.unique(views_to_fix):
+                samples = views_to_fix == view_idx
+                samples = samples_to_fix[samples].index
+                mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool))
+
+        pseudo_observed_view_indicator.loc[idxs_to_remove] = mask
+        return pseudo_observed_view_indicator
+
+
+    def _pm_mask(self, sample_names):
+        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
+                                                                            random_state=self.random_state).index
+        idxs_to_remove = sample_names.difference(common_samples)
+        if self.n_views == 2:
+            col = np.random.default_rng(self.random_state).choice(self.n_views)
+            pseudo_observed_view_indicator.loc[idxs_to_remove, col] = 0
+        else:
+            rand = np.random.default_rng(self.random_state)
+            mask = rand.choice(2, size=(len(idxs_to_remove), self.n_views -1))
+            mask = pd.DataFrame(mask, index=idxs_to_remove, columns=np.random.default_rng(self.random_state).choice(
+                self.n_views, size=self.n_views-1))
+            samples_to_fix = mask.nunique(axis=1).eq(1)
+            if samples_to_fix.any():
+                samples_to_fix = samples_to_fix[samples_to_fix]
+                views_to_fix = rand.integers(low=0, high= self.n_views, size=len(samples_to_fix))
+                for view_idx in np.unique(views_to_fix):
+                    samples = views_to_fix == view_idx
+                    samples = samples_to_fix[samples].index
+                    mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool))
+            pseudo_observed_view_indicator.loc[idxs_to_remove, mask.columns] = mask
+        return pseudo_observed_view_indicator
+
 
     def _MAR_mask(self, X, p, p_obs):
         n, d = X.shape
