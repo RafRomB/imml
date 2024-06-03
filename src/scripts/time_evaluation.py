@@ -117,7 +117,7 @@ else:
 errors_dict = defaultdict(int)
 
 for dataset_name in datasets:
-    Xs, y, n_clusters = CommonOperations.get_dataset_by_name(dataset_name=dataset_name)
+    Xs, y, n_clusters = CommonOperations.load_Xs_y(dataset_name=dataset_name)
 
     for alg_name, alg in algorithms.items():
         time_execution = results.loc[alg_name, dataset_name]

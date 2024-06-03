@@ -1,6 +1,4 @@
 import os.path
-import dill
-from collections import defaultdict
 from pandarallel import pandarallel
 from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
@@ -8,24 +6,23 @@ from sklearn.preprocessing import StandardScaler
 from imvc.decomposition import DFMF, MOFA
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews, NormalizerNaN
 from imvc.cluster import NEMO, DAIMC, PIMVC, SIMCADC, OSLFIMVC, MSNE, MKKMIK, LFIMVC, EEIMVC
-from settings import INCOMPLETE_RESULTS_PATH, SUBRESULTS_PATH, INCOMPLETE_LOGS_PATH, INCOMPLETE_ERRORS_PATH, \
-    TIME_RESULTS_PATH, DATASET_TABLE_PATH, PROFILES_PATH, amputation_mechanisms, probs, \
-    imputation, runs_per_alg
+from settings import INCOMPLETE_RESULTS_PATH, INCOMPLETE_SUBRESULTS_PATH, INCOMPLETE_LOGS_PATH, INCOMPLETE_ERRORS_PATH, \
+    TIME_RESULTS_PATH, DATASET_TABLE_PATH, amputation_mechanisms, probs, \
+    imputation, runs_per_alg, INCOMPLETE_RESULTS_FILE, INCOMPLETE_LOGS_FILE, INCOMPLETE_ERRORS_FILE, \
+    INCOMPLETE_SUBRESULTS_FOLDER
 from src.utils import CommonOperations
 
 args = CommonOperations.get_args()
 
 if not args.save_results:
-    INCOMPLETE_RESULTS_PATH = os.path.join("test", "incomplete_algorithms_evaluation.csv")
-    INCOMPLETE_LOGS_PATH = os.path.join("test", "incomplete_logs.txt")
-    INCOMPLETE_ERRORS_PATH = os.path.join("test", "incomplete_errors.txt")
-    SUBRESULTS_PATH = os.path.join("test", "subresults")
+    results_folder = 'test'
+    INCOMPLETE_RESULTS_PATH = os.path.join(results_folder, INCOMPLETE_RESULTS_FILE)
+    INCOMPLETE_LOGS_PATH = os.path.join(results_folder, INCOMPLETE_LOGS_FILE)
+    INCOMPLETE_ERRORS_PATH = os.path.join(results_folder, INCOMPLETE_ERRORS_FILE)
+    INCOMPLETE_SUBRESULTS_PATH = os.path.join(results_folder, INCOMPLETE_SUBRESULTS_FOLDER)
 
 if args.n_jobs > 1:
     pandarallel.initialize(nb_workers= args.n_jobs)
-
-with open(PROFILES_PATH, 'rb') as f:
-    profile_missing = dill.load(f)
 
 algorithms = {
     "DAIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
@@ -57,7 +54,7 @@ algorithms = {
 incomplete_algorithms = True
 CommonOperations.run_script(dataset_table_path=DATASET_TABLE_PATH, algorithms=algorithms, probs=probs,
                             amputation_mechanisms=amputation_mechanisms, imputation=imputation,
-                            runs_per_alg=runs_per_alg, args=args, subresults_path=SUBRESULTS_PATH,
+                            runs_per_alg=runs_per_alg, args=args, subresults_path=INCOMPLETE_SUBRESULTS_PATH,
                             logs_file=INCOMPLETE_LOGS_PATH, error_file=INCOMPLETE_ERRORS_PATH,
                             results_path=INCOMPLETE_RESULTS_PATH, time_results_path=TIME_RESULTS_PATH,
-                            incomplete_algorithms=incomplete_algorithms, profile_missing=profile_missing)
+                            incomplete_algorithms=incomplete_algorithms)

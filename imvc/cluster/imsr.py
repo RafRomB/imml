@@ -59,7 +59,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
     >>> estimator = IMSR(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN, estimator)
+    >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN), estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 

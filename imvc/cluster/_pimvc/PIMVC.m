@@ -5,6 +5,7 @@ linshi_LS = 0;
 for iv = 1:length(X)
     ind_1 = find(ind_folds(:,iv) == 1);
     ind_0 = find(ind_folds(:,iv) == 0);
+    X{iv}(:,ind_0) = [];
     linshi_W = diag(ind_folds(:,iv));
     linshi_W(:,ind_0) = [];
     G{iv} = linshi_W;

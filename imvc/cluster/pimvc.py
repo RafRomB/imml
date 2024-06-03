@@ -71,7 +71,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> normalizer = NormalizerNaN()
     >>> estimator = PIMVC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer, estimator)
+    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 
