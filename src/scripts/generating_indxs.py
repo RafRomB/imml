@@ -1,7 +1,8 @@
 import itertools
+import json
 import os.path
-from collections import defaultdict
-import dill
+import shutil
+
 import numpy as np
 from sklearn.utils import shuffle
 from imvc.ampute import Amputer
@@ -10,19 +11,15 @@ from imvc.impute import get_observed_view_indicator
 from settings import PROFILES_PATH, DATASET_TABLE_PATH, RANDOM_STATE, probs, amputation_mechanisms, runs_per_alg
 from src.utils import CommonOperations
 
-if os.path.exists(PROFILES_PATH):
-    os.remove(PROFILES_PATH)
+shutil.rmtree(PROFILES_PATH, ignore_errors=True)
+os.mkdir(PROFILES_PATH)
 
-datasets, two_view_datasets = CommonOperations.get_datasets(DATASET_TABLE_PATH)
-infinite_defaultdict = lambda: defaultdict(infinite_defaultdict)
-dict_indxs = infinite_defaultdict()
-
+datasets, two_view_datasets = CommonOperations.get_list_of_datasets(DATASET_TABLE_PATH)
 
 for dataset_name in datasets:
-    Xs, y, n_clusters = CommonOperations.get_dataset_by_name(dataset_name=dataset_name)
+    Xs, y, n_clusters = CommonOperations.load_Xs_y(dataset_name=dataset_name)
 
     for prob, amputation_mechanism, run_n in itertools.product(probs, amputation_mechanisms, runs_per_alg):
-        print(dataset_name, prob, amputation_mechanism, run_n)
         try:
             random_state = RANDOM_STATE + run_n
             if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
@@ -38,19 +35,21 @@ for dataset_name in datasets:
 
             observed_view_indicator = get_observed_view_indicator(train_Xs)
             observed_view_indicator.index = observed_view_indicator.index.astype(np.int8)
-            dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
+            dict_indxs = {
                 "observed_view_indicator": observed_view_indicator.to_dict(),
                 "valid": True,
             }
 
         except ValueError as exception:
-            dict_indxs[dataset_name][int(prob)][amputation_mechanism][int(run_n)] = {
+            dict_indxs = {
                 "valid" : False,
                 "error": str(exception),
             }
 
-with open(PROFILES_PATH, 'wb') as fp:
-    dill.dump(dict_indxs, fp, dill.HIGHEST_PROTOCOL)
+        path = f"{dataset_name}_{prob}_{amputation_mechanism}_{run_n}.json"
+        path = os.path.join(PROFILES_PATH, path)
+        with open(path, "w") as f:
+            json.dump(dict_indxs, f)
 
 print("Completed successfully!")
 
