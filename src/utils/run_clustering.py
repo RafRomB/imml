@@ -58,12 +58,11 @@ class RunClustering:
                 y_train = y_train.loc[train_Xs[0].index]
 
             start_time = time.perf_counter()
-            clusters, model = Model(alg_name=alg_name, alg=alg).method(train_Xs=train_Xs, n_clusters=n_clusters,
-                                                                       random_state=random_state, run_n=run_n)
+            clusters, train_X = Model(alg_name=alg_name, alg=alg).method(train_Xs=train_Xs, n_clusters=n_clusters,
+                                                                         random_state=random_state, run_n=run_n)
             elapsed_time = time.perf_counter() - start_time
             clusters = pd.Series(clusters, index=y_train.index)
 
-            train_X = model.transform(train_Xs)
             if isinstance(train_X, list):
                 train_X = ConcatenateViews().fit_transform(train_X)
             if train_X.isna().any().any():
