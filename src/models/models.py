@@ -19,8 +19,21 @@ class Model:
         model, params = self.alg["alg"], self.alg["params"]
         model = self.alg_name(model=model, n_clusters=n_clusters, random_state=random_state, run_n=run_n)
         clusters = model.fit_predict(train_Xs)
-        model = model[:-1]
-        return clusters, model
+        if self.alg_name in ["DAIMC", "PIMVC"]:
+            transformed_Xs = model[-1].V_
+        elif self.alg_name in ["EEIMVC", "LFIMVC", "MKKMIK", "OSLFIMVC"]:
+            transformed_Xs = model[-1].H_
+        elif self.alg_name == "IMSR":
+            transformed_Xs = model[-1].Z_
+        elif self.alg_name == "MSNE":
+            transformed_Xs = model[-1].embeddings_
+        elif self.alg_name == "OMVC":
+            transformed_Xs = model[-1].U_star_loss_
+        elif self.alg_name == "SIMCADC":
+            transformed_Xs = model[-1].U
+        else:
+            transformed_Xs = model[:-1].transform(train_Xs)
+        return clusters, transformed_Xs
 
 
     def snf(self, train_Xs, n_clusters, random_state, run_n):
@@ -30,7 +43,8 @@ class Model:
         affinities = compute.make_affinity(train_Xs, normalize=False, K=k_snf)
         fused = compute.snf(affinities, K=k_snf)
         clusters = spectral_clustering(fused, n_clusters=n_clusters, random_state=random_state + run_n)
-        return clusters, model
+        transformed_Xs = fused
+        return clusters, transformed_Xs
 
 
     def intnmf(self, train_Xs, n_clusters, random_state, run_n):
