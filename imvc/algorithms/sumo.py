@@ -86,8 +86,8 @@ class SUMO(BaseEstimator, ClassifierMixin):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.algorithms import SUMO
-    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+    >>> from imvc.cluster import SUMO
+    >>> Xs = LoadDataset.load_dataset("nutrimouse")
     >>> estimator = SUMO(n_clusters = 2)
     >>> labels = estimator.fit_predict(Xs)
     """

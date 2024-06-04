@@ -81,7 +81,7 @@ class MONET(BaseEstimator, ClassifierMixin):
     views_dist_ : list of arrays
         Weighting scheme to calculate the edge weights in the view graphs
     mod_views_ : list
-        views used for each module.
+        Views used for each module.
     all_ems_ : Gaussian Mixture Scikit-learn model
         Gaussian mixture model used to estimate the parameters for the weighting schemes.
     n_clusters_ : int
@@ -95,8 +95,8 @@ class MONET(BaseEstimator, ClassifierMixin):
     Examples
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.algorithms import MONET
-    >>> Xs = LoadDataset.load_incomplete_nutrimouse(p = 0.2)
+    >>> from imvc.cluster import MONET
+    >>> Xs = LoadDataset.load_dataset("nutrimouse")
     >>> estimator = MONET()
     >>> labels = estimator.fit_predict(Xs)
     """

@@ -148,6 +148,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         self.rep = rep
         self.random_state = random_state
         self.verbose = verbose
+        self.n_jobs = n_jobs
         self.runs_per_con = max(round(repetitions * 0.8), 1)  # number of runs per consensus matrix creation
 
 
