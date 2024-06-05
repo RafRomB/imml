@@ -1,6 +1,9 @@
 import os
+from os.path import dirname
+
 import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
@@ -97,7 +100,8 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_eeimvc")
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_eeimvc")
             matlab_files = ['incompleteLateFusionMKCOrthHp_lambda.m', 'mycombFun.m', 'myInitializationHp.m',
                             'mykernelkmeans.m', 'updateBetaAbsentClustering.m', 'updateHPabsentClusteringOrthHp.m',
                             'updateWPabsentClusteringV1.m', 'algorithm2.m']
@@ -107,11 +111,15 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
                     oc.eval(f.read())
 
             observed_view_indicator = get_observed_view_indicator(Xs)
+            if isinstance(observed_view_indicator, pd.DataFrame):
+                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
+            elif isinstance(observed_view_indicator[0], np.ndarray):
+                observed_view_indicator = pd.DataFrame(observed_view_indicator)
             s = [view[view == 0].index.values for _,view in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
-            s = tuple([{"indx": i} for i in s])
+            s = tuple([{"indx": i +1} for i in s])
 
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)

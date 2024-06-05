@@ -77,7 +77,6 @@ class NormalizerNaN(Normalizer):
             Transformed data.
         """
 
-        idxs, cols = X.index, X.columns
         X = check_array(X, force_all_finite='allow-nan')
         if self.norm == "l1":
             norms = np.abs(X).sum(axis=1)
@@ -89,8 +88,5 @@ class NormalizerNaN(Normalizer):
             raise ValueError(f"Invalid value. Expected one of: ['l1', 'l2', 'max']")
         norms[norms == 0] = 1.
         transformed_X = X / norms[:,None]
-
-        # if self.transform_ == "pandas":
-        #     return pd.DataFrame(transformed_X, index= idxs, columns= cols)
         return transformed_X
 

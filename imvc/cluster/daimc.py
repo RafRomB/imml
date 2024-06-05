@@ -1,5 +1,9 @@
 import os
+from os.path import dirname
+
+import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
@@ -100,7 +104,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_daimc")
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_daimc")
             matlab_files = ["newinit.m", "litekmeans.m", "DAIMC.m", "UpdateV_DAIMC.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
@@ -110,12 +115,16 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             oc.eval("pkg load control")
             oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
-            observed_view_indicator = get_observed_view_indicator(Xs)
-            transformed_Xs = simple_view_imputer(Xs, value="zeros")
+            if isinstance(Xs[0], pd.DataFrame):
+                transformed_Xs = [X.values for X in Xs]
+            elif isinstance(Xs[0], np.ndarray):
+                transformed_Xs = Xs
+            observed_view_indicator = get_observed_view_indicator(transformed_Xs)
+            transformed_Xs = simple_view_imputer(transformed_Xs, value="zeros")
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = tuple(transformed_Xs)
 
-            w = tuple([oc.diag(missing_view) for _, missing_view in observed_view_indicator.items()])
+            w = tuple([oc.diag(missing_view) for missing_view in observed_view_indicator.T])
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)
             u_0, v_0, b_0 = oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)

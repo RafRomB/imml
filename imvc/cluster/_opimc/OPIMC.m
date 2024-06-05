@@ -1,15 +1,16 @@
-function clsters = OPIMC(X, W, option)
+function Clu_result = OPIMC(X, W, option, block_size)
 % If you use the code, please cite the following papers:
 % [1] Hu M, Chen S. One-pass incomplete multi-view clustering[C]//Proceedings of the AAAI conference on artificial intelligence. 2019, 33(01): 3838-3845.
 % [2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on Incomplete Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
 % Thanks Menglei Hu for providing the source code of OPIMC!
 
+
     num_passes = option.pass;
     num_views = numel(X);
     total = size(X{1}, 2);                  
-    alpha = option.alpha;
     block_size = option.block_size;
-
+    alpha = option.alpha;
+    
     skip_loss = option.loss;
     maxIter = option.maxiter;
     
@@ -29,6 +30,7 @@ function clsters = OPIMC(X, W, option)
     
     label_total = zeros(num_passes,size(X{1},2));
     for pass = 1:num_passes
+        t1 = tic;   
         if pass == 1
             sum_num = 0; 
             for i = 1:num_views
@@ -49,7 +51,7 @@ function clsters = OPIMC(X, W, option)
             X_block = cell(num_views,1);
             W_block = cell(num_views,1);
             for i = 1:num_views
-                X{i}(:,data_range) = NormalizeFea(X{i}(:,data_range),0);    % ������һ��
+                X{i}(:,data_range) = NormalizeFea(X{i}(:,data_range),0);
                 X_block{i} = X{i}(:,data_range);
                 W_block{i} = diag(W{i}(data_range));
             end
@@ -134,7 +136,7 @@ function clsters = OPIMC(X, W, option)
             end
         end
     end
-    clsters = label_total(pass,:)');
+    Clu_result = label_total(pass,:)';
 end
     
 

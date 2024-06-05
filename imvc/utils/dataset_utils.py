@@ -248,6 +248,10 @@ class DatasetUtils:
         """
 
         observed_view_indicator = get_observed_view_indicator(Xs)
+        if isinstance(Xs[0], pd.DataFrame):
+            observed_view_indicator = pd.DataFrame(observed_view_indicator, index=Xs[0].index)
+        else:
+            observed_view_indicator = pd.DataFrame(observed_view_indicator)
         if return_as_list:
             samples = [view_profile[view_profile == 0].index.to_list()
                        for X_idx, view_profile in observed_view_indicator.items()]

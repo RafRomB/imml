@@ -1,5 +1,9 @@
 import os
+from os.path import dirname
+
+import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 
 from ..impute import get_observed_view_indicator, simple_view_imputer
@@ -96,19 +100,24 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_opimc")
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_opimc")
             matlab_files = ["UpdateV.m", "OPIMC.m", "NormalizeFea.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            observed_view_indicator = get_observed_view_indicator(Xs)
-            transformed_Xs = simple_view_imputer(Xs, value="zeros")
+            if isinstance(Xs[0], pd.DataFrame):
+                transformed_Xs = [X.values for X in Xs]
+            elif isinstance(Xs[0], np.ndarray):
+                transformed_Xs = Xs
+            observed_view_indicator = get_observed_view_indicator(transformed_Xs)
+            transformed_Xs = simple_view_imputer(transformed_Xs, value="zeros")
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = tuple(transformed_Xs)
 
-            w = tuple([oc.diag(missing_view) for _, missing_view in observed_view_indicator.items()])
+            w = tuple([oc.diag(missing_view) for missing_view in observed_view_indicator.T])
             options = {"block_size": self.block_size, "k": self.n_clusters, "maxiter": self.max_iter,
                        "tol": self.tol, "pass": self.num_passes, "loss": 0, "alpha": self.alpha}
             if self.random_state is not None:
