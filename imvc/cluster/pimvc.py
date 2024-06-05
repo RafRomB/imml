@@ -1,5 +1,9 @@
 import os
+from os.path import dirname
+
+import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
@@ -111,7 +115,8 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_pimvc")
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_pimvc")
             matlab_files = ["PIMVC.m", "constructW.m", "EuDist2.m", "PCA1.m", "mySVD.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
@@ -119,6 +124,8 @@ class PIMVC(BaseEstimator, ClassifierMixin):
                     oc.eval(f.read())
 
             observed_view_indicator = get_observed_view_indicator(Xs)
+            if isinstance(observed_view_indicator, pd.DataFrame):
+                observed_view_indicator = observed_view_indicator.values
             transformed_Xs = tuple([X.T for X in Xs])
 
             if self.random_state is not None:

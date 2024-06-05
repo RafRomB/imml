@@ -1,6 +1,9 @@
 import os
+from os.path import dirname
+
 import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
@@ -25,7 +28,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Tolerance of the stopping condition.
     block_size : int, default=50
         Size of the chunk.
-    n_pass : int, default=2
+    n_pass : int, default=1
         Number of passes.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
@@ -65,7 +68,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, n_clusters: int = 8, max_iter: int = 200, tol: float = 1e-4, decay: float = 1,
-                 block_size: int = 50, n_pass: int = 2, random_state:int = None,
+                 block_size: int = 50, n_pass: int = 1, random_state:int = None,
                  engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
         self.max_iter = max_iter
@@ -98,7 +101,8 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_omvc")
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_omvc")
             matlab_files = ["objective_ONMF_Multi.m", "ONMF_Multi_PGD_search.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
@@ -111,10 +115,14 @@ class OMVC(BaseEstimator, ClassifierMixin):
                       "decay": self.decay, "alpha": 1e-2*ones, "beta": 1e-7*ones,
                       "pass": self.n_pass}
 
-            missing_samples_by_view = DatasetUtils.get_missing_samples_by_view(Xs, return_as_list=True)
-            missing_samples_by_view = tuple([np.array(missing_samples) for missing_samples in missing_samples_by_view])
-            transformed_Xs = [np.clip(X, a_min=0, a_max=None) for X in Xs]
-            transformed_Xs = [np.nan_to_num(X, nan=0.0)/(X.sum().sum()) for X in transformed_Xs]
+            if isinstance(Xs[0], pd.DataFrame):
+                transformed_Xs = [X.values for X in Xs]
+            elif isinstance(Xs[0], np.ndarray):
+                transformed_Xs = Xs
+            missing_samples_by_view = DatasetUtils.get_missing_samples_by_view(Xs=transformed_Xs, return_as_list=True)
+            missing_samples_by_view = tuple([np.array(missing_samples)+1 for missing_samples in missing_samples_by_view])
+            transformed_Xs = [np.nan_to_num(np.clip(X, a_min=0, a_max=None), nan=0.0) for X in transformed_Xs]
+            transformed_Xs = [X/(X.sum().sum()) for X in transformed_Xs]
 
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)

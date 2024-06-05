@@ -1,5 +1,9 @@
 import os
+from os.path import dirname
+
+import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
@@ -101,7 +105,8 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_imsr")
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_imsr")
             matlab_files = ["IMSC.m", "update_Z.m", "update_X.m", "update_F.m", "init_Z.m",
                             "cal_obj.m", "baseline_spectral_onkernel.m"]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
@@ -110,8 +115,12 @@ class IMSR(BaseEstimator, ClassifierMixin):
                     oc.eval(f.read())
 
             observed_view_indicator = get_observed_view_indicator(Xs)
-            observed_view_indicator = [missing_view[missing_view == 0].index.to_list() for _, missing_view in observed_view_indicator.items()]
-            transformed_Xs = [X.T for X in Xs]
+            if isinstance(observed_view_indicator, pd.DataFrame):
+                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
+            elif isinstance(observed_view_indicator[0], np.ndarray):
+                observed_view_indicator = pd.DataFrame(observed_view_indicator)
+            observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in observed_view_indicator.items()]
+            transformed_Xs = [X.T.values for X in Xs]
 
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)

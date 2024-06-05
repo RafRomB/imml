@@ -1,6 +1,9 @@
 import os
+from os.path import dirname
+
 import numpy as np
 import oct2py
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
@@ -107,7 +110,8 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine == "matlab":
-            matlab_folder = os.path.join("imvc", "cluster", "_mkkm_ik")
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_mkkm_ik")
             matlab_files = ['absentKernelImputation.m', 'mycombFun.m', 'mykernelkmeans.m', 'calObjV2.m',
                             'algorithm0.m', 'algorithm2.m', 'algorithm3.m', 'algorithm4.m', 'algorithm6.m',
                             'updateabsentkernelweightsV2.m', 'myabsentmultikernelclustering.m', "kcenter.m", "knorm.m"]
@@ -116,9 +120,14 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            s = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
-            s = tuple([{"indx": i} for i in s])
-            transformed_Xs = [self.kernel(X) for X in Xs]
+            if isinstance(Xs[0], pd.DataFrame):
+                transformed_Xs = [X.values for X in Xs]
+            elif isinstance(Xs[0], np.ndarray):
+                transformed_Xs = Xs
+            s = DatasetUtils.get_missing_samples_by_view(Xs=transformed_Xs, return_as_list=True)
+            s = tuple([{"indx": pd.Series(i).add(1).to_list()} for i in s])
+
+            transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
             kernel = self.kernel_initializations[self.kernel_initialization]

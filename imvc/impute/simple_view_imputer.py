@@ -133,6 +133,8 @@ def simple_view_imputer(Xs, y = None, value : str = 'mean'):
     missing_views = get_observed_view_indicator(Xs=Xs)
     n_samples = len(missing_views)
     pandas_format = isinstance(Xs[0], pd.DataFrame)
+    if not pandas_format:
+        missing_views = pd.DataFrame(missing_views)
 
     transformed_Xs = []
     for X_idx, X in enumerate(Xs):
@@ -144,9 +146,11 @@ def simple_view_imputer(Xs, y = None, value : str = 'mean'):
             transformed_X = np.zeros((n_samples, n_features))
         else:
             raise ValueError(f"Invalid value. Expected one of: ['mean', 'zeros']")
-        transformed_X = pd.DataFrame(transformed_X, index=missing_views.index, columns=X.columns)
-        transformed_X[missing_views.loc[:, X_idx]] = X
-        transformed_X = transformed_X.astype(X.dtypes.to_dict())
+
+        dataframe_X = pd.DataFrame(X)
+        transformed_X = pd.DataFrame(transformed_X, index=missing_views.index, columns=dataframe_X.columns)
+        transformed_X[missing_views.loc[:, X_idx]] = X[missing_views.loc[:, X_idx]]
+        transformed_X = transformed_X.astype(dataframe_X.dtypes.to_dict())
         if not pandas_format:
             transformed_X = transformed_X.values
         transformed_Xs.append(transformed_X)
