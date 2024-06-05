@@ -13,7 +13,8 @@ from sklearn.utils import shuffle
 from imvc.algorithms import NMFC
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC
+from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO
+from imvc.cluster.monet import MONET
 from imvc.datasets import LoadDataset
 from imvc.decomposition import DFMF, MOFA
 from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
@@ -51,18 +52,28 @@ algorithms = {
                                    DAIMC()), "params": {}},
     "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     EEIMVC()), "params": {}},
+    "IMSR": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   IMSR()), "params": {}},
     "LFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     LFIMVC()), "params": {}},
     "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     MKKMIK()), "params": {}},
+    "MONET": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    MONET()), "params": {}},
     "MSNE": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                   MSNE()), "params": {}},
+    "OMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                  OMVC()), "params": {}},
+    "OPIMC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                     OPIMC()), "params": {}},
     "OSLFIMVC": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                       OSLFIMVC()), "params": {}},
-    "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-                                     SIMCADC()), "params": {}},
     "PIMVC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
                                    PIMVC()), "params": {}},
+    "SIMCADC": {"alg": make_pipeline(MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                     SIMCADC()), "params": {}},
+    "SUMO": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                      SUMO()), "params": {}},
     # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
     #                                 DeepMF(), StandardScaler(), KMeans()),
     #              "params": {}},
@@ -129,7 +140,7 @@ for dataset_name in datasets:
         try:
             start_time = time.perf_counter()
             clusters, _ = Model(alg_name=alg_name, alg=alg).method(train_Xs=Xs, n_clusters=n_clusters,
-                                                                       random_state=RANDOM_STATE, run_n=0)
+                                                                   random_state=RANDOM_STATE, run_n=0)
             elapsed_time = time.perf_counter() - start_time
         except Exception as exception:
             errors_dict[f"{type(exception).__name__}: {exception}"] += 1
