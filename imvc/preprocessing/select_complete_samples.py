@@ -1,7 +1,7 @@
 from sklearn.preprocessing import FunctionTransformer
 
-from ..impute import ObservedViewIndicator, get_observed_view_indicator
-from ..utils import check_Xs, DatasetUtils
+from ..impute import get_observed_view_indicator
+from ..utils import check_Xs
 
 
 class SelectCompleteSamples(FunctionTransformer):
@@ -44,7 +44,7 @@ def select_complete_samples(Xs: list):
 
     Returns
     -------
-    transformed_Xs : list of array-likes, shape (n_samples_i, n_features_i)
+    transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
         The transformed data.
     """
 
