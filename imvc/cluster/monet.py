@@ -147,7 +147,10 @@ class MONET(BaseEstimator, ClassifierMixin):
         self :  returns and instance of self.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        for X in Xs:
+            X.index = X.index.astype(str)
         samples = Xs[0].index
+        # samples = samples.astype('str')
         Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
         data = {}
         if self.similarity_mode == "prob":
@@ -185,12 +188,16 @@ class MONET(BaseEstimator, ClassifierMixin):
         best_sol = solutions[best_sol]
         glob_var, total_weight = best_sol['glob_var'], best_sol['total_weight']
         labels, view_graphs, mod_views = self._post_processing(glob_var=glob_var)
-        self.labels_ = labels.loc[samples].squeeze().values
+        labels = labels.loc[samples].squeeze().values
+        labels_wo_nan = np.unique(labels, return_inverse=True)[1].astype(float)
+        labels_wo_nan[np.isnan(labels)] = np.nan
+        self.labels_ = labels_wo_nan
         self.glob_var_ = glob_var
         self.total_weight_ = total_weight
         self.view_graphs_ = view_graphs
         self.mod_views_ = mod_views
         return self
+
 
     def _predict(self, Xs):
         r"""
