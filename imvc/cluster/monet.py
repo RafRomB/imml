@@ -320,8 +320,7 @@ class MONET(BaseEstimator, ClassifierMixin):
                     # that the difference in the objective function from the
                     # previous iteration is different from the difference
                     # the algorithm expected for the function.
-                    import pdb;
-                    pdb.set_trace()
+                    raise Exception("The clusters could not be found.")
                 did_action = True
                 assert abs(total_weight - prev_weight - max_res[1][0]) < 0.01
                 did_action = True

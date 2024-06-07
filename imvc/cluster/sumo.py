@@ -24,7 +24,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
     Parameters
     ----------
-    n_clusters : int, default=None
+    n_clusters : int, default=8
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
     method : str, default='euclidean'
         either one method of sample-sample similarity calculation, or list of methods for every view (available
@@ -100,7 +100,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1,
+    def __init__(self, n_clusters: int = 8, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1,
                  alpha: float = 0.5, sparsity: list = [0.1], repetitions: int = 60, cluster_method: str = "max_value",
                  max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05, calc_cost: int = 20,
                  h_init: int = None, rep: int = 5, random_state: int = None, verbose: bool = False, n_jobs: int = 1):

@@ -98,9 +98,7 @@ class _Module:
             self.samples.pop(sam.get_name())
         except:
             # This error should never occur!
-            import pdb
-            pdb.set_trace()
-            exit(1)
+            raise Exception("The clusters could not be found.")
         return self.weight
 
     def get_views(self):
@@ -459,7 +457,7 @@ def _switch_2_samples(sam, mod1, mod2, glob_var):
         mod1.add_sample(sam)
     else:
         # This should never occur!
-        import pdb;pdb.set_trace()
+        raise Exception("The clusters could not be found.")
     return
 
 
