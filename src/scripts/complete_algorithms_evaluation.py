@@ -8,10 +8,11 @@ from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews
 from imvc.algorithms import NMFC
+
 from settings import COMPLETE_SUBRESULTS_PATH, COMPLETE_RESULTS_PATH, COMPLETE_LOGS_PATH, COMPLETE_ERRORS_PATH, \
     TIME_RESULTS_PATH, DATASET_TABLE_PATH, amputation_mechanisms, runs_per_alg, probs, \
     imputation, COMPLETE_RESULTS_FILE, COMPLETE_ERRORS_FILE, COMPLETE_SUBRESULTS_FOLDER, COMPLETE_LOGS_FILE
-from src.utils import CommonOperations
+from src.commons import CommonOperations
 
 args = CommonOperations.get_args()
 

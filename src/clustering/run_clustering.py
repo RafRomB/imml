@@ -65,7 +65,7 @@ class RunClustering:
 
             if isinstance(train_X, list):
                 train_X = ConcatenateViews().fit_transform(train_X)
-            if train_X.isna().any().any():
+            if np.isnan(train_X).any().any():
                 train_X = SimpleImputer(strategy="mean").fit_transform(train_X)
             if not isinstance(train_X, pd.DataFrame):
                 train_X = pd.DataFrame(train_X, index=y_train.index)

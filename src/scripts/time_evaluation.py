@@ -8,20 +8,18 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
-from sklearn.utils import shuffle
 
 from imvc.algorithms import NMFC
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO
 from imvc.cluster.monet import MONET
-from imvc.datasets import LoadDataset
 from imvc.decomposition import DFMF, MOFA
 from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
 
 from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE, DATASET_TABLE_PATH
-from src.utils import CommonOperations
+from src.commons import CommonOperations
 
 datasets = pd.read_csv(DATASET_TABLE_PATH)["dataset"].to_list()
 if "nutrimouse" in datasets:

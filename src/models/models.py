@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 from sklearn.cluster import spectral_clustering
 from snf import compute
 from rpy2.robjects.packages import importr
@@ -8,7 +9,7 @@ from src.utils import Utils
 
 class Model:
     def __init__(self, alg_name, alg):
-        self.alg_name = alg_name.lower() if alg_name in ["GroupPCA", "AJIVE", "NMFC", "DFMF", "MOFA"] else "standard"
+        self.alg_name = alg_name.lower() if alg_name in ["GroupPCA", "AJIVE", "NMFC", "DFMF", "MOFA", "MONET"] else "standard"
         self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA"] else "sklearn_method"
         self.alg_name = eval(f"self.{self.alg_name.lower()}")
         self.method = eval(f"self.{self.method.lower()}")
@@ -43,7 +44,7 @@ class Model:
         affinities = compute.make_affinity(train_Xs, normalize=False, K=k_snf)
         fused = compute.snf(affinities, K=k_snf)
         clusters = spectral_clustering(fused, n_clusters=n_clusters, random_state=random_state + run_n)
-        transformed_Xs = fused
+        transformed_Xs = pd.DataFrame(fused, index=train_Xs[0].index)
         return clusters, transformed_Xs
 
 
@@ -82,6 +83,11 @@ class Model:
 
     def nmfc(self, model, n_clusters, random_state, run_n):
         model[-1].set_params(n_components=n_clusters, random_state=random_state + run_n)
+        return model
+
+
+    def monet(self, model, n_clusters, random_state, run_n):
+        model[-1].set_params(random_state=random_state + run_n)
         return model
 
 
