@@ -56,6 +56,10 @@ class RunClustering:
             elif not incomplete_algorithms:
                 train_Xs = DatasetUtils.select_complete_samples(Xs=train_Xs)
                 y_train = y_train.loc[train_Xs[0].index]
+                try:
+                    assert len(y_train) > n_clusters
+                except AssertionError:
+                    raise ValueError("Number of clusters is lower than the number of complete samples.")
 
             start_time = time.perf_counter()
             clusters, train_X = Model(alg_name=alg_name, alg=alg).method(train_Xs=train_Xs, n_clusters=n_clusters,
