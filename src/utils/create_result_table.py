@@ -60,8 +60,8 @@ class CreateResultTable:
             subresults_files = pd.concat(subresults_files.apply(pd.read_csv).to_list())
             # put same format as result df
             subresults_files = subresults_files.set_index(indexes_names)
-            # # remove those that are already computed
-            # subresults_files = subresults_files[subresults_files["finished"]]
+            # include only those finished
+            subresults_files = subresults_files[subresults_files["finished"]]
             # add them to our result df
             results.loc[subresults_files.index, subresults_files.columns] = subresults_files
         drop_columns = "comments"

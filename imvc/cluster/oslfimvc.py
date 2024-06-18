@@ -34,8 +34,8 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
-        Engine to use for computing the model. If engine == 'matlab', package 'statistics' should be installed in
-        Octave. In linux, you can run: sudo apt-get install octave-statistics.
+        Engine to use for computing the model. Current options are 'matlab'. If engine == 'matlab',
+        package 'statistics' should be installed in Octave. In linux, you can run: sudo apt-get install octave-statistics.
 .   verbose : bool, default=False
         Verbosity mode.
 

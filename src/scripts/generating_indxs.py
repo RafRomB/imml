@@ -9,7 +9,7 @@ from imvc.ampute import Amputer
 from imvc.impute import get_observed_view_indicator
 
 from settings import PROFILES_PATH, DATASET_TABLE_PATH, RANDOM_STATE, probs, amputation_mechanisms, runs_per_alg
-from src.utils import CommonOperations
+from src.commons import CommonOperations
 
 parser = argparse.ArgumentParser()
 parser.add_argument('-continue_indxs', default=False, action='store_true')
@@ -44,7 +44,8 @@ for dataset_name in datasets:
                 amputation_mechanism = "No"
 
             observed_view_indicator = get_observed_view_indicator(train_Xs)
-            observed_view_indicator.index = observed_view_indicator.index.astype(np.int8)
+            observed_view_indicator.index = observed_view_indicator.index.astype(np.int16)
+            assert (train_Xs[0].index == observed_view_indicator.index).all()
             dict_indxs = {
                 "observed_view_indicator": observed_view_indicator.to_dict(),
                 "valid": True,
