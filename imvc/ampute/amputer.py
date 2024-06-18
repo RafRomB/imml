@@ -113,7 +113,7 @@ class Amputer(BaseEstimator, TransformerMixin):
             mask = self._MAR_mask(X=missing_X, p=self.p, p_obs=self.p_obs)
             mask = mask[:, ~np.all(mask[1:] == mask[:-1], axis=0)]
             if mask.shape[1] != X.shape[1]:
-                raise ValueError("p is to small for this dataset.") from None
+                raise ValueError("p is too small for this dataset.") from None
         elif self.mechanism == "MNAR" and self.opt == "logistic":
             mask = self._MNAR_mask_logistic(X=missing_X, p=self.p, p_params=self.p_params, exclude_inputs=self.exclude_inputs)
         elif self.mechanism == "MNAR" and self.opt == "quantile":

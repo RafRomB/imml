@@ -33,8 +33,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
-        Engine to use for computing the model. If engine == 'matlab', packages 'statistics' and 'control' should be
-        installed in Octave. In linux, you can run: sudo apt-get install octave-statistics; sudo apt-get install octave-control.
+        Engine to use for computing the model. Current options are 'matlab'.
 .   verbose : bool, default=False
         Verbosity mode.
 
