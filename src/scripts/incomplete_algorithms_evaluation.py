@@ -10,7 +10,7 @@ from settings import INCOMPLETE_RESULTS_PATH, INCOMPLETE_SUBRESULTS_PATH, INCOMP
     TIME_RESULTS_PATH, DATASET_TABLE_PATH, amputation_mechanisms, probs, \
     imputation, runs_per_alg, INCOMPLETE_RESULTS_FILE, INCOMPLETE_LOGS_FILE, INCOMPLETE_ERRORS_FILE, \
     INCOMPLETE_SUBRESULTS_FOLDER
-from src.utils import CommonOperations
+from src.commons import CommonOperations
 
 args = CommonOperations.get_args()
 

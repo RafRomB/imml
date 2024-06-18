@@ -32,6 +32,8 @@ class Model:
             transformed_Xs = model[-1].U_star_loss_
         elif self.alg_name == "SIMCADC":
             transformed_Xs = model[-1].U
+        elif self.alg_name in ["MVSpectralClustering", "MVCoRegSpectralClustering"]:
+            transformed_Xs = model[-1].embedding_
         else:
             transformed_Xs = model[:-1].transform(train_Xs)
         return clusters, transformed_Xs

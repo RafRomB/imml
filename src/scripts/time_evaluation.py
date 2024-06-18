@@ -8,10 +8,9 @@ import pandas as pd
 from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
-
-from imvc.algorithms import NMFC
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
+from imvc.algorithms import NMFC
 from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO
 from imvc.cluster.monet import MONET
 from imvc.decomposition import DFMF, MOFA
