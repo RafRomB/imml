@@ -40,18 +40,21 @@ for dataset_name in datasets:
             if p != 0:
                 amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)
                 train_Xs = amp.fit_transform(train_Xs)
-            else:
-                amputation_mechanism = "No"
 
             observed_view_indicator = get_observed_view_indicator(train_Xs)
-            observed_view_indicator.index = observed_view_indicator.index.astype(np.int16)
-            assert (train_Xs[0].index == observed_view_indicator.index).all()
+            try:
+                lower_index = observed_view_indicator.index.astype(np.int16)
+                assert (train_Xs[0].index == lower_index).all()
+                observed_view_indicator.index = lower_index
+            except AssertionError:
+                assert (train_Xs[0].index == observed_view_indicator.index).all()
+
             dict_indxs = {
                 "observed_view_indicator": observed_view_indicator.to_dict(),
                 "valid": True,
             }
 
-        except ValueError as exception:
+        except (AssertionError, ValueError) as exception:
             dict_indxs = {
                 "valid" : False,
                 "error": str(exception),
