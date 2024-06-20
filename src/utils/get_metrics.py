@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from sklearn import metrics
+from sklearn.utils import shuffle
 from validclust import dunn
 from reval.utils import kuhn_munkres_algorithm
 
@@ -50,8 +51,8 @@ class GetMetrics:
     @staticmethod
     def compute_mcc(y_true, y_pred, n_permutations=1000):
         mcc_value = metrics.matthews_corrcoef(y_true=y_true, y_pred=y_pred)
-        p_values = [metrics.matthews_corrcoef(y_true=y_true.sample(frac=1, random_state=i),
-                                              y_pred=y_pred.sample(frac=1, random_state=i+1))
+        p_values = [metrics.matthews_corrcoef(y_true=shuffle(y_true, random_state=i),
+                                              y_pred=shuffle(y_pred, random_state=i))
                     for i in range(n_permutations)]
         p_values = (pd.Series(p_values) > mcc_value).sum() / len(p_values)
         if p_values == 0:
