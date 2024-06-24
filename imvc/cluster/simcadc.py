@@ -71,9 +71,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
     >>> from imvc.cluster import SIMCADC
     >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN()
+    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
     >>> estimator = SIMCADC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN), estimator)
+    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 

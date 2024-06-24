@@ -64,11 +64,17 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
 
     Examples
     --------
+    >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import OSLFIMVC
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> normalizer = StandardScaler().set_output(transform="pandas")
     >>> estimator = OSLFIMVC(n_clusters = 2)
+    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
     >>> labels = estimator.fit_predict(Xs)
+
     """
 
     def __init__(self, n_clusters: int = 8, normalize: bool = True,
