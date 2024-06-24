@@ -1,6 +1,5 @@
 import os
 from os.path import dirname
-
 import numpy as np
 import oct2py
 import pandas as pd
@@ -60,9 +59,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
     >>> from imvc.cluster import IMSR
     >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN()
+    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
     >>> estimator = IMSR(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(NormalizerNaN), estimator)
+    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
     >>> labels = pipeline.fit_predict(Xs)
     """
 

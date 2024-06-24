@@ -61,10 +61,15 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
     Examples
     --------
+    >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import EEIMVC
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> normalizer = StandardScaler().set_output(transform="pandas")
     >>> estimator = EEIMVC(n_clusters = 2)
+    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
     >>> labels = estimator.fit_predict(Xs)
     """
 
