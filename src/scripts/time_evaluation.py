@@ -5,6 +5,7 @@ from collections import defaultdict
 from datetime import datetime
 import numpy as np
 import pandas as pd
+import torch
 from sklearn.cluster import KMeans
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
@@ -13,7 +14,7 @@ from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralC
 from imvc.algorithms import NMFC
 from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO
 from imvc.cluster.monet import MONET
-from imvc.decomposition import DFMF, MOFA
+from imvc.decomposition import DFMF, MOFA, DeepMF
 from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
 
 from src.models import Model
@@ -71,13 +72,17 @@ algorithms = {
                                      SIMCADC()), "params": {}},
     "SUMO": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                       SUMO()), "params": {}},
-    # "DeepMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler()), ConcatenateViews(),
-    #                                 DeepMF(), StandardScaler(), KMeans()),
-    #              "params": {}},
-    "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), DFMF().set_output(transform="pandas"),
+    "DeepMF": {"alg": make_pipeline(ConcatenateViews(), StandardScaler(),
+                                    FunctionTransformer(lambda x: torch.from_numpy(x).float().cuda().t()),
+                                    DeepMF(), FunctionTransformer(lambda x: x.cpu().detach().numpy()),
+                                    StandardScaler(), KMeans()),
+                 "params": {}},
+    "DFMF": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                  DFMF().set_output(transform="pandas"),
                                   StandardScaler().set_output(transform="pandas"), KMeans()),
              "params": {}},
-    "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), MOFA().set_output(transform="pandas"),
+    "MOFA": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                  MOFA().set_output(transform="pandas"),
                                   ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
              "params": {}},
 }

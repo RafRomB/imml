@@ -1,8 +1,11 @@
 import numpy as np
 import pandas as pd
+from lightning import Trainer
 from sklearn.cluster import spectral_clustering
 from snf import compute
 from rpy2.robjects.packages import importr
+from torch.utils.data import DataLoader
+from imvc.decomposition import DeepMFDataset
 
 from src.utils import Utils
 
@@ -10,7 +13,7 @@ from src.utils import Utils
 class Model:
     def __init__(self, alg_name, alg):
         self.alg_name = alg_name.lower() if alg_name in ["GroupPCA", "AJIVE", "NMFC", "DFMF", "MOFA", "MONET"] else "standard"
-        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA"] else "sklearn_method"
+        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF"] else "sklearn_method"
         self.alg_name = eval(f"self.{self.alg_name.lower()}")
         self.method = eval(f"self.{self.method.lower()}")
         self.alg = alg
@@ -93,10 +96,19 @@ class Model:
         return model
 
 
-    # def deepmf(self, model, n_clusters, random_state, run_n):
-    #     model[1].set_params(joint_rank=n_clusters, random_state=random_state + run_n)
-    #     model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
-    #     return model
+    def deepmf(self, train_Xs, n_clusters, random_state, run_n):
+        pipeline = self.alg["alg"]
+        transformed_Xs = pipeline[:3].fit_transform(train_Xs)
+        train_data = DeepMFDataset(X=transformed_Xs)
+        train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
+        trainer = Trainer(max_epochs=10, logger=False, enable_checkpointing=False)
+        pipeline[3].set_params(X=transformed_Xs)
+        trainer.fit(pipeline[3], train_dataloader)
+        train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=False)
+        transformed_Xs = pipeline[3].transform(transformed_Xs)
+        pipeline[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        clusters = pipeline[4:].fit_predict(transformed_Xs)
+        return clusters, transformed_Xs
 
 
     def dfmf(self, model, n_clusters, random_state, run_n):
