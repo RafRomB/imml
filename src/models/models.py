@@ -1,6 +1,7 @@
 import numpy as np
 import pandas as pd
 from lightning import Trainer
+from lightning.pytorch.utilities.seed import isolate_rng
 from sklearn.cluster import spectral_clustering
 from snf import compute
 from rpy2.robjects.packages import importr
@@ -12,7 +13,7 @@ from src.utils import Utils
 
 class Model:
     def __init__(self, alg_name, alg):
-        self.alg_name = alg_name.lower() if alg_name in ["GroupPCA", "AJIVE", "NMFC", "DFMF", "MOFA", "MONET"] else "standard"
+        self.alg_name = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "MONET"] else "standard"
         self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF"] else "sklearn_method"
         self.alg_name = eval(f"self.{self.alg_name.lower()}")
         self.method = eval(f"self.{self.method.lower()}")
@@ -35,7 +36,7 @@ class Model:
             transformed_Xs = model[-1].U_star_loss_
         elif self.alg_name == "SIMCADC":
             transformed_Xs = model[-1].U
-        elif self.alg_name in ["MVSpectralClustering", "MVCoRegSpectralClustering"]:
+        elif self.alg_name in ["MVSC", "MVCRSC"]:
             transformed_Xs = model[-1].embedding_
         else:
             transformed_Xs = model[:-1].transform(train_Xs)
@@ -74,7 +75,7 @@ class Model:
         return clusters, model
 
 
-    def grouppca(self, model, n_clusters, random_state, run_n):
+    def gpca(self, model, n_clusters, random_state, run_n):
         model[1].set_params(n_components=n_clusters, random_state=random_state + run_n, multiview_output=False)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
@@ -86,8 +87,8 @@ class Model:
         return model
 
 
-    def nmfc(self, model, n_clusters, random_state, run_n):
-        model[-1].set_params(n_components=n_clusters, random_state=random_state + run_n)
+    def nmf(self, model, n_clusters, random_state, run_n):
+        model[-3].set_params(n_components=n_clusters, random_state=random_state + run_n)
         return model
 
 
@@ -103,7 +104,8 @@ class Model:
         train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
         trainer = Trainer(max_epochs=10, logger=False, enable_checkpointing=False)
         pipeline[3].set_params(X=transformed_Xs)
-        trainer.fit(pipeline[3], train_dataloader)
+        with isolate_rng():
+            trainer.fit(pipeline[3], train_dataloader)
         train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=False)
         transformed_Xs = pipeline[3].transform(transformed_Xs)
         pipeline[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
