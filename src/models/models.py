@@ -82,12 +82,13 @@ class Model:
 
 
     def ajive(self, model, n_clusters, random_state, run_n):
-        model[1].set_params(joint_rank=n_clusters, random_state=random_state + run_n)
+        model[-3].set_params(joint_rank=n_clusters, random_state=random_state + run_n)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
 
 
     def nmf(self, model, n_clusters, random_state, run_n):
+        model[1].set_params(n_components=n_clusters, random_state=random_state + run_n, multiview_output=False)
         model[-3].set_params(n_components=n_clusters, random_state=random_state + run_n)
         return model
 
