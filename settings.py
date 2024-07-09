@@ -3,7 +3,7 @@ import os
 import numpy as np
 
 RANDOM_STATE = 42
-TIME_LIMIT = 300
+TIME_LIMIT = 120
 
 RESULTS_FOLDER = 'results'
 AUX_DATA_FOLDER = "aux_data"

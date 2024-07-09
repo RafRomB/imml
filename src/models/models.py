@@ -2,7 +2,8 @@ import numpy as np
 import pandas as pd
 from lightning import Trainer
 from lightning.pytorch.utilities.seed import isolate_rng
-from sklearn.cluster import spectral_clustering
+from sklearn.cluster import SpectralClustering
+from sklearn.manifold import spectral_embedding
 from snf import compute
 from rpy2.robjects.packages import importr
 from torch.utils.data import DataLoader
@@ -49,8 +50,11 @@ class Model:
         k_snf = np.ceil(len(train_Xs[0]) / 10).astype(int)
         affinities = compute.make_affinity(train_Xs, normalize=False, K=k_snf)
         fused = compute.snf(affinities, K=k_snf)
-        clusters = spectral_clustering(fused, n_clusters=n_clusters, random_state=random_state + run_n)
-        transformed_Xs = pd.DataFrame(fused, index=train_Xs[0].index)
+        sc = SpectralClustering(n_clusters=n_clusters, random_state=random_state + run_n)
+        clusters = sc.fit_predict(fused)
+        transformed_Xs = spectral_embedding(sc.affinity_matrix_, n_components=n_clusters, eigen_solver=sc.eigen_solver,
+                                      random_state=sc.random_state, eigen_tol=sc.eigen_tol, drop_first=False)
+        transformed_Xs = pd.DataFrame(transformed_Xs, index=train_Xs[0].index)
         return clusters, transformed_Xs
 
 

@@ -9,8 +9,7 @@ from sklearn.utils import shuffle
 from statsmodels.stats.multitest import multipletests
 from validclust import dunn
 from reval.utils import kuhn_munkres_algorithm
-
-from src.utils import dbcv
+from permetrics import ClusteringMetric
 
 
 class GetMetrics:
@@ -44,12 +43,19 @@ class GetMetrics:
         if len(np.unique(y_pred)) == 1:
             unsupervised_metrics = {"silhouette": np.nan, "vrc": np.nan, "db": np.nan, "dunn": np.nan}
         else:
+            if isinstance(X, pd.DataFrame):
+                X = X.values
+            met = ClusteringMetric(X=X, y_pred=y_pred)
             unsupervised_metrics = {
                 "silhouette": metrics.silhouette_score(X = X, labels = y_pred, random_state= random_state),
                 "vrc": metrics.calinski_harabasz_score(X = X, labels = y_pred),
                 "db": metrics.davies_bouldin_score(X = X, labels = y_pred),
-                "dbcv": dbcv(X = X.values, labels = y_pred.values),
-                "dunn": dunn(dist = metrics.pairwise_distances(X), labels = y_pred),
+                "dbcv": met.DBCVI(),
+                "dunn": met.DI(),
+                "dhi": met.DHI(),
+                "ssei": met.SSEI(),
+                "rsi": met.RSI(),
+                "bhi": met.BHI(),
             }
         return unsupervised_metrics
 
