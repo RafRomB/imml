@@ -1,5 +1,4 @@
 import os.path
-
 import torch
 from pandarallel import pandarallel
 from sklearn.cluster import KMeans
