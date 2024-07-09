@@ -2,7 +2,6 @@ import os
 from os.path import dirname
 import numpy as np
 from sklearn.gaussian_process import kernels
-import oct2py
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
@@ -99,6 +98,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
+            import oct2py
             matlab_folder = dirname(__file__)
             matlab_folder = os.path.join(matlab_folder, "_lfimvc")
             matlab_files = ['IncompleteMultikernelLatefusionclusteringV1Hv.m', 'updateHPabsentClusteringV1.m',

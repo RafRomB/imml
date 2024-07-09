@@ -1,8 +1,6 @@
 import os
 from os.path import dirname
-
 import numpy as np
-import oct2py
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
@@ -105,6 +103,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
+            import oct2py
             matlab_folder = dirname(__file__)
             matlab_folder = os.path.join(matlab_folder, "_daimc")
             matlab_files = ["newinit.m", "litekmeans.m", "DAIMC.m", "UpdateV_DAIMC.m"]
