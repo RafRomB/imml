@@ -81,20 +81,20 @@ class Model:
 
 
     def gpca(self, model, n_clusters, random_state, run_n):
-        model[1].set_params(n_components=n_clusters, random_state=random_state + run_n, multiview_output=False)
+        model[2].set_params(n_components=n_clusters, random_state=random_state + run_n, multiview_output=False)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
 
 
     def ajive(self, model, n_clusters, random_state, run_n):
-        model[-3].set_params(joint_rank=n_clusters, random_state=random_state + run_n)
+        model[2].set_params(joint_rank=n_clusters, random_state=random_state + run_n)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
 
 
     def nmf(self, model, n_clusters, random_state, run_n):
-        model[1].set_params(n_components=n_clusters, random_state=random_state + run_n, multiview_output=False)
         model[-3].set_params(n_components=n_clusters, random_state=random_state + run_n)
+        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
 
 
@@ -105,28 +105,28 @@ class Model:
 
     def deepmf(self, train_Xs, n_clusters, random_state, run_n):
         pipeline = self.alg["alg"]
-        transformed_Xs = pipeline[:3].fit_transform(train_Xs)
+        transformed_Xs = pipeline[:4].fit_transform(train_Xs)
         train_data = DeepMFDataset(X=transformed_Xs)
         train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
         trainer = Trainer(max_epochs=10, logger=False, enable_checkpointing=False)
-        pipeline[3].set_params(X=transformed_Xs)
+        pipeline[4].set_params(X=transformed_Xs)
         with isolate_rng():
-            trainer.fit(pipeline[3], train_dataloader)
+            trainer.fit(pipeline[4], train_dataloader)
         train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=False)
-        transformed_Xs = pipeline[3].transform(transformed_Xs)
+        transformed_Xs = pipeline[4].transform(transformed_Xs)
         pipeline[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
-        clusters = pipeline[4:].fit_predict(transformed_Xs)
+        clusters = pipeline[5:].fit_predict(transformed_Xs)
         return clusters, transformed_Xs
 
 
     def dfmf(self, model, n_clusters, random_state, run_n):
-        model[1].set_params(n_components=n_clusters, random_state=random_state + run_n)
+        model[2].set_params(n_components=n_clusters, random_state=random_state + run_n)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
 
 
     def mofa(self, model, n_clusters, random_state, run_n):
-        model[1].set_params(factors=n_clusters, random_state=random_state + run_n)
+        model[2].set_params(factors=n_clusters, random_state=random_state + run_n)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
 

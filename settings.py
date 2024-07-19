@@ -9,6 +9,7 @@ RESULTS_FOLDER = 'results'
 AUX_DATA_FOLDER = "aux_data"
 PROFILES_FOLDER = 'profiles'
 PROFILES_PATH = os.path.join(AUX_DATA_FOLDER, PROFILES_FOLDER)
+PAPER_RESULTS_FOLDER = "paper_results"
 
 COMPLETE_SUBRESULTS_FOLDER = 'complete_subresults'
 INCOMPLETE_SUBRESULTS_FOLDER = 'incomplete_subresults'

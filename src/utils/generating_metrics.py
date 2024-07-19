@@ -78,18 +78,17 @@ class ResultGenerator:
 
         alg_comparisons["AMI"] = alg_comparisons.apply(
             lambda x: adjusted_mutual_info_score(x["pred_alg1"], x["pred_alg2"]), axis=1)
-        alg_comparisons["ARI"] = alg_comparisons.apply(lambda x:
-                                                       adjusted_rand_score(x["pred_alg1"], x["pred_alg2"]),
-                                                       axis=1)
-        alg_comparisons["Overlapping"] = alg_comparisons.apply(lambda x:
-                                                               accuracy_score(x["pred_alg1"],
-                                                                              kuhn_munkres_algorithm(
-                                                                                  true_lab=x["pred_alg1"],
-                                                                                  pred_lab=x["pred_alg2"])),
-                                                               axis=1)
+        alg_comparisons["ARI"] = alg_comparisons.apply(
+            lambda x: adjusted_rand_score(x["pred_alg1"], x["pred_alg2"]), axis=1)
+        alg_comparisons["Overlapping"] = alg_comparisons.apply(
+            lambda x: accuracy_score(x["pred_alg1"],
+                                     kuhn_munkres_algorithm(true_lab=x["pred_alg1"], pred_lab=x["pred_alg2"])), axis=1)
         alg_comparisons = alg_comparisons.groupby(
             ["alg1", "alg2"], as_index=False)[["AMI", "ARI", "Overlapping"]].mean().sort_values("AMI", ascending=False)
         alg_comparisons["Comparison"] = alg_comparisons["alg1"] + "_" + alg_comparisons["alg2"]
+        alg_comparisons = pd.concat([alg_comparisons,
+                                     alg_comparisons.rename(columns={"alg1": "alg2", "alg2": "alg1"})],
+                                    ignore_index=True)
         alg_comparisons.to_csv(filepath, index=None)
 
         return alg_comparisons
@@ -98,10 +97,8 @@ class ResultGenerator:
     @staticmethod
     def save_unsupervised_metrics(results: pd.DataFrame, filepath: str, random_state=None, progress_bar=True):
         alg_stability = results[['dataset', 'algorithm', 'missing_percentage', 'amputation_mechanism', 'imputation', 'run_n',
-                                 "y_pred", "y_pred_idx", 'silhouette', 'vrc', 'db', 'dbcv', 'dunn']]
-        if alg_stability["imputation"].nunique() == 1:
-            alg_stability = alg_stability.loc[alg_stability["missing_percentage"] == 0]
-        else:
+                                 "y_pred", "y_pred_idx", 'silhouette', 'vrc', 'db', 'dbcv', 'dunn', "dhi", "ssei", 'rsi', 'bhi']]
+        if alg_stability["imputation"].nunique() != 1:
             alg_stability = alg_stability.loc[
                 (alg_stability["missing_percentage"] == 0) | (alg_stability["imputation"])
                 ]

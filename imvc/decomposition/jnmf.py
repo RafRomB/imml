@@ -223,16 +223,16 @@ class jNMF(TransformerMixin, BaseEstimator):
         return self
 
 
-    def _prepare_variables(self, Xs, beta_loss, init_W, init_V, init_H, weights):
-        if self.engine == "r":
-            import rpy2.robjects as ro
-            mask = [X.notnull().astype(int) for X in Xs]
-            transformed_Xs, transformed_mask = _convert_df_to_r_object(Xs), _convert_df_to_r_object(mask)
-            if beta_loss is not None:
-                beta_loss = ro.vectors.StrVector(beta_loss)
-            init_W = ro.NULL if init_W is None else init_W
-            init_V = ro.NULL if init_V is None else init_V
-            init_H = ro.NULL if init_H is None else init_H
-            weights = ro.NULL if weights is None else weights
+    @staticmethod
+    def _prepare_variables(Xs, beta_loss, init_W, init_V, init_H, weights):
+        import rpy2.robjects as ro
+        mask = [X.notnull().astype(int) for X in Xs]
+        transformed_Xs, transformed_mask = _convert_df_to_r_object(Xs), _convert_df_to_r_object(mask)
+        if beta_loss is not None:
+            beta_loss = ro.vectors.StrVector(beta_loss)
+        init_W = ro.NULL if init_W is None else init_W
+        init_V = ro.NULL if init_V is None else init_V
+        init_H = ro.NULL if init_H is None else init_H
+        weights = ro.NULL if weights is None else weights
         return transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights
 
