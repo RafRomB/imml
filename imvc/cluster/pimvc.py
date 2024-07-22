@@ -114,8 +114,8 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         if self.engine=="matlab":
             import oct2py
             matlab_folder = dirname(__file__)
-            matlab_folder = os.path.join(matlab_folder, "_pimvc")
-            matlab_files = ["PIMVC.m", "constructW.m", "EuDist2.m", "PCA1.m", "mySVD.m"]
+            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
