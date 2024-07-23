@@ -141,7 +141,7 @@ for dataset_name in datasets:
     for idx, row in results[(~results["finished"]) & (results["dataset"] == dataset_name)].iterrows():
         alg_name = row["algorithm"]
         if alg_name in ["IntNMF", "COCA", "jNMF", "NEMO"]:
-            pass
+            continue
         alg = algorithms[alg_name]
         with open(TIME_LOGS_PATH, "a") as f:
             f.write(f'\n {dataset_name} \t {alg_name} \t {datetime.now()}')

@@ -169,7 +169,7 @@ class ResultGenerator:
         results = pd.concat([results, pd.DataFrame(supervised_metrics.to_dict()).T], axis=1)
         indexes_names = ["dataset", "algorithm", "missing_percentage", "amputation_mechanism", "imputation"]
         results = results[results.select_dtypes(include="float").columns.to_list() + indexes_names].groupby(
-            indexes_names, sort=False).agg(["mean", 'std']).reset_index()
+            indexes_names, sort=False).agg(["mean", 'std', 'var']).reset_index()
         results.columns = results.columns.map('_'.join).str.strip('_')
         results["padj"] = multipletests(results["MCC (p-value)_mean"], method="fdr_bh")[1]
         results["log_padj"] = results["padj"].apply(lambda x: -np.log10(x))
