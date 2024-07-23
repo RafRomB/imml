@@ -4,6 +4,11 @@ source(utils_path)
 
 datasets = rownames(read.csv(DATASET_TABLE_PATH, row.names = 1))
 
+if ("nutrimouse" %in% datasets) {
+  pos <- which(datasets == "nutrimouse")
+  datasets <- c(datasets[1:(pos-1)], "nutrimouse_genotype", "nutrimouse_diet", datasets[(pos+1):length(datasets)])
+}
+
 algorithms = c("IntNMF", "COCA", "jNMF", "NEMO")
 
 results = read.csv(TIME_RESULTS_PATH, stringsAsFactors= FALSE)
