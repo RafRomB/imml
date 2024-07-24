@@ -12,7 +12,8 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
 from mvlearn.decomposition import AJIVE, GroupPCA
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO, NEMO
+from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO, NEMO, \
+    IMSCAGL
 from imvc.cluster.monet import MONET
 from imvc.decomposition import DFMF, MOFA, DeepMF
 from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
@@ -59,6 +60,9 @@ algorithms = {
     "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                     MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     EEIMVC()), "params": {}},
+    "IMSCAGL": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                  MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   IMSCAGL()), "params": {}},
     "IMSR": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
                                    IMSR()), "params": {}},
