@@ -23,13 +23,13 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    dele : float, default=0.1
-        nonnegative.
-    lamb : float, default=100000
-        Penalty parameters. Should be greather than 0.
-    beta : float, default=1
-        Trade-off parameter.
-    k : int, default=3
+    lambda1 : float, default=0.1
+        Penalty parameter for learning model of the multiview subspace clustering.
+    lambda2 : float, default=1000
+        Penalty parameter for learning model of the multiview subspace clustering.
+    lambda3 : float, default=100
+        Penalty parameter for learning the consensus representation from those cluster indicator matrices of all views.
+    k : int, default=5
         Parameter k of KNN graph.
     neighbor_mode : str, default='KNN'
         Indicates how to construct the graph. Options are 'KNN' (default), and 'Supervised'.
@@ -37,6 +37,10 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Indicates how to assign weights for each edge in the graph. Options are 'Binary' (default), 'Cosine' and 'HeatKernel'.
     max_iter : int, default=100
         Maximum number of iterations.
+    miu : float, default=0.01
+        Constant for updating variables during the learning process.
+    rho : float, default=100
+        Constant for updating variables during the learning process.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
@@ -49,7 +53,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
     F_ : np.array
-        Commont latent feature matrix.
+        Consensus representation matrix.
 
     References
     ----------
@@ -78,8 +82,6 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
                  rho: float = 1.1, random_state: int = None, engine: str = "matlab", verbose = False):
         self.n_clusters = n_clusters
         self.lambda1 = lambda1
-        self.lambda2 = lambda2
-        self.lambda3 = lambda3
         self.lambda2 = lambda2
         self.lambda3 = lambda3
         self.miu = miu

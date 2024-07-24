@@ -35,7 +35,9 @@ class Model:
         elif self.alg_name == "OMVC":
             transformed_Xs = model[-1].U_star_loss_
         elif self.alg_name == "SIMCADC":
-            transformed_Xs = model[-1].U
+            transformed_Xs = model[-1].U_
+        elif self.alg_name == "IMSCAGL":
+            transformed_Xs = model[-1].F_
         elif self.alg_name in ["MVSC", "MVCRSC"]:
             transformed_Xs = model[-1].embedding_
         else:

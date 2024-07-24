@@ -8,7 +8,7 @@ from sklearn.preprocessing import StandardScaler, FunctionTransformer
 from imvc.decomposition import DFMF, MOFA, DeepMF
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews, NormalizerNaN
 from imvc.cluster import NEMO, DAIMC, PIMVC, SIMCADC, OSLFIMVC, MSNE, MKKMIK, LFIMVC, EEIMVC, SUMO, OPIMC, OMVC, MONET, \
-    IMSR
+    IMSR, IMSCAGL
 
 from settings import INCOMPLETE_RESULTS_PATH, INCOMPLETE_SUBRESULTS_PATH, INCOMPLETE_LOGS_PATH, INCOMPLETE_ERRORS_PATH, \
     TIME_RESULTS_PATH, DATASET_TABLE_PATH, amputation_mechanisms, probs, \
@@ -38,6 +38,9 @@ algorithms = {
     "NEMO": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     NEMO()), "params": {}},
+    "IMSCAGL": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                  MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
+                                   IMSCAGL()), "params": {}},
     "IMSR": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
                                    IMSR()), "params": {}},
