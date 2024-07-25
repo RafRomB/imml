@@ -97,16 +97,14 @@ class ResultGenerator:
     @staticmethod
     def save_unsupervised_metrics(results: pd.DataFrame, filepath: str, random_state=None, progress_bar=True):
         alg_stability = results[['dataset', 'algorithm', 'missing_percentage', 'amputation_mechanism', 'imputation', 'run_n',
-                                 "y_pred", "y_pred_idx", 'silhouette', 'vrc', 'db', 'dbcv', 'dunn', "dhi", "ssei", 'rsi', 'bhi']]
+                                 "sorted_y_pred", 'silhouette', 'vrc', 'db', 'dbcv', 'dunn', "dhi", "ssei", 'rsi', 'bhi']]
         if alg_stability["imputation"].nunique() != 1:
             alg_stability = alg_stability.loc[
                 (alg_stability["missing_percentage"] == 0) | (alg_stability["imputation"])
                 ]
-        alg_uns_metrics = alg_stability.drop(columns=["y_pred", "y_pred_idx", 'imputation', 'run_n'])
+        alg_uns_metrics = alg_stability.drop(columns=["sorted_y_pred", 'imputation', 'run_n'])
         alg_uns_metrics = alg_uns_metrics.groupby(
             ["dataset", "algorithm", "missing_percentage", "amputation_mechanism"], as_index=False).mean()
-        alg_stability["sorted_preds"] = alg_stability.apply(
-            lambda x: pd.Series(x["y_pred"], index=x["y_pred_idx"]).sort_index().to_list(), axis=1)
 
         iterator = alg_stability["dataset"].unique()
         if progress_bar:
@@ -115,7 +113,7 @@ class ResultGenerator:
         for dataset in iterator:
             preds_dataset = alg_stability.loc[
                 (alg_stability["dataset"] == dataset), ["missing_percentage", "algorithm", 'amputation_mechanism',
-                                                        "run_n", "sorted_preds"]]
+                                                        "run_n", "sorted_y_pred"]]
             for alg in preds_dataset["algorithm"].unique():
                 pred_alg = preds_dataset[preds_dataset["algorithm"] == alg]
                 for missing_percentage in pred_alg["missing_percentage"].unique():
@@ -126,9 +124,9 @@ class ResultGenerator:
                         amis, aris = [], []
                         for run_1, run_2 in set(itertools.combinations(pred_missing_ampt_alg["run_n"].unique(), 2)):
                             pred1_alg = pred_missing_ampt_alg.loc[
-                                (pred_missing_ampt_alg["run_n"] == run_1), "sorted_preds"].to_list()[0]
+                                (pred_missing_ampt_alg["run_n"] == run_1), "sorted_y_pred"].to_list()[0]
                             pred2_alg = pred_missing_ampt_alg.loc[
-                                (pred_missing_ampt_alg["run_n"] == run_2), "sorted_preds"].to_list()[0]
+                                (pred_missing_ampt_alg["run_n"] == run_2), "sorted_y_pred"].to_list()[0]
                             amis.append(adjusted_mutual_info_score(pred1_alg, pred2_alg)), aris.append(
                                 adjusted_rand_score(pred1_alg, pred2_alg))
 
@@ -157,6 +155,15 @@ class ResultGenerator:
         results[["y_true", "y_pred", "y_true_idx", "y_pred_idx"]] = results[
             ["y_true", "y_pred", "y_true_idx", "y_pred_idx"]].parallel_applymap(eval)
         assert results["y_true_idx"].eq(results["y_pred_idx"]).all()
+
+        sorted_labels = results.parallel_apply(
+            lambda x: (
+                pd.Series(x["y_pred"], index=x["y_pred_idx"]).sort_index().to_list(),
+                pd.Series(x["y_true"], index=x["y_true_idx"]).sort_index().to_list()),
+            axis=1, result_type="expand")
+        sorted_labels.columns = ["sorted_y_pred", "sorted_y_true"]
+        results[["sorted_y_pred", "sorted_y_true"]] = sorted_labels
+
         return results
 
 
