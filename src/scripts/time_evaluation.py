@@ -2,7 +2,6 @@ import argparse
 import os
 import time
 from datetime import datetime
-import numpy as np
 import pandas as pd
 import torch
 from sklearn.cluster import KMeans
