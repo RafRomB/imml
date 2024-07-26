@@ -140,7 +140,7 @@ for iter = 1:max_iter
     % ---------- miu ------------- %
     miu = min(rho*miu,1e8);
     if iter > 2 && abs(obj(iter)-obj(iter-1))<1e-7
-        iter
+        iter;
         break;
     end
 end

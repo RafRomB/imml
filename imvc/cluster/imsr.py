@@ -38,8 +38,8 @@ class IMSR(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    Z_ : np.array
-        Consensus coefficient matrix.
+    embedding_ :
+        Consensus clustering matrix to be used as input for the KMeans clustering step.
     loss_ : array-like of shape (n_views,)
         Value of the loss function.
 
@@ -127,7 +127,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= Z)
-        self.Z_, self.loss_ = Z, obj
+        self.embedding_, self.loss_ = Z, obj
 
         return self
 
