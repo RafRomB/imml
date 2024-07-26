@@ -387,20 +387,10 @@ class IMSR(BaseEstimator, ClassifierMixin):
         return obj, term1, term2, term3
 
     def _baseline_spectral_onkernel(self, K, numClust):
-        # Compute the degree matrix
         D = np.diag(np.sum(K, axis=1) + np.finfo(float).eps)
-
-        # Compute the inverse square root of the degree matrix
         inv_sqrt_D = np.sqrt(np.linalg.inv(np.abs(D)))
-
-        # Compute the normalized Laplacian
         L = inv_sqrt_D @ K @ inv_sqrt_D
-
-        # Ensure the Laplacian is symmetric
         L = (L + L.T) / 2
-
-        # Perform eigen-decomposition
-        # opts.disp is equivalent to setting the tolerance for convergence in scipy
         V, U = eigs(L, k=numClust, which='LR', tol=0)
 
         return U
