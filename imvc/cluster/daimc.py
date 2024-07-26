@@ -38,7 +38,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Engine to use for computing the model. Current options are 'matlab'. If engine == 'matlab',
         packages 'statistics' and 'control' should be installed in Octave. In linux, you can run: sudo apt-get install
         octave-statistics; sudo apt-get install octave-control.
-.   verbose : bool, default=False
+    verbose : bool, default=False
         Verbosity mode.
 
     Attributes
