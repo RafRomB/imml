@@ -41,8 +41,8 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    H_ : array-like
-        Consensus clustering matrix.
+    embedding_ :
+        Consensus clustering matrix to be used as input for the KMeans clustering step.
     WP_ : array-like
         p-th permutation matrix.
     C_ : array-like
@@ -137,7 +137,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= U)
-        self.H_, self.WP_, self.C_, self.beta_, self.loss_ = U, WP, C, beta, obj
+        self.embedding_, self.WP_, self.C_, self.beta_, self.loss_ = U, WP, C, beta, obj
 
         return self
 

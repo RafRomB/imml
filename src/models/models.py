@@ -13,34 +13,21 @@ from src.utils import Utils
 
 class Model:
     def __init__(self, alg_name, alg):
-        self.alg_name = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "MONET"] else "standard"
+        self.alg_name = alg_name
         self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF"] else "sklearn_method"
-        self.alg_name = eval(f"self.{self.alg_name.lower()}")
         self.method = eval(f"self.{self.method.lower()}")
+        self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA"] else "standard"
+        self.framework = eval(f"self.{self.framework.lower()}")
         self.alg = alg
 
 
     def sklearn_method(self, train_Xs, n_clusters, random_state, run_n):
         model, params = self.alg["alg"], self.alg["params"]
-        model = self.alg_name(model=model, n_clusters=n_clusters, random_state=random_state, run_n=run_n)
+        model = self.framework(model=model, n_clusters=n_clusters, random_state=random_state, run_n=run_n)
         clusters = model.fit_predict(train_Xs)
-        if self.alg_name in ["DAIMC", "PIMVC"]:
-            transformed_Xs = model[-1].V_
-        elif self.alg_name in ["EEIMVC", "LFIMVC", "MKKMIK", "OSLFIMVC"]:
-            transformed_Xs = model[-1].H_
-        elif self.alg_name == "IMSR":
-            transformed_Xs = model[-1].Z_
-        elif self.alg_name == "MSNE":
-            transformed_Xs = model[-1].embeddings_
-        elif self.alg_name == "OMVC":
-            transformed_Xs = model[-1].U_star_loss_
-        elif self.alg_name == "SIMCADC":
-            transformed_Xs = model[-1].U_
-        elif self.alg_name == "IMSCAGL":
-            transformed_Xs = model[-1].F_
-        elif self.alg_name in ["MVSC", "MVCRSC"]:
+        try:
             transformed_Xs = model[-1].embedding_
-        else:
+        except AttributeError:
             transformed_Xs = model[:-1].transform(train_Xs)
         return clusters, transformed_Xs
 
@@ -54,7 +41,7 @@ class Model:
         sc = SpectralClustering(n_clusters=n_clusters, random_state=random_state + run_n)
         clusters = sc.fit_predict(fused)
         transformed_Xs = spectral_embedding(sc.affinity_matrix_, n_components=n_clusters, eigen_solver=sc.eigen_solver,
-                                      random_state=sc.random_state, eigen_tol=sc.eigen_tol, drop_first=False)
+                                            random_state=sc.random_state, eigen_tol=sc.eigen_tol, drop_first=False)
         transformed_Xs = pd.DataFrame(transformed_Xs, index=train_Xs[0].index)
         return clusters, transformed_Xs
 
@@ -97,11 +84,6 @@ class Model:
     def nmf(self, model, n_clusters, random_state, run_n):
         model[-3].set_params(n_components=n_clusters, random_state=random_state + run_n)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
-        return model
-
-
-    def monet(self, model, n_clusters, random_state, run_n):
-        model[-1].set_params(random_state=random_state + run_n)
         return model
 
 

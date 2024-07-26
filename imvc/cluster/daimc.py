@@ -45,10 +45,10 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
+    embedding_ :
+        Commont latent feature matrix to be used as input for the KMeans clustering step.
     U_ : np.array
         Basis matrix.
-    V_ : np.array
-        Commont latent feature matrix.
     B_ : np.array
         Regression coefficient matrices.
 
@@ -136,7 +136,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)
         self.U_ = u
-        self.V_ = v
+        self.embedding_ = v
         self.B_ = b
 
         return self
