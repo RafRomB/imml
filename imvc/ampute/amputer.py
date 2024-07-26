@@ -13,10 +13,6 @@ class Amputer(BaseEstimator, TransformerMixin):
 
     Parameters
     ----------
-    Xs : list of array-likes
-        - Xs length: n_views
-        - Xs[i] shape: (n_samples, n_features_i)
-        A list of different views.
     p: float
         Percentaje of incomplete samples.
     mechanism: str, default="EDM"
@@ -119,7 +115,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         elif self.mechanism == "MNAR" and self.opt == "quantile":
             mask = self._MNAR_mask_quantiles(X=missing_X, p=self.p, q=self.q, p_params=self.p_params, cut=self.cut, MCAR=self.mcar)
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
-            mask = self.MNAR_self_mask_logistic(X=missing_X, p=self.p)
+            mask = self._MNAR_self_mask_logistic(X=missing_X, p=self.p)
         else:
             raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
 
@@ -259,7 +255,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         return mask
 
-    def MNAR_self_mask_logistic(self, X, p):
+    def _MNAR_self_mask_logistic(self, X, p):
         """
         Missing not at random mechanism with a logistic self-masking model. Variables have missing values probabilities
         given by a logistic model, taking the same variable as input (hence, missingness is independent from one variable
