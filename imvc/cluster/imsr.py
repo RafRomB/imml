@@ -1,9 +1,14 @@
 import os
 from os.path import dirname
+
 import numpy as np
 import pandas as pd
+import scipy
+import random
+
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
+from scipy.sparse.linalg import eigs
 
 from ..impute import get_observed_view_indicator
 from ..utils import check_Xs
@@ -64,8 +69,8 @@ class IMSR(BaseEstimator, ClassifierMixin):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, lbd : float = 1, gamma: float = 1, random_state:int = None,
-                 engine: str ="matlab", verbose = False):
+    def __init__(self, n_clusters: int = 8, lbd: float = 1, gamma: float = 1, random_state: int = None,
+                 engine: str = "matlab", verbose=False):
         self.n_clusters = n_clusters
         try:
             assert lbd > 0
@@ -80,7 +85,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
         self.engine = engine
         self.verbose = verbose
-
 
     def fit(self, Xs, y=None):
         r"""
@@ -101,12 +105,13 @@ class IMSR(BaseEstimator, ClassifierMixin):
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
-        if self.engine=="matlab":
+        if self.engine == "matlab":
             import oct2py
             matlab_folder = dirname(__file__)
-            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
-            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
-            oc = oct2py.Oct2Py(temp_dir= matlab_folder)
+            matlab_folder = os.path.join(matlab_folder, "_imsr")
+            matlab_files = ["IMSC.m", "update_Z.m", "update_X.m", "update_F.m", "init_Z.m",
+                            "cal_obj.m", "baseline_spectral_onkernel.m"]
+            oc = oct2py.Oct2Py(temp_dir=matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
@@ -116,21 +121,38 @@ class IMSR(BaseEstimator, ClassifierMixin):
                 observed_view_indicator = observed_view_indicator.reset_index(drop=True)
             elif isinstance(observed_view_indicator[0], np.ndarray):
                 observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in observed_view_indicator.items()]
+            observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in
+                                       observed_view_indicator.items()]
             transformed_Xs = [X.T.values for X in Xs]
 
             if self.random_state is not None:
-                oc.rand('seed', self.random_state)
-            Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
-        else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+                oc.rand('twister', self.random_state)
+            Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma,
+                             nout=2)
+            # print(Z, "\n", obj)
+        elif self.engine == "python":
+            observed_view_indicator = get_observed_view_indicator(Xs)
+            if isinstance(observed_view_indicator, pd.DataFrame):
+                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
+            elif isinstance(observed_view_indicator[0], np.ndarray):
+                observed_view_indicator = pd.DataFrame(observed_view_indicator)
+            observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in
+                                       observed_view_indicator.items()]
+            transformed_Xs = [X.T.values for X in Xs]
 
-        model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
-        self.labels_ = model.fit_predict(X= Z)
+            if self.random_state is not None:
+                random.seed(self.random_state)
+
+            Z, obj = self._IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma)
+            # print(Z, "\n", obj)
+        else:
+            raise ValueError("Only engine=='matlab' and 'python are currently supported.")
+
+        model = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
+        self.labels_ = model.fit_predict(X=Z)
         self.Z_, self.loss_ = Z, obj
 
         return self
-
 
     def _predict(self, Xs):
         r"""
@@ -149,7 +171,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
             Index of the cluster each sample belongs to.
         """
         return self.labels_
-
 
     def fit_predict(self, Xs, y=None):
         r"""
@@ -171,3 +192,215 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
+
+    def _IMSC(self, X, Im, k, lbd, gamma):
+        r"""
+
+        Parameters
+        ----------
+        X
+        Im
+        k
+        lbd
+        gamma
+
+        Returns
+        -------
+
+        """
+        V = len(X)
+        n = X[0].shape[1]
+        max_iter = 100
+
+        # Replace "nan" values to avoid errors after
+        X = [np.nan_to_num(mat, nan=0.0) for mat in X]
+        # Initialization
+        beta = np.ones(shape=(V, )) / V
+        # for v in range(V):
+        #     print("test : ", Im[v])
+        #     X[v][:, Im[v-1]] = 0
+
+        Z = self._init_Z(X, beta, lbd)
+
+        t = 0
+        flag = 1
+        obj = []
+        while flag:
+            F = self._update_F(Z, k)
+            Z = self._update_Z(X, F, beta, lbd, gamma)
+            X = self.update_X(X, Im, Z)
+
+            append_obj, _, _, _ = self._cal_obj(X, Z, F, beta, lbd, gamma)
+            obj.append([append_obj])
+
+            if (t >= 2) and ((np.abs(np.subtract(obj[t - 1], obj[t]) / (obj[t])) < 1e-3) or (t > max_iter)):
+                flag = 0
+            t += 1
+
+        Ztmp = (np.abs(Z) + np.abs(Z).T) / 2
+        Utmp = self._baseline_spectral_onkernel(Ztmp, k)
+
+        return np.real(Utmp), obj
+
+    def _init_Z(self, X, beta, lbd):
+        r"""
+
+        Parameters
+        ----------
+        X
+        beta
+        lbd
+
+        Returns
+        -------
+
+        """
+        V = len(X)
+        n = X[0].shape[1]
+
+        D = np.zeros(shape=(n, n))
+        D = D + lbd * np.diag(np.ones(shape=(n,)))
+        for v in range(V):
+            D = D + beta[v] * (X[v].T @ X[v])
+
+        D = np.linalg.inv(D)
+        Z = -D / np.diag(D).T[: np.newaxis]
+        Z = Z - np.diag(np.diag(Z))
+        Z = (Z + Z.T) / 2
+
+        return Z
+
+    def _update_F(self, Z, k):
+        r"""
+
+        Parameters
+        ----------
+        Z
+        k
+
+        Returns
+        -------
+
+        """
+
+        _, Ftmp = eigs(A=(Z + Z.T), k=k, which='LR')
+        F = Ftmp.T
+
+        return np.real(F)
+
+    def _update_Z(self, X, F, beta, lbd, gamma):
+        r"""
+
+        Parameters
+        ----------
+        X
+        F
+        beta
+        lbd
+        gamma
+
+        Returns
+        -------
+
+        """
+        V = len(X)
+        n = X[0].shape[1]
+
+        K = np.zeros(shape=(n, n))
+        for v in range(V):
+            K += beta[v] * X[v].T @ X[v]
+
+        C = F.T @ F
+        base = K + (lbd + gamma) * np.eye(n)
+
+        D = np.linalg.inv(base)
+        beta = np.diag(D)
+        Z1 = -D / np.diag(D).T[: np.newaxis]
+        Z1 -= np.diag(np.diag(Z1))
+
+        C = C - np.diag(np.diag(C))
+        a = D @ C
+        a -= np.diag(np.diag(a))
+        b = np.diag(Z1.T @ C)
+        c = beta * b
+        d = Z1 @ np.diag(c)
+        d -= np.diag(np.diag(d))
+        Z2 = gamma * (a - d)
+
+        Z = Z1 + Z2
+        return Z
+
+    def update_X(self, X, Im, Z):
+        r"""
+
+        Parameters
+        ----------
+        X
+        Im
+        Z
+
+        Returns
+        -------
+
+        """
+        V = len(X)
+        n = X[0].shape[1]
+
+        B = np.eye(n) - Z - Z.T + (Z @ Z.T)
+        Io = [None] * V
+        for v in range(V):
+            Im_temp = [i-1 for i in Im[v]]
+            Io[v] = np.setdiff1d(ar1=np.array([i for i in range(0, n)]), ar2=Im_temp)
+            X[v][:, Im_temp] = np.linalg.solve(B[np.ix_(Im_temp, Im_temp)].conj().T,
+                                               (-X[v][:, Io[v]] @ B[np.ix_(Io[v], Im_temp)]).conj().T).conj().T
+
+        return X
+
+    def _cal_obj(self, X, Z, F, beta, lbd, gamma):
+        r"""
+
+        Parameters
+        ----------
+        X
+        Z
+        F
+        beta
+        lbd
+        gamma
+
+        Returns
+        -------
+
+        """
+        V = len(X)
+        term1 = 0
+
+        for v in range(V):
+            tmp = X[v] - X[v] @ Z
+            term1 = term1 + beta[v] * np.sum(np.sum(tmp ** 2))
+
+        term2 = np.sum(np.sum(Z ** 2))
+        tmp = Z - F.T @ F
+        term3 = np.sum(np.sum(tmp ** 2))
+        obj = term1 + lbd * term2 + gamma * term3
+
+        return obj, term1, term2, term3
+
+    def _baseline_spectral_onkernel(self, K, numClust):
+        # Compute the degree matrix
+        D = np.diag(np.sum(K, axis=1) + np.finfo(float).eps)
+
+        # Compute the inverse square root of the degree matrix
+        inv_sqrt_D = np.sqrt(np.linalg.inv(np.abs(D)))
+
+        # Compute the normalized Laplacian
+        L = inv_sqrt_D @ K @ inv_sqrt_D
+
+        # Ensure the Laplacian is symmetric
+        L = (L + L.T) / 2
+
+        # Perform eigen-decomposition
+        # opts.disp is equivalent to setting the tolerance for convergence in scipy
+        V, U = eigs(L, k=numClust, which='LR', tol=0)
+
+        return U
