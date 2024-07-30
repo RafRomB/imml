@@ -52,7 +52,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
              and Machine Intelligence, vol. 41, no. 10, pp. 2410-2423, 1 Oct. 2019, doi: 10.1109/TPAMI.2018.2879108.
     [code]   https://github.com/xinwangliu/Late-Fusion-Incomplete-Multi-view-Clustering
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

@@ -64,7 +64,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
     [code1]  https://github.com/DarrenZZhang/Survey_IMC
     [code2]  https://github.com/ckghostwj/Incomplete-Multiview-Spectral-Clustering-with-Adaptive-Graph-Learning
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

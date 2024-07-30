@@ -60,7 +60,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             doi: 10.1109/TPAMI.2019.2892416.
     [code]  https://github.com/wangsiwei2010/multiple_kernel_clustering_with_absent_kernel
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

@@ -63,7 +63,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
             Transactions on Neural Networks and Learning Systems, doi: 10.1109/TNNLS.2023.3242473.
     [code]  https://github.com/Dshijie/PIMVC
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

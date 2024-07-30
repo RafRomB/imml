@@ -68,7 +68,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         doi:10.1186/s13059-020-02015-1.
     [url] https://biofam.github.io/MOFA2/index.html
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.decomposition import MOFA
@@ -108,10 +108,10 @@ class MOFA(TransformerMixin, BaseEstimator):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
+            - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
-        y : array-like, shape (n_samples,)
-            Labels for each sample. Only used by supervised algorithms.
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------

@@ -23,7 +23,7 @@ class DropView(FunctionTransformer):
         - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.preprocessing import DropView
@@ -46,7 +46,7 @@ class ConcatenateViews(FunctionTransformer):
     -------
     transformed_X : array-like of shape (n_samples, n_features)
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.preprocessing import DropView
@@ -73,7 +73,7 @@ class SingleView(FunctionTransformer):
     -------
     transformed_X : array-like of shape (n_samples, n_features[X_idx])
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.preprocessing import SingleView
@@ -102,7 +102,7 @@ class AddMissingViews(TransformerMixin, BaseEstimator):
     -------
     transformed_X : array-like of shape (n_samples, n_features)
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.preprocessing import AddMissingViews, MultiViewTransformer
@@ -162,7 +162,7 @@ class SortData(FunctionTransformer):
     -------
     transformed_X : list of array-likes (n_samples, n_features_i)
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.preprocessing import SortData

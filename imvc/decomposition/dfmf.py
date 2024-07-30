@@ -59,7 +59,7 @@ class DFMF(TransformerMixin, BaseEstimator):
              and Machine Intelligence, vol. 37, no. 1, pp. 41-53, 1 Jan. 2015, doi: 10.1109/TPAMI.2014.2343973.
     [code] https://github.com/mims-harvard/scikit-fusion/tree/master
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.decomposition import DFMF

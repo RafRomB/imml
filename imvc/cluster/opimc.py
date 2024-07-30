@@ -53,7 +53,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
              Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
     [code]  https://github.com/DarrenZZhang/Survey_IMC
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

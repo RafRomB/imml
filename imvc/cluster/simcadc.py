@@ -62,7 +62,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             completion. Information Sciences, 649, 119562. doi:10.1016/j.ins.2023.119562.
     [code]  https://github.com/DarrenZZhang/INS23-SIMC_ADC
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

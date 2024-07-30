@@ -21,7 +21,7 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
     same_transformer_ : boolean
         A booleaing indicating if the same transformer will be applied on each view of data.
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.preprocessing import MultiViewTransformer

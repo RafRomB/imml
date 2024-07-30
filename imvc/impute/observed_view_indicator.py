@@ -12,7 +12,7 @@ class ObservedViewIndicator(FunctionTransformer):
     Note that this component typically should not be used in a vanilla Pipeline consisting of preprocessing and
     an estimator.
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.impute import ObservedViewIndicator

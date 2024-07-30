@@ -89,7 +89,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
     [documentation] https://python-sumo.readthedocs.io/en/latest/index.html
     [code] https://github.com/ratan-lab/sumo/tree/master
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import SUMO

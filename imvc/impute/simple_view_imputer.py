@@ -21,7 +21,7 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
     ----------
     features_view_mean_list_ : array-like of shape (n_views,)
         The mean value of each feature in the corresponding view, if value='mean'
-    Examples
+    Example
     --------
     >>> from imvc.utils import DatasetUtils
     >>> from imvc.datasets import LoadDataset
