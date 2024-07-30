@@ -16,7 +16,7 @@ class Model:
         self.alg_name = alg_name
         self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF"] else "sklearn_method"
         self.method = eval(f"self.{self.method.lower()}")
-        self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA"] else "standard"
+        self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "jNMF"] else "standard"
         self.framework = eval(f"self.{self.framework.lower()}")
         self.alg = alg
 
@@ -111,6 +111,12 @@ class Model:
 
     def mofa(self, model, n_clusters, random_state, run_n):
         model[2].set_params(factors=n_clusters, random_state=random_state + run_n)
+        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        return model
+
+
+    def jnmf(self, model, n_clusters, random_state, run_n):
+        model[2].set_params(n_components=n_clusters, random_state=random_state + run_n)
         model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         return model
 

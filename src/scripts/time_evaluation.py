@@ -14,7 +14,7 @@ from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralC
 from imvc.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO, NEMO, \
     IMSCAGL
 from imvc.cluster.monet import MONET
-from imvc.decomposition import DFMF, MOFA, DeepMF
+from imvc.decomposition import DFMF, MOFA, DeepMF, jNMF
 from imvc.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
 
 from src.models import Model
@@ -110,6 +110,11 @@ algorithms = {
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                   MOFA().set_output(transform="pandas"),
                                   ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
+    "jNMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                  MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")),
+                                  jNMF().set_output(transform="pandas"),
+                                  StandardScaler().set_output(transform="pandas"), KMeans()),
              "params": {}},
 }
 

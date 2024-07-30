@@ -168,6 +168,7 @@ class jNMF(TransformerMixin, BaseEstimator):
             raise ValueError("Only engine=='r' is currently supported.")
 
         self.H_ = H
+        self.V_ = V
         self.reconstruction_err_ = list(recerror)
         self.observed_reconstruction_err_ = list(train_recerror)
         self.missing_reconstruction_err_ = list(test_recerror)

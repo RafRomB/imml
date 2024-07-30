@@ -183,6 +183,26 @@ class ResultGenerator:
         results.to_csv(filepath, index=None)
         return results
 
+    @staticmethod
+    def save_robustness_metrics(results: pd.DataFrame, filepath: str, random_state=None, n_permutations: int = 1000):
+        labels_dict = {}
+        for dataset in results["dataset"].unique():
+            mask = (results["dataset"] == dataset) & (results["missing_percentage"] == 0)
+            labels_dict[dataset] = {
+                algorithm: results[(results["algorithm"] == algorithm) & mask]["sorted_y_pred"].to_list() for algorithm
+                in results["algorithm"].unique()}
+
+        mask = results["missing_percentage"] != 0
+        if results.loc[mask, "imputation"].nunique() > 1:
+            mask = mask & results["imputation"]
+        robustness_metrics = results.loc[mask].parallel_apply(
+            lambda row: pd.DataFrame(
+                [GetMetrics.compute_supervised_metrics(y_true=clusters_run_n, y_pred=row["sorted_y_pred"],
+                                                       random_state=random_state, n_permutations=n_permutations)
+                 for clusters_run_n in labels_dict[row["dataset"]][row["algorithm"]]]).mean(), axis=1)
+        results = pd.concat([results, robustness_metrics], axis=1)
+        results.to_csv(filepath, index=None)
+        return results
 
     # def save_stability_metrics(results: pd.DataFrame, filepath: str, random_state=None, progress_bar=True):
     #     results = pd.merge(results, pd.DataFrame(itertools.product(results["dataset"].unique(), results["algorithm"].unique()),
