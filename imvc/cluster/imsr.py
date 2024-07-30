@@ -51,7 +51,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
             Machinery, New York, NY, USA, 2726–2734. https://doi.org/10.1145/3474085.3475379.
     [code]  https://github.com/liujiyuan13/IMSR-code_release
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

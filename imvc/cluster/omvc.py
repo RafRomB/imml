@@ -55,7 +55,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
              doi: 10.1109/BigData.2016.7840701.
     [code]  https://github.com/software-shao/online-multiview-clustering-with-incomplete-view
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

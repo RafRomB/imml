@@ -83,7 +83,7 @@ class jNMF(TransformerMixin, BaseEstimator):
             pathway signature analyses, Scientific Report.
     [code] https://rdrr.io/cran/nnTensor/man/jNMF.html
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.decomposition import jNMF
@@ -153,7 +153,7 @@ class jNMF(TransformerMixin, BaseEstimator):
                 weights=self.weights)
             if self.random_state is not None:
                 base = importr("base")
-                base.set_seed(self.random_state)
+                base.set_seed((self.random_state))
 
             W, V, H, recerror, train_recerror, test_recerror, relchange = nnTensor.jNMF(
                 X= transformed_Xs, M=transformed_mask, J=self.n_components,

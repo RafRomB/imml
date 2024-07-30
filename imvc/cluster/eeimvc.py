@@ -58,7 +58,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
              doi: 10.1109/TPAMI.2020.2974828.
     [code]   https://github.com/xinwangliu/TPAMI_EEIMVC
 
-    Examples
+    Example
     --------
     >>> from sklearn.pipeline import make_pipeline
     >>> from imvc.datasets import LoadDataset

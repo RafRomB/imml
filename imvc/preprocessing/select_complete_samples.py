@@ -16,7 +16,7 @@ class SelectCompleteSamples(FunctionTransformer):
     ----------
     -
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.preprocessing import SelectCompleteSamples

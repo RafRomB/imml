@@ -60,7 +60,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
             Bioinformatics. 2019;35(18):3348–3356. doi: 10.1093/bioinformatics/btz058.
     [code]  https://github.com/Shamir-Lab/NEMO
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import NEMO

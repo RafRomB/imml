@@ -94,7 +94,7 @@ class MONET(BaseEstimator, ClassifierMixin):
     [paper] Rappoport N, Safra R, Shamir R (2020) MONET: Multi-omic module discovery by omic selection. PLoS Comput
         Biol 16(9): e1008182. https://doi.org/10.1371/journal.pcbi.1008182.
 
-    Examples
+    Example
     --------
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import MONET
