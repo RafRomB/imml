@@ -4,8 +4,8 @@ from pandarallel import pandarallel
 from sklearn.cluster import KMeans
 from sklearn.feature_selection import VarianceThreshold
 from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, FunctionTransformer
-from imvc.decomposition import DFMF, MOFA, DeepMF
+from sklearn.preprocessing import StandardScaler, FunctionTransformer, MinMaxScaler
+from imvc.decomposition import DFMF, MOFA, DeepMF, jNMF
 from imvc.preprocessing import MultiViewTransformer, ConcatenateViews, NormalizerNaN
 from imvc.cluster import NEMO, DAIMC, PIMVC, SIMCADC, OSLFIMVC, MSNE, MKKMIK, LFIMVC, EEIMVC, SUMO, OPIMC, OMVC, MONET, \
     IMSR, IMSCAGL
@@ -89,6 +89,11 @@ algorithms = {
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                   MOFA().set_output(transform="pandas"),
                                   ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans()),
+             "params": {}},
+    "jNMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                  MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")),
+                                  jNMF().set_output(transform="pandas"),
+                                  StandardScaler().set_output(transform="pandas"), KMeans()),
              "params": {}},
 }
 incomplete_algorithms = True
