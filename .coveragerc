@@ -1,0 +1,9 @@
+[run]
+omit =
+    imvc/decomposition/_skfusion/*
+    imvc/decomposition/_deepmf/*
+    imvc/decomposition/_mofa/*
+
+    imvc/cluster/_monet/*
+    imvc/cluster/_msne/*
+    imvc/cluster/_sumo/*
