@@ -9,7 +9,7 @@ from ..utils import DatasetUtils
 
 class Amputer(BaseEstimator, TransformerMixin):
     r"""
-    Generate view missingness in complete multi-view datasets.
+    Ampute a complete multi-view datasets.
 
     Parameters
     ----------

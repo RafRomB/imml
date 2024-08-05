@@ -60,9 +60,9 @@ for each sample.
 We show a simple example of how it works.
 
 ```python
-from imv_ulearn.datasets import LoadDataset
-from imv_ulearn.cluster import DAIMC
-from imv_ulearn.ampute import Amputer
+from imvc.datasets import LoadDataset
+from imvc.cluster import DAIMC
+from imvc.ampute import Amputer
 
 # Load an incomplete multi-view dataset
 Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
