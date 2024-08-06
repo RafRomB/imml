@@ -12,7 +12,7 @@ from scipy.sparse.linalg import eigs
 
 from ..impute import get_observed_view_indicator
 from ..utils import check_Xs
-
+from ..utils import imsr_jax_functions
 
 class IMSR(BaseEstimator, ClassifierMixin):
     r"""
@@ -143,13 +143,30 @@ class IMSR(BaseEstimator, ClassifierMixin):
             if self.random_state is not None:
                 random.seed(self.random_state)
 
-            Z, obj = self._IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma)
+            Z, obj = self._imsc(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma)
+            # print(Z, "\n", obj)
+        elif self.engine == "jax-python":
+            observed_view_indicator = get_observed_view_indicator(Xs)
+            if isinstance(observed_view_indicator, pd.DataFrame):
+                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
+            elif isinstance(observed_view_indicator[0], np.ndarray):
+                observed_view_indicator = pd.DataFrame(observed_view_indicator)
+            observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in
+                                       observed_view_indicator.items()]
+            transformed_Xs = [X.T.values for X in Xs]
+
+            if self.random_state is not None:
+                random.seed(self.random_state)
+
+            Z, obj = imsr_jax_functions.IMSC(transformed_Xs, tuple(observed_view_indicator),
+                                             self.n_clusters, self.lbd, self.gamma)
             # print(Z, "\n", obj)
         else:
             raise ValueError("Only engine=='matlab' and 'python are currently supported.")
 
         model = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
         self.labels_ = model.fit_predict(X=Z)
+        self.embedding = Z
         self.Z_, self.loss_ = Z, obj
 
         return self
@@ -193,42 +210,45 @@ class IMSR(BaseEstimator, ClassifierMixin):
         labels = self.fit(Xs)._predict(Xs)
         return labels
 
-    def _IMSC(self, X, Im, k, lbd, gamma):
+    def _imsc(self, X, Im, n_cluters, lbd, gamma):
         r"""
+        Runs the IMSR clustering algorithm.
 
         Parameters
         ----------
-        X
-        Im
-        k
-        lbd
-        gamma
+        X : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+        Im : array of shape (n_views, columns_with_missing_values)
+        n_cluters : int
+            The number of clusters.
+        lbd : float, default=1
+            Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
+        gamma : float, default=1
+            Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
 
         Returns
         -------
-
+        Utmp : list of array-likes of shape (n_samples, n_clusters)
+        obj :
         """
         V = len(X)
         n = X[0].shape[1]
         max_iter = 100
 
-        # Replace "nan" values to avoid errors after
-        X = [np.nan_to_num(mat, nan=0.0) for mat in X]
         # Initialization
+        X = [np.nan_to_num(mat, nan=0.0) for mat in X]
         beta = np.ones(shape=(V, )) / V
-        # for v in range(V):
-        #     print("test : ", Im[v])
-        #     X[v][:, Im[v-1]] = 0
 
-        Z = self._init_Z(X, beta, lbd)
+        Z = self._init_z(X, beta, lbd)
 
         t = 0
         flag = 1
         obj = []
         while flag:
-            F = self._update_F(Z, k)
-            Z = self._update_Z(X, F, beta, lbd, gamma)
-            X = self.update_X(X, Im, Z)
+            F = self._update_f(Z, n_cluters)
+            Z = self._update_z(X, F, beta, lbd, gamma)
+            X = self._update_x(X, Im, Z)
 
             append_obj, _, _, _ = self._cal_obj(X, Z, F, beta, lbd, gamma)
             obj.append([append_obj])
@@ -238,22 +258,27 @@ class IMSR(BaseEstimator, ClassifierMixin):
             t += 1
 
         Ztmp = (np.abs(Z) + np.abs(Z).T) / 2
-        Utmp = self._baseline_spectral_onkernel(Ztmp, k)
+        Utmp = np.real(self._baseline_spectral_onkernel(Ztmp, n_cluters))
 
-        return np.real(Utmp), obj
+        return Utmp, obj
 
-    def _init_Z(self, X, beta, lbd):
+    @staticmethod
+    def _init_z(X, beta, lbd):
         r"""
+        Initializes Z variable.
 
         Parameters
         ----------
-        X
-        beta
-        lbd
+        X : list of array-likes
+            - X length: n_views
+            - X[i] shape: (n_samples, n_features_i)
+        beta : list of n_views values
+        lbd : float, default=1
+            Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
 
         Returns
         -------
-
+        Z : list of array-likes of shape (n_samples, n_samples)
         """
         V = len(X)
         n = X[0].shape[1]
@@ -261,7 +286,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         D = np.zeros(shape=(n, n))
         D = D + lbd * np.diag(np.ones(shape=(n,)))
         for v in range(V):
-            D = D + beta[v] * (X[v].T @ X[v])
+            D = D + beta[v] * (np.matmul(X[v].T, X[v]))
 
         D = np.linalg.inv(D)
         Z = -D / np.diag(D).T[: np.newaxis]
@@ -270,47 +295,56 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         return Z
 
-    def _update_F(self, Z, k):
+    @staticmethod
+    def _update_f(Z, n_cluters):
         r"""
+        Updates the F variables.
 
         Parameters
         ----------
-        Z
-        k
+        Z : list of array-likes of shape (n_samples, n_samples)
+        n_cluters : int
+            The number of clusters.
 
         Returns
         -------
-
+        F : list of array-likes of shape (n_clusters, n_samples)
         """
 
-        _, Ftmp = eigs(A=(Z + Z.T), k=k, which='LR')
+        _, Ftmp = eigs(A=(Z + Z.T), k=n_cluters, which='LR')
         F = Ftmp.T
 
         return np.real(F)
 
-    def _update_Z(self, X, F, beta, lbd, gamma):
+    @staticmethod
+    def _update_z(X, F, beta, lbd, gamma):
         r"""
+        Updates the Z variables.
 
         Parameters
         ----------
-        X
-        F
-        beta
-        lbd
-        gamma
+        X : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+        F : list of array-likes of shape (n_clusters, n_samples)
+        beta : list of n_views values
+        lbd : float, default=1
+            Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
+        gamma : float, default=1
+            Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
 
         Returns
         -------
-
+        Z : list of array-likes of shape (n_samples, n_samples)
         """
         V = len(X)
         n = X[0].shape[1]
 
         K = np.zeros(shape=(n, n))
         for v in range(V):
-            K += beta[v] * X[v].T @ X[v]
+            K += beta[v] * np.matmul(X[v].T, X[v])
 
-        C = F.T @ F
+        C = np.matmul(F.T, F)
         base = K + (lbd + gamma) * np.eye(n)
 
         D = np.linalg.inv(base)
@@ -319,78 +353,108 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Z1 -= np.diag(np.diag(Z1))
 
         C = C - np.diag(np.diag(C))
-        a = D @ C
+        a = np.matmul(D, C)
         a -= np.diag(np.diag(a))
-        b = np.diag(Z1.T @ C)
+        b = np.diag(np.matmul(Z1.T, C))
         c = beta * b
-        d = Z1 @ np.diag(c)
+        d = np.matmul(Z1, np.diag(c))
         d -= np.diag(np.diag(d))
         Z2 = gamma * (a - d)
 
         Z = Z1 + Z2
         return Z
 
-    def update_X(self, X, Im, Z):
+    @staticmethod
+    def _update_x(X, Im, Z):
         r"""
+        Updates the X variables.
 
         Parameters
         ----------
-        X
-        Im
-        Z
+        X : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+        Im : array of shape (n_views, columns_with_missing_values)
+        Z : list of array-likes of shape (n_samples, n_samples)
 
         Returns
         -------
-
+        X : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
         """
         V = len(X)
         n = X[0].shape[1]
 
-        B = np.eye(n) - Z - Z.T + (Z @ Z.T)
+        B = np.eye(n) - Z - Z.T + (np.matmul(Z, Z.T))
         Io = [None] * V
         for v in range(V):
             Im_temp = [i-1 for i in Im[v]]
             Io[v] = np.setdiff1d(ar1=np.array([i for i in range(0, n)]), ar2=Im_temp)
             X[v][:, Im_temp] = np.linalg.solve(B[np.ix_(Im_temp, Im_temp)].conj().T,
-                                               (-X[v][:, Io[v]] @ B[np.ix_(Io[v], Im_temp)]).conj().T).conj().T
+                                               (np.matmul(-X[v][:, Io[v]], B[np.ix_(Io[v], Im_temp)]).conj().T)).conj().T
 
         return X
 
-    def _cal_obj(self, X, Z, F, beta, lbd, gamma):
+    @staticmethod
+    def _cal_obj(X, Z, F, beta, lbd, gamma):
         r"""
+        Returns pbj values with the individual terms that contribute to it.
 
         Parameters
         ----------
-        X
-        Z
+        X : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+        Z : list of array-likes of shape (n_samples, n_samples)
         F
-        beta
-        lbd
-        gamma
+        beta : list of n_views values
+        lbd : float, default=1
+            Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
+        gamma : float, default=1
+            Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
 
         Returns
         -------
-
+        obj : float
+        term1 : float
+        term2 : float
+        term3 : float
         """
         V = len(X)
         term1 = 0
 
         for v in range(V):
-            tmp = X[v] - X[v] @ Z
+            tmp = X[v] - np.matmul(X[v], Z)
             term1 = term1 + beta[v] * np.sum(np.sum(tmp ** 2))
 
         term2 = np.sum(np.sum(Z ** 2))
-        tmp = Z - F.T @ F
+        tmp = Z - np.matmul(F.T, F)
         term3 = np.sum(np.sum(tmp ** 2))
         obj = term1 + lbd * term2 + gamma * term3
 
         return obj, term1, term2, term3
 
-    def _baseline_spectral_onkernel(self, K, numClust):
+    @staticmethod
+    def _baseline_spectral_onkernel(K, n_clusters):
+        r"""
+        This function returns the top eigenvectors of the given matrix.
+
+        Parameters
+        ----------
+        K : list of array-likes of shape (n_samples, n_samples)
+        n_clusters: int
+            The number of clusters.
+
+        Returns
+        -------
+        U : list of array-likes of shape (n_samples, n_clusters)
+        """
         D = np.diag(np.sum(K, axis=1) + np.finfo(float).eps)
         inv_sqrt_D = np.sqrt(np.linalg.inv(np.abs(D)))
-        L = inv_sqrt_D @ K @ inv_sqrt_D
+        L = np.matmul(np.matmul(inv_sqrt_D, K), inv_sqrt_D)
         L = (L + L.T) / 2
-        V, U = eigs(L, k=numClust, which='LR', tol=0)
+        V, U = eigs(L, k=n_clusters, which='LR', tol=0)
 
+        print(U.shape)
         return U
