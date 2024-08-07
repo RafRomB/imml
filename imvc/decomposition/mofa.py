@@ -115,7 +115,7 @@ class MOFA(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        self :  returns and instance of self.
+        self :  returns an instance of self.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if self.verbose:
@@ -241,7 +241,7 @@ class MOFA(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        self:  returns and instance of self.
+        self:  returns an instance of self.
         """
         self.transform_ = transform
         return self
