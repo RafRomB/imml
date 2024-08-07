@@ -68,7 +68,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ :
+    embedding_ : np.array
         The final spectral representation of the data to be used as input for the KMeans clustering step.
     graph_ :
         Multiview graph.
