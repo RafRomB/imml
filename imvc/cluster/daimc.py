@@ -40,20 +40,22 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ :
+    embedding_ : ndarray of shape (n_samples, n_clusters)
         Commont latent feature matrix to be used as input for the KMeans clustering step.
-    U_ : np.array
-        Basis matrix.
-    B_ : np.array
+    U_ : list of n_views ndarrays of shape (n_features_i, n_clusters)
+        Basis matrices.
+    B_ : list of n_views ndarrays of shape (n_features_i, n_clusters)
         Regression coefficient matrices.
 
     References
     ----------
-    [paper1] Menglei Hu and Songcan Chen. 2018. Doubly aligned incomplete multi-view clustering. In Proceedings of the
-            27th International Joint Conference on Artificial Intelligence (IJCAI'18). AAAI Press, 2262–2268.
-    [paper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on Incomplete
-             Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
-    [code]  https://github.com/DarrenZZhang/Survey_IMC
+    .. [#daimcpaper1] Menglei Hu and Songcan Chen. 2018. Doubly aligned incomplete multi-view clustering. In
+                      Proceedings of the 27th International Joint Conference on Artificial Intelligence (IJCAI'18).
+                      AAAI Press, 2262–2268.
+    .. [#daimcpaper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on
+                      Incomplete Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS:
+                      SYSTEMS, 2022.
+    .. [#daimccode] https://github.com/DarrenZZhang/Survey_IMC
 
     Example
     --------
@@ -74,6 +76,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         self.alpha = alpha
         self.beta = beta
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 
@@ -125,8 +130,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             u_0, v_0, b_0 = oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)
             u, v, b, f, p, n = oc.DAIMC(transformed_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
                                         len(transformed_Xs), {"afa": self.alpha, "beta": self.beta}, nout=6)
-        else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+            b = [np.array(arr[0]) for arr in b]
+            u = [np.array(arr[0]) for arr in u]
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)

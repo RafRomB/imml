@@ -44,7 +44,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ :
+    embedding_ : np.array
         Consensus clustering matrix to be used as input for the KMeans clustering step.
     gamma_ : array-like
         Kernel weights.

@@ -38,7 +38,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ :
+    embedding_ : np.array
         Consensus clustering matrix to be used as input for the KMeans clustering step.
     loss_ : array-like of shape (n_views,)
         Value of the loss function.

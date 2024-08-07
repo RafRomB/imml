@@ -52,7 +52,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ :
+    embedding_ : np.array
         Commont latent feature matrix to be used as input for the KMeans clustering step.
     loss_ : float
         Value of the loss function.

@@ -43,7 +43,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Basis matrix.
     V_ : np.array
         Latent feature matrix.
-    embedding_ :
+    embedding_ : np.array
         Common consensus, latent feature matrix across all the views to be used as input for the KMeans clustering step.
     loss_ : float
         Value of the loss function.
