@@ -30,7 +30,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
         Engine to use for computing the model.
-.   verbose : bool, default=False
+    verbose : bool, default=False
         Verbosity mode.
 
     Attributes
@@ -39,18 +39,21 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : np.array
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    WP_ : array-like
+    WP_ : array-like of shape (n_clusters, n_clusters, n_views)
         p-th permutation matrix.
-    HP_ : array-like
+    HP_ : array-like of shape (n_samples, n_clusters, n_views)
         missing part of the p-th base clustering matrix.
-    loss_ : float
-        Value of the loss function.
+    loss_ : array-like of shape (n_iter_,)
+        Values of the loss function.
+    n_iter_ : int
+        Number of iterations.
 
     References
     ----------
-    [paper] X. Liu et al., "Late Fusion Incomplete Multi-View Clustering," in IEEE Transactions on Pattern Analysis
-             and Machine Intelligence, vol. 41, no. 10, pp. 2410-2423, 1 Oct. 2019, doi: 10.1109/TPAMI.2018.2879108.
-    [code]   https://github.com/xinwangliu/Late-Fusion-Incomplete-Multi-view-Clustering
+    .. [#lfimvcpaper] X. Liu et al., "Late Fusion Incomplete Multi-View Clustering," in IEEE Transactions on Pattern
+                      Analysis and Machine Intelligence, vol. 41, no. 10, pp. 2410-2423, 1 Oct. 2019,
+                      doi: 10.1109/TPAMI.2018.2879108.
+    .. [#lfimvccode] https://github.com/xinwangliu/Late-Fusion-Incomplete-Multi-view-Clustering
 
     Example
     --------
@@ -74,6 +77,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         self.kernel = kernel
         self.lambda_reg = lambda_reg
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 
@@ -122,6 +128,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= U)
         self.embedding_, self.WP_, self.HP_, self.loss_ = U, WP, HP, obj
+        self.n_iter_ = len(self.loss_)
 
         return self
 

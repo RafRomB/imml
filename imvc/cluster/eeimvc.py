@@ -33,30 +33,32 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
         Engine to use for computing the model.
-.   verbose : bool, default=False
+    verbose : bool, default=False
         Verbosity mode.
 
     Attributes
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ : np.array
+    embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    WP_ : array-like
+    WP_ : array-like of shape (n_clusters, n_clusters, n_views)
         p-th permutation matrix.
-    HP_ : array-like
+    HP_ : array-like of shape (n_samples, n_clusters, n_views)
         missing part of the p-th base clustering matrix.
-    beta_ : array-like
+    beta_ : array-like of shape (n_views,)
         Adaptive weights of clustering matrices.
-    loss_ : float
-        Value of the loss function.
+    loss_ : array-like of shape (n_iter_,)
+        Values of the loss function.
+    n_iter_ : int
+        Number of iterations.
 
     References
     ----------
-    [paper] X. Liu et al., "Efficient and Effective Regularized Incomplete Multi-View Clustering," in IEEE
-             Transactions on Pattern Analysis and Machine Intelligence, vol. 43, no. 8, pp. 2634-2646, 1 Aug. 2021,
-             doi: 10.1109/TPAMI.2020.2974828.
-    [code]   https://github.com/xinwangliu/TPAMI_EEIMVC
+    .. [#eeimvcpaper1] X. Liu et al., "Efficient and Effective Regularized Incomplete Multi-View Clustering," in
+                        IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 43, no. 8, pp. 2634-2646,
+                        1 Aug. 2021, doi: 10.1109/TPAMI.2020.2974828.
+    .. [#eeimvccode] https://github.com/xinwangliu/TPAMI_EEIMVC
 
     Example
     --------
@@ -80,6 +82,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         self.kernel = kernel
         self.lambda_reg = lambda_reg
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 
@@ -128,12 +133,15 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
                 oc.rand('seed', self.random_state)
             H_normalized,WP,HP,beta,obj = oc.incompleteLateFusionMKCOrthHp_lambda(transformed_Xs, s, self.n_clusters,
                                                                                   self.qnorm, self.lambda_reg, nout=5)
+            beta = beta[:,0]
+            obj = obj[0]
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= H_normalized)
         self.embedding_, self.WP_, self.HP_, self.beta_, self.loss_ = H_normalized, WP, HP, beta, obj
+        self.n_iter_ = len(self.loss_)
 
         return self
 

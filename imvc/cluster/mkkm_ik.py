@@ -36,8 +36,8 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
-        Engine to use for computing the model.
-.   verbose : bool, default=False
+        Engine to use for computing the model. Current options are 'matlab'.
+    verbose : bool, default=False
         Verbosity mode.
 
     Attributes

@@ -33,7 +33,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
         Engine to use for computing the model. Current options are 'matlab'.
-.   verbose : bool, default=False
+    verbose : bool, default=False
         Verbosity mode.
 
     Attributes
