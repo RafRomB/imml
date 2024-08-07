@@ -45,24 +45,26 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
         Engine to use for computing the model. Currently only 'matlab' is supported.
-.   verbose : bool, default=False
+    verbose : bool, default=False
         Verbosity mode.
 
     Attributes
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ : np.array
+    embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus representation matrix to be used as input for the KMeans clustering step.
 
     References
     ----------
-    [paper1] J. Wen, Y. Xu and H. Liu, "Incomplete Multiview Spectral Clustering With Adaptive Graph Learning," in IEEE
-            Transactions on Cybernetics, vol. 50, no. 4, pp. 1418-1429, April 2020, doi: 10.1109/TCYB.2018.2884715.
-    [paper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on Incomplete
-             Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
-    [code1]  https://github.com/DarrenZZhang/Survey_IMC
-    [code2]  https://github.com/ckghostwj/Incomplete-Multiview-Spectral-Clustering-with-Adaptive-Graph-Learning
+    .. [#imscaglpaper1] J. Wen, Y. Xu and H. Liu, "Incomplete Multiview Spectral Clustering With Adaptive Graph
+                         Learning," in IEEE Transactions on Cybernetics, vol. 50, no. 4, pp. 1418-1429, April 2020,
+                         doi: 10.1109/TCYB.2018.2884715.
+    .. [#imscaglpaper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on
+                         Incomplete Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS:
+                         SYSTEMS, 2022.
+    .. [#imscaglcode1] https://github.com/DarrenZZhang/Survey_IMC
+    .. [#imscaglcode2] https://github.com/ckghostwj/Incomplete-Multiview-Spectral-Clustering-with-Adaptive-Graph-Learning
 
     Example
     --------
@@ -92,6 +94,9 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         self.weight_mode = weight_mode
         self.max_iter = max_iter
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 
@@ -125,6 +130,8 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
+            if not isinstance(Xs[0], pd.DataFrame):
+                Xs = [pd.DataFrame(X) for X in Xs]
             observed_view_indicator = get_observed_view_indicator(Xs=Xs)
             transformed_Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
             w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]

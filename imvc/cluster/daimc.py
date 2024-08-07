@@ -40,11 +40,11 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ : ndarray of shape (n_samples, n_clusters)
+    embedding_ : array-like of shape (n_samples, n_clusters)
         Commont latent feature matrix to be used as input for the KMeans clustering step.
-    U_ : list of n_views ndarrays of shape (n_features_i, n_clusters)
+    U_ : list of n_views array-like of shape (n_features_i, n_clusters)
         Basis matrices.
-    B_ : list of n_views ndarrays of shape (n_features_i, n_clusters)
+    B_ : list of n_views array-like of shape (n_features_i, n_clusters)
         Regression coefficient matrices.
 
     References
@@ -132,6 +132,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
                                         len(transformed_Xs), {"afa": self.alpha, "beta": self.beta}, nout=6)
             b = [np.array(arr[0]) for arr in b]
             u = [np.array(arr[0]) for arr in u]
+        else:
+            raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)
