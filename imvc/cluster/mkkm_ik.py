@@ -44,21 +44,23 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ : np.array
+    embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    gamma_ : array-like
+    gamma_ : array-like of shape (n_views,)
         Kernel weights.
-    K_ : array-like
+    KA_ : array-like of shape (n_samples, n_views)
         Kernel sub-matrix.
-    loss_ : float
-        Value of the loss function.
+    loss_ : array-like of shape (n_iter_,)
+        Values of the loss function.
+    n_iter_ : int
+        Number of iterations.
 
     References
     ----------
-    [paper] X. Liu et al., "Multiple Kernel k-Means with Incomplete Kernels," in IEEE Transactions on Pattern
-            Analysis and Machine Intelligence, vol. 42, no. 5, pp. 1191-1204, 1 May 2020,
-            doi: 10.1109/TPAMI.2019.2892416.
-    [code]  https://github.com/wangsiwei2010/multiple_kernel_clustering_with_absent_kernel
+    .. [#mkkmikpaper] X. Liu et al., "Multiple Kernel k-Means with Incomplete Kernels," in IEEE Transactions on Pattern
+                      Analysis and Machine Intelligence, vol. 42, no. 5, pp. 1191-1204, 1 May 2020,
+                      doi: 10.1109/TPAMI.2019.2892416.
+    .. [#mkkmikcode] https://github.com/wangsiwei2010/multiple_kernel_clustering_with_absent_kernel
 
     Example
     --------
@@ -89,6 +91,9 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         self.qnorm = qnorm
         self.kernel = kernel
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
         self.kernel_initializations = {"zeros": "algorithm2", "mean": "algorithm3", "knn": "algorithm0",
@@ -140,12 +145,15 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             H_normalized,gamma,obj,KA = oc.myabsentmultikernelclustering(transformed_Xs, s, self.n_clusters,
                                                                          self.qnorm, kernel,
                                                                          int(self.normalize), nout=4)
+            KA = KA[:, 0]
+            obj = obj[0]
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
         model = KMeans(n_clusters=self.n_clusters, random_state=self.random_state)
         self.labels_ = model.fit_predict(X=H_normalized)
         self.embedding_, self.gamma_, self.KA_, self.loss_ = H_normalized, gamma, KA, obj
+        self.n_iter_ = len(self.loss_)
 
         return self
 

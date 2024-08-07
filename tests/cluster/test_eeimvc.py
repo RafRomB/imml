@@ -34,7 +34,7 @@ def test_default_parameters(sample_data):
         assert max(labels) == (model.n_clusters - 1)
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, model.n_clusters)
-        assert model.HP_.shape == (20, model.n_clusters, len(Xs))
+        assert model.HP_.shape == (n_samples, model.n_clusters, len(Xs))
         assert model.WP_.shape == (model.n_clusters, model.n_clusters, len(Xs))
         assert len(model.beta_) == len(Xs)
         assert model.n_iter_ > 0

@@ -51,8 +51,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Final number of neighbors.
     embedding_ : np.array
         The final representation of the data to be used as input for the clustering step.
-    spectral_graph_ : np.array(n_samples, n_clusters)
-        Spectral embedding.
+    affinity_matrix_ : np.array(n_samples, n_clusters)
+        Affinity matrix.
 
     References
     ----------
@@ -155,8 +155,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
             raise ValueError("Only supports 'r' and 'python' engines.")
 
         self.labels_ = labels
-        self.embedding_ = affinity_matrix
-        self.spectral_graph_ = transformed_Xs
+        self.embedding_ = transformed_Xs
+        self.affinity_matrix_ = affinity_matrix
 
         return self
 
