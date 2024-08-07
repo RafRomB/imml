@@ -126,7 +126,7 @@ class DFMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        self :  returns and instance of self.
+        self :  returns an instance of self.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         self.ts_ = [fusion.ObjectType(f'Type {i + 1}', self.n_components) for i in range(len(Xs))]
@@ -173,7 +173,7 @@ class DFMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        self:  returns and instance of self.
+        self:  returns an instance of self.
         """
         self.transform_ = transform
         return self

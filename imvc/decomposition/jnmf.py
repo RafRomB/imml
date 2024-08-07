@@ -139,7 +139,7 @@ class jNMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        self :  returns and instance of self.
+        self :  returns an instance of self.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         samples = Xs[0].index
@@ -229,7 +229,7 @@ class jNMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        self:  returns and instance of self.
+        self:  returns an instance of self.
         """
         self.transform_ = transform
         return self

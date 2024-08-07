@@ -39,9 +39,12 @@ class Amputer(BaseEstimator, TransformerMixin):
 
     References
     ----------
-    .. [#amputerpaper] Mayer, I., Sportisse, A., Josse, J., Tierney, N., & Vialaneix, N. (2024). R-miss-tastic: a
+    .. [#amputerpaper1] Mayer, I., Sportisse, A., Josse, J., Tierney, N., & Vialaneix, N. (2024). R-miss-tastic: a
                         unified platform for missing values methods and workflows. https://arxiv.org/abs/1908.04822
-    .. [#amputercode] https://rmisstastic.netlify.app/
+    .. [#amputerpaper2] Muzellec B, Josse J, Boyer C, Cuturi M. Missing data imputation using optimal transport.
+                        In International Conference on Machine Learning 2020 Nov 21 (pp. 7130-7140). PMLR.
+    .. [#amputercode1] https://rmisstastic.netlify.app/
+    .. [#amputercode2] https://github.com/BorisMuzellec/MissingDataOT
 
     Example
     --------
@@ -61,6 +64,9 @@ class Amputer(BaseEstimator, TransformerMixin):
         self.p = p
         self.mechanism = mechanism
         self.random_state = random_state
+        opt_options = ["logistic", "quantile", "selfmasked"]
+        if opt not in opt_options:
+            raise ValueError(f"Invalid opt. Expected one of: {opt_options}")
         self.opt = opt
         self.p_obs = p_obs
         self.q = q
@@ -85,7 +91,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        self :  returns and instance of self.
+        self :  returns an instance of self.
         """
         self.n_views = len(Xs)
         return self
@@ -104,10 +110,15 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_Features)
+        transformed_Xs : list of array-likes, shape (n_samples, n_features)
             The amputed multi-view dataset.
         """
-        sample_names = Xs[0].index
+        pandas_format = isinstance(Xs[0], pd.DataFrame)
+        if pandas_format:
+            rownames = Xs[0].index
+            colnames = [X.columns for X in Xs]
+            Xs = [X.values for X in Xs]
+        sample_names = pd.Index(list(range(len(Xs[0]))))
 
         if self.mechanism == "EDM":
             pseudo_observed_view_indicator = self._edm_mask(sample_names=sample_names)
@@ -116,11 +127,16 @@ class Amputer(BaseEstimator, TransformerMixin):
         elif self.mechanism == "PM":
             pseudo_observed_view_indicator = self._pm_mask(sample_names=sample_names)
         else:
-            pseudo_observed_view_indicator = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]), self.n_views))
-            pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator, sample_names=sample_names)
+            pseudo_observed_view_indicator = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]),
+                                                                                                   self.n_views))
+            pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator,
+                                                                   sample_names=sample_names)
 
         pseudo_observed_view_indicator = pseudo_observed_view_indicator.astype(bool)
         transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
+
+        if pandas_format:
+            transformed_Xs = [pd.DataFrame(X, index=rownames, columns=colnames[X_idx]) for X_idx, X in enumerate(transformed_Xs)]
 
         return transformed_Xs
 
@@ -166,13 +182,13 @@ class Amputer(BaseEstimator, TransformerMixin):
             if mask.shape[1] != X.shape[1]:
                 raise ValueError("p is too small for this dataset.") from None
         elif self.mechanism == "MNAR" and self.opt == "logistic":
-            mask = self._MNAR_mask_logistic(X=missing_X, p=self.p, p_params=self.p_params, exclude_inputs=self.exclude_inputs)
+            mask = self._MNAR_mask_logistic(X=missing_X, p=self.p, p_params=self.p_params,
+                                            exclude_inputs=self.exclude_inputs)
         elif self.mechanism == "MNAR" and self.opt == "quantile":
-            mask = self._MNAR_mask_quantiles(X=missing_X, p=self.p, q=self.q, p_params=self.p_params, cut=self.cut, MCAR=self.mcar)
+            mask = self._MNAR_mask_quantiles(X=missing_X, p=self.p, q=self.q, p_params=self.p_params, cut=self.cut,
+                                             MCAR=self.mcar)
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
             mask = self._MNAR_self_mask_logistic(X=missing_X, p=self.p)
-        else:
-            raise ValueError("MNAR mechanism can only be 'logistic', 'quantile' or 'selfmasked'")
 
         mask = pd.DataFrame(mask, index=missing_samples)
         samples_to_fix = mask.nunique(axis=1).eq(1)
@@ -392,14 +408,14 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         ### check if values are greater/smaller that corresponding quantiles
         if cut == 'upper':
-            quants = np.partition(a= X[:, idxs_na], kth= 1 - q, axis=0)[q]
+            quants = np.quantile(X[:, idxs_na], 1 - q, axis=0)
             m = X[:, idxs_na] >= quants
         elif cut == 'lower':
-            quants = np.partition(a= X[:, idxs_na], kth= q, axis=0)[q]
+            quants = np.quantile(X[:, idxs_na], q, axis=0)
             m = X[:, idxs_na] <= quants
         elif cut == 'both':
-            u_quants = np.partition(a= X[:, idxs_na], kth= 1 - q, axis=0)[q]
-            l_quants = np.partition(a= X[:, idxs_na], kth= q, axis=0)[q]
+            u_quants = np.quantile(X[:, idxs_na], 1 - q, axis=0)
+            l_quants = np.quantile(X[:, idxs_na], q, axis=0)
             m = (X[:, idxs_na] <= l_quants) | (X[:, idxs_na] >= u_quants)
 
         ### Hide some values exceeding quantiles
