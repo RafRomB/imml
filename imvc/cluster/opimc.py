@@ -41,17 +41,18 @@ class OPIMC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ : np.array
+    embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus clustering matrix to be used as input for the KMeans clustering step.
 
     References
     ----------
-    [paper1] Hu, M., & Chen, S. (2019). One-Pass Incomplete Multi-View Clustering. Proceedings of the AAAI Conference
-             on Artificial Intelligence, 33(01), 3838-3845. https://doi.org/10.1609/aaai.v33i01.33013838.
-.
-    [paper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on Incomplete
-             Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS: SYSTEMS, 2022.
-    [code]  https://github.com/DarrenZZhang/Survey_IMC
+    .. [#opimcpaper1] Hu, M., & Chen, S. (2019). One-Pass Incomplete Multi-View Clustering. Proceedings of the AAAI
+                     Conference on Artificial Intelligence, 33(01), 3838-3845.
+                     https://doi.org/10.1609/aaai.v33i01.33013838.
+    .. [#opimcpaper2] Jie Wen, Zheng Zhang, Lunke Fei, Bob Zhang, Yong Xu, Zhao Zhang, Jinxing Li, A Survey on
+                      Incomplete Multi-view Clustering, IEEE TRANSACTIONS ON SYSTEMS, MAN, AND CYBERNETICS:
+                      SYSTEMS, 2022.
+    .. [#opimccode] https://github.com/software-shao/online-multiview-clustering-with-incomplete-view
 
     Example
     --------
@@ -75,6 +76,9 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         self.tol = tol
         self.block_size = block_size
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 

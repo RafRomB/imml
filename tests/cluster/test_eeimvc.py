@@ -53,6 +53,9 @@ def test_custom_parameters(sample_data):
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, n_clusters)
+        assert model.HP_.shape == (n_samples, model.n_clusters, len(Xs))
+        assert model.WP_.shape == (model.n_clusters, model.n_clusters, len(Xs))
+        assert len(model.beta_) == len(Xs)
         assert model.n_iter_ > 0
 
 def test_invalid_engine(sample_data):
@@ -78,6 +81,8 @@ def test_fit_predict(sample_data):
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, n_clusters)
+        assert model.HP_.shape == (n_samples, model.n_clusters, len(Xs))
+        assert model.WP_.shape == (model.n_clusters, model.n_clusters, len(Xs))
         assert len(model.beta_) == len(Xs)
         assert model.n_iter_ > 0
 
@@ -96,6 +101,8 @@ def test_missing_values_handling(sample_data):
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, n_clusters)
+        assert model.HP_.shape == (n_samples, model.n_clusters, len(Xs))
+        assert model.WP_.shape == (model.n_clusters, model.n_clusters, len(Xs))
         assert len(model.beta_) == len(Xs)
         assert model.n_iter_ > 0
 

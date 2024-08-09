@@ -135,7 +135,7 @@ def extract_ncut(a: np.ndarray, k: int):
     k = min(u.shape[1], k)
     v = u[:, u.shape[1] - k:]
 
-    kmeans = KMeans(n_clusters=k).fit(v)
+    kmeans = KMeans(n_clusters=k, n_init="auto").fit(v)
     return kmeans.labels_, v
 
 

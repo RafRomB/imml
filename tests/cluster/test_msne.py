@@ -4,26 +4,26 @@ import numpy as np
 import pandas as pd
 
 from imvc.ampute import Amputer
-from imvc.cluster import MKKMIK
+from imvc.cluster import MSNE
 
 
 @pytest.fixture
 def sample_data():
-    X1 = pd.DataFrame(np.random.default_rng(42).random((20, 3)),
-                      index=list(ascii_lowercase)[:20],
+    X1 = pd.DataFrame(np.random.default_rng(42).random((25, 3)),
+                      index=list(ascii_lowercase)[:25],
                       columns=['feature1', 'feature2', 'feature3'])
-    X2 = pd.DataFrame(np.random.default_rng(42).random((20, 2)),
-                      index=list(ascii_lowercase)[:20],
+    X2 = pd.DataFrame(np.random.default_rng(42).random((25, 2)),
+                      index=list(ascii_lowercase)[:25],
                       columns=['feature4', 'feature5'])
-    X3 = pd.DataFrame(np.random.default_rng(42).random((20, 5)),
-                      index=list(ascii_lowercase)[:20],
+    X3 = pd.DataFrame(np.random.default_rng(42).random((25, 5)),
+                      index=list(ascii_lowercase)[:25],
                       columns=['feature6', 'feature7', 'feature8', 'feature9', 'feature10'])
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
 def test_default_parameters(sample_data):
     Xs_pandas, Xs_numpy = sample_data
-    model = MKKMIK(random_state=42)
+    model = MSNE(random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -33,15 +33,12 @@ def test_default_parameters(sample_data):
         assert min(labels) == 0
         assert max(labels) == (model.n_clusters - 1)
         assert not np.isnan(labels).any()
-        assert model.embedding_.shape == (n_samples, model.n_clusters)
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
-        assert model.n_iter_ > 0
+        assert model.embedding_.shape == (n_samples, model.embed_size)
 
 def test_custom_parameters(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_clusters = 3
-    model = MKKMIK(n_clusters=n_clusters, random_state=42)
+    model = MSNE(n_clusters=n_clusters, embed_size=10, random_state=42, verbose=True)
     for Xs in [Xs_pandas, Xs_numpy]:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -51,26 +48,19 @@ def test_custom_parameters(sample_data):
         assert min(labels) == 0
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
-        assert model.embedding_.shape == (n_samples, n_clusters)
-        assert model.n_iter_ > 0
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
+        assert model.embedding_.shape == (n_samples, model.embed_size)
 
-def test_invalid_params(sample_data):
-    with pytest.raises(ValueError, match="Only engine=='matlab' is currently supported."):
-        MKKMIK(engine='invalid')
-    with pytest.raises(ValueError, match="Only engine=='matlab' is currently supported."):
-        model = MKKMIK()
+def test_invalid_engine(sample_data):
+    with pytest.raises(ValueError, match="n_clusters should be a positive value."):
+        MSNE(n_clusters=-1)
+    with pytest.raises(ValueError, match="k should be smaller than the number of samples."):
         Xs_pandas, Xs_numpy = sample_data
-        model.engine = 'invalid'
-        model.fit(Xs_pandas)
-    with pytest.raises(ValueError, match="Invalid kernel_initialization. Expected one of"):
-        MKKMIK(kernel_initialization='invalid')
+        MSNE(k= 1000, random_state=42).fit_predict(Xs_pandas)
 
 def test_fit_predict(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_clusters = 3
-    model = MKKMIK(n_clusters=n_clusters, random_state=42)
+    model = MSNE(n_clusters=n_clusters, random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -80,15 +70,12 @@ def test_fit_predict(sample_data):
         assert min(labels) == 0
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
-        assert model.embedding_.shape == (n_samples, n_clusters)
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
-        assert model.n_iter_ > 0
+        assert model.embedding_.shape == (n_samples, model.embed_size)
 
 def test_missing_values_handling(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_clusters = 2
-    model = MKKMIK(n_clusters=n_clusters, random_state=42)
+    model = MSNE(n_clusters=n_clusters, random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])
@@ -99,10 +86,7 @@ def test_missing_values_handling(sample_data):
         assert min(labels) == 0
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
-        assert model.embedding_.shape == (n_samples, n_clusters)
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
-        assert model.n_iter_ > 0
+        assert model.embedding_.shape == (n_samples, model.embed_size)
 
 if __name__ == "__main__":
     pytest.main()

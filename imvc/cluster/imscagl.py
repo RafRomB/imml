@@ -148,7 +148,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
-        model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
+        model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= F)
         self.embedding_ = F
 
