@@ -42,22 +42,24 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : np.array
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    WP_ : array-like
+    WP_ : array-like of shape (n_clusters, n_clusters, n_views)
         p-th permutation matrix.
-    C_ : array-like
+    C_ : array-like of shape (n_clusters, n_clusters)
         Centroids.
-    beta_ : array-like
+    beta_ : array-like of shape (n_views,)
         Adaptive weights of clustering matrices.
-    loss_ : float
-        Value of the loss function.
+    loss_ : array-like of shape (n_iter_,)
+        Values of the loss function.
+    n_iter_ : int
+        Number of iterations.
 
     References
     ----------
-    [paper] Yi Zhang, Xinwang Liu, Siwei Wang, Jiyuan Liu, Sisi Dai, and En Zhu. 2021. One-Stage Incomplete
-             Multi-view Clustering via Late Fusion. In Proceedings of the 29th ACM International Conference on
-             Multimedia (MM '21). Association for Computing Machinery, New York, NY, USA, 2717–2725.
-             https://doi.org/10.1145/3474085.3475204.
-    [code]   https://github.com/ethan-yizhang/OSLF-IMVC
+    .. [#oslfimvcpaper] Yi Zhang, Xinwang Liu, Siwei Wang, Jiyuan Liu, Sisi Dai, and En Zhu. 2021. One-Stage Incomplete
+                        Multi-view Clustering via Late Fusion. In Proceedings of the 29th ACM International Conference
+                        on Multimedia (MM '21). Association for Computing Machinery, New York, NY, USA, 2717–2725.
+                        https://doi.org/10.1145/3474085.3475204.
+    .. [#oslfimvccode] https://github.com/ethan-yizhang/OSLF-IMVC
 
     Example
     --------
@@ -82,6 +84,9 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         self.kernel = kernel
         self.lambda_reg = lambda_reg
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 
@@ -131,12 +136,15 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
                 oc.rand('seed', self.random_state)
             U, C, WP, beta, obj = oc.OS_LF_IMVC_alg(transformed_Xs, s, self.n_clusters, self.lambda_reg,
                                                     int(self.normalize), nout=5)
+            beta = beta[:,0]
+            obj = obj[0]
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
-        model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
+        model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= U)
         self.embedding_, self.WP_, self.C_, self.beta_, self.loss_ = U, WP, C, beta, obj
+        self.n_iter_ = len(self.loss_)
 
         return self
 

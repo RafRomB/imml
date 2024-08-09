@@ -461,11 +461,15 @@ class DatasetUtils:
         >>> DatasetUtils.remove_missing_sample_from_view(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        if isinstance(Xs[0], pd.DataFrame):
-            transformed_Xs = [X.values for X in Xs]
-        else:
-            transformed_Xs = copy.deepcopy(Xs)
-        transformed_Xs = [X[np.invert(np.isnan(X).all(1))] for X in transformed_Xs]
+        pandas_format = isinstance(Xs[0], pd.DataFrame)
+        if pandas_format:
+            samples = Xs[0].index
+            Xs = [X.values for X in Xs]
+        masks = [np.invert(np.isnan(X).all(1)) for X in Xs]
+        transformed_Xs = [X[mask] for X, mask in zip(Xs, masks)]
+        if pandas_format:
+            transformed_Xs = [pd.DataFrame(transformed_X, index=samples[mask])
+                              for transformed_X, mask in zip(transformed_Xs, masks)]
         return transformed_Xs
 
 

@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from imvc.ampute import Amputer
-from imvc.cluster import MKKMIK
+from imvc.cluster import SIMCADC
 
 
 @pytest.fixture
@@ -23,7 +23,7 @@ def sample_data():
 
 def test_default_parameters(sample_data):
     Xs_pandas, Xs_numpy = sample_data
-    model = MKKMIK(random_state=42)
+    model = SIMCADC(random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -34,14 +34,15 @@ def test_default_parameters(sample_data):
         assert max(labels) == (model.n_clusters - 1)
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, model.n_clusters)
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
+        assert model.V_.shape == (model.n_clusters, model.n_clusters)
+        assert model.A_.shape == (model.n_clusters, model.n_clusters)
+        assert model.Z_.shape == (model.n_clusters, n_samples)
         assert model.n_iter_ > 0
 
 def test_custom_parameters(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_clusters = 3
-    model = MKKMIK(n_clusters=n_clusters, random_state=42)
+    model = SIMCADC(n_clusters=n_clusters, random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -53,24 +54,23 @@ def test_custom_parameters(sample_data):
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, n_clusters)
         assert model.n_iter_ > 0
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
+        assert model.V_.shape == (model.n_clusters, model.n_clusters)
+        assert model.A_.shape == (model.n_clusters, model.n_clusters)
+        assert model.Z_.shape == (model.n_clusters, n_samples)
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Only engine=='matlab' is currently supported."):
-        MKKMIK(engine='invalid')
+        SIMCADC(engine='invalid')
     with pytest.raises(ValueError, match="Only engine=='matlab' is currently supported."):
-        model = MKKMIK()
+        model = SIMCADC()
         Xs_pandas, Xs_numpy = sample_data
         model.engine = 'invalid'
         model.fit(Xs_pandas)
-    with pytest.raises(ValueError, match="Invalid kernel_initialization. Expected one of"):
-        MKKMIK(kernel_initialization='invalid')
 
 def test_fit_predict(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_clusters = 3
-    model = MKKMIK(n_clusters=n_clusters, random_state=42)
+    model = SIMCADC(n_clusters=n_clusters, random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -81,14 +81,15 @@ def test_fit_predict(sample_data):
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, n_clusters)
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
+        assert model.V_.shape == (model.n_clusters, model.n_clusters)
+        assert model.A_.shape == (model.n_clusters, model.n_clusters)
+        assert model.Z_.shape == (model.n_clusters, n_samples)
         assert model.n_iter_ > 0
 
 def test_missing_values_handling(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_clusters = 2
-    model = MKKMIK(n_clusters=n_clusters, random_state=42)
+    model = SIMCADC(n_clusters=n_clusters, random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])
@@ -100,8 +101,9 @@ def test_missing_values_handling(sample_data):
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, n_clusters)
-        assert model.KA_.shape == (n_samples, len(Xs))
-        assert len(model.gamma_) == len(Xs)
+        assert model.V_.shape == (model.n_clusters, model.n_clusters)
+        assert model.A_.shape == (model.n_clusters, model.n_clusters)
+        assert model.Z_.shape == (model.n_clusters, n_samples)
         assert model.n_iter_ > 0
 
 if __name__ == "__main__":

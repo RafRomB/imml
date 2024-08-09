@@ -98,7 +98,7 @@ def test_missing_values_handling(sample_data):
         assert min(labels) == 0
         assert max(labels) == (n_clusters - 1)
         assert not np.isnan(labels).any()
-        assert model.embedding_.shape == (20, n_clusters)
+        assert model.embedding_.shape == (n_samples, n_clusters)
         assert len(model.U_) == len(Xs)
         assert len(model.B_) == len(Xs)
         assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)

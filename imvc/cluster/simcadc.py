@@ -43,24 +43,24 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ : np.array
+    embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    V_ : np.array
+    V_ : array-like of shape (n_clusters, n_clusters)
         Commont latent feature matrix.
-    A_ : np.array
+    A_ : array-like of shape (n_clusters, n_clusters)
         Learned anchors.
-    Z_ : np.array
+    Z_ : array-like of shape (n_clusters, n_samples)
         View-specific anchor graph.
-    loss_ : float
-        Value of the loss function.
-    iter_ : int
+    loss_ : array-like of shape (n_iter_,)
+        Values of the loss function.
+    n_iter_ : int
         Number of iterations.
 
     References
     ----------
-    [paper] He, W.-J., Zhang, Z., & Wei, Y. (2023). Scalable incomplete multi-view clustering with adaptive data
-            completion. Information Sciences, 649, 119562. doi:10.1016/j.ins.2023.119562.
-    [code]  https://github.com/DarrenZZhang/INS23-SIMC_ADC
+    .. [#simcadcpaper] He, W.-J., Zhang, Z., & Wei, Y. (2023). Scalable incomplete multi-view clustering with adaptive
+                       data completion. Information Sciences, 649, 119562. doi:10.1016/j.ins.2023.119562.
+    .. [#simcadccode] https://github.com/DarrenZZhang/INS23-SIMC_ADC
 
     Example
     --------
@@ -85,6 +85,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         self.eps = eps
         self.n_anchors = n_clusters if n_anchors is None else n_anchors
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 
@@ -117,6 +120,8 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
+            if not isinstance(Xs[0], pd.DataFrame):
+                Xs = [pd.DataFrame(X) for X in Xs]
             mean_view_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
             incomplete_samples = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
             mean_view_profile = [pd.DataFrame(np.repeat(means, len(incom), axis= 1), columns=incom).values for means, incom in
@@ -136,15 +141,17 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             u,v,a,w,z,iter,obj = oc.SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
                                                 self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
                                                 mean_view_profile, self.beta, self.gamma, nout=7)
+            obj = obj[0]
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
-        model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
+        model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= u)
         self.embedding_ = u
         self.V_ = v
         self.A_ = a
         self.Z_, self.loss_, self.iter_ = z, obj, iter
+        self.n_iter_ = len(self.loss_)
 
         return self
 

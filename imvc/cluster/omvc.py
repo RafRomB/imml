@@ -39,21 +39,23 @@ class OMVC(BaseEstimator, ClassifierMixin):
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    U_ : np.array
-        Basis matrix.
-    V_ : np.array
-        Latent feature matrix.
-    embedding_ : np.array
+    embedding_ : array-like of shape (n_samples, n_clusters)
         Common consensus, latent feature matrix across all the views to be used as input for the KMeans clustering step.
-    loss_ : float
-        Value of the loss function.
+    U_ : list of n_views array-like of shape (n_samples, n_clusters)
+        Basis matrix.
+    V_ : list of n_views array-like of shape (n_features_i, n_clusters)
+        Latent feature matrix.
+    loss_ : array-like of shape (n_iter_,)
+        Values of the loss function.
+    n_iter_ : int
+        Number of iterations.
 
     References
     ----------
-    [paper] W. Shao, L. He, C. -t. Lu and P. S. Yu, "Online multi-view clustering with incomplete views," 2016 IEEE
-             International Conference on Big Data (Big Data), Washington, DC, USA, 2016, pp. 1012-1017,
-             doi: 10.1109/BigData.2016.7840701.
-    [code]  https://github.com/software-shao/online-multiview-clustering-with-incomplete-view
+    .. [#omvcpaper] W. Shao, L. He, C. -t. Lu and P. S. Yu, "Online multi-view clustering with incomplete views,"
+                    2016 IEEE International Conference on Big Data (Big Data), Washington, DC, USA, 2016, pp.
+                    1012-1017, doi: 10.1109/BigData.2016.7840701.
+    .. [#omvccode] https://github.com/software-shao/online-multiview-clustering-with-incomplete-view
 
     Example
     --------
@@ -80,6 +82,9 @@ class OMVC(BaseEstimator, ClassifierMixin):
         self.block_size = block_size
         self.n_pass = n_pass
         self.random_state = random_state
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError("Only engine=='matlab' is currently supported.")
         self.engine = engine
         self.verbose = verbose
 
@@ -133,15 +138,20 @@ class OMVC(BaseEstimator, ClassifierMixin):
             u, v, u_star_loss, loss = oc.ONMF_Multi_PGD_search(transformed_Xs, option, len(Xs[0]),
                                                                missing_samples_by_view, self.block_size, nout=4)
             u_star_loss = u_star_loss[self.n_pass-1]
+            v = [np.array(arr) for arr in v[0]]
+            u = [np.array(arr[0]) for arr in u]
         else:
             raise ValueError("Only engine=='matlab' is currently supported.")
 
-        model = KMeans(n_clusters= self.n_clusters, random_state= self.random_state)
+        model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= u_star_loss)
         self.U_ = u
         self.V_ = v
         self.embedding_ = u_star_loss
-        self.loss_ = loss
+        if isinstance(loss, float):
+            loss = np.array([[loss]])
+        self.loss_ = loss[0]
+        self.n_iter_ = len(self.loss_)
 
         return self
 
