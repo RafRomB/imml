@@ -40,7 +40,7 @@ def test_custom_parameters(sample_data):
             init_modules = {'module1': list(Xs[0].index[:10]),
                             'module2': list(Xs[0].index[10:]),
                             }
-            model = MONET(random_state=42, percentile_remove_edge=10, init_modules=init_modules, verbose=True)
+            model = MONET(random_state=42, percentile_remove_edge=20, init_modules=init_modules, verbose=True)
         except AttributeError:
             model = MONET(random_state=42, percentile_remove_edge=10, verbose=True, min_mod_size=1)
         labels = model.fit_predict(Xs)
