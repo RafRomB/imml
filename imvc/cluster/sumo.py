@@ -1,3 +1,4 @@
+import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from scipy.cluster.hierarchy import cophenet, linkage
 from scipy.spatial.distance import pdist
@@ -26,10 +27,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
-    method : str, default='euclidean'
+    method : str or list of str, default='euclidean'
         either one method of sample-sample similarity calculation, or list of methods for every view (available
         methods: ['euclidean', 'cosine', 'pearson', 'spearman']).
-.   missing : float or list, default=[0.1]
+    missing : float or list of float, default=[0.1]
         acceptable fraction of available values for assessment of distance/similarity between pairs of samples - either
         one value or list for every view.
     neighbours : float, optional (default=0.1)
@@ -47,8 +48,8 @@ class SUMO(BaseEstimator, ClassifierMixin):
     max_iter : int, optional (default=500)
         Maximum number of iterations for factorization.
     tol : float, optional (default=1e-5)
-        If objective cost function value fluctuation (|Δℒ|) is smaller than this value, stop iterations before
-         reaching max_iter.
+        If objective cost function value fluctuation is smaller than this value, stop iterations before
+        reaching max_iter.
     subsample : float, optional (default=0.05)
         Fraction of samples randomly removed from each run, cannot be greater than 0.5.
     calc_cost : int, optional (default=20)
@@ -61,33 +62,32 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Determines the randomness. Use an int to make the randomness deterministic.
     verbose : bool, default=False
         Verbosity mode.
-.    n_jobs : int, default=1
+    n_jobs : int, default=1
         Number of threads to run in parallel.
 
     Attributes
     ----------
     labels_ : array-like of shape (n_samples,)
         Labels of each point in training data.
-    embedding_ : np.array
+    embedding_ : array-like of shape (n_samples, n_clusters)
         The final spectral representation of the data to be used as input for the KMeans clustering step.
-    graph_ :
+    graph_ : MultiplexNet
         Multiview graph.
-    nmf_ : None
+    nmf_ : UnsupervisedSumoNMF
         The nonnegative matrix factorization (NMF) object.
-    similarity_ :
+    similarity_ : dict of length n_views, with views as keys and an array-like of shape (n_samples,n_samples) as values.
         List of adjacency matrix.
-    cophenet_list_ :
+    cophenet_list_ : ndarray of shape (repetitions,).
         Object created by SUMO
-    pac_list_ :
+    pac_list_ : ndarray of shape (repetitions,).
         Object created by SUMO
 
     References
     ----------
-    [paper] Sienkiewicz, K., Chen, J., Chatrath, A., Lawson, J. T., Sheffield, N. C., Zhang, L., & Ratan, A. (2022).
-            Detecting molecular subtypes from multi-omics datasets using SUMO. In Cell Reports Methods (Vol. 2, Issue 1,
-            p. 100152). Elsevier BV. https://doi.org/10.1016/j.crmeth.2021.100152
-    [documentation] https://python-sumo.readthedocs.io/en/latest/index.html
-    [code] https://github.com/ratan-lab/sumo/tree/master
+    .. [#sumopaper1] Sienkiewicz, K., Chen, J., Chatrath, A., Lawson, J. T., Sheffield, N. C., Zhang, L., & Ratan, A.
+                     (2022). Detecting molecular subtypes from multi-omics datasets using SUMO. In Cell Reports Methods
+                     (Vol. 2, Issue 1, p. 100152). Elsevier BV. https://doi.org/10.1016/j.crmeth.2021.100152
+    .. [#sumocode] https://github.com/ratan-lab/sumo/tree/master
 
     Example
     --------
@@ -102,11 +102,16 @@ class SUMO(BaseEstimator, ClassifierMixin):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, method=['euclidean'], missing: list = [0.1], neighbours: float = 0.1,
-                 alpha: float = 0.5, sparsity: list = [0.1], repetitions: int = 60, cluster_method: str = "max_value",
+    def __init__(self, n_clusters: int = 8, method: list = None, missing: list = None, neighbours: float = 0.1,
+                 alpha: float = 0.5, sparsity: list = None, repetitions: int = 60, cluster_method: str = "max_value",
                  max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05, calc_cost: int = 20,
                  h_init: int = None, rep: int = 5, random_state: int = None, verbose: bool = False, n_jobs: int = 1):
 
+        if random_state is None:
+            random_state = np.random.default_rng().integers(10000)
+
+        if method is None:
+            method = ['euclidean']
         args_method = ['euclidean', 'cosine', 'pearson', 'spearman']
         if isinstance(method, str):
             if method not in args_method:
@@ -117,6 +122,11 @@ class SUMO(BaseEstimator, ClassifierMixin):
                 if method_i not in args_method:
                     msg = f"Invalid value for 'method'. Expected one of: {args_method}."
                     raise ValueError(msg)
+
+        if missing is None:
+            missing = [0.1]
+        if sparsity is None:
+            sparsity = [0.1]
 
         if repetitions < 1:
             msg = "Incorrect value of 'repetitions' parameter. It must be repetitions > 0."
@@ -172,6 +182,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
         self :  returns an instance of self.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
+
+        if not isinstance(Xs[0], pd.DataFrame):
+            Xs = [pd.DataFrame(X) for X in Xs]
+
         if len(self.missing) == 1:
             if self.verbose:
                 print(f"#Setting all 'missing' parameters to {self.missing[0]}")
@@ -215,20 +229,24 @@ class SUMO(BaseEstimator, ClassifierMixin):
             print(f"#Number of samples randomly removed in each run: {n_sub_samples} out of {all_samples.size}")
         # create solver
         self.nmf_ = UnsupervisedSumoNMF(graph=self.graph_, nbins=self.repetitions,
-                                        bin_size=self.graph_.nodes - n_sub_samples, rseed=self.random_state)
+                                        bin_size=self.graph_.nodes - n_sub_samples,
+                                        random_state=self.random_state)
         global _sumo_run
         _sumo_run = self  # this solves multiprocessing issue with pickling
 
         if self.n_jobs == 1:
-            results = [SUMO._run_factorization(sparsity=sparsity, k=self.n_clusters, sumo_run=_sumo_run,
-                                               verbose=self.verbose) for sparsity in self.sparsity]
+            results = [SUMO._run_factorization(sparsity=sparsity, k=self.n_clusters,
+                                               sumo_run=_sumo_run, verbose=self.verbose,
+                                               random_state=self.random_state)
+                       for sparsity in self.sparsity]
             sparsity_order = self.sparsity
         else:
             pool = mp.Pool(self.t)
             results = []
             sparsity_order = []
             iproc = 1
-            for res in pool.imap_unordered(SUMO.run_thread_wrapper, zip(self.sparsity, self.n_clusters)):
+            for res in pool.imap_unordered(SUMO._run_thread_wrapper, zip(self.sparsity, self.n_clusters),
+                                           self.random_state):
                 results.append(res[0])
                 sparsity_order.append(res[1])
                 iproc += 1
@@ -301,7 +319,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
 
     @staticmethod
-    def _run_factorization(sparsity: float, k: int, sumo_run, verbose: bool):
+    def _run_factorization(sparsity: float, k: int, sumo_run, verbose: bool, random_state):
         """ Run factorization for set sparsity and number of clusters
         Args:
             sparsity (float): value of sparsity penalty
@@ -311,10 +329,6 @@ class SUMO(BaseEstimator, ClassifierMixin):
             quality (float): assessed quality of cluster structure
             outfile (str): path to .npz output file with results of factorization
         """
-        #todo fix random seed
-        if sumo_run.random_state is not None:
-            np.random.seed(sumo_run.random_state)
-
         # run factorization N times
         results = []
         for repeat in range(sumo_run.repetitions):
@@ -333,7 +347,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
             # extract computed clusters
             if verbose:
                 print(f"#Using {sumo_run.cluster_method} for cluster labels extraction)")
-            result.extract_clusters(method=sumo_run.cluster_method, random_state=sumo_run.random_state)
+            result.extract_clusters(method=sumo_run.cluster_method, random_state=sumo_run.random_state, verbose=verbose)
             results.append(result)
 
         # consensus graph
@@ -347,7 +361,9 @@ class SUMO(BaseEstimator, ClassifierMixin):
         minRE, maxRE = min(all_REs), max(all_REs)
 
         for rep in range(sumo_run.rep):
-            run_indices = list(np.random.choice(range(len(results)), sumo_run.runs_per_con, replace=False))
+            run_indices = list(np.random.default_rng(sumo_run.random_state).choice(range(len(results)),
+                                                                                   sumo_run.runs_per_con,
+                                                                                   replace=False))
 
             consensus = np.zeros((sumo_run.graph_.nodes, sumo_run.graph_.nodes))
             weights = np.empty((sumo_run.graph_.nodes, sumo_run.graph_.nodes))
@@ -396,7 +412,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
         if verbose:
             print("#Extracting final clustering result, using normalized cut")
-        consensus_labels, embeddings = extract_ncut(consensus, k=k)
+        consensus_labels, embeddings = extract_ncut(consensus, k=k, random_state=random_state)
 
         cluster_array = np.empty((sumo_run.graph_.sample_names.shape[0], 2), dtype=np.object)
         cluster_array[:, 0] = sumo_run.graph_.sample_names
@@ -440,10 +456,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
 
     @staticmethod
-    def run_thread_wrapper(args: tuple):
+    def _run_thread_wrapper(args: tuple, random_state):
         global sumo_run
         # this solves multiprocessing issue with pickling
         assert len(args) == 2
-        return SUMO._run_factorization(sparsity=args[0], k=args[1], sumo_run=sumo_run), args[0]
+        return SUMO._run_factorization(sparsity=args[0], k=args[1], sumo_run=sumo_run, random_state=random_state), args[0]
 
 
