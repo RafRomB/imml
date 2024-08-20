@@ -17,7 +17,7 @@ class RandomWalker:
         self.nodes=nodes
         self.verbose=verbose
         if random_state is None:
-            random_state = np.random.default_rng().integers(10000)
+            random_state = int(np.random.default_rng().integers(10000))
         self.random_state=random_state
 
     def walk(self, walk_length, start_node):

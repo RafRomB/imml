@@ -2,7 +2,6 @@ import copy
 import os
 import contextlib
 import tempfile
-
 import pandas as pd
 import numpy as np
 from sklearn.base import TransformerMixin, BaseEstimator
@@ -23,27 +22,29 @@ class MOFA(TransformerMixin, BaseEstimator):
     several data matrices with measurements of multiple -views data types on the same or on overlapping sets of
     samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors.
 
+    It can deal with both view- and feature-wise missing and impute them.
+
     Parameters
     ----------
-    factors : int, default=10
-        The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
+    n_components : int, default=10
+        The number of clusters to generate.
     impute : bool, default=True
         True if missing values should be imputed.
-    data_options : dict (default={})
+    data_options : dict, default=None
         Data processing options, such as scale_views and scale_groups.
-    data_matrix : dict (default={})
+    data_matrix : dict, default=None
         Keys such as likelihoods, view_names, etc.
-    model_options : dict (default={})
+    model_options : dict, default=None
         Model options, such as ard_factors or ard_weights.
-    train_options : dict (default={})
+    train_options : dict, default=None
         Keys such as iter, tolerance.
-    stochastic_options : dict (default={})
+    stochastic_options : dict, default=None
         Stochastic variational inference options, such as learning rate or batch size.
-    covariates : dict (default={})
+    covariates : dict, default=None
         Slot to store sample covariate for training in MEFISTO. Keys are sample_cov and covariates_names.
-    smooth_options : dict (default={})
+    smooth_options : dict, default=None
         options for smooth inference, such as scale_cov or model_groups.
-    random_state : int (default=None)
+    random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     verbose : bool, default=False
         Verbosity mode.
@@ -52,10 +53,9 @@ class MOFA(TransformerMixin, BaseEstimator):
     ----------
     mofa_ : mofa object
         Entry point as the original library. This can be used for data analysis and explainability.
-    mofa_model_ : Class around HDF5-based model on disk
-        This can be used for data analysis and explainability. It provides utility functions to get factors, weights,
-        features, and samples info in the form of Pandas dataframes, and data as a NumPy array.
-    weights_: ndarray
+    factors_: array-like of shape (n_samples, n_components)
+        Factors computed by the model.
+    weights_: list of n_views array-likes of shape (n_features_i, n_components)
         Weights of the MOFA model.
 
     References
@@ -78,10 +78,29 @@ class MOFA(TransformerMixin, BaseEstimator):
     """
 
     
-    def __init__(self, factors : int = 10, impute:bool = True, data_options = {}, data_matrix = {}, model_options = {},
-                 train_options = {}, stochastic_options = {}, covariates = {}, smooth_options = {},
-                 random_state : int = None, verbose = False):
-        self.factors = factors
+    def __init__(self, n_components : int = 10, impute:bool = True,
+                 data_options : dict = None, data_matrix : dict = None, model_options : dict = None,
+                 train_options : dict = None, stochastic_options : dict = None, covariates : dict = None,
+                 smooth_options : dict = None, random_state : int = None, verbose = False):
+
+        if data_options is None:
+            data_options = {}
+        if data_matrix is None:
+            data_matrix = {}
+        if model_options is None:
+            model_options = {}
+        if train_options is None:
+            train_options = {}
+        if stochastic_options is None:
+            stochastic_options = {}
+        if covariates is None:
+            covariates = {}
+        if smooth_options is None:
+            smooth_options = {}
+
+        if n_components < 1:
+            raise ValueError(f"Invalid n_components. It must be greater or equal to 1")
+        self.n_components = n_components
         self.impute = impute
         self.random_state = random_state
         self.verbose = verbose        
@@ -129,8 +148,7 @@ class MOFA(TransformerMixin, BaseEstimator):
                 self.mofa_.save(outfile=outfile, save_data=True, save_parameters=False, expectations=None)
                 model = mfx.mofa_model(outfile)
                 self.weights_ = model.get_weights(concatenate_views= False)
-                self.factors_ = model.get_factors(concatenate_groups= False)
-                self._columns = model._check_factors(np.arange(self.factors).tolist())[1]
+                self.factors_ = model.get_factors()
                 model.close()
         return self
 
@@ -148,61 +166,38 @@ class MOFA(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features)
+        transformed_Xs : list of n_views array-likes of shape (n_samples, n_components)
             The projected data.
         """
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        if not isinstance(Xs[0], pd.DataFrame):
+            Xs = [pd.DataFrame(X) for X in Xs]
+
         ws = self.weights_
         winv = [np.linalg.pinv(w) for w in ws]
         transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
         if self.impute:
-            imputed_Xs = copy.deepcopy(Xs)
-            for idx, (transformed_X, w) in enumerate(zip(transformed_Xs, ws)):
-                imputed_X = np.dot(np.nan_to_num(transformed_X, nan=0.0), w.T)
-                imputed_X = pd.DataFrame(imputed_X, columns=imputed_Xs[idx].columns)
-                imputed_Xs[idx] = imputed_Xs[idx].fillna(imputed_X)
+            imputed_Xs = self._impute(Xs=Xs, transformed_Xs=transformed_Xs, weights=ws)
             transformed_Xs = [np.dot(X, w.T) for X, w in zip(imputed_Xs, winv)]
 
         if self.transform_ == "pandas":
-            transformed_Xs = [pd.DataFrame(transformed_X, columns=self._columns, index=X.index)
-                              for X,transformed_X in zip(Xs,transformed_Xs)]
+            transformed_Xs = [pd.DataFrame(transformed_X, index=X.index) for X,transformed_X in zip(Xs,transformed_Xs)]
         return transformed_Xs
 
 
-    def impute(self, Xs):
-        r"""
-        Impute incomplete multi-view dataset.
-
-        Parameters
-        ----------
-        Xs : list of array-likes
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
-
-        Returns
-        -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features)
-            The imputed multi-view dataset.
-        """
-        ws = self.weights_
-        winv = [np.linalg.pinv(w) for w in ws]
-        transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
+    def _impute(self, Xs, transformed_Xs, weights):
         imputed_Xs = copy.deepcopy(Xs)
-        for idx, (transformed_X, w) in enumerate(zip(transformed_Xs, ws)):
+        for idx, (transformed_X, w) in enumerate(zip(transformed_Xs, weights)):
             imputed_X = np.dot(np.nan_to_num(transformed_X, nan=0.0), w.T)
             imputed_X = pd.DataFrame(imputed_X, columns=imputed_Xs[idx].columns)
             imputed_Xs[idx] = imputed_Xs[idx].fillna(imputed_X)
-
-        if self.transform_ == "pandas":
-            imputed_Xs = [pd.DataFrame(transformed_X, columns=self._columns, index=X.index)
-                              for X,transformed_X in zip(Xs,imputed_Xs)]
         return imputed_Xs
 
     
     def _run_mofa(self, data):
         self.mofa_.set_data_options(**self.data_options)
         self.mofa_.set_data_matrix(data = data, **self.data_matrix)
-        self.mofa_.set_model_options(factors = self.factors, **self.model_options)
+        self.mofa_.set_model_options(factors = self.n_components, **self.model_options)
         self.mofa_.set_train_options(seed = self.random_state, verbose = self.verbose, **self.train_options)
         self.mofa_.set_stochastic_options(**self.stochastic_options)
         if self.covariates:
@@ -215,19 +210,6 @@ class MOFA(TransformerMixin, BaseEstimator):
             self.mofa_.model = _ModifiedStochasticBayesNet(self.mofa_.model.dim, self.mofa_.model.nodes)
         self.mofa_.run()
         return None
-
-
-    def get_feature_names_out(self):
-        r"""
-        Get output feature names for transformation.
-
-        Returns
-        -------
-        Returns:
-        feature_names_out: list of str objects
-            Transformed feature names.
-        """
-        return self._columns
 
 
     def set_output(self, *, transform=None):

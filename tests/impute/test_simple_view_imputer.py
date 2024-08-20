@@ -98,3 +98,7 @@ def test_invalid_value_function(sample_data):
     Xs_pandas, Xs_numpy, indxs, means = sample_data
     with pytest.raises(ValueError, match="Invalid value. Expected one of:"):
         simple_view_imputer(Xs_pandas, value='invalid')
+
+
+if __name__ == "__main__":
+    pytest.main()

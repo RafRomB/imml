@@ -1,4 +1,6 @@
 import os
+from os.path import dirname
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -85,9 +87,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         self.eps = eps
         self.n_anchors = n_clusters if n_anchors is None else n_anchors
         self.random_state = random_state
-        engines_options = ["matlab"]
-        if engine not in engines_options:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+        self._engines_options = ["matlab"]
+        if engine not in self._engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
 
@@ -113,8 +115,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
         if self.engine=="matlab":
             import oct2py
-            matlab_folder = os.path.join("imvc", "cluster", "_simcadc")
-            matlab_files = ["SIMC.m", "EProjSimplex_new.m"]
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
             oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
@@ -124,7 +127,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
                 Xs = [pd.DataFrame(X) for X in Xs]
             mean_view_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
             incomplete_samples = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
-            mean_view_profile = [pd.DataFrame(np.repeat(means, len(incom), axis= 1), columns=incom).values for means, incom in
+            mean_view_profile = [pd.DataFrame(np.tile(means, len(incom))).values for means, incom in
                                   zip(mean_view_profile, incomplete_samples)]
 
             transformed_Xs = simple_view_imputer(Xs, value="zeros")
@@ -143,7 +146,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
                                                 mean_view_profile, self.beta, self.gamma, nout=7)
             obj = obj[0]
         else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= u)

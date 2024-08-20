@@ -76,9 +76,9 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         self.tol = tol
         self.block_size = block_size
         self.random_state = random_state
-        engines_options = ["matlab"]
-        if engine not in engines_options:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+        self._engines_options = ["matlab"]
+        if engine not in self._engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
 
@@ -128,7 +128,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
                 oc.rand('seed', self.random_state)
             labels, V = oc.OPIMC(transformed_Xs, w, options, observed_view_indicator, nout= 2)
         else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         self.labels_ = pd.factorize(labels[:,0])[0]
         self.embedding_ = V
