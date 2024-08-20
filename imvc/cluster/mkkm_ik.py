@@ -91,9 +91,9 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         self.qnorm = qnorm
         self.kernel = kernel
         self.random_state = random_state
-        engines_options = ["matlab"]
-        if engine not in engines_options:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+        self._engines_options = ["matlab"]
+        if engine not in self._engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
         self.kernel_initializations = {"zeros": "algorithm2", "mean": "algorithm3", "knn": "algorithm0",
@@ -148,7 +148,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             KA = KA[:, 0]
             obj = obj[0]
         else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         model = KMeans(n_clusters=self.n_clusters, n_init="auto", random_state=self.random_state)
         self.labels_ = model.fit_predict(X=H_normalized)

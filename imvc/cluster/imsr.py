@@ -73,17 +73,17 @@ class IMSR(BaseEstimator, ClassifierMixin):
         try:
             assert lbd > 0
         except AssertionError:
-            raise ValueError("lbd should be a positive value.")
+            raise ValueError("Invalid lbd. It should be a positive value. ")
         try:
             assert gamma > 0
         except AssertionError:
-            raise ValueError("gamma should be a positive value.")
+            raise ValueError("Invalid gamma. It should be a positive value. ")
         self.lbd = lbd
         self.gamma = gamma
         self.random_state = random_state
-        engines_options = ["matlab"]
-        if engine not in engines_options:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+        self._engines_options = ["matlab"]
+        if engine not in self._engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
 
@@ -129,7 +129,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
                 oc.rand('seed', self.random_state)
             Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
         else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= Z)

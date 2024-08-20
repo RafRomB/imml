@@ -22,9 +22,8 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 def test_default_parameters(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     model = MSNE(random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -36,10 +35,9 @@ def test_default_parameters(sample_data):
         assert model.embedding_.shape == (n_samples, model.embed_size)
 
 def test_custom_parameters(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     n_clusters = 3
     model = MSNE(n_clusters=n_clusters, embed_size=10, random_state=42, verbose=True)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -50,18 +48,16 @@ def test_custom_parameters(sample_data):
         assert not np.isnan(labels).any()
         assert model.embedding_.shape == (n_samples, model.embed_size)
 
-def test_invalid_engine(sample_data):
+def test_invalid_parameters(sample_data):
     with pytest.raises(ValueError, match="n_clusters should be a positive value."):
         MSNE(n_clusters=-1)
     with pytest.raises(ValueError, match="k should be smaller than the number of samples."):
-        Xs_pandas, Xs_numpy = sample_data
-        MSNE(k= 1000, random_state=42).fit_predict(Xs_pandas)
+        MSNE(k= 1000, random_state=42).fit_predict(sample_data[0])
 
 def test_fit_predict(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     n_clusters = 3
     model = MSNE(n_clusters=n_clusters, random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -73,10 +69,9 @@ def test_fit_predict(sample_data):
         assert model.embedding_.shape == (n_samples, model.embed_size)
 
 def test_missing_values_handling(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     n_clusters = 2
     model = MSNE(n_clusters=n_clusters, random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)

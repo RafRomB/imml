@@ -98,9 +98,9 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         self.weight_mode = weight_mode
         self.max_iter = max_iter
         self.random_state = random_state
-        engines_options = ["matlab"]
-        if engine not in engines_options:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+        self._engines_options = ["matlab"]
+        if engine not in self._engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
 
@@ -152,7 +152,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
                                                "WeightMode": self.weight_mode,
                                                "k": self.k}, nout=2)
         else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         v = v.T

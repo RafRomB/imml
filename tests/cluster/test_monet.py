@@ -10,31 +10,31 @@ from imvc.cluster import MONET
 @pytest.fixture
 def sample_data():
     X1 = pd.DataFrame(np.random.default_rng(42).random((20, 3)),
+                      index=list(ascii_lowercase)[:20],
                       columns=['feature1', 'feature2', 'feature3'])
     X2 = pd.DataFrame(np.random.default_rng(42).random((20, 2)),
+                      index=list(ascii_lowercase)[:20],
                       columns=['feature4', 'feature5'])
     X3 = pd.DataFrame(np.random.default_rng(42).random((20, 5)),
+                      index=list(ascii_lowercase)[:20],
                       columns=['feature6', 'feature7', 'feature8', 'feature9', 'feature10'])
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
 def test_default_parameters(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     model = MONET()
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
         assert len(labels) == n_samples
         assert len(np.unique(labels[~np.isnan(labels)])) == model.n_clusters_
-        assert min(labels) == 0
-        assert max(labels) == (model.n_clusters_ - 1)
+        assert np.nanmin(labels) == 0
+        assert np.nanmax(labels) == (model.n_clusters_ - 1)
         assert model.total_weight_ > 0
 
 def test_custom_parameters(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
-
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         try:
             init_modules = {'module1': list(Xs[0].index[:10]),
@@ -47,8 +47,8 @@ def test_custom_parameters(sample_data):
         assert labels is not None
         assert len(labels) == n_samples
         assert len(np.unique(labels[~np.isnan(labels)])) == model.n_clusters_
-        assert min(labels) == 0
-        assert max(labels) == (model.n_clusters_ - 1)
+        assert np.nanmin(labels) == 0
+        assert np.nanmax(labels) == (model.n_clusters_ - 1)
         assert model.total_weight_ > 0
 
 def test_invalid_params(sample_data):
@@ -62,22 +62,20 @@ def test_invalid_params(sample_data):
         model.fit_predict(sample_data[0])
 
 def test_fit_predict(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     model = MONET(random_state=42, verbose=True)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
         assert len(labels) == n_samples
         assert len(np.unique(labels[~np.isnan(labels)])) == model.n_clusters_
-        assert min(labels) == 0
-        assert max(labels) == (model.n_clusters_ - 1)
+        assert np.nanmin(labels) == 0
+        assert np.nanmax(labels) == (model.n_clusters_ - 1)
         assert model.total_weight_ > 0
 
 def test_missing_values_handling(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     model = MONET(random_state=42, verbose=True)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         labels = model.fit_predict(Xs)
         assert labels is not None

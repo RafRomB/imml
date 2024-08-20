@@ -82,9 +82,9 @@ class OMVC(BaseEstimator, ClassifierMixin):
         self.block_size = block_size
         self.n_pass = n_pass
         self.random_state = random_state
-        engines_options = ["matlab"]
-        if engine not in engines_options:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+        self._engines_options = ["matlab"]
+        if engine not in self._engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
 
@@ -141,7 +141,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
             v = [np.array(arr) for arr in v[0]]
             u = [np.array(arr[0]) for arr in u]
         else:
-            raise ValueError("Only engine=='matlab' is currently supported.")
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= u_star_loss)

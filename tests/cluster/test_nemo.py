@@ -22,9 +22,8 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 def test_default_parameters(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     model = NEMO(random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -39,9 +38,8 @@ def test_default_parameters(sample_data):
         assert model.num_neighbors_[0] > 0
 
 def test_custom_parameters(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     model = NEMO(n_clusters=list(range(2, 4)), num_neighbors=3, random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -54,21 +52,20 @@ def test_custom_parameters(sample_data):
         assert model.affinity_matrix_.shape == (n_samples, n_samples)
         assert len(model.num_neighbors_) == len(Xs)
         assert model.num_neighbors_[0] > 0
+    NEMO(n_clusters=list(range(2, 4)), num_neighbors=[3, 3, 3], random_state=42).fit_predict(Xs)
 
-def test_invalid_engine(sample_data):
+def test_invalid_parameters(sample_data):
     with pytest.raises(ValueError, match="Invalid engine."):
         NEMO(engine='invalid')
     with pytest.raises(ValueError, match="Invalid engine."):
         model = NEMO()
-        Xs_pandas, Xs_numpy = sample_data
         model.engine = 'invalid'
-        model.fit(Xs_pandas)
+        model.fit(sample_data[0])
 
 def test_fit_predict(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     n_clusters = 3
     model = NEMO(n_clusters=n_clusters, random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -82,10 +79,9 @@ def test_fit_predict(sample_data):
         assert model.num_neighbors_[0] > 0
 
 def test_missing_values_handling(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
     n_clusters = 2
     model = NEMO(n_clusters=n_clusters, random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
+    for Xs in sample_data:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)

@@ -1,0 +1,115 @@
+from string import ascii_lowercase
+import pytest
+import numpy as np
+import pandas as pd
+
+from imvc.ampute import Amputer
+from imvc.cluster import SUMO
+
+
+@pytest.fixture
+def sample_data():
+    X1 = pd.DataFrame(np.random.default_rng(42).random((20, 3)),
+                      index=list(ascii_lowercase)[:20],
+                      columns=['feature1', 'feature2', 'feature3'])
+    X2 = pd.DataFrame(np.random.default_rng(42).random((20, 2)),
+                      index=list(ascii_lowercase)[:20],
+                      columns=['feature4', 'feature5'])
+    X3 = pd.DataFrame(np.random.default_rng(42).random((20, 5)),
+                      index=list(ascii_lowercase)[:20],
+                      columns=['feature6', 'feature7', 'feature8', 'feature9', 'feature10'])
+    Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
+    return Xs_pandas, Xs_numpy
+
+def test_default_parameters(sample_data):
+    model = SUMO(random_state=42)
+    for Xs in sample_data:
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == model.n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (model.n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert model.embedding_.shape == (n_samples, model.n_clusters)
+        assert len(model.similarity_) == len(Xs)
+        assert model.similarity_["0"].shape == (n_samples, n_samples)
+        assert len(model.cophenet_list_) == model.rep
+        assert len(model.pac_list_) == model.rep
+
+def test_custom_parameters(sample_data):
+    n_clusters = 3
+    model = SUMO(n_clusters=n_clusters, random_state=42, verbose=True)
+    for Xs in sample_data:
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert model.embedding_.shape == (n_samples, n_clusters)
+        assert len(model.similarity_) == len(Xs)
+        assert model.similarity_["0"].shape == (n_samples, n_samples)
+        assert len(model.cophenet_list_) == model.rep
+        assert len(model.pac_list_) == model.rep
+
+def test_invalid_params(sample_data):
+    with pytest.raises(ValueError, match="Invalid method. Expected one of"):
+        SUMO(method='invalid')
+    with pytest.raises(ValueError, match="Invalid method. Expected one of"):
+        SUMO(method=['invalid'])
+    with pytest.raises(ValueError, match="Incorrect repetitions. It must be repetitions"):
+        SUMO(repetitions=0)
+    with pytest.raises(ValueError, match="Incorrect rep."):
+        SUMO(rep=0)
+    with pytest.raises(ValueError, match="Incorrect n_jobs."):
+        SUMO(n_jobs=0)
+    with pytest.raises(ValueError, match="Incorrect subsample."):
+        SUMO(subsample=0.8)
+    with pytest.raises(ValueError, match="number of similarity methods does not correspond."):
+        SUMO(method=["euclidean"] * 5).fit(sample_data[0])
+    with pytest.raises(ValueError, match="Incorrect h_init."):
+        SUMO(h_init=-1).fit(sample_data[0])
+
+def test_fit_predict(sample_data):
+    n_clusters = 3
+    model = SUMO(n_clusters=n_clusters, random_state=42)
+    for Xs in sample_data:
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert model.embedding_.shape == (n_samples, n_clusters)
+        assert len(model.similarity_) == len(Xs)
+        assert model.similarity_["0"].shape == (n_samples, n_samples)
+        assert len(model.cophenet_list_) == model.rep
+        assert len(model.pac_list_) == model.rep
+
+def test_missing_values_handling(sample_data):
+    n_clusters = 2
+    model = SUMO(n_clusters=n_clusters, random_state=42)
+    for Xs in sample_data:
+        Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert model.embedding_.shape == (n_samples, n_clusters)
+        assert len(model.similarity_) == len(Xs)
+        assert model.similarity_["0"].shape == (n_samples, n_samples)
+        assert len(model.cophenet_list_) == model.rep
+        assert len(model.pac_list_) == model.rep
+
+if __name__ == "__main__":
+    pytest.main()

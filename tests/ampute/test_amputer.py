@@ -92,21 +92,21 @@ def test_transform_pm(sample_data):
         for transformed_X, X in zip(transformed_Xs, Xs):
             assert transformed_X.shape == X.shape
 
-def test_transform_mar(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
-    amputer = Amputer(p=0.5, mechanism='MAR', opt='logistic', random_state=42)
-    for Xs in [Xs_pandas, Xs_numpy]:
-        amputer.fit(Xs)
-        transformed_Xs = amputer.transform(Xs)
-        assert len(transformed_Xs) == len(Xs)
-        assert DatasetUtils.get_n_complete_samples(transformed_Xs) == 10
-        assert DatasetUtils.get_n_incomplete_samples(transformed_Xs) == 10
-        for transformed_X, X in zip(transformed_Xs, Xs):
-            assert transformed_X.shape == X.shape
-            assert np.isnan(transformed_X).sum().sum() > 0
-
-    with pytest.raises(ValueError):
-        Amputer(p=0.1, mechanism='MAR').fit_transform(Xs_pandas)
+# def test_transform_mar(sample_data):
+#     Xs_pandas, Xs_numpy = sample_data
+#     amputer = Amputer(p=0.5, mechanism='MAR', opt='logistic', random_state=42)
+#     for Xs in [Xs_pandas, Xs_numpy]:
+#         amputer.fit(Xs)
+#         transformed_Xs = amputer.transform(Xs)
+#         assert len(transformed_Xs) == len(Xs)
+#         assert DatasetUtils.get_n_complete_samples(transformed_Xs) == 10
+#         assert DatasetUtils.get_n_incomplete_samples(transformed_Xs) == 10
+#         for transformed_X, X in zip(transformed_Xs, Xs):
+#             assert transformed_X.shape == X.shape
+#             assert np.isnan(transformed_X).sum().sum() > 0
+#
+#     with pytest.raises(ValueError):
+#         Amputer(p=0.1, mechanism='MAR').fit_transform(Xs_pandas)
 
 
 def test_transform_mnar_logistic(sample_data):

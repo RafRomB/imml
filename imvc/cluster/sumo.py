@@ -1,3 +1,5 @@
+from typing import Union
+
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from scipy.cluster.hierarchy import cophenet, linkage
@@ -33,30 +35,30 @@ class SUMO(BaseEstimator, ClassifierMixin):
     missing : float or list of float, default=[0.1]
         acceptable fraction of available values for assessment of distance/similarity between pairs of samples - either
         one value or list for every view.
-    neighbours : float, optional (default=0.1)
+    neighbours : float, default=0.1
         fraction of nearest neighbours to use for sample similarity calculation using Euclidean distance
         similarity.
-    alpha : float, optional (default=0.5)
+    alpha : float, default=0.5
         hypherparameter of RBF similarity kernel, for Euclidean distance similarity.
-    sparsity : float or list, optional (default=[0.1])
+    sparsity : float or list of float, default=[0.1]
         either one value or list of sparsity penalty values for H matrix (sumo will try different values and select
         the best results).
-    repetitions : int, optional (default=60)
+    repetitions : int, default=60
         Number of repetitions.
-    cluster_method : str, optional (default="max_value")
+    cluster_method : str, default="max_value"
         Method of cluster extraction. Options are 'max_value' or'spectral'.
-    max_iter : int, optional (default=500)
+    max_iter : int, default=500
         Maximum number of iterations for factorization.
-    tol : float, optional (default=1e-5)
+    tol : float, default=1e-5
         If objective cost function value fluctuation is smaller than this value, stop iterations before
         reaching max_iter.
-    subsample : float, optional (default=0.05)
+    subsample : float, default=0.05
         Fraction of samples randomly removed from each run, cannot be greater than 0.5.
-    calc_cost : int, optional (default=20)
+    calc_cost : int, default=20
         Number of steps between every calculation of objective cost function.
-    h_init : int, optional (default=None)
+    h_init : int, default=None
         index of adjacency matrix to use for H matrix initialization (by default using average adjacency).
-    rep : int, optional (default=5)
+    rep : int, default=5
         number of times consensus matrix is created for the purpose of assessing clustering quality.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
@@ -77,9 +79,9 @@ class SUMO(BaseEstimator, ClassifierMixin):
         The nonnegative matrix factorization (NMF) object.
     similarity_ : dict of length n_views, with views as keys and an array-like of shape (n_samples,n_samples) as values.
         List of adjacency matrix.
-    cophenet_list_ : ndarray of shape (repetitions,).
+    cophenet_list_ : ndarray of shape (rep,).
         Object created by SUMO
-    pac_list_ : ndarray of shape (repetitions,).
+    pac_list_ : ndarray of shape (rep,).
         Object created by SUMO
 
     References
@@ -102,25 +104,26 @@ class SUMO(BaseEstimator, ClassifierMixin):
     >>> labels = pipeline.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, method: list = None, missing: list = None, neighbours: float = 0.1,
-                 alpha: float = 0.5, sparsity: list = None, repetitions: int = 60, cluster_method: str = "max_value",
-                 max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05, calc_cost: int = 20,
-                 h_init: int = None, rep: int = 5, random_state: int = None, verbose: bool = False, n_jobs: int = 1):
+    def __init__(self, n_clusters: int = 8, method: Union[str, list] = None, missing: list = None,
+                 neighbours: float = 0.1, alpha: float = 0.5, sparsity: list = None, repetitions: int = 60,
+                 cluster_method: str = "max_value", max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05,
+                 calc_cost: int = 20, h_init: int = None, rep: int = 5, random_state: int = None,
+                 verbose: bool = False, n_jobs: int = 1):
 
         if random_state is None:
-            random_state = np.random.default_rng().integers(10000)
+            random_state = int(np.random.default_rng().integers(10000))
 
         if method is None:
             method = ['euclidean']
-        args_method = ['euclidean', 'cosine', 'pearson', 'spearman']
+        method_option = ['euclidean', 'cosine', 'pearson', 'spearman']
         if isinstance(method, str):
-            if method not in args_method:
-                msg = f"Invalid value for 'method'. Expected one of: {args_method}."
+            if method not in method_option:
+                msg = f"Invalid method. Expected one of: {method_option}."
                 raise ValueError(msg)
         elif isinstance(method, list):
             for method_i in method:
-                if method_i not in args_method:
-                    msg = f"Invalid value for 'method'. Expected one of: {args_method}."
+                if method_i not in method_option:
+                    msg = f"Invalid method. Expected one of: {method_option}."
                     raise ValueError(msg)
 
         if missing is None:
@@ -129,18 +132,16 @@ class SUMO(BaseEstimator, ClassifierMixin):
             sparsity = [0.1]
 
         if repetitions < 1:
-            msg = "Incorrect value of 'repetitions' parameter. It must be repetitions > 0."
+            msg = "Incorrect repetitions. It must be repetitions > 0."
             raise ValueError(msg)
         if subsample > 0.5 or subsample < 0:
-            # do not allow for removal of more then 50% of samples in each run
-            msg = "Incorrect value of 'subsample' parameter. It must be 0 < subsample < 0.5."
+            msg = "Incorrect subsample. It must be 0 < subsample < 0.5."
             raise ValueError(msg)
         if rep < 1:
-            # number of times additional consensus matrix will be created
-            msg = "Incorrect value of 'rep' parameter. It must be rep > 1."
+            msg = "Incorrect rep. It must be rep > 1."
             raise ValueError(msg)
         if n_jobs < 1:
-            msg = "Incorrect value of 'n_jobs' parameter. It must be n_jobs > 0."
+            msg = "Incorrect n_jobs. It must be n_jobs > 0."
             raise ValueError(msg)
 
 
@@ -193,8 +194,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         if len(self.method) == 1:
             self.method = [self.method[0]] * len(Xs)
         elif len(Xs) != len(self.method):
-            raise ValueError(
-                "Number of matrices extracted from input files and number of similarity methods does not correspond")
+            raise ValueError("len(Xs) and number of similarity methods does not correspond.")
         self.graph_ = None
         self.nmf_ = None
 
@@ -220,7 +220,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         ##################################################################
         if self.h_init is not None:
             if self.h_init >= len(adj_matrices) or self.h_init < 0:
-                raise ValueError("Incorrect value of h_init")
+                raise ValueError("Incorrect h_init.")
 
         # create multilayer graph
         self.graph_ = MultiplexNet(adj_matrices=adj_matrices, node_labels=all_samples)
@@ -234,22 +234,11 @@ class SUMO(BaseEstimator, ClassifierMixin):
         global _sumo_run
         _sumo_run = self  # this solves multiprocessing issue with pickling
 
-        if self.n_jobs == 1:
-            results = [SUMO._run_factorization(sparsity=sparsity, k=self.n_clusters,
-                                               sumo_run=_sumo_run, verbose=self.verbose,
-                                               random_state=self.random_state)
-                       for sparsity in self.sparsity]
-            sparsity_order = self.sparsity
-        else:
-            pool = mp.Pool(self.t)
-            results = []
-            sparsity_order = []
-            iproc = 1
-            for res in pool.imap_unordered(SUMO._run_thread_wrapper, zip(self.sparsity, self.n_clusters),
-                                           self.random_state):
-                results.append(res[0])
-                sparsity_order.append(res[1])
-                iproc += 1
+        results = [SUMO._run_factorization(sparsity=sparsity, k=self.n_clusters,
+                                           sumo_run=_sumo_run, verbose=self.verbose,
+                                           random_state=self.random_state)
+                   for sparsity in self.sparsity]
+        sparsity_order = self.sparsity
 
         # select best result
         best_result = sorted(results, reverse=True)[0]
@@ -414,7 +403,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
             print("#Extracting final clustering result, using normalized cut")
         consensus_labels, embeddings = extract_ncut(consensus, k=k, random_state=random_state)
 
-        cluster_array = np.empty((sumo_run.graph_.sample_names.shape[0], 2), dtype=np.object)
+        cluster_array = np.empty((sumo_run.graph_.sample_names.shape[0], 2), dtype=object)
         cluster_array[:, 0] = sumo_run.graph_.sample_names
         cluster_array[:, 1] = consensus_labels
 
@@ -453,13 +442,5 @@ class SUMO(BaseEstimator, ClassifierMixin):
                 print(f"Consider increasing -max_iter and decreasing -tol to achieve better accuracy")
         out_arrays['steps'] = np.array([steps_reached])
         return quality, out_arrays
-
-
-    @staticmethod
-    def _run_thread_wrapper(args: tuple, random_state):
-        global sumo_run
-        # this solves multiprocessing issue with pickling
-        assert len(args) == 2
-        return SUMO._run_factorization(sparsity=args[0], k=args[1], sumo_run=sumo_run, random_state=random_state), args[0]
 
 

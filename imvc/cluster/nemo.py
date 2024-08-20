@@ -78,9 +78,9 @@ class NEMO(BaseEstimator, ClassifierMixin):
         self.num_neighbors_ratio = num_neighbors_ratio
         self.metric = metric
         self.random_state = random_state
-        engines_options = ["python", "r"]
-        if engine not in engines_options:
-            raise ValueError(f"Invalid engine. Only f{engines_options} currently supported.")
+        self._engines_options = ["python", "r"]
+        if engine not in self._engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
 
@@ -160,7 +160,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
 
         else:
-            raise ValueError(f"Invalid engine. Only f{['python', 'r']} currently supported.")
+            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         self.labels_ = labels
         self.embedding_ = transformed_Xs
