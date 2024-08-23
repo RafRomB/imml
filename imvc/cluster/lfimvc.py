@@ -5,6 +5,7 @@ from sklearn.gaussian_process import kernels
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
+from ..impute import simple_view_imputer
 from ..utils import check_Xs
 
 
@@ -19,13 +20,13 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    normalize : bool, default=True
-        If True, it will normalize and center the kernel.
     kernel : callable, default=kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
         Specifies the kernel type to be used in the algorithm.
     lambda_reg : float, default=1.
         Regularization parameter. The algorithm demonstrated stable performance across a wide range of
         this hyperparameter.
+    max_iter : int, default=100
+        Maximum number of iterations.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=matlab
@@ -69,14 +70,13 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, normalize: bool = True,
-                 kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()), lambda_reg: float = 1.,
-                 random_state:int = None, engine: str ="matlab", verbose = False):
+    def __init__(self, n_clusters: int = 8, kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
+                 lambda_reg: float = 1., max_iter=200, random_state:int = None, engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
-        self.normalize = normalize
         self.kernel = kernel
         self.lambda_reg = lambda_reg
         self.random_state = random_state
+        self.max_iter = max_iter
         self._engines_options = ["matlab"]
         if engine not in self._engines_options:
             raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
@@ -113,15 +113,15 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     oc.eval(f.read())
 
-            transformed_Xs = [self.kernel(X) for X in Xs]
+            transformed_Xs = simple_view_imputer(Xs)
+            transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
-            transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
+            # transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
 
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)
             U, WP,HP, obj = oc.IncompleteMultikernelLatefusionclusteringV1Hv(transformed_Xs, self.n_clusters,
-                                                                             self.lambda_reg, int(self.normalize),
-                                                                             nout=4)
+                                                                             self.lambda_reg, self.max_iter, nout=4)
         else:
             raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 

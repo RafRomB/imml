@@ -22,8 +22,6 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    normalize : bool, default=True
-        If True, it will normalize and center the kernel.
     kernel : callable, default=kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
         Specifies the kernel type to be used in the algorithm.
     lambda_reg : float, default=1.
@@ -76,11 +74,9 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
 
     """
 
-    def __init__(self, n_clusters: int = 8, normalize: bool = True,
-                 kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()), lambda_reg: float = 1.,
-                 random_state:int = None, engine: str ="matlab", verbose = False):
+    def __init__(self, n_clusters: int = 8, kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
+                 lambda_reg: float = 1., random_state:int = None, engine: str ="matlab", verbose = False):
         self.n_clusters = n_clusters
-        self.normalize = normalize
         self.kernel = kernel
         self.lambda_reg = lambda_reg
         self.random_state = random_state
@@ -129,13 +125,11 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
             s = [view[view == 0].index.values for _,view in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
-            transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
             s = tuple([{"indx": i +1} for i in s])
 
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)
-            U, C, WP, beta, obj = oc.OS_LF_IMVC_alg(transformed_Xs, s, self.n_clusters, self.lambda_reg,
-                                                    int(self.normalize), nout=5)
+            U, C, WP, beta, obj = oc.OS_LF_IMVC_alg(transformed_Xs, s, self.n_clusters, self.lambda_reg, nout=5)
             beta = beta[:,0]
             obj = obj[0]
         else:
