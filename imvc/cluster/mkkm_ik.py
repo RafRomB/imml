@@ -21,8 +21,6 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    normalize : bool, default=True
-        If True, it will normalize and center the kernel.
     kernel : callable, default=kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
         Specifies the kernel type to be used in the algorithm.
     kernel_initialization : str, default="zeros"
@@ -77,7 +75,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
     """
 
-    def __init__(self, n_clusters: int = 8, normalize: bool = True, kernel_initialization: str = "zeros",
+    def __init__(self, n_clusters: int = 8, kernel_initialization: str = "zeros",
                  kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
                  qnorm: float = 2., random_state: int = None, engine: str = "matlab", verbose=False):
 
@@ -86,7 +84,6 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             raise ValueError(f"Invalid kernel_initialization. Expected one of: {kernel_initializations}")
 
         self.n_clusters = n_clusters
-        self.normalize = normalize
         self.kernel_initialization = kernel_initialization
         self.qnorm = qnorm
         self.kernel = kernel
@@ -137,14 +134,12 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
-            transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
             kernel = self.kernel_initializations[self.kernel_initialization]
 
             if self.random_state is not None:
                 oc.rand('seed', self.random_state)
             H_normalized,gamma,obj,KA = oc.myabsentmultikernelclustering(transformed_Xs, s, self.n_clusters,
-                                                                         self.qnorm, kernel,
-                                                                         int(self.normalize), nout=4)
+                                                                         self.qnorm, kernel, nout=4)
             KA = KA[:, 0]
             obj = obj[0]
         else:
