@@ -15,7 +15,7 @@ from src.utils import Utils
 class Model:
     def __init__(self, alg_name, alg):
         self.alg_name = alg_name
-        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF", "parea"] else "sklearn_method"
+        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF", "Parea"] else "sklearn_method"
         self.method = eval(f"self.{self.method.lower()}")
         self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "jNMF"] else "standard"
         self.framework = eval(f"self.{self.framework.lower()}")

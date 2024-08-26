@@ -9,6 +9,13 @@ from sklearn.gaussian_process import kernels
 from ..impute import get_observed_view_indicator
 from ..utils import check_Xs
 
+try:
+    import oct2py
+    oct2py_installed = True
+except ImportError:
+    oct2py_installed = False
+    error_message = "Oct2Py needs to be installed to use matlab engine."
+
 
 class OSLFIMVC(BaseEstimator, ClassifierMixin):
     r"""
@@ -83,6 +90,8 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         self._engines_options = ["matlab"]
         if engine not in self._engines_options:
             raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
+        if (engine == "matlab") and (not oct2py_installed):
+            raise ModuleNotFoundError(error_message)
         self.engine = engine
         self.verbose = verbose
 
@@ -107,7 +116,6 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            import oct2py
             matlab_folder = dirname(__file__)
             matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
             matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]

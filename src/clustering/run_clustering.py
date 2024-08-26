@@ -1,12 +1,11 @@
 import json
 import os
 import time
-from collections import defaultdict
 from datetime import datetime
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from imvc.preprocessing import MultiViewTransformer, ConcatenateViews
+from imvc.preprocessing import MultiViewTransformer, ConcatenateViews, select_complete_samples
 from imvc.utils import DatasetUtils
 from settings import PROFILES_PATH
 
@@ -54,7 +53,7 @@ class RunClustering:
                 train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(
                     transform="pandas")).fit_transform(train_Xs)
             elif not incomplete_algorithms:
-                train_Xs = DatasetUtils.select_complete_samples(Xs=train_Xs)
+                train_Xs = select_complete_samples(Xs=train_Xs)
                 y_train = y_train.loc[train_Xs[0].index]
                 try:
                     assert len(y_train) > n_clusters

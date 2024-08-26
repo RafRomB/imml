@@ -1,7 +1,7 @@
 import numpy as np
 import pandas as pd
 
-from ..decomposition import MOFA
+from ..decomposition.mofa import MOFA
 from ..utils import check_Xs
 
 
