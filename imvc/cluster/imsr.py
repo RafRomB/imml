@@ -129,7 +129,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
                 oc.rand('twister', self.random_state)
             Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma,
                              nout=2)
-            # print(Z, "\n", obj)
         elif self.engine == "python":
             observed_view_indicator = get_observed_view_indicator(Xs)
             if isinstance(observed_view_indicator, pd.DataFrame):
@@ -144,23 +143,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
                 random.seed(self.random_state)
 
             Z, obj = self._imsc(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma)
-            # print(Z, "\n", obj)
-        elif self.engine == "jax-python":
-            observed_view_indicator = get_observed_view_indicator(Xs)
-            if isinstance(observed_view_indicator, pd.DataFrame):
-                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
-            elif isinstance(observed_view_indicator[0], np.ndarray):
-                observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in
-                                       observed_view_indicator.items()]
-            transformed_Xs = [X.T.values for X in Xs]
-
-            if self.random_state is not None:
-                random.seed(self.random_state)
-
-            Z, obj = imsr_jax_functions.IMSC(transformed_Xs, tuple(observed_view_indicator),
-                                             self.n_clusters, self.lbd, self.gamma)
-            # print(Z, "\n", obj)
         else:
             raise ValueError("Only engine=='matlab' and 'python are currently supported.")
 
@@ -230,7 +212,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Returns
         -------
         Utmp : list of array-likes of shape (n_samples, n_clusters)
-        obj :
+        obj : float
         """
         V = len(X)
         n = X[0].shape[1]
@@ -310,7 +292,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
         -------
         F : list of array-likes of shape (n_clusters, n_samples)
         """
-
         _, Ftmp = eigs(A=(Z + Z.T), k=n_cluters, which='LR')
         F = Ftmp.T
 
@@ -456,5 +437,4 @@ class IMSR(BaseEstimator, ClassifierMixin):
         L = (L + L.T) / 2
         V, U = eigs(L, k=n_clusters, which='LR', tol=0)
 
-        print(U.shape)
         return U
