@@ -53,6 +53,8 @@ algorithms = {
               "params": {}},
     "SNF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(StandardScaler().set_output(transform= "pandas"))), "params": {}},
+    "Parea": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                 MultiViewTransformer(StandardScaler().set_output(transform="pandas"))), "params": {}},
     "DAIMC": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                    MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
                                    DAIMC()), "params": {}},

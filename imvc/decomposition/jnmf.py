@@ -4,6 +4,13 @@ from sklearn.base import BaseEstimator, TransformerMixin
 
 from ..utils import check_Xs, _convert_df_to_r_object
 
+try:
+    from rpy2.robjects.packages import importr
+    rpy2_installed = True
+except ImportError:
+    rpy2_installed = False
+    error_message = "rpy2 needs to be installed to use r engine."
+
 
 class jNMF(TransformerMixin, BaseEstimator):
     r"""
@@ -130,6 +137,8 @@ class jNMF(TransformerMixin, BaseEstimator):
         self._engines_options = ["r"]
         if engine not in self._engines_options:
             raise ValueError(f"Invalid engine. Expected one of {self._engines_options}")
+        if (engine == "r") and (not rpy2_installed):
+            raise ModuleNotFoundError(error_message)
         self.engine = engine
         self.transform_ = None
 
@@ -156,7 +165,6 @@ class jNMF(TransformerMixin, BaseEstimator):
             Xs = [pd.DataFrame(X) for X in Xs]
 
         if self.engine=="r":
-            from rpy2.robjects.packages import importr
             nnTensor = importr("nnTensor")
             transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
                 Xs=Xs, beta_loss=self.beta_loss, init_W=self.init_W, init_V=self.init_V, init_H=self.init_H,

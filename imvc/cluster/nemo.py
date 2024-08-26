@@ -134,8 +134,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
             self.n_clusters_ = self.n_clusters if isinstance(self.n_clusters, int) else \
                 snf.get_n_clusters(arr= affinity_matrix.values, n_clusters= self.n_clusters)[0]
 
-            model = SpectralClustering(n_clusters= self.n_clusters_, random_state= self.random_state,
-                                       affinity="precomputed")
+            model = SpectralClustering(n_clusters= self.n_clusters_, random_state= self.random_state)
             labels = model.fit_predict(X= affinity_matrix)
             transformed_Xs = spectral_embedding(model.affinity_matrix_, n_components=self.n_clusters_,
                                                 eigen_solver=model.eigen_solver, random_state=self.random_state,
@@ -152,12 +151,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
             if (self.n_clusters is None):
                 self.n_clusters = nemo.nemo.num.clusters(affinity_matrix)
 
-            model = SpectralClustering(n_clusters= self.n_clusters_, random_state= self.random_state)
-            labels = model.fit_predict(X= affinity_matrix)
-            transformed_Xs = spectral_embedding(model.affinity_matrix_, n_components=self.n_clusters_,
-                                                eigen_solver=model.eigen_solver, random_state=self.random_state,
-                                                eigen_tol=model.eigen_tol, drop_first=False)
-
+            snftool = importr("SNFtool")
+            labels = snftool.spectralClustering(affinity_matrix, self.n_clusters_)
 
         else:
             raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
