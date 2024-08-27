@@ -50,7 +50,7 @@ class MOFAImputer(MOFA):
         ws = self.weights_
         winv = [np.linalg.pinv(w) for w in ws]
         transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
-        transformed_Xs = self._impute(Xs=Xs, transformed_Xs=transformed_Xs, weights=ws)
+        transformed_Xs = self._impute(Xs=Xs, weights=ws)
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index) for X,transformed_X in zip(Xs,transformed_Xs)]

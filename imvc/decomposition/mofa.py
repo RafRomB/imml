@@ -27,7 +27,7 @@ class MOFA(TransformerMixin, BaseEstimator):
     Parameters
     ----------
     n_components : int, default=10
-        The number of clusters to generate.
+        Number of components to keep.
     impute : bool, default=True
         True if missing values should be imputed.
     data_options : dict, default=None
@@ -177,7 +177,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         winv = [np.linalg.pinv(w) for w in ws]
         transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
         if self.impute:
-            imputed_Xs = self._impute(Xs=Xs, transformed_Xs=transformed_Xs, weights=ws)
+            imputed_Xs = self._impute(Xs=Xs, weights=ws)
             transformed_Xs = [np.dot(X, w.T) for X, w in zip(imputed_Xs, winv)]
 
         if self.transform_ == "pandas":
@@ -185,12 +185,12 @@ class MOFA(TransformerMixin, BaseEstimator):
         return transformed_Xs
 
 
-    def _impute(self, Xs, transformed_Xs, weights):
-        imputed_Xs = copy.deepcopy(Xs)
-        for idx, (transformed_X, w) in enumerate(zip(transformed_Xs, weights)):
-            imputed_X = np.dot(np.nan_to_num(transformed_X, nan=0.0), w.T)
-            imputed_X = pd.DataFrame(imputed_X, columns=imputed_Xs[idx].columns)
-            imputed_Xs[idx] = imputed_Xs[idx].fillna(imputed_X)
+    def _impute(self, Xs, weights):
+        imputed_Xs = []
+        for idx, w in enumerate(weights):
+            imputed_X = np.dot(np.nan_to_num(self.factors_, nan=0.0), w.T)
+            imputed_X = pd.DataFrame(imputed_X, columns=Xs[idx].columns)
+            imputed_Xs.append(Xs[idx].fillna(imputed_X))
         return imputed_Xs
 
     
