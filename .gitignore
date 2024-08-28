@@ -133,3 +133,6 @@ test.py
 
 # data
 imvc/datasets/data/
+
+!/imvc/cluster/*/reader.mat
+!/imvc/cluster/*/writer.mat

@@ -157,7 +157,8 @@ class CommonOperations:
             if (dataset_name in time_results["dataset"].unique()) and (alg_name in time_results["algorithm"].unique()):
                 mask = (time_results["dataset"] == dataset_name) & (time_results["algorithm"] == alg_name)
                 time_alg_dat = time_results.loc[mask, "time"].iloc[0]
-                if (time_alg_dat > TIME_LIMIT) or (time_alg_dat <= 0) or np.isnan(time_alg_dat):
+                if ((time_alg_dat > TIME_LIMIT) or (time_alg_dat <= 0) or np.isnan(time_alg_dat)
+                        or (not time_results.loc[mask, "completed"].iloc[0])):
                     results.loc[(dataset_name, alg_name), "time_limited"] = False
         return results
 
