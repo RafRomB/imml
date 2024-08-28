@@ -185,6 +185,32 @@ class MOFA(TransformerMixin, BaseEstimator):
         return transformed_Xs
 
 
+    def fit_transform(self, Xs, y = None, **fit_params):
+        r"""
+        Fit to data, then transform it.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples_i, n_features_i)
+            A list of different views.
+        y : Ignored
+            Not used, present here for API consistency by convention.
+        fit_params : Ignored
+            Not used, present here for API consistency by convention.
+
+        Returns
+        -------
+        transformed_X : array-likes of shape (n_samples, n_components)
+            The projected data.
+        """
+        transformed_X = self.fit(Xs).factors_
+        if self.transform_ == "pandas":
+            transformed_X = pd.DataFrame(transformed_X)
+        return transformed_X
+
+
     def _impute(self, Xs, weights):
         imputed_Xs = []
         for idx, w in enumerate(weights):

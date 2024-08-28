@@ -56,6 +56,9 @@ algorithms = {
                                   MultiViewTransformer(StandardScaler().set_output(transform= "pandas"))), "params": {}},
     "Parea": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                  MultiViewTransformer(StandardScaler().set_output(transform="pandas"))), "params": {}},
+    "COCA": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas"))),
+              "params": {}},
 }
 incomplete_algorithms = False
 CommonOperations.run_script(dataset_table_path=DATASET_TABLE_PATH, algorithms=algorithms, probs=probs,

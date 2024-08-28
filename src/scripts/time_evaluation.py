@@ -2,6 +2,8 @@ import argparse
 import os
 import time
 from datetime import datetime
+
+import numpy as np
 import pandas as pd
 import torch
 from sklearn.cluster import KMeans
@@ -117,6 +119,10 @@ algorithms = {
                                   MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")),
                                   jNMF().set_output(transform="pandas"),
                                   StandardScaler().set_output(transform="pandas"), KMeans(n_init= "auto")),
+             "params": {}},
+    "MRGCN": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                   MultiViewTransformer(FunctionTransformer(
+                                       lambda x: torch.from_numpy(x.values.astype(np.float32))))),
              "params": {}},
 }
 

@@ -1,8 +1,11 @@
 import os.path
+
+import numpy as np
 import torch
 from pandarallel import pandarallel
 from sklearn.cluster import KMeans
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, FunctionTransformer, MinMaxScaler
 from imvc.decomposition import DFMF, MOFA, DeepMF, jNMF
@@ -50,6 +53,13 @@ algorithms = {
     "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                     MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     MKKMIK()), "params": {}},
+    "MRGCN": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                    MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                   MultiViewTransformer(SimpleImputer(strategy= "constant",
+                                                                      fill_value=0.0).set_output(transform="pandas")),
+                                   MultiViewTransformer(FunctionTransformer(
+                                       lambda x: torch.from_numpy(x.values.astype(np.float32))))),
+              "params": {}},
     # "MONET": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
     #                                MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
     #                                MONET()), "params": {}},
@@ -88,7 +98,7 @@ algorithms = {
     "MOFA": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                   MOFA().set_output(transform="pandas"),
-                                  ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans(n_init= "auto")),
+                                  StandardScaler().set_output(transform="pandas"), KMeans(n_init= "auto")),
              "params": {}},
     "jNMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")),

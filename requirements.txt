@@ -10,6 +10,6 @@ rpy2==3.5.14
 torch==2.0.1
 lightning==2.0.2
 snfpy==0.2.2
-pytest==8.3.2
-coverage==7.6.0
-pytest-cov==5.0.0
+permetrics==2.0.0
+pyrea==1.0.10
+statsmodels==0.14.2

@@ -8,6 +8,13 @@ from sklearn.cluster import KMeans
 from ..impute import get_observed_view_indicator
 from ..utils import check_Xs, DatasetUtils
 
+try:
+    import oct2py
+    oct2py_installed = True
+except ImportError:
+    oct2py_installed = False
+    error_message = "Oct2Py needs to be installed to use matlab engine."
+
 
 class IMSCAGL(BaseEstimator, ClassifierMixin):
     r"""

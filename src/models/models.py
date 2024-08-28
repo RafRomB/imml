@@ -7,17 +7,29 @@ from sklearn.manifold import spectral_embedding
 from snf import compute
 from torch.utils.data import DataLoader
 from pyrea import clusterer, view, fuser, execute_ensemble, consensus
-from imvc.decomposition import DeepMFDataset
+
+from imvc.cluster import MRGCN
+from imvc.data_loaders import MRGCNDataset
+from imvc.data_loaders.loaders import DeepMFDataset
 
 from src.utils import Utils
+
+try:
+    from rpy2.robjects.packages import importr
+    rpy2_installed = True
+except ImportError:
+    rpy2_installed = False
+    error_message = "rpy2 needs to be installed to use r engine."
 
 
 class Model:
     def __init__(self, alg_name, alg):
         self.alg_name = alg_name
-        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF", "Parea"] else "sklearn_method"
+        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF", "Parea", "MRGCN"]\
+            else "sklearn_method"
         self.method = eval(f"self.{self.method.lower()}")
-        self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "jNMF"] else "standard"
+        self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "jNMF"]\
+            else "standard"
         self.framework = eval(f"self.{self.framework.lower()}")
         self.alg = alg
 
@@ -87,7 +99,6 @@ class Model:
 
 
     def intnmf(self, train_Xs, n_clusters, random_state, run_n):
-        from rpy2.robjects.packages import importr
         nmf = importr("IntNMF")
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
@@ -98,15 +109,15 @@ class Model:
 
 
     def coca(self, train_Xs, n_clusters, random_state, run_n):
-        from rpy2.robjects.packages import importr
         base, coca = importr("base"), importr("coca")
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
         base.set_seed(int(random_state + run_n))
-        clusters = coca.buildMOC(Utils.convert_df_to_r_object(train_Xs), M=len(train_Xs), K=n_clusters)[0]
-        clusters = coca.coca(clusters, K=n_clusters)[1]
+        transformed_Xs = coca.buildMOC(Utils.convert_df_to_r_object(train_Xs), M=len(train_Xs), K=n_clusters)[0]
+        clusters = coca.coca(transformed_Xs, K=n_clusters)[1]
         clusters = np.array(clusters) - 1
-        return clusters, model
+        transformed_Xs = pd.DataFrame(np.array(transformed_Xs), index=train_Xs[0].index)
+        return clusters, transformed_Xs
 
 
     def gpca(self, model, n_clusters, random_state, run_n):
@@ -131,15 +142,32 @@ class Model:
         pipeline = self.alg["alg"]
         transformed_Xs = pipeline[:4].fit_transform(train_Xs)
         train_data = DeepMFDataset(X=transformed_Xs)
-        train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=True)
+        train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=True)
         trainer = Trainer(max_epochs=10, logger=False, enable_checkpointing=False)
         pipeline[4].set_params(X=transformed_Xs)
         with isolate_rng():
             trainer.fit(pipeline[4], train_dataloader)
-        train_dataloader = DataLoader(dataset=train_data, batch_size=50, shuffle=False)
         transformed_Xs = pipeline[4].transform(transformed_Xs)
         pipeline[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
         clusters = pipeline[5:].fit_predict(transformed_Xs)
+        return clusters, transformed_Xs
+
+
+    def mrgcn(self, train_Xs, n_clusters, random_state, run_n):
+        pipeline = self.alg["alg"]
+        transformed_Xs = pipeline.fit_transform(train_Xs)
+        train_data = MRGCNDataset(Xs=transformed_Xs)
+        with isolate_rng():
+            train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=True)
+            trainer = Trainer(max_epochs=100, logger=False, enable_checkpointing=False)
+            model = MRGCN(Xs=transformed_Xs, n_clusters=n_clusters)
+            trainer.fit(model, train_dataloader)
+        train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=False)
+        clusters = trainer.predict(model, train_dataloader)
+        clusters = np.concatenate(clusters)
+        transformed_Xs = [model._embedding(batch=batch).detach().cpu().numpy() for batch in train_dataloader]
+        transformed_Xs = np.vstack(transformed_Xs)
+        transformed_Xs = pd.DataFrame(transformed_Xs, index=train_Xs[0].index)
         return clusters, transformed_Xs
 
 
