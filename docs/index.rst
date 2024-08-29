@@ -1,28 +1,17 @@
-Overview of imlearn
-====================
+.. imvl documentation master file, created by
+   sphinx-quickstart on Fri Aug 23 20:49:03 2024.
+   You can adapt this file completely to your liking, but it should at least
+   contain the root `toctree` directive.
 
-This package is designed for incomplete multi-view learning (IML), a field in machine learning where data is represented by multiple views or modalities and some of them are missing for some of the samples.
-
-
-Documentation
-=============
-
-.. toctree::
-    :maxdepth: 1
-    :caption: Using imlearn
-
-    overview
-    installation
-    imvc
-    errors
-
-.. toctree::
-    :maxdepth: 1
-    :caption: Developer Information
-
-
-Indices and tables
+imvl documentation
 ==================
 
-* :ref:`genindex`
-* :ref:`search`
+Add your content using ``reStructuredText`` syntax. See the
+`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
+documentation for details.
+
+
+.. toctree::
+   :maxdepth: 2
+   :caption: Contents:
+
