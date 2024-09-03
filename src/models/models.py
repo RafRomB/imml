@@ -9,8 +9,8 @@ from torch.utils.data import DataLoader
 from pyrea import clusterer, view, fuser, execute_ensemble, consensus
 
 from imvc.cluster import MRGCN
-from imvc.data_loaders import MRGCNDataset
-from imvc.data_loaders.loaders import DeepMFDataset
+from imvc.data_loader import MRGCNDataset
+from imvc.data_loader import DeepMFDataset
 
 from src.utils import Utils
 
@@ -38,10 +38,14 @@ class Model:
         model, params = self.alg["alg"], self.alg["params"]
         model = self.framework(model=model, n_clusters=n_clusters, random_state=random_state, run_n=run_n)
         clusters = model.fit_predict(train_Xs)
-        try:
-            transformed_Xs = model[-1].embedding_
-        except AttributeError:
-            transformed_Xs = model[:-1].transform(train_Xs)
+        if self.alg == "MOFA":
+            transformed_Xs = model[2].factors_
+            transformed_Xs = model[3].trasform(transformed_Xs)
+        else:
+            try:
+                transformed_Xs = model[-1].embedding_
+            except AttributeError:
+                transformed_Xs = model[:-1].transform(train_Xs)
         return clusters, transformed_Xs
 
 

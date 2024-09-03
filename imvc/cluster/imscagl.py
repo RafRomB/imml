@@ -13,7 +13,7 @@ try:
     oct2py_installed = True
 except ImportError:
     oct2py_installed = False
-    error_message = "Oct2Py needs to be installed to use matlab engine."
+    oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
 
 
 class IMSCAGL(BaseEstimator, ClassifierMixin):
@@ -89,6 +89,16 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
     def __init__(self, n_clusters: int = 8, lambda1: float = 0.1, lambda2: float = 1000, lambda3: float = 100, k: int = 5,
                  neighbor_mode: str = 'KNN', weight_mode: str = 'Binary', max_iter: int = 100, miu: float = 0.01,
                  rho: float = 1.1, random_state: int = None, engine: str = "matlab", verbose = False):
+        if not isinstance(n_clusters, int):
+            raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
+        if n_clusters < 2:
+            raise ValueError(f"Invalid n_clusters. It must be an greater than 1. {n_clusters} was passed.")
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
+        if (engine == "matlab") and (not oct2py_installed):
+            raise ModuleNotFoundError(oct2py_module_error)
+
         self.n_clusters = n_clusters
         self.lambda1 = lambda1
         self.lambda2 = lambda2
@@ -101,13 +111,17 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         self.weight_mode = weight_mode
         self.max_iter = max_iter
         self.random_state = random_state
-        self._engines_options = ["matlab"]
-        if engine not in self._engines_options:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
-        if (engine == "matlab") and (not oct2py_installed):
-            raise ModuleNotFoundError(error_message)
         self.engine = engine
         self.verbose = verbose
+
+        if self.engine == "matlab":
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
+            self._oc = oct2py.Oct2Py(temp_dir= matlab_folder)
+            for matlab_file in matlab_files:
+                with open(os.path.join(matlab_folder, matlab_file)) as f:
+                    self._oc.eval(f.read())
 
 
     def fit(self, Xs, y=None):
@@ -130,14 +144,6 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = dirname(__file__)
-            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
-            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
-            oc = oct2py.Oct2Py(temp_dir= matlab_folder)
-            for matlab_file in matlab_files:
-                with open(os.path.join(matlab_folder, matlab_file)) as f:
-                    oc.eval(f.read())
-
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
             observed_view_indicator = get_observed_view_indicator(Xs=Xs)
@@ -149,12 +155,10 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
             transformed_Xs = tuple([X.T for X in transformed_Xs])
 
             if self.random_state is not None:
-                oc.rand('seed', self.random_state)
-            F = oc.IMSAGL(transformed_Xs, w, self.n_clusters, self.lambda1, self.lambda2, self.lambda3,
+                self._oc.rand('seed', self.random_state)
+            F = self._oc.IMSAGL(transformed_Xs, w, self.n_clusters, self.lambda1, self.lambda2, self.lambda3,
                           self.miu, self.rho, self.max_iter,
                           {"NeighborMode": self.neighbor_mode, "WeightMode": self.weight_mode, "k": self.k})
-        else:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= F)

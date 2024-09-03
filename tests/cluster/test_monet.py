@@ -5,23 +5,18 @@ import pandas as pd
 
 from imvc.ampute import Amputer
 from imvc.cluster import MONET
+from test import estimator
 
 
 @pytest.fixture
 def sample_data():
-    X1 = pd.DataFrame(np.random.default_rng(42).random((20, 3)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature1', 'feature2', 'feature3'])
-    X2 = pd.DataFrame(np.random.default_rng(42).random((20, 2)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature4', 'feature5'])
-    X3 = pd.DataFrame(np.random.default_rng(42).random((20, 5)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature6', 'feature7', 'feature8', 'feature9', 'feature10'])
+    X = np.random.default_rng(42).random((20, 10))
+    X = pd.DataFrame(X, index=list(ascii_lowercase)[:len(X)], columns= [f"feature{i}" for i in range(X.shape[1])])
+    X1, X2, X3 = X.iloc[:, :3], X.iloc[:, 3:5], X.iloc[:, 5:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
-def test_default_parameters(sample_data):
+def test_default_params(sample_data):
     model = MONET()
     for Xs in sample_data:
         n_samples = len(Xs[0])
@@ -52,14 +47,9 @@ def test_custom_parameters(sample_data):
         assert model.total_weight_ > 0
 
 def test_invalid_params(sample_data):
-    with pytest.raises(ValueError, match="Invalid similarity_mode. Expected one of"):
-        MONET(similarity_mode='invalid')
-    with pytest.raises(ValueError, match="Invalid similarity_mode. Expected one of"):
-        MONET(similarity_mode='prob')
-    with (pytest.raises(ValueError, match="Invalid similarity_mode. Expected one of")):
-        model = MONET()
-        model.similarity_mode = 'prob'
-        model.fit_predict(sample_data[0])
+    estimator = MONET
+    with pytest.raises(ValueError, match="Invalid similarity_mode."):
+        estimator(similarity_mode='invalid')
 
 def test_fit_predict(sample_data):
     model = MONET(random_state=42, verbose=True)

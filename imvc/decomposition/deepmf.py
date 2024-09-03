@@ -57,7 +57,7 @@ class DeepMF(pl.LightningModule):
 
     Example
     --------
-    >>> from imvc.data_loaders import DeepMFDataset
+    >>> from imvc.data_loader import DeepMFDataset
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.decomposition import DeepMF
     >>> from imvc.preprocessing import MultiViewTransformer, ConcatenateViews

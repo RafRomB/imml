@@ -6,10 +6,12 @@ from ..utils import check_Xs, _convert_df_to_r_object
 
 try:
     from rpy2.robjects.packages import importr
+    nnTensor = importr("nnTensor")
+    rbase = importr("base")
     rpy2_installed = True
 except ImportError:
     rpy2_installed = False
-    error_message = "rpy2 needs to be installed to use r engine."
+    rpy2_module_error = "rpy2 needs to be installed to use r engine."
 
 
 class jNMF(TransformerMixin, BaseEstimator):
@@ -111,6 +113,11 @@ class jNMF(TransformerMixin, BaseEstimator):
                  l2_W: float = 1e-10, l2_V: float = 1e-10, l2_H: float = 1e-10, weights = None,
                  beta_loss : list = None, p: float = 1., tol: float = 1e-10, max_iter: int = 100,
                  verbose=0, random_state: int = None, engine: str = "r"):
+        engines_options = ["r"]
+        if engine not in engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
+        if (engine == "r") and (not rpy2_installed):
+            raise ModuleNotFoundError(rpy2_module_error)
 
         if beta_loss is None:
             beta_loss = ["Frobenius", "KL", "IS", "PLTF"]
@@ -134,11 +141,6 @@ class jNMF(TransformerMixin, BaseEstimator):
         if random_state is None:
             random_state = int(np.random.default_rng().integers(10000))
         self.random_state = random_state
-        self._engines_options = ["r"]
-        if engine not in self._engines_options:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}")
-        if (engine == "r") and (not rpy2_installed):
-            raise ModuleNotFoundError(error_message)
         self.engine = engine
         self.transform_ = None
 
@@ -165,13 +167,11 @@ class jNMF(TransformerMixin, BaseEstimator):
             Xs = [pd.DataFrame(X) for X in Xs]
 
         if self.engine=="r":
-            nnTensor = importr("nnTensor")
             transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
                 Xs=Xs, beta_loss=self.beta_loss, init_W=self.init_W, init_V=self.init_V, init_H=self.init_H,
                 weights=self.weights)
             if self.random_state is not None:
-                base = importr("base")
-                base.set_seed(self.random_state)
+                rbase.set_seed(self.random_state)
 
             W, V, H, recerror, train_recerror, test_recerror, relchange = nnTensor.jNMF(
                 X= transformed_Xs, M=transformed_mask, J=self.n_components,
@@ -182,8 +182,6 @@ class jNMF(TransformerMixin, BaseEstimator):
             H = [np.array(mat) for mat in H]
             if self.transform_ == "pandas":
                 H = [pd.DataFrame(mat, index=X.columns) for X,mat in zip(Xs, H)]
-        else:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}")
 
         self.H_ = H
         self.reconstruction_err_ = list(recerror)
@@ -227,8 +225,7 @@ class jNMF(TransformerMixin, BaseEstimator):
                 H = self.H_
             H = _convert_df_to_r_object(H)
             if self.random_state is not None:
-                base = importr("base")
-                base.set_seed(self.random_state)
+                rbase.set_seed(self.random_state)
 
             transformed_X = nnTensor.jNMF(X= transformed_Xs, M=transformed_mask, J=self.n_components,
                                           initW=init_W, initV=init_V, initH=H,

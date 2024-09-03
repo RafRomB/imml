@@ -12,8 +12,8 @@ try:
     import oct2py
     oct2py_installed = True
 except ImportError:
-    oct2py_installed = False
-    error_message = "Oct2Py needs to be installed to use matlab engine."
+    oct2pyoct2py_installed = False
+    oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
 
 
 class DAIMC(BaseEstimator, ClassifierMixin):
@@ -79,17 +79,34 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, n_clusters: int = 8, alpha: float = 1, beta: float = 1, random_state:int = None,
                  engine: str ="matlab", verbose = False):
+        if not isinstance(n_clusters, int):
+            raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
+        if n_clusters < 2:
+            raise ValueError(f"Invalid n_clusters. It must be an greater than 1. {n_clusters} was passed.")
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
+        if (engine == "matlab") and (not oct2py_installed):
+            raise ModuleNotFoundError(oct2py_module_error)
+
         self.n_clusters = n_clusters
         self.alpha = alpha
         self.beta = beta
         self.random_state = random_state
-        self._engines_options = ["matlab"]
-        if engine not in self._engines_options:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
-        if (engine == "matlab") and (not oct2py_installed):
-            raise ModuleNotFoundError(error_message)
         self.engine = engine
         self.verbose = verbose
+
+        if self.engine == "matlab":
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
+            self._oc = oct2py.Oct2Py(temp_dir= matlab_folder)
+            for matlab_file in matlab_files:
+                with open(os.path.join(matlab_folder, matlab_file)) as f:
+                    self._oc.eval(f.read())
+            self._oc.eval("pkg load statistics")
+            self._oc.eval("pkg load control")
+            self._oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
 
 
     def fit(self, Xs, y=None):
@@ -112,17 +129,6 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = dirname(__file__)
-            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
-            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
-            oc = oct2py.Oct2Py(temp_dir= matlab_folder)
-            for matlab_file in matlab_files:
-                with open(os.path.join(matlab_folder, matlab_file)) as f:
-                    oc.eval(f.read())
-            oc.eval("pkg load statistics")
-            oc.eval("pkg load control")
-            oc.warning("off", "Octave:possible-matlab-short-circuit-operator")
-
             if isinstance(Xs[0], pd.DataFrame):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
@@ -132,16 +138,14 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = tuple(transformed_Xs)
 
-            w = tuple([oc.diag(missing_view) for missing_view in observed_view_indicator.T])
+            w = tuple([self._oc.diag(missing_view) for missing_view in observed_view_indicator.T])
             if self.random_state is not None:
-                oc.rand('seed', self.random_state)
-            u_0, v_0, b_0 = oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)
-            u, v, b, f, p, n = oc.DAIMC(transformed_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
+                self._oc.rand('seed', self.random_state)
+            u_0, v_0, b_0 = self._oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs), nout=3)
+            u, v, b, f, p, n = self._oc.DAIMC(transformed_Xs, w, u_0, v_0, b_0, None, self.n_clusters,
                                         len(transformed_Xs), {"afa": self.alpha, "beta": self.beta}, nout=6)
             b = [np.array(arr[0]) for arr in b]
             u = [np.array(arr[0]) for arr in u]
-        else:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)

@@ -26,9 +26,10 @@ class MOFAImputer(MOFA):
     >>> transformer.fit_transform(Xs)
     """
 
-    def transform(self, Xs : list):
+
+    def fit_transform(self, Xs, y = None, **fit_params):
         r"""
-        Transform the input data by filling missing samples.
+        Fit to data, then impute them.
 
         Parameters
         ----------
@@ -47,11 +48,10 @@ class MOFAImputer(MOFA):
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
 
-        ws = self.weights_
-        winv = [np.linalg.pinv(w) for w in ws]
-        transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
-        transformed_Xs = self._impute(Xs=Xs, weights=ws)
+        self.fit(Xs)
+        transformed_Xs = self._impute(Xs=Xs, transformed_X=self.factors_, weights=self.weights_)
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index) for X,transformed_X in zip(Xs,transformed_Xs)]
         return transformed_Xs
+

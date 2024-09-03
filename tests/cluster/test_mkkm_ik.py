@@ -6,30 +6,31 @@ import pandas as pd
 from imvc.ampute import Amputer
 from imvc.cluster import MKKMIK
 
+
 try:
     import oct2py
-    OCT2PY_INSTALLED = True
+    oct2py_installed = True
 except ImportError:
-    OCT2PY_INSTALLED = False
-
+    oct2py_installed = False
 
 @pytest.fixture
 def sample_data():
-    X1 = pd.DataFrame(np.random.default_rng(42).random((20, 3)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature1', 'feature2', 'feature3'])
-    X2 = pd.DataFrame(np.random.default_rng(42).random((20, 2)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature4', 'feature5'])
-    X3 = pd.DataFrame(np.random.default_rng(42).random((20, 5)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature6', 'feature7', 'feature8', 'feature9', 'feature10'])
+    X = np.random.default_rng(42).random((20, 10))
+    X = pd.DataFrame(X, index=list(ascii_lowercase)[:len(X)], columns= [f"feature{i}" for i in range(X.shape[1])])
+    X1, X2, X3 = X.iloc[:, :3], X.iloc[:, 3:5], X.iloc[:, 5:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
-def test_default_parameters(sample_data):
+def test_oct2py_not_installed():
+    if oct2py_installed:
+        MKKMIK(engine="matlab")
+    else:
+        with pytest.raises(ModuleNotFoundError, match="Oct2Py needs to be installed to use matlab engine."):
+            MKKMIK(engine="matlab")
+
+def test_default_params(sample_data):
     model = MKKMIK(random_state=42)
-    if OCT2PY_INSTALLED:
+    if oct2py_installed:
         for Xs in sample_data:
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)
@@ -39,44 +40,27 @@ def test_default_parameters(sample_data):
             assert min(labels) == 0
             assert max(labels) == (model.n_clusters - 1)
             assert not np.isnan(labels).any()
+            assert not np.isnan(model.embedding_).any().any()
             assert model.embedding_.shape == (n_samples, model.n_clusters)
             assert model.KA_.shape == (n_samples, len(Xs))
             assert len(model.gamma_) == len(Xs)
             assert model.n_iter_ > 0
 
-def test_custom_parameters(sample_data):
-    n_clusters = 3
-    model = MKKMIK(n_clusters=n_clusters, random_state=42)
-    if OCT2PY_INSTALLED:
-        for Xs in sample_data:
-            n_samples = len(Xs[0])
-            labels = model.fit_predict(Xs)
-            assert labels is not None
-            assert len(labels) == n_samples
-            assert len(np.unique(labels)) == n_clusters
-            assert min(labels) == 0
-            assert max(labels) == (n_clusters - 1)
-            assert not np.isnan(labels).any()
-            assert model.embedding_.shape == (n_samples, n_clusters)
-            assert model.n_iter_ > 0
-            assert model.KA_.shape == (n_samples, len(Xs))
-            assert len(model.gamma_) == len(Xs)
-
 def test_invalid_params(sample_data):
+    estimator = MKKMIK
     with pytest.raises(ValueError, match="Invalid engine."):
-        MKKMIK(engine='invalid')
-    if OCT2PY_INSTALLED:
-        with pytest.raises(ValueError, match="Invalid engine."):
-            model = MKKMIK()
-            model.engine = 'invalid'
-            model.fit(sample_data[0])
-    with pytest.raises(ValueError, match="Invalid kernel_initialization. Expected one of"):
-        MKKMIK(kernel_initialization='invalid')
+        estimator(engine='invalid')
+    with pytest.raises(ValueError, match="Invalid n_clusters."):
+        estimator(n_clusters='invalid')
+    with pytest.raises(ValueError, match="Invalid n_clusters."):
+        estimator(n_clusters=0)
+    with pytest.raises(ValueError, match="Invalid kernel_initialization."):
+        estimator(kernel_initialization='invalid')
 
 def test_fit_predict(sample_data):
     n_clusters = 3
     model = MKKMIK(n_clusters=n_clusters, random_state=42)
-    if OCT2PY_INSTALLED:
+    if oct2py_installed:
         for Xs in sample_data:
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)
@@ -86,6 +70,7 @@ def test_fit_predict(sample_data):
             assert min(labels) == 0
             assert max(labels) == (n_clusters - 1)
             assert not np.isnan(labels).any()
+            assert not np.isnan(model.embedding_).any().any()
             assert model.embedding_.shape == (n_samples, n_clusters)
             assert model.KA_.shape == (n_samples, len(Xs))
             assert len(model.gamma_) == len(Xs)
@@ -94,7 +79,7 @@ def test_fit_predict(sample_data):
 def test_missing_values_handling(sample_data):
     n_clusters = 2
     model = MKKMIK(n_clusters=n_clusters, random_state=42)
-    if OCT2PY_INSTALLED:
+    if oct2py_installed:
         for Xs in sample_data:
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
             n_samples = len(Xs[0])
@@ -105,6 +90,7 @@ def test_missing_values_handling(sample_data):
             assert min(labels) == 0
             assert max(labels) == (n_clusters - 1)
             assert not np.isnan(labels).any()
+            assert not np.isnan(model.embedding_).any().any()
             assert model.embedding_.shape == (n_samples, n_clusters)
             assert model.KA_.shape == (n_samples, len(Xs))
             assert len(model.gamma_) == len(Xs)
