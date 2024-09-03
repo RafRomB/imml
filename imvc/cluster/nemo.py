@@ -1,5 +1,4 @@
 from typing import Union
-
 import numpy as np
 import pandas as pd
 import snf
@@ -9,6 +8,18 @@ from sklearn.manifold import spectral_embedding
 
 from ..impute import get_observed_view_indicator
 from ..utils import check_Xs
+
+try:
+    from rpy2.robjects.packages import importr
+    from rpy2.robjects.packages import importr
+    from ..utils import _convert_df_to_r_object
+    rbase = importr("base")
+    nemo = importr("nemo")
+    snftool = importr("SNFtool")
+    rpy2_installed = True
+except ImportError:
+    rpy2_installed = False
+    rpy2_module_error = "rpy2 needs to be installed to use r engine."
 
 
 class NEMO(BaseEstimator, ClassifierMixin):
@@ -64,23 +75,31 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
     Example
     --------
+    >>> from sklearn.pipeline import make_pipeline
+    >>> from sklearn.preprocessing import StandardScaler
+    >>> from imvc.preprocessing import MultiViewTransformer
     >>> from imvc.datasets import LoadDataset
     >>> from imvc.cluster import NEMO
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> normalizer = StandardScaler().set_output(transform="pandas")
     >>> estimator = NEMO(n_clusters = 2)
+    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: Union[int,list] = 8, num_neighbors = None, num_neighbors_ratio: int = 6, metric='sqeuclidean',
-                 random_state:int = None, engine: str = "python", verbose = False):
+    def __init__(self, n_clusters: Union[int,list] = 8, num_neighbors = None, num_neighbors_ratio: int = 6,
+                 metric='sqeuclidean', random_state:int = None, engine: str = "python", verbose = False):
+        engines_options = ["python", "r"]
+        if engine not in engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
+        if (engine == "r") and (not rpy2_installed):
+            raise ModuleNotFoundError(rpy2_module_error)
+
         self.n_clusters = n_clusters
         self.num_neighbors = num_neighbors
         self.num_neighbors_ratio = num_neighbors_ratio
         self.metric = metric
         self.random_state = random_state
-        self._engines_options = ["python", "r"]
-        if engine not in self._engines_options:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
         self.engine = engine
         self.verbose = verbose
 
@@ -142,20 +161,13 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
 
         elif self.engine == "R":
-            from rpy2.robjects.packages import importr
-            from ..utils import _convert_df_to_r_object
-            nemo = importr("nemo")
             transformed_Xs = _convert_df_to_r_object(Xs)
-
             affinity_matrix = nemo.nemo.affinity.graph(transformed_Xs, k=self.num_neighbors)
             if (self.n_clusters is None):
                 self.n_clusters = nemo.nemo.num.clusters(affinity_matrix)
-
-            snftool = importr("SNFtool")
+            if self.random_state is not None:
+                rbase.set_seed(self.random_state)
             labels = snftool.spectralClustering(affinity_matrix, self.n_clusters_)
-
-        else:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
 
         self.labels_ = labels
         self.embedding_ = transformed_Xs

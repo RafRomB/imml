@@ -13,7 +13,7 @@ try:
     oct2py_installed = True
 except ImportError:
     oct2py_installed = False
-    error_message = "Oct2Py needs to be installed to use matlab engine."
+    oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
 
 
 class IMSR(BaseEstimator, ClassifierMixin):
@@ -76,25 +76,35 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
     def __init__(self, n_clusters: int = 8, lbd : float = 1, gamma: float = 1, random_state:int = None,
                  engine: str ="matlab", verbose = False):
+        if not isinstance(n_clusters, int):
+            raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
+        if n_clusters < 2:
+            raise ValueError(f"Invalid n_clusters. It must be an greater than 1. {n_clusters} was passed.")
+        engines_options = ["matlab"]
+        if engine not in engines_options:
+            raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
+        if (engine == "matlab") and (not oct2py_installed):
+            raise ModuleNotFoundError(oct2py_module_error)
+        if lbd <= 0:
+            raise ValueError(f"Invalid lbd. It must be a positive value. {lbd} was passed.")
+        if gamma <= 0:
+            raise ValueError(f"Invalid gamma. It must be a positive value. {gamma} was passed.")
+
         self.n_clusters = n_clusters
-        try:
-            assert lbd > 0
-        except AssertionError:
-            raise ValueError("Invalid lbd. It should be a positive value. ")
-        try:
-            assert gamma > 0
-        except AssertionError:
-            raise ValueError("Invalid gamma. It should be a positive value. ")
         self.lbd = lbd
         self.gamma = gamma
         self.random_state = random_state
-        self._engines_options = ["matlab"]
-        if engine not in self._engines_options:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
-        if (engine == "matlab") and (not oct2py_installed):
-            raise ModuleNotFoundError(error_message)
         self.engine = engine
         self.verbose = verbose
+
+        if self.engine == "matlab":
+            matlab_folder = dirname(__file__)
+            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
+            self._oc = oct2py.Oct2Py(temp_dir= matlab_folder)
+            for matlab_file in matlab_files:
+                with open(os.path.join(matlab_folder, matlab_file)) as f:
+                    self._oc.eval(f.read())
 
 
     def fit(self, Xs, y=None):
@@ -134,10 +144,8 @@ class IMSR(BaseEstimator, ClassifierMixin):
             transformed_Xs = [X.T.values for X in Xs]
 
             if self.random_state is not None:
-                oc.rand('seed', self.random_state)
-            Z, obj = oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
-        else:
-            raise ValueError(f"Invalid engine. Expected one of {self._engines_options}.")
+                self._oc.rand('seed', self.random_state)
+            Z, obj = self._oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= Z)
