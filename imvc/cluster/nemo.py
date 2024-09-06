@@ -10,16 +10,27 @@ from ..impute import get_observed_view_indicator
 from ..utils import check_Xs
 
 try:
-    from rpy2.robjects.packages import importr
-    from rpy2.robjects.packages import importr
+    from rpy2.robjects.packages import importr, PackageNotInstalledError
     from ..utils import _convert_df_to_r_object
-    rbase = importr("base")
-    nemo = importr("nemo")
-    snftool = importr("SNFtool")
     rpy2_installed = True
 except ImportError:
     rpy2_installed = False
     rpy2_module_error = "rpy2 needs to be installed to use r engine."
+
+if rpy2_installed:
+    rbase = importr("base")
+    try:
+        nemo = importr("nemo")
+        nemo_installed = True
+    except PackageNotInstalledError:
+        nemo_installed = False
+        nemo_module_error = "nemo needs to be installed in R to use r engine."
+    try:
+        snftool_installed = True
+        snftool = importr("SNFtool")
+    except PackageNotInstalledError:
+        snftool_installed = False
+        snftool_module_error = "SNFtool needs to be installed in R to use r engine."
 
 
 class NEMO(BaseEstimator, ClassifierMixin):
@@ -92,8 +103,13 @@ class NEMO(BaseEstimator, ClassifierMixin):
         engines_options = ["python", "r"]
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
-        if (engine == "r") and (not rpy2_installed):
-            raise ModuleNotFoundError(rpy2_module_error)
+        if engine == "r":
+            if not rpy2_installed:
+                raise ModuleNotFoundError(rpy2_module_error)
+            elif not nemo_installed:
+                raise ModuleNotFoundError(nemo_module_error)
+            elif not snftool_installed:
+                raise ModuleNotFoundError(snftool_module_error)
 
         self.n_clusters = n_clusters
         self.num_neighbors = num_neighbors

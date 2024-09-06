@@ -86,9 +86,6 @@ class MRGCN(pl.LightningModule):
             raise ModuleNotFoundError(torch_module_error)
         super(MRGCN, self).__init__()
 
-        if Xs is None:
-            Xs = []
-
         if not isinstance(n_clusters, int):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
         if n_clusters < 2:

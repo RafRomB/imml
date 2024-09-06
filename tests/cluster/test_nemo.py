@@ -8,10 +8,23 @@ from imvc.cluster import NEMO
 
 #todo test engine
 try:
+    from rpy2.robjects.packages import importr, PackageNotInstalledError
     rpy2_installed = True
 except ImportError:
     rpy2_installed = False
 
+if rpy2_installed:
+    rbase = importr("base")
+    try:
+        nemo = importr("nemo")
+        nemo_installed = True
+    except PackageNotInstalledError:
+        nemo_installed = False
+    try:
+        snftool_installed = True
+        snftool = importr("SNFtool")
+    except PackageNotInstalledError:
+        snftool_installed = False
 
 @pytest.fixture
 def sample_data():
@@ -22,10 +35,21 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 def test_rpy2_not_installed():
-    if rpy2_installed:
+    if not rpy2_installed:
+        with pytest.raises(ModuleNotFoundError, match="rpy2 needs to be installed to use r engine."):
+            NEMO(engine="r")
+
+@pytest.mark.skipif(not rpy2_installed, reason="rpy2 is not installed.")
+def test_r_dependencies_not_installed():
+    if nemo_installed:
         NEMO(engine="r")
+        if snftool_installed:
+            NEMO(engine="r")
+        else:
+            with pytest.raises(ModuleNotFoundError, match="SNFtool needs to be installed in R to use r engine."):
+                NEMO(engine="r")
     else:
-        with pytest.raises(ModuleNotFoundError, match="rpy2 needs to be installed to use matlab engine."):
+        with pytest.raises(ModuleNotFoundError, match="nemo needs to be installed in R to use r engine."):
             NEMO(engine="r")
 
 def test_default_params(sample_data):

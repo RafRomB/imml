@@ -9,14 +9,14 @@ from imvc.decomposition import DFMF
 
 @pytest.fixture
 def sample_data():
-    X = np.random.default_rng(42).random((20, 10))
-    X = pd.DataFrame(X, index=list(ascii_lowercase)[:len(X)], columns= [f"feature{i}" for i in range(X.shape[1])])
-    X1, X2, X3 = X.iloc[:, :3], X.iloc[:, 3:5], X.iloc[:, 5:]
+    X = np.random.default_rng(42).random((50, 270))
+    X = pd.DataFrame(X)
+    X1, X2, X3 = X.iloc[:, :100], X.iloc[:, 100:190], X.iloc[:, 190:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
 
-def test_dfmf_init(sample_data):
+def test_init(sample_data):
     n_components = 5
     dfmf = DFMF(n_components=n_components, max_iter=200, init_type='random', n_run=3, random_state=42)
     assert dfmf.n_components == n_components
@@ -25,7 +25,7 @@ def test_dfmf_init(sample_data):
     assert dfmf.n_run == 3
     assert dfmf.random_state == 42
 
-def test_dfmf_fit(sample_data):
+def test_fit(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_components = 5
     dfmf = DFMF(n_components=n_components, max_iter=10, random_state=42)
@@ -36,7 +36,7 @@ def test_dfmf_fit(sample_data):
         assert hasattr(dfmf, 'ts_')
         assert len(dfmf.ts_) == len(Xs)
 
-def test_dfmf_transform(sample_data):
+def test_transform(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_components = 5
     dfmf = DFMF(n_components=n_components, max_iter=10, random_state=42)
@@ -46,7 +46,7 @@ def test_dfmf_transform(sample_data):
         transformed_X = dfmf.transform(Xs)
         assert transformed_X.shape == (n_samples, n_components)
 
-def test_dfmf_set_output(sample_data):
+def test_set_output(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     dfmf = DFMF(n_components=5, max_iter=10, random_state=42).set_output(transform="pandas")
     assert dfmf.transform_ == "pandas"
