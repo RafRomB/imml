@@ -137,9 +137,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
             observed_view_indicator = get_observed_view_indicator(transformed_Xs)
-            if isinstance(observed_view_indicator, pd.DataFrame):
-                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
-            elif isinstance(observed_view_indicator[0], np.ndarray):
+            if isinstance(observed_view_indicator, np.ndarray):
                 observed_view_indicator = pd.DataFrame(observed_view_indicator)
             s = [view[view == 0].index.values for _,view in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]

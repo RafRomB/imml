@@ -145,10 +145,10 @@ class MONET(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
-        Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
         for X in Xs:
             X.index = X.index.astype(str)
         samples = Xs[0].index
+        Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
         data = {}
 
         if self.similarity_mode == "corr":

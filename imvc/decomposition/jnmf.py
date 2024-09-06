@@ -5,13 +5,22 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from ..utils import check_Xs, _convert_df_to_r_object
 
 try:
-    from rpy2.robjects.packages import importr
+    from rpy2.robjects.packages import importr, PackageNotInstalledError
     nnTensor = importr("nnTensor")
     rbase = importr("base")
     rpy2_installed = True
 except ImportError:
     rpy2_installed = False
     rpy2_module_error = "rpy2 needs to be installed to use r engine."
+
+if rpy2_installed:
+    rbase = importr("base")
+    try:
+        nnTensor = importr("nnTensor")
+        nnTensor_installed = True
+    except PackageNotInstalledError:
+        nnTensor_installed = False
+        nnTensor_module_error = "nnTensor needs to be installed in R to use r engine."
 
 
 class jNMF(TransformerMixin, BaseEstimator):
@@ -116,8 +125,11 @@ class jNMF(TransformerMixin, BaseEstimator):
         engines_options = ["r"]
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
-        if (engine == "r") and (not rpy2_installed):
-            raise ModuleNotFoundError(rpy2_module_error)
+        if engine == "r":
+            if not rpy2_installed:
+                raise ModuleNotFoundError(rpy2_module_error)
+            elif not nnTensor_installed:
+                raise ModuleNotFoundError(nnTensor_module_error)
 
         if beta_loss is None:
             beta_loss = ["Frobenius", "KL", "IS", "PLTF"]

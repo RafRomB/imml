@@ -23,18 +23,19 @@ except ImportError:
 
 @pytest.fixture
 def sample_data():
-    X = np.random.default_rng(42).random((25, 10))
-    X1, X2, X3 = X[:, :3], X[:, 3:5], X[:, 5:]
-    Xs_numpy = [X1, X2, X3]
-    Xs_torch = [torch.from_numpy(X.astype(np.float32)) for X in Xs_numpy]
-    return Xs_torch, Xs_numpy
-
-def test_pytorch_not_installed():
     if torch_installed:
-        MRGCN()
+        X = np.random.default_rng(42).random((25, 10))
+        X1, X2, X3 = X[:, :3], X[:, 3:5], X[:, 5:]
+        Xs_numpy = [X1, X2, X3]
+        Xs_torch = [torch.from_numpy(X.astype(np.float32)) for X in Xs_numpy]
+        return Xs_torch, Xs_numpy
+
+def test_pytorch_not_installed(sample_data):
+    if torch_installed:
+        MRGCN(Xs=sample_data[0])
     else:
         with pytest.raises(ModuleNotFoundError, match="torch and lightning needs to be installed."):
-            MRGCN()
+            MRGCN(Xs=sample_data[0])
 
 def test_default_params(sample_data):
     n_clusters = 3
@@ -60,23 +61,25 @@ def test_default_params(sample_data):
 def test_invalid_params(sample_data):
     estimator = MRGCN
     with pytest.raises(ValueError, match="Invalid n_clusters."):
-        estimator(n_clusters='invalid')
+        estimator(n_clusters='invalid', Xs=sample_data[0])
     with pytest.raises(ValueError, match="Invalid n_clusters."):
-        estimator(n_clusters=0)
+        estimator(n_clusters=0, Xs=sample_data[0])
     with pytest.raises(ValueError, match="Invalid Xs."):
         estimator(Xs="invalid")
     with pytest.raises(ValueError, match="Invalid k_num."):
-        estimator(k_num="invalid")
+        estimator(k_num="invalid", Xs=sample_data[0])
     with pytest.raises(ValueError, match="Invalid k_num."):
-        estimator(k_num=0)
+        estimator(k_num=0, Xs=sample_data[0])
     with pytest.raises(ValueError, match="Invalid learning_rate."):
-        estimator(learning_rate="invalid")
+        estimator(learning_rate="invalid", Xs=sample_data[0])
     with pytest.raises(ValueError, match="Invalid learning_rate."):
-        estimator(learning_rate=0)
+        estimator(learning_rate=0, Xs=sample_data[0])
+    with pytest.raises(ValueError, match="Invalid learning_rate."):
+        estimator(learning_rate=0, Xs=sample_data[0])
     with pytest.raises(ValueError, match="Invalid reg2."):
-        estimator(reg2="invalid")
+        estimator(reg2="invalid", Xs=sample_data[0])
     with pytest.raises(ValueError, match="Invalid reg3."):
-        estimator(reg3="invalid")
+        estimator(reg3="invalid", Xs=sample_data[0])
 
 def test_missing_values_handling(sample_data):
     n_clusters = 2

@@ -60,11 +60,14 @@ def test_fit_transform(sample_data):
         assert transformer.weights_[0].shape == (Xs[0].shape[1], n_components)
 
 def test_set_output(sample_data):
-    transformer = MOFA(n_components=5, random_state=42, verbose=True).set_output(transform="pandas")
+    transformer = MOFA(n_components=5, random_state=42, verbose=True,
+                       train_options={"iter":2}).set_output(transform="pandas")
     assert transformer.transform_ == "pandas"
     for Xs in sample_data:
         transformed_X = transformer.fit_transform(Xs)
         assert isinstance(transformed_X, pd.DataFrame)
+        transformed_X = transformer.transform(Xs)
+        assert isinstance(transformed_X[0], pd.DataFrame)
 
 def test_missing_values_handling(sample_data):
     n_components = 5
@@ -81,6 +84,8 @@ def test_missing_values_handling(sample_data):
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid n_components"):
         MOFA(n_components=0)
+    with pytest.raises(ValueError, match="Invalid n_components"):
+        MOFA(n_components="invalid")
 
 
 if __name__ == "__main__":

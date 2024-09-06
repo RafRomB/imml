@@ -15,7 +15,7 @@ except ImportError:
 def sample_data():
     X = np.random.default_rng(42).random((50, 270))
     X = pd.DataFrame(X)
-    X1, X2, X3 = X.iloc[:, :100], X.iloc[:, 100:190], X.iloc[:, 190]
+    X1, X2, X3 = X.iloc[:, :100], X.iloc[:, 100:190], X.iloc[:, 190:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 

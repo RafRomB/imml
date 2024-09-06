@@ -98,8 +98,10 @@ class MOFA(TransformerMixin, BaseEstimator):
         if smooth_options is None:
             smooth_options = {}
 
+        if not isinstance(n_components, int):
+            raise ValueError(f"Invalid n_components. It must be an int. A {type(n_components)} was passed.")
         if n_components < 1:
-            raise ValueError(f"Invalid n_components. It must be greater or equal to 1")
+            raise ValueError(f"Invalid n_components. It must be greater or equal to 1. {n_components} was passed.")
         self.n_components = n_components
         self.impute = impute
         self.random_state = random_state

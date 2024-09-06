@@ -51,22 +51,27 @@ def test_custom_parameters(sample_data):
         assert len(model.pac_list_) == model.rep
 
 def test_invalid_params(sample_data):
+    estimator = SUMO
+    with pytest.raises(ValueError, match="Invalid n_clusters."):
+        estimator(n_clusters='invalid')
+    with pytest.raises(ValueError, match="Invalid n_clusters."):
+        estimator(n_clusters=0)
     with pytest.raises(ValueError, match="Invalid method. Expected one of"):
-        SUMO(method='invalid')
+        estimator(method='invalid')
     with pytest.raises(ValueError, match="Invalid method. Expected one of"):
-        SUMO(method=['invalid'])
+        estimator(method=['invalid'])
     with pytest.raises(ValueError, match="Incorrect repetitions. It must be repetitions"):
-        SUMO(repetitions=0)
+        estimator(repetitions=0)
     with pytest.raises(ValueError, match="Incorrect rep."):
-        SUMO(rep=0)
+        estimator(rep=0)
     with pytest.raises(ValueError, match="Incorrect n_jobs."):
-        SUMO(n_jobs=0)
+        estimator(n_jobs=0)
     with pytest.raises(ValueError, match="Incorrect subsample."):
-        SUMO(subsample=0.8)
+        estimator(subsample=0.8)
     with pytest.raises(ValueError, match="number of similarity methods does not correspond."):
-        SUMO(method=["euclidean"] * 5).fit(sample_data[0])
+        estimator(method=["euclidean"] * 5).fit(sample_data[0])
     with pytest.raises(ValueError, match="Incorrect h_init."):
-        SUMO(h_init=-1).fit(sample_data[0])
+        estimator(h_init=-1).fit(sample_data[0])
 
 def test_fit_predict(sample_data):
     n_clusters = 3

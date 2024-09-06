@@ -14,9 +14,9 @@ except ImportError:
 
 @pytest.fixture
 def sample_data():
-    X = np.random.default_rng(42).random((20, 10))
+    X = np.random.default_rng(42).random((20, 50))
     X = pd.DataFrame(X, index=list(ascii_lowercase)[:len(X)], columns= [f"feature{i}" for i in range(X.shape[1])])
-    X1, X2, X3 = X.iloc[:, :3], X.iloc[:, 3:5], X.iloc[:, 5:]
+    X1, X2, X3 = X.iloc[:, :15], X.iloc[:, 15:32], X.iloc[:, 32:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
@@ -57,7 +57,7 @@ def test_invalid_params(sample_data):
         PIMVC(k=-1)
     if oct2py_installed:
         with pytest.raises(ValueError, match="n_clusters should be smaller or equal to the smallest n_features_i."):
-            model = PIMVC(n_clusters=11)
+            model = PIMVC(n_clusters=sample_data[0][0].shape[1] + 1)
             model.fit(sample_data[0])
 
 def test_fit_predict(sample_data):

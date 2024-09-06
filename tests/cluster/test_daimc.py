@@ -28,22 +28,22 @@ def test_oct2py_not_installed():
         with pytest.raises(ModuleNotFoundError, match="Oct2Py needs to be installed to use matlab engine."):
             DAIMC(engine="matlab")
 
+@pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_default_params(sample_data):
     model = DAIMC(random_state=42)
-    if oct2py_installed:
-        for Xs in sample_data:
-            n_samples = len(Xs[0])
-            labels = model.fit_predict(Xs)
-            assert labels is not None
-            assert len(labels) == n_samples
-            assert len(np.unique(labels)) == model.n_clusters
-            assert min(labels) == 0
-            assert max(labels) == (model.n_clusters - 1)
-            assert not np.isnan(labels).any()
-            assert not np.isnan(model.embedding_).any().any()
-            assert model.embedding_.shape[0] == n_samples
-            assert len(model.U_) == len(Xs)
-            assert len(model.B_) == len(Xs)
+    for Xs in sample_data:
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == model.n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (model.n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert not np.isnan(model.embedding_).any().any()
+        assert model.embedding_.shape[0] == n_samples
+        assert len(model.U_) == len(Xs)
+        assert len(model.B_) == len(Xs)
 
 def test_invalid_params(sample_data):
     estimator = DAIMC
@@ -54,46 +54,47 @@ def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid n_clusters."):
         estimator(n_clusters=0)
 
+@pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_fit_predict(sample_data):
     n_clusters = 3
     model = DAIMC(n_clusters=n_clusters, random_state=42)
-    if oct2py_installed:
-        for Xs in sample_data:
-            n_samples = len(Xs[0])
-            labels = model.fit_predict(Xs)
-            assert labels is not None
-            assert len(labels) == n_samples
-            assert len(np.unique(labels)) == n_clusters
-            assert min(labels) == 0
-            assert max(labels) == (n_clusters - 1)
-            assert not np.isnan(labels).any()
-            assert not np.isnan(model.embedding_).any().any()
-            assert model.embedding_.shape == (n_samples, n_clusters)
-            assert len(model.U_) == len(Xs)
-            assert len(model.B_) == len(Xs)
-            assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
-            assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
+    for Xs in sample_data:
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert not np.isnan(model.embedding_).any().any()
+        assert model.embedding_.shape == (n_samples, n_clusters)
+        assert len(model.U_) == len(Xs)
+        assert len(model.B_) == len(Xs)
+        assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
+        assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
 
+@pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_missing_values_handling(sample_data):
     n_clusters = 3
     model = DAIMC(n_clusters=n_clusters, random_state=42)
-    if oct2py_installed:
-        for Xs in sample_data:
-            Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
-            n_samples = len(Xs[0])
-            labels = model.fit_predict(Xs)
-            assert labels is not None
-            assert len(labels) == n_samples
-            assert len(np.unique(labels)) == n_clusters
-            assert min(labels) == 0
-            assert max(labels) == (n_clusters - 1)
-            assert not np.isnan(labels).any()
-            assert not np.isnan(model.embedding_).any().any()
-            assert model.embedding_.shape == (n_samples, n_clusters)
-            assert len(model.U_) == len(Xs)
-            assert len(model.B_) == len(Xs)
-            assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
-            assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
+    for Xs in sample_data:
+        Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert not np.isnan(model.embedding_).any().any()
+        assert model.embedding_.shape == (n_samples, n_clusters)
+        assert len(model.U_) == len(Xs)
+        assert len(model.B_) == len(Xs)
+        assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
+        assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
+
 
 if __name__ == "__main__":
     pytest.main()
