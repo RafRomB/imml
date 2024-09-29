@@ -1,4 +1,3 @@
-import builtins
 from string import ascii_lowercase
 import pytest
 import numpy as np
@@ -6,7 +5,7 @@ import pandas as pd
 
 from imvc.ampute import Amputer
 from imvc.cluster import OSLFIMVC
-
+from tests import mock_test
 
 try:
     import oct2py
@@ -26,12 +25,7 @@ def sample_data():
 def test_oct2py_not_installed(monkeypatch):
     if oct2py_installed:
         estimator(engine="matlab")
-        original_import = builtins.__import__
-        def mock_import(name, *args):
-            if name in ["oct2py"]:
-                raise ImportError("oct2py not installed")
-            return original_import(name, *args)
-        monkeypatch.setattr(builtins, "__import__", mock_import)
+        mock_test()
         with pytest.raises(ModuleNotFoundError, match="Oct2Py needs to be installed to use matlab engine."):
             estimator(engine="matlab")
     else:

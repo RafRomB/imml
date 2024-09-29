@@ -110,14 +110,11 @@ class jNMF(TransformerMixin, BaseEstimator):
     >>> from imvc.preprocessing import MultiViewTransformer
     >>> from sklearn.pipeline import make_pipeline
     >>> from sklearn.preprocessing import MinMaxScaler
-    >>> from sklearn.cluster import KMeans
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
     >>> transformer = jNMF(n_components = 5).set_output(transform="pandas")
-    >>> estimator = KMeans(n_clusters = 3)
-    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer, estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer)
+    >>> transformed_X = pipeline.fit_transform(Xs)
     """
-
 
     def __init__(self, n_components : int = 10, init_W = None, init_V = None, init_H = None,
                  l1_W: float = 1e-10, l1_V: float = 1e-10, l1_H: float = 1e-10,
@@ -178,7 +175,10 @@ class jNMF(TransformerMixin, BaseEstimator):
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
+            self.transform_ = "numpy"
             Xs = [pd.DataFrame(X) for X in Xs]
+        else:
+            self.transform_ = "pandas"
 
         if self.engine=="r":
             transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
@@ -310,23 +310,6 @@ class jNMF(TransformerMixin, BaseEstimator):
         self.missing_reconstruction_err_ = list(test_recerror)
         self.relchange_ = list(relchange)
         return W
-
-
-    def set_output(self, *, transform=None):
-        r"""
-        Set output container.
-
-        Parameters
-        ----------
-        transform : str
-            Only 'pandas' is currently supported.
-
-        Returns
-        -------
-        self:  returns an instance of self.
-        """
-        self.transform_ = transform
-        return self
 
 
     @staticmethod

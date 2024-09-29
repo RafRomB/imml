@@ -1,54 +1,33 @@
 import pandas as pd
 import numpy as np
-from sklearn.base import BaseEstimator, TransformerMixin
 
-from ..utils import check_Xs, _convert_df_to_r_object
-
-try:
-    from rpy2.robjects.packages import importr, PackageNotInstalledError
-    nnTensor = importr("nnTensor")
-    rbase = importr("base")
-    rpy2_installed = True
-except ImportError:
-    rpy2_installed = False
-    rpy2_module_error = "rpy2 needs to be installed to use r engine."
-
-if rpy2_installed:
-    rbase = importr("base")
-    try:
-        nnTensor = importr("nnTensor")
-        nnTensor_installed = True
-    except PackageNotInstalledError:
-        nnTensor_installed = False
-        nnTensor_module_error = "nnTensor needs to be installed in R to use r engine."
+from ..decomposition import jNMF
 
 
-class jNMFFeatureSelector(TransformerMixin, BaseEstimator):
+class jNMFFeatureSelector(jNMF):
     r"""
-    Joint Non-negative Matrix Factorization Algorithms (jNMF).
+    Feature selection for multi-view datasets using the Joint Non-negative Matrix Factorization (jNMF) method.
 
-    jNMF decompose the matrices to two low-dimensional factor matrices. It can deal with both view- and
-    feature-wise missing.
+    This class extends the functionality of the `jNMF` method to perform feature selection across multiple views or
+    blocks of data. The selected features are those with the highest contributions to the derived components from
+    jNMF. This feature selection can be based on either the largest contribution for each component, the maximum
+    overall contribution, or the average contribution across all components.
 
     Parameters
     ----------
-    n_components : int, default=10
-        Number of components to keep.
+    select_by : str, default="component"
+        Criterion used to select features. Must be one of ["component", "max", "average"]:
+
+        - "component": Selects the feature with the largest contribution for each component.
+        - "max": Selects the features with the largest overall contribution.
+        - "average": Selects the features with the highest average contribution across all components.
+    kwargs : dict
+        Arguments passed to the `jNMF` method.
 
     Attributes
     ----------
-    H_ : list of n_views array-likes of shape (n_features_i, n_components)
-        List of specific factorization matrix.
-    V_ : list of n_views array-likes of shape (n_samples, n_components)
-        List of specific factorization matrix.
-    reconstruction_err_ : list of float
-        Beta-divergence between the training data X and the reconstructed data WH from the fitted model.
-    observed_reconstruction_err_ : list of float
-        Beta-divergence between the observed values and the reconstructed data WH from the fitted model.
-    missing_reconstruction_err_ : list of float
-        Beta-divergence between the missing values and the reconstructed data WH from the fitted model.
-    relchange_ : list of float
-        The relative change of the error.
+    selected_features_ : list of str of shape (n_components,)
+        List of selected features.
 
     References
     ----------
@@ -69,53 +48,61 @@ class jNMFFeatureSelector(TransformerMixin, BaseEstimator):
     Example
     --------
     >>> from imvc.datasets import LoadDataset
-    >>> from imvc.decomposition import jNMF
+    >>> from imvc.feature_selection import jNMFFeatureSelector
     >>> from imvc.preprocessing import MultiViewTransformer
     >>> from sklearn.pipeline import make_pipeline
     >>> from sklearn.preprocessing import MinMaxScaler
-    >>> from sklearn.cluster import KMeans
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = jNMF(n_components = 5).set_output(transform="pandas")
-    >>> estimator = KMeans(n_clusters = 3)
-    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer, estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> transformer = jNMFFeatureSelector(n_components = 5).set_output(transform="pandas")
+    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer)
+    >>> transformed_Xs = pipeline.fit_transform(Xs)
     """
 
 
-    def __init__(self):
-        engines_options = ["r"]
-        if engine not in engines_options:
-            raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
-        if engine == "r":
-            if not rpy2_installed:
-                raise ModuleNotFoundError(rpy2_module_error)
-            elif not nnTensor_installed:
-                raise ModuleNotFoundError(nnTensor_module_error)
+    def __init__(self, select_by: str = "component", **kwargs):
+        select_by_options = ["max", "component", "average"]
+        if select_by not in select_by_options:
+            raise ValueError(f"Invalid select_by. Expected one of {select_by}. {select_by_options} was passed.")
 
-        if beta_loss is None:
-            beta_loss = ["Frobenius", "KL", "IS", "PLTF"]
-
-        self.n_components = n_components
-        self.init_W = init_W
-        self.init_V = init_V
-        self.init_H = init_H
-        self.l1_W = l1_W
-        self.l1_V = l1_V
-        self.l1_H = l1_H
-        self.l2_W = l2_W
-        self.l2_V = l2_V
-        self.l2_H = l2_H
-        self.weights = weights
-        self.beta_loss = beta_loss
-        self.p = p
-        self.tol = tol
-        self.max_iter = max_iter
-        self.verbose = bool(verbose)
-        if random_state is None:
-            random_state = int(np.random.default_rng().integers(10000))
-        self.random_state = random_state
-        self.engine = engine
+        super().__init__(**kwargs)
+        self.select_by = select_by
         self.transform_ = None
+
+
+    def fit(self, Xs):
+        r"""
+        Project data into the learned space.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views.
+
+        Returns
+        -------
+        transformed_Xs : list of array-likes, shape (n_samples, n_components)
+            The projected data.
+        """
+        super().fit(Xs)
+        hs = self.H_
+        if self.transform_ == "pandas":
+            hs = [pd.DataFrame(h, index=X.columns) for h,X in zip(hs,Xs)]
+            hs = pd.concat(hs, axis=0)
+        elif self.transform_ == "numpy":
+            hs = [pd.DataFrame(h) for h in hs]
+            hs = pd.concat(hs, axis=0)
+            hs.columns = range(hs.columns.size)
+        hs = hs.abs()
+        if self.select_by == "component":
+            selected_features = hs.idxmax().to_list()
+        elif self.select_by == "average":
+            selected_features = hs.mean(axis=1).nlargest(n=self.n_components).index.to_list()
+        elif self.select_by == "max":
+            selected_features = hs.stack().nlargest(n=self.n_components).reset_index(level=1).index.to_list()
+        self.selected_features_ = selected_features
+        return self
 
 
     def transform(self, Xs):
@@ -134,39 +121,15 @@ class jNMFFeatureSelector(TransformerMixin, BaseEstimator):
         transformed_Xs : list of array-likes, shape (n_samples, n_components)
             The projected data.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
-        if not isinstance(Xs[0], pd.DataFrame):
-            Xs = [pd.DataFrame(X) for X in Xs]
-        samples = Xs[0].index
-
-        if self.engine == "r":
-            from rpy2.robjects.packages import importr
-            nnTensor = importr("nnTensor")
-            transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
-                Xs=Xs, beta_loss=self.beta_loss, init_W=self.init_W, init_V=self.init_V, init_H=self.H_,
-                weights=self.weights)
-
-            if not isinstance(self.H_[0], pd.DataFrame):
-                H = [pd.DataFrame(H) for H in self.H_]
-            else:
-                H = self.H_
-            H = _convert_df_to_r_object(H)
-            if self.random_state is not None:
-                rbase.set_seed(self.random_state)
-
-            transformed_X = nnTensor.jNMF(X= transformed_Xs, M=transformed_mask, J=self.n_components,
-                                          initW=init_W, initV=init_V, initH=H,
-                                          fixW=False, fixV=False, fixH=True,
-                                          L1_W=self.l1_W, L1_V=self.l1_V, L1_H=self.l1_H,
-                                          L2_W=self.l2_W, L2_V= self.l2_V, L2_H=self.l2_H,
-                                          w=weights, algorithm=beta_loss, p=self.p, thr = self.tol, num_iter=self.max_iter,
-                                          verbose=self.verbose)[0]
-
-        transformed_X = np.array(transformed_X)
         if self.transform_ == "pandas":
-            transformed_X = pd.DataFrame(transformed_X, index= samples)
-
-        return transformed_X
+            transformed_Xs = [X.iloc[:, X.columns.isin(self.selected_features_)] for X in Xs]
+        elif self.transform_ == "numpy":
+            selected_features = np.array(self.selected_features_)
+            dims = [X.shape[1] for X in Xs]
+            dims = np.cumsum(dims)
+            transformed_Xs = [X[:, selected_features[(selected_features >= dim - X.shape[1])
+                                                     & (selected_features < dim)]] for X,dim in zip(Xs,dims)]
+        return transformed_Xs
 
 
     def fit_transform(self, Xs, y = None, **fit_params):
@@ -189,66 +152,6 @@ class jNMFFeatureSelector(TransformerMixin, BaseEstimator):
         transformed_X : array-likes of shape (n_samples, n_components)
             The projected data.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
-        if not isinstance(Xs[0], pd.DataFrame):
-            Xs = [pd.DataFrame(X) for X in Xs]
-
-        if self.engine=="r":
-            transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
-                Xs=Xs, beta_loss=self.beta_loss, init_W=self.init_W, init_V=self.init_V, init_H=self.init_H,
-                weights=self.weights)
-            if self.random_state is not None:
-                rbase.set_seed(self.random_state)
-
-            W, V, H, recerror, train_recerror, test_recerror, relchange = nnTensor.jNMF(
-                X= transformed_Xs, M=transformed_mask, J=self.n_components,
-                initW=init_W, initV=init_V, initH=init_H, fixW=False, fixV=False, fixH=False,
-                L1_W=self.l1_W, L1_V=self.l1_V, L1_H=self.l1_H, L2_W=self.l2_W, L2_V= self.l2_V, L2_H=self.l2_H,
-                w=weights, algorithm=beta_loss, p=self.p, thr = self.tol, num_iter=self.max_iter, verbose=self.verbose)
-
-            H = [np.array(mat) for mat in H]
-            V = [np.array(mat) for mat in V]
-            if self.transform_ == "pandas":
-                H = [pd.DataFrame(mat, index=X.columns) for X,mat in zip(Xs, H)]
-                V = [pd.DataFrame(mat, index=X.index) for X,mat in zip(Xs, V)]
-                W = pd.DataFrame(np.array(W), index=Xs[0].index)
-
-        self.H_ = H
-        self.V_ = V
-        self.reconstruction_err_ = list(recerror)
-        self.observed_reconstruction_err_ = list(train_recerror)
-        self.missing_reconstruction_err_ = list(test_recerror)
-        self.relchange_ = list(relchange)
-        return W
-
-
-    def set_output(self, *, transform=None):
-        r"""
-        Set output container.
-
-        Parameters
-        ----------
-        transform : str
-            Only 'pandas' is currently supported.
-
-        Returns
-        -------
-        self:  returns an instance of self.
-        """
-        self.transform_ = transform
-        return self
-
-
-    @staticmethod
-    def _prepare_variables(Xs, beta_loss, init_W, init_V, init_H, weights):
-        import rpy2.robjects as ro
-        mask = [X.notnull().astype(int) for X in Xs]
-        transformed_Xs, transformed_mask = _convert_df_to_r_object(Xs), _convert_df_to_r_object(mask)
-        if beta_loss is not None:
-            beta_loss = ro.vectors.StrVector(beta_loss)
-        init_W = ro.NULL if init_W is None else init_W
-        init_V = ro.NULL if init_V is None else init_V
-        init_H = ro.NULL if init_H is None else init_H
-        weights = ro.NULL if weights is None else weights
-        return transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights
+        transformed_X = self.fit(Xs).transform(Xs)
+        return transformed_X
 
