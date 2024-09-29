@@ -140,7 +140,7 @@ class CommonOperations:
             open(error_file, 'w').close()
 
         else:
-            finished_results = pd.read_csv(INCOMPLETE_RESULTS_PATH, index_col=indexes_names)
+            finished_results = pd.read_csv(results_path, index_col=indexes_names)
             results.loc[finished_results.index, finished_results.columns] = finished_results
             finished_results = CreateResultTable.collect_subresults(results=results.copy(),
                                                                     subresults_path=subresults_path,

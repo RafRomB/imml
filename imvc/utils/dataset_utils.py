@@ -62,6 +62,46 @@ class DatasetUtils:
 
 
     @staticmethod
+    def get_summary(Xs: list) -> int:
+        r"""
+        Get a summary of an incomplete multi-view dataset.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: n_views
+            - Xs[i] shape: (n_samples, n_features_i)
+            A list of different views.
+
+        Returns
+        -------
+        summary: dict
+            Summary of an incomplete multi-view dataset.
+
+        Examples
+        --------
+        >>> from imvc.utils import DatasetUtils
+        >>> from imvc.datasets import LoadDataset
+        >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+        >>> DatasetUtils.get_n_views(Xs = Xs)
+        """
+        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        summary = {
+            "Complete samples": DatasetUtils.get_n_complete_samples(Xs),
+            "Incomplete samples": DatasetUtils.get_n_incomplete_samples(Xs),
+            "Observed samples in modalitiy": [len(Xs[0]) - len(X_id) for X_id in
+                                              DatasetUtils.get_missing_samples_by_view(Xs)],
+            "Missing samples in modalitiy": [len(X_id) for X_id in
+                                             DatasetUtils.get_missing_samples_by_view(Xs)],
+            "% Observed samples in modalitiy": [round((len(Xs[0]) - len(X_id)) / len(Xs[0]) * 100) for X_id in
+                                                DatasetUtils.get_missing_samples_by_view(Xs)],
+            "% Missing samples in modalitiy": [round(len(X_id) / len(Xs[0]) * 100) for X_id in
+                                               DatasetUtils.get_missing_samples_by_view(Xs)],
+        }
+        return summary
+
+
+    @staticmethod
     def get_n_views(Xs: list) -> int:
         r"""
         Get the number of views of a multi-view dataset.
