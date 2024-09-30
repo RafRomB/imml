@@ -371,7 +371,6 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         -------
         HP: 3-D array of shape (n_samples, n_clusters, n_views)
         """
-        print(HP00.shape)
         num = Hstar.shape[0]
         k = Hstar.shape[1]
         numker = WP.shape[2]
