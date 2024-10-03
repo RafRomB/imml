@@ -1,10 +1,15 @@
+import math
 import os
 from os.path import dirname
 import numpy as np
 import pandas as pd
+
+from scipy.sparse.linalg import eigs
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
+from sklearn.impute import KNNImputer, IterativeImputer
+from sklearn.neighbors import NearestNeighbors
 
 from ..utils import check_Xs, DatasetUtils
 
@@ -201,3 +206,259 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
+
+    def algorithm0(self, K, S, k):
+        KM = self.algorithm2(K, S)
+        ImputedKM = KM
+        numker = KM.shape[2]
+        for p in range(numker):
+            Indx = np.setdiff1d(ar1=[i for i in range(numker)], ar2=p)
+            MissingIndex = [i - 1 for i in S[p]['indx']]
+            Tempk = np.sum(KM[:, :, Indx], 2) / numker
+
+            knn = NearestNeighbors(n_neighbors=k + 1)
+            knn.fit(Tempk)
+            IDX = knn.kneighbors(Tempk[np.ix_(MissingIndex), :], return_distance=False)
+
+            for j in range(len(MissingIndex)):
+                heheTemp = np.mean(Tempk[np.ix_(IDX[j, 1:k + 1]), :], axis=0)
+                ImputedKM[np.ix_(MissingIndex[j]), :, p] = heheTemp
+                ImputedKM[:, np.ix_(MissingIndex[j]), p] = heheTemp
+
+            # Ensure matrix is symmetric
+            ImputedKM[:, :, p] = (ImputedKM[:, :, p] + ImputedKM[:, :, p].T) / 2
+
+        return ImputedKM
+
+
+    def algorithm2(self, KH, S):
+        num = KH.shape[0]
+        numker = KH.shape[2]
+        KH2 = np.zeros(shape=(num, num, numker))
+        for p in range(numker):
+            KH2_tmp = KH2[:, :, p]
+            KH_tmp = KH[:, :, p]
+            indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i - 1 for i in S[p]['indx']])
+            KAp = KH_tmp[np.ix_(indx, indx)]
+            KH2_tmp = (KAp + KAp.T) / 2
+            KH2[:, :, p] = KH2_tmp
+
+        return KH2
+
+
+    def algorithm3(self, KH, S):
+        num = KH.shape[0]
+        numker = KH.shape[2]
+        KH3 = np.zeros(shape=(num, num, numker))
+        for p in range(numker):
+            indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i - 1 for i in S[p]['indx']])
+            n0 = len(S[p]['indx'])
+            KAp = KH[np.ix_(indx, indx), p]
+            KH3[np.ix_(indx, indx), p] = (KAp + KAp.T) / 2
+            KH3[np.ix_(indx, [i - 1 for i in S[p]['indx'].T]), p] = np.tile(np.mean(KAp, 1), reps=(n0, 1)).T
+            KH3[np.ix_([i - 1 for i in S[p]['indx'].T], indx), p] = np.tile(np.mean(KAp, 1), reps=(n0, 1))
+            KH3[np.ix_([i - 1 for i in S[p]['indx'].T], [i - 1 for i in S[p]['indx']].T), p] = np.tile(
+                np.mean(KH3[np.ix_([i - 1 for i in S[p]['indx']].T, indx), p], 1), reps=(n0, 1)).T
+
+        return KH3
+
+
+    def algorithm4(self, KH, S, numclass, alpha0):
+        num = KH.shape[0]
+        numker = KH.shape[2]
+        gamma0 = np.ones(shape=(numker, 1)) / numker
+        KH3 = np.zeros(shape=(num, num, numker))
+        for p in range(numker):
+            indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in S[p]['indx'].T])
+            KAp = KH[np.ix_(indx, indx), p]
+            KH3[np.ix_(indx, indx), p] = (KAp + KAp.T) / 2
+
+        Kmatrix = self.my_comb_fun(KH3, gamma0**2)
+        H = self.my_kernel_kmeans(Kmatrix, numclass)
+        Kx = np.eye(num) - H @ H.T
+        for p in range(numker):
+            obs_indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in S[p]['indx']])
+            KH3[:, :, p] = self.absent_kernel_imputation(Kx, KH3[np.ix_(obs_indx, obs_indx), p], S[p]['indx'], alpha0)
+
+        return KH3
+
+
+    def algorithm6(self, KH, S):
+        num = KH.shape[0]
+        numker = KH.shape[2]
+        KH6 = np.zeros(shape=(num, num, numker))
+        for p in range(numker):
+            KH[np.ix_([i-1 for i in S[p]['indx']].T, [i-1 for i in S[p]['indx']].T), p] = math.nan
+            KH6[:, :, p] = self.data_completion(KH[:, :, p], 'EM')
+
+
+    def data_completion(self, X, method):
+        if not np.isnan(X).any():
+            raise ValueError("The missing values should be marked as NaN in the input matrix.")
+
+        if method == 'KNN':
+            imputer = KNNImputer()
+            X = imputer.fit_transform(X)
+        elif method == 'EM':
+            imputer = IterativeImputer()  # This uses EM to fill missing values
+            X = imputer.fit_transform(X)
+        else:
+            raise ValueError("Only KNN and EM are supported.")
+
+        return X
+
+    def k_center(self, K):
+        n = K.shape[1]
+
+        if np.ndim(K) == 2:
+            D = np.sum(K) / n
+            E = np.sum(D) / n
+            J = np.ones(shape=(n, 1)) @ D
+            K -= J - J.T + E @ np.ones(shape=(n, n))
+            K = 0.5 * (K + K.T)
+
+        elif np.ndim(K) == 3:
+            for i in range(K.shape[2]):
+                D = np.sum(K[:, :, i]) / n
+                E = np.sum(D) / n
+                J = np.ones(shape=(n, 1)) * D
+                K[:, :, i] -= J - J.T + E * np.ones(shape=(n, n))
+                K[:, :, i] = 0.5 * (K[:, :, i] + K[:, :, i].T) + 1e-12 * np.eye(n)
+
+        return K
+
+
+    def k_norm(self, K):
+        if K.shape[2] > 1:
+            for i in range(K.shape[2]):
+                K[:, :, i] = K[:, :, i] / np.sqrt(np.diag(K[:, :, i] @ np.diag(K[:, :, i]).T))
+
+        else:
+            K = K / np.sqrt(np.diag(K) @ np.diag(K).T)
+
+        return K
+
+
+    def my_comb_fun(self, Y, gamma):
+        m = Y.shape[2]
+        n = Y.shape[0]
+        cF = np.zeros(n)
+
+        for p in range(m):
+            cF += Y[:, :, p] * gamma[p]
+
+        return cF
+
+
+    def my_kernel_kmeans(self, K, cluster_count):
+        K = (K + K.T) / 2
+        _, H = eigs(K, cluster_count, which='LR')
+        # obj = np.trace(H.T @ K @ H) - np.trace(K)
+        H_normalized = H
+
+        return H_normalized
+
+
+    def absent_kernel_imputation(self, Kx, Kycc, mset, alpha0):
+        n = Kx.shape[0]
+        n0 = len(mset)
+        cset = np.setdiff1d(ar1=[i for i in range(n)], ar2=mset)
+        Kx0 = Kx[cset:mset, cset:mset]
+
+        Lxmm = Kx0[n - n0 + 1:, n - n0 + 1:]
+        Lxmm = (Lxmm + Lxmm.T) / 2
+        Lxcm = Kx0[1:n - n0, n - n0 + 1:]
+
+        Lxcmmm = -Lxcm / (Lxmm + alpha0 * np.eye(n0))
+        Kycm = Kycc @ Lxcmmm
+        Kymm = Lxcmmm.T @ Kycm
+        Kyr0 = np.block(Kycc, Kycm, Kycm.T, Kymm)
+        Kyr0 = (Kyr0 + Kyr0.T) / 2
+
+        val, indxxx = np.sort([cset, mset], order='ascend')
+        Kyr = Kyr0[indxxx, indxxx] + 1e-12 @ np.eye(n)
+
+        return Kyr
+
+
+    def updapte_absent_kernel_weightsV2(self, T, K, qnorm):
+        num = K.shape[0]
+        nb_kernel = K.shape[2]
+        U0 = np.eye(num) - T @ T.T
+        a = np.zeros(shape=(nb_kernel, 1))
+
+        for p in range(nb_kernel):
+            a[p] = np.trace(K[:, :, p] @ U0)
+
+        gamma = a ** (-1 / (qnorm - 1)) / np.sum(a ** (-1 / (qnorm - 1)))
+        gamma[gamma < np.finfo('float').eps] = 0
+        gamma = gamma / np.sum(gamma)
+
+        return gamma
+
+
+    def cal_objV2(self, T, K, gamma0):
+        nb_kernel = K.shape[2]
+        num = K.shape[0]
+        ZH1 = np.zeros(nb_kernel)
+
+        for p in range(nb_kernel):
+            ZH1[p, p] = (np.trace(K[:, :, p]) - np.trace(T.T @ K[:, :, p] @ T))
+
+        obj = gamma0.T @ ZH1 * gamma0
+
+
+    def my_absent_multikernel_clustering(self, K, S, cluster_count, qnorm, algorithm_choose, normalize):
+        functions = {
+            'algorithm0': self.algorithm0,
+            'algorithm2': self.algorithm2,
+            'algorithm3': self.algorithm3,
+            'algorithm4': self.algorithm4,
+            'algorithm6': self.algorithm6,
+        }
+
+        if normalize:
+            K = self.k_center(K)
+            K = self.k_norm(K)
+
+        num = K.shape[0]
+        nb_kernel = K.shape[2]
+        alpha0 = 1e-3
+        gamma = np.ones(shape=(nb_kernel, 1)) / nb_kernel
+
+        if algorithm_choose in functions:
+            if algorithm_choose == 'algorithm0':
+                func = functions[algorithm_choose]
+                KA = func(K, S, 7)
+            else:
+                func = functions[algorithm_choose]
+                KA = func(K, S)
+
+        KC = self.my_comb_fun(KA, gamma ** qnorm)
+        flag = 1
+        iter = 0
+        obj = []
+        while flag:
+            iter += 1
+            H = self.my_kernel_kmeans(KC, cluster_count)
+            KA = np.zeros(shape=(num, num, nb_kernel))
+
+            for p in range(nb_kernel):
+                if len(S[p].indx) == 0:
+                    KA[:, :, p] = K[:, :, p]
+                else:
+                    Kx = np.eye(num) - H @ H.T
+                    mis_indx = [i-1 for i in S[p].indx]
+                    obs_indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=mis_indx)
+                    KA[:, :, p] = self.absent_kernel_imputation(Kx, K(obs_indx, obs_indx, p), mis_indx, alpha0)
+
+            gamma = self.updapte_absent_kernel_weightsV2(H, KA, qnorm)
+            obj.append(self.cal_objV2(H, KA, gamma))
+            KC = self.my_comb_fun(KA, gamma ** qnorm)
+
+            if (iter > 2) and (np.abs((obj[iter - 1] - obj[iter]) / obj[iter - 1])) < 1e-4 or (iter > 30):
+                flag = 0
+
+        H_normalized = H / np.tile(np.sqrt(np.sum(H ** 2, 1)), reps=(1, cluster_count))
+
+        return H_normalized, gamma, obj, KA
