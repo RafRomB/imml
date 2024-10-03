@@ -84,7 +84,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
         if n_clusters < 2:
             raise ValueError(f"Invalid n_clusters. It must be an greater than 1. {n_clusters} was passed.")
-        engines_options = ["matlab"]
+        engines_options = ["matlab", "python"]
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if (engine == "matlab") and (not oct2py_installed):
@@ -149,8 +149,6 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             u_0, v_0, b_0 = self._new_init(transformed_Xs, w, self.n_clusters, len(transformed_Xs))
             u, v, b, f = self._daimc(transformed_Xs, w, u_0, v_0, b_0, self.n_clusters,
                                      len(transformed_Xs), {"afa": self.alpha, "beta": self.beta})
-        else:
-            raise ValueError("Only engine=='matlab' and 'python' are currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= v)
@@ -232,7 +230,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             - B length: n_clusters
             - B[i] shape: (n_features_i, n_clusters)
         """
-        np.random.seed(random_state)
+        # np.random.seed(random_state)
 
         B = []
         U = []
