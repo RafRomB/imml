@@ -95,13 +95,16 @@ class jNMFFeatureSelector(jNMF):
             hs = pd.concat(hs, axis=0)
             hs.columns = range(hs.columns.size)
         hs = hs.abs()
+        selected_features = {}
         if self.select_by == "component":
-            selected_features = hs.idxmax().to_list()
+            for col in hs:
+                selected_features[hs[col].idxmax()] = hs[col].max()
         elif self.select_by == "average":
             selected_features = hs.mean(axis=1).nlargest(n=self.n_components).index.to_list()
         elif self.select_by == "max":
             selected_features = hs.stack().nlargest(n=self.n_components).reset_index(level=1).index.to_list()
-        self.selected_features_ = selected_features
+        self.selected_features_ = list(selected_features.keys())
+        self.weights_ = list(selected_features.values())
         return self
 
 

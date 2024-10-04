@@ -227,7 +227,6 @@ class jNMF(TransformerMixin, BaseEstimator):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
-        samples = Xs[0].index
 
         if self.engine == "r":
             from rpy2.robjects.packages import importr
@@ -254,7 +253,7 @@ class jNMF(TransformerMixin, BaseEstimator):
 
         transformed_X = np.array(transformed_X)
         if self.transform_ == "pandas":
-            transformed_X = pd.DataFrame(transformed_X, index= samples)
+            transformed_X = pd.DataFrame(transformed_X, index= Xs[0].index)
 
         return transformed_X
 
@@ -298,10 +297,11 @@ class jNMF(TransformerMixin, BaseEstimator):
 
             H = [np.array(mat) for mat in H]
             V = [np.array(mat) for mat in V]
+            transformed_X = np.array(W)
             if self.transform_ == "pandas":
                 H = [pd.DataFrame(mat, index=X.columns) for X,mat in zip(Xs, H)]
                 V = [pd.DataFrame(mat, index=X.index) for X,mat in zip(Xs, V)]
-                W = pd.DataFrame(np.array(W), index=Xs[0].index)
+                transformed_X = pd.DataFrame(transformed_X, index=Xs[0].index)
 
         self.H_ = H
         self.V_ = V
@@ -309,7 +309,7 @@ class jNMF(TransformerMixin, BaseEstimator):
         self.observed_reconstruction_err_ = list(train_recerror)
         self.missing_reconstruction_err_ = list(test_recerror)
         self.relchange_ = list(relchange)
-        return W
+        return transformed_X
 
 
     @staticmethod
