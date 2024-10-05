@@ -113,30 +113,34 @@ class Amputer(BaseEstimator, TransformerMixin):
         transformed_Xs : list of array-likes, shape (n_samples, n_features)
             The amputed multi-view dataset.
         """
-        pandas_format = isinstance(Xs[0], pd.DataFrame)
-        if pandas_format:
-            rownames = Xs[0].index
-            colnames = [X.columns for X in Xs]
-            Xs = [X.values for X in Xs]
-        sample_names = pd.Index(list(range(len(Xs[0]))))
+        if self.p > 0:
+            pandas_format = isinstance(Xs[0], pd.DataFrame)
+            if pandas_format:
+                rownames = Xs[0].index
+                colnames = [X.columns for X in Xs]
+                Xs = [X.values for X in Xs]
+            sample_names = pd.Index(list(range(len(Xs[0]))))
 
-        if self.mechanism == "EDM":
-            pseudo_observed_view_indicator = self._edm_mask(sample_names=sample_names)
-        elif self.mechanism == "MCAR":
-            pseudo_observed_view_indicator = self._mcar_mask(sample_names=sample_names)
-        elif self.mechanism == "PM":
-            pseudo_observed_view_indicator = self._pm_mask(sample_names=sample_names)
+            if self.mechanism == "EDM":
+                pseudo_observed_view_indicator = self._edm_mask(sample_names=sample_names)
+            elif self.mechanism == "MCAR":
+                pseudo_observed_view_indicator = self._mcar_mask(sample_names=sample_names)
+            elif self.mechanism == "PM":
+                pseudo_observed_view_indicator = self._pm_mask(sample_names=sample_names)
+            elif self.mechanism == "MNAR":
+                pseudo_observed_view_indicator = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]),
+                                                                                                       self.n_views))
+                pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator,
+                                                                       sample_names=sample_names)
+
+            pseudo_observed_view_indicator = pseudo_observed_view_indicator.astype(bool)
+            transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
+
+            if pandas_format:
+                transformed_Xs = [pd.DataFrame(X, index=rownames, columns=colnames[X_idx])
+                                  for X_idx, X in enumerate(transformed_Xs)]
         else:
-            pseudo_observed_view_indicator = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]),
-                                                                                                   self.n_views))
-            pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator,
-                                                                   sample_names=sample_names)
-
-        pseudo_observed_view_indicator = pseudo_observed_view_indicator.astype(bool)
-        transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
-
-        if pandas_format:
-            transformed_Xs = [pd.DataFrame(X, index=rownames, columns=colnames[X_idx]) for X_idx, X in enumerate(transformed_Xs)]
+            transformed_Xs = copy.deepcopy(Xs)
 
         return transformed_Xs
 
@@ -188,19 +192,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
             mask = self._MNAR_self_mask_logistic(X=X, p=self.p)
 
-        mask = pd.DataFrame(mask, index=missing_samples)
-        samples_to_fix = mask.nunique(axis=1).eq(1)
-        if samples_to_fix.any():
-            samples_to_fix = samples_to_fix[samples_to_fix]
-            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_views,
-                                                                             size=len(samples_to_fix))
-            for view_idx in np.unique(views_to_fix):
-                samples = views_to_fix == view_idx
-                samples = samples_to_fix[samples].index
-                mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool))
-
-        X = pd.DataFrame(np.ones_like(X), index=sample_names)
-        X.loc[mask.index] = mask.astype(int)
+        X = pd.DataFrame(np.invert(mask).astype(int), index=sample_names)
         return X
 
     def _edm_mask(self, sample_names):
