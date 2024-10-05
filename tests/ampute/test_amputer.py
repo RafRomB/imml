@@ -9,15 +9,9 @@ from imvc.utils import DatasetUtils
 
 @pytest.fixture
 def sample_data():
-    X1 = pd.DataFrame(np.random.default_rng(42).random((20, 3)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature1', 'feature2', 'feature3'])
-    X2 = pd.DataFrame(np.random.default_rng(42).random((20, 2)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature4', 'feature5'])
-    X3 = pd.DataFrame(np.random.default_rng(42).random((20, 5)),
-                      index=list(ascii_lowercase)[:20],
-                      columns=['feature6', 'feature7', 'feature8', 'feature9', 'feature10'])
+    X = np.random.default_rng(42).random((20, 10))
+    X = pd.DataFrame(X, index=list(ascii_lowercase)[:len(X)], columns= [f"feature{i}" for i in range(X.shape[1])])
+    X1, X2, X3 = X.iloc[:, :3], X.iloc[:, 3:5], X.iloc[:, 5:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 

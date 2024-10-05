@@ -180,13 +180,13 @@ class Amputer(BaseEstimator, TransformerMixin):
         #         [0, 1], p=[self.p, 1 - self.p], size=(len(sample_names), missing_X.shape[1]))
         #     mask = self._MAR_mask(X=missing_X, p=self.p, p_obs=self.p_obs)
         if self.mechanism == "MNAR" and self.opt == "logistic":
-            mask = self._MNAR_mask_logistic(X=missing_X, p=self.p, p_params=self.p_params,
+            mask = self._MNAR_mask_logistic(X=X, p=self.p, p_params=self.p_params,
                                             exclude_inputs=self.exclude_inputs)
         elif self.mechanism == "MNAR" and self.opt == "quantile":
-            mask = self._MNAR_mask_quantiles(X=missing_X, p=self.p, q=self.q, p_params=self.p_params, cut=self.cut,
+            mask = self._MNAR_mask_quantiles(X=X, p=self.p, q=self.q, p_params=self.p_params, cut=self.cut,
                                              MCAR=self.mcar)
         elif self.mechanism == "MNAR" and self.opt == "selfmasked":
-            mask = self._MNAR_self_mask_logistic(X=missing_X, p=self.p)
+            mask = self._MNAR_self_mask_logistic(X=X, p=self.p)
 
         mask = pd.DataFrame(mask, index=missing_samples)
         samples_to_fix = mask.nunique(axis=1).eq(1)
@@ -313,14 +313,56 @@ class Amputer(BaseEstimator, TransformerMixin):
         ps = np.dot(X[:, idxs_params], coeffs) + intercepts
         ps = 1 / (1 + np.exp(-ps))
 
-        ber = np.random.default_rng(self.random_state).random((n, d_na))
-        mask[:, idxs_nas] = ber < ps
+        # Deterministically ensure proportion of missing values equals p
+        # Step 1: Determine the number of rows to have missing values
+        n_rows_with_missing = int(np.floor(p * n))  # Target number of rows with missing values
 
-        ## If the inputs of the logistic model are excluded from MNAR missingness,
-        ## mask some values used in the logistic model at random.
-        ## This makes the missingness of other variables potentially dependent on masked values
+        # Step 2: Sort the probabilities across the matrix and retain indices
+        ps_flat = ps.flatten()  # Flatten ps into a 1D array
+        idxs_flat = np.transpose(
+            [np.tile(np.arange(n), d_na), np.repeat(idxs_nas, n)])  # Flatten corresponding row/col indices
+
+        sorted_indices = np.argsort(-ps_flat)  # Sort probabilities in descending order (most likely missing first)
+        sorted_idxs_flat = idxs_flat[sorted_indices]  # Apply sorted order to row/col indices
+
+        # Step 3: Ensure one missing value per row and assign missingness
+        unique_rows, first_occurrence_idx = np.unique(sorted_idxs_flat[:, 0], return_index=True)
+        # Target rows are selected
+        target_rows = unique_rows[:n_rows_with_missing]
+
+        # First missing positions are based on sorted probabilities
+        first_missing_positions = sorted_idxs_flat[first_occurrence_idx[:n_rows_with_missing]]
+
+        # Set the first missing value in the target rows
+        mask[first_missing_positions[:, 0], first_missing_positions[:, 1]] = True
+
+        # Step 4: Apply remaining missing values using sorted probabilities (if needed)
+        remaining_missing_idxs = sorted_idxs_flat[n_rows_with_missing:]
+
+        # For each target row, keep applying missingness to remaining highest-probability values
+        remaining_missing_rows = mask.any(axis=1)[:n_rows_with_missing]
+
+        # We want to fill the remaining missing values efficiently
+        remaining_space = np.where(remaining_missing_rows == False)[0]  # Identify rows that are not filled yet
+        if len(remaining_space) > 0:
+            mask[remaining_space, :] = True
+
+        # Mask some values used in the logistic model at random (if exclude_inputs is True)
         if exclude_inputs:
-            mask[:, idxs_params] = np.random.default_rng(self.random_state).random((n, d_params)) < p
+            n_masked_params = int(np.floor(p * n))  # Proportion of rows that should have missing in the parameter variables
+            row_indices_params = np.random.default_rng(self.random_state).choice(n, n_masked_params, replace=False)
+            for row_idx in row_indices_params:
+                random_values = np.random.default_rng(self.random_state).random(d_params)
+                mask[row_idx, idxs_params] = random_values < p  # Randomly mask p proportion in the params columns
+
+        # ber = np.random.default_rng(self.random_state).random((n, d_na))
+        # mask[:, idxs_nas] = ber < ps
+        #
+        # ## If the inputs of the logistic model are excluded from MNAR missingness,
+        # ## mask some values used in the logistic model at random.
+        # ## This makes the missingness of other variables potentially dependent on masked values
+        # if exclude_inputs:
+        #     mask[:, idxs_params] = np.random.default_rng(self.random_state).random((n, d_params)) < p
 
         return mask
 
