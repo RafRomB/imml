@@ -1,9 +1,12 @@
 import pytest
 import numpy as np
 import pandas as pd
+from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import MinMaxScaler
 
 from imvc.ampute import Amputer
 from imvc.feature_selection import jNMFFeatureSelector
+from imvc.preprocessing import MultiViewTransformer
 
 try:
     rpy2_installed = True
@@ -13,9 +16,9 @@ except ImportError:
 
 @pytest.fixture
 def sample_data():
-    X = np.random.default_rng(42).random((50, 270))
+    X = np.random.default_rng(42).random((20, 50))
     X = pd.DataFrame(X)
-    X1, X2, X3 = X.iloc[:, :100], X.iloc[:, 100:190], X.iloc[:, 190:]
+    X1, X2, X3 = X.iloc[:, :20], X.iloc[:, 20:30], X.iloc[:, 30:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
@@ -25,7 +28,9 @@ def test_default_params(sample_data):
         for Xs in sample_data:
             transformer.fit(Xs)
             assert hasattr(transformer, 'selected_features_')
-            assert len(transformer.selected_features_) == transformer.n_components
+            assert hasattr(transformer, 'weights_')
+            assert (len(transformer.selected_features_) == transformer.n_components)
+            assert (len(transformer.selected_features_) == len(transformer.weights_))
 
 def test_fit(sample_data):
     n_components = 5
@@ -34,7 +39,9 @@ def test_fit(sample_data):
         for Xs in sample_data:
             transformer.fit(Xs)
             assert hasattr(transformer, 'selected_features_')
-            assert len(transformer.selected_features_) == transformer.n_components
+            assert hasattr(transformer, 'weights_')
+            assert (len(transformer.selected_features_) == transformer.n_components)
+            assert (len(transformer.selected_features_) == len(transformer.weights_))
 
 def test_transform(sample_data):
     n_components = 5
@@ -58,6 +65,10 @@ def test_param_selectby(sample_data):
                 transformed_X = transformer.fit_transform(Xs)
                 transformed_X = np.concatenate(transformed_X, axis=1)
                 assert transformed_X.shape == (n_samples, n_components)
+                assert hasattr(transformer, 'selected_features_')
+                assert hasattr(transformer, 'weights_')
+                assert (len(transformer.selected_features_) == transformer.n_components)
+                assert (len(transformer.selected_features_) == len(transformer.weights_))
 
 def test_missing_values_handling(sample_data):
     n_components = 5
@@ -69,6 +80,10 @@ def test_missing_values_handling(sample_data):
             transformed_X = transformer.fit_transform(Xs)
             transformed_X = np.concatenate(transformed_X, axis=1)
             assert transformed_X.shape == (n_samples, n_components)
+            assert hasattr(transformer, 'selected_features_')
+            assert hasattr(transformer, 'weights_')
+            assert (len(transformer.selected_features_) == transformer.n_components)
+            assert (len(transformer.selected_features_) == len(transformer.weights_))
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid select_by"):

@@ -69,9 +69,9 @@ class jNMFFeatureSelector(jNMF):
         self.transform_ = None
 
 
-    def fit(self, Xs):
+    def fit(self, Xs, y = None):
         r"""
-        Project data into the learned space.
+        Fit the transformer to the input data.
 
         Parameters
         ----------
@@ -79,11 +79,12 @@ class jNMFFeatureSelector(jNMF):
             - Xs length: n_views
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different views.
+        y : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_components)
-            The projected data.
+        self :  returns an instance of self.
         """
         super().fit(Xs)
         hs = self.H_
@@ -99,10 +100,19 @@ class jNMFFeatureSelector(jNMF):
         if self.select_by == "component":
             for col in hs:
                 selected_features[hs[col].idxmax()] = hs[col].max()
+                hs = hs.drop(labels=hs[col].idxmax())
         elif self.select_by == "average":
-            selected_features = hs.mean(axis=1).nlargest(n=self.n_components).index.to_list()
+            hs = hs.mean(axis=1)
+            for i in range(self.n_components):
+                selected_features[hs.idxmax()] = hs.max()
+                hs = hs.drop(labels=hs.idxmax())
+            # selected_features = hs.mean(axis=1).nlargest(n=self.n_components).index.to_list()
         elif self.select_by == "max":
-            selected_features = hs.stack().nlargest(n=self.n_components).reset_index(level=1).index.to_list()
+            hs = hs.stack().reset_index(drop=True, level=1)
+            for i in range(self.n_components):
+                selected_features[hs.idxmax()] = hs.max()
+                hs = hs.drop(labels=hs.idxmax())
+            # selected_features = hs.stack().nlargest(n=self.n_components).reset_index(level=1).index.to_list()
         self.selected_features_ = list(selected_features.keys())
         self.weights_ = list(selected_features.values())
         return self
