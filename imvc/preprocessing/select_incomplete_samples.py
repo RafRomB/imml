@@ -16,7 +16,7 @@ class SelectIncompleteSamples(FunctionTransformer):
     >>> from imvc.preprocessing import SelectIncompleteSamples
     >>> from imvc.ampute import Amputer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+    >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
     >>> transformer = SelectIncompleteSamples()
     >>> transformer.fit_transform(Xs)
     """
@@ -47,7 +47,7 @@ def select_incomplete_samples(Xs: list):
     >>> from imvc.preprocessing import select_incomplete_samples
     >>> from imvc.ampute import Amputer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+    >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
     >>> select_incomplete_samples(Xs)
     """
 

@@ -58,7 +58,7 @@ UNS_METRICS_INCOMPLETE_ALG_FILE = "uns_metrics_by_inc_alg.csv"
 UNS_METRICS_INCOMPLETE_ALG_PATH = os.path.join(RESULTS_FOLDER, UNS_METRICS_INCOMPLETE_ALG_FILE)
 
 
-amputation_mechanisms = ["EDM", 'MCAR', 'MNAR', "PM"]
+amputation_mechanisms = ["edm", 'mcar', 'mnar', "pm"]
 probs = np.arange(100, step= 10)
 imputation = [True, False]
 runs_per_alg = np.arange(50)

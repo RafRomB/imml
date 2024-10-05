@@ -40,7 +40,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from sklearn.pipeline import make_pipeline
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> transformer = make_pipeline(Amputer(p=0.2, mechanism="MCAR", random_state=42), ObservedViewIndicator().set_output(transformed="pandas"))
+        >>> transformer = make_pipeline(Amputer(p=0.2, mechanism="mcar", random_state=42), ObservedViewIndicator().set_output(transformed="pandas"))
         >>> observed_view_indicator = transformer.fit_transform(Xs)
         >>> DatasetUtils.convert_to_imvd(Xs = Xs, observed_view_indicator = observed_view_indicator)
         """
@@ -183,7 +183,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_complete_sample_names(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
@@ -217,7 +217,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_incomplete_sample_names(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
@@ -251,7 +251,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_sample_names(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
@@ -289,7 +289,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_samples_by_view(Xs = Xs)
         """
         observed_view_indicator = get_observed_view_indicator(Xs)
@@ -330,7 +330,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_missing_samples_by_view(Xs = Xs)
         """
 
@@ -371,7 +371,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_n_complete_samples(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
@@ -402,7 +402,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_n_incomplete_samples(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
@@ -433,7 +433,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_percentage_complete_samples(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
@@ -464,7 +464,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_percentage_incomplete_samples(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
@@ -497,7 +497,7 @@ class DatasetUtils:
         >>> from imvc.ampute import Amputer
         >>> from imvc.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+        >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.remove_missing_sample_from_view(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")

@@ -16,7 +16,7 @@ class SelectCompleteSamples(FunctionTransformer):
     >>> from imvc.preprocessing import SelectCompleteSamples
     >>> from imvc.ampute import Amputer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+    >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
     >>> transformer = SelectCompleteSamples()
     >>> transformer.fit_transform(Xs)
     """
@@ -47,7 +47,7 @@ def select_complete_samples(Xs: list):
     >>> from imvc.preprocessing import select_complete_samples
     >>> from imvc.ampute import Amputer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> Xs = Amputer(p=0.2, mechanism="MCAR", random_state=42).fit_transform(Xs)
+    >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
     >>> select_complete_samples(Xs)
     """
 

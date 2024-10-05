@@ -27,7 +27,7 @@ for dataset_name in datasets:
 
     for prob, amputation_mechanism, run_n in itertools.product(probs, amputation_mechanisms, runs_per_alg):
         if prob == 0:
-            if amputation_mechanism == "EDM":
+            if amputation_mechanism == "edm":
                 amputation_mechanism = "No"
             else:
                 continue
@@ -38,7 +38,7 @@ for dataset_name in datasets:
             continue
         try:
             random_state = RANDOM_STATE + run_n
-            if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "MNAR"]):
+            if (dataset_name in two_view_datasets) and (amputation_mechanism in ["MAR", "mnar"]):
                 continue
             *train_Xs, y_train = shuffle(*Xs, y, random_state=random_state)
             p = prob/100

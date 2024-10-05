@@ -15,17 +15,17 @@ class Amputer(BaseEstimator, TransformerMixin):
     ----------
     p: float, default=0.1
         Percentaje of incomplete samples.
-    mechanism: str, default="EDM"
+    mechanism: str, default="edm"
         One of ["edm", 'mcar', 'mnar', 'pm'].
     opt: str, default="logistic"
         The type of model to be used for generating missing views. Current options are: regression ("logistic"),
-        or logistic regression for generating a self-masked MNAR mechanism ("selfmasked").
-        Only relevant for mechanism = "MNAR".
+        or logistic regression for generating a self-masked mnar mechanism ("selfmasked").
+        Only relevant for mechanism = "mnar".
     p_obs: float, default=0.1
         Proportion of views with no missing that will be used for the logistic masking model. Relevant only for
-        mechanism = "MAR" or "MNAR" with opt = "logistic" or "quantile".
+        mechanism = "MAR" or "mnar" with opt = "logistic" or "quantile".
     q: float, default=0.3
-        Quantile level at which the cuts should occur.  Relevant only for mechanism= "MNAR" with opt = "logistic"
+        Quantile level at which the cuts should occur.  Relevant only for mechanism= "mnar" with opt = "logistic"
         or "quantile".
     exclude_inputs: bool, default=True
         Whether to exclude the original input views when generating missing. If True, only the generated missing views
@@ -158,16 +158,16 @@ class Amputer(BaseEstimator, TransformerMixin):
         p_miss : float
             Proportion of missing values to generate for variables which will have missing values.
         mecha : str,
-                Indicates the missing-data mechanism to be used. "MCAR" by default, "MAR", "MNAR" or "MNARsmask"
+                Indicates the missing-data mechanism to be used. "mcar" by default, "MAR", "mnar" or "MNARsmask"
         opt: str,
-             For mecha = "MNAR", it indicates how the missing-data mechanism is generated: using a logistic
+             For mecha = "mnar", it indicates how the missing-data mechanism is generated: using a logistic
              regression ("logistic"), quantile censorship ("quantile") or logistic regression for generating a
-             self-masked MNAR mechanism ("selfmasked").
+             self-masked mnar mechanism ("selfmasked").
         p_obs : float
-                If mecha = "MAR", or mecha = "MNAR" with opt = "logistic" or "quanti", proportion of variables
+                If mecha = "MAR", or mecha = "mnar" with opt = "logistic" or "quanti", proportion of variables
                 with *no* missing values that will be used for the logistic masking model.
         q : float
-            If mecha = "MNAR" and opt = "quanti", quantile level at which the cuts should occur.
+            If mecha = "mnar" and opt = "quanti", quantile level at which the cuts should occur.
 
         Returns
         ----------
