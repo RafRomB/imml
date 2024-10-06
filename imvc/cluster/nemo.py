@@ -105,11 +105,11 @@ class NEMO(BaseEstimator, ClassifierMixin):
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if engine == "r":
             if not rpy2_installed:
-                raise ModuleNotFoundError(rpy2_module_error)
+                raise ImportError(rpy2_module_error)
             elif not nemo_installed:
-                raise ModuleNotFoundError(nemo_module_error)
+                raise ImportError(nemo_module_error)
             elif not snftool_installed:
-                raise ModuleNotFoundError(snftool_module_error)
+                raise ImportError(snftool_module_error)
 
         self.n_clusters = n_clusters
         self.num_neighbors = num_neighbors

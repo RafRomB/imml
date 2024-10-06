@@ -105,7 +105,8 @@ class MSNE(BaseEstimator, ClassifierMixin):
         try:
             assert self.k < len(Xs[0])
         except AssertionError:
-            raise ValueError(f"Invalid k. It must be smaller than the number of samples. {self.k} was passed.")
+            raise ValueError(f"Invalid k. It must be smaller than the number of samples {len(Xs[0])}."
+                             f" {self.k} was passed.")
         S = []
 
         if not isinstance(Xs[0], pd.DataFrame):

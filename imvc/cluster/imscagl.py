@@ -8,12 +8,13 @@ from sklearn.cluster import KMeans
 from ..impute import get_observed_view_indicator
 from ..utils import check_Xs, DatasetUtils
 
+oct2py_installed = False
+oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
 try:
     import oct2py
     oct2py_installed = True
 except ImportError:
-    oct2py_installed = False
-    oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
+    pass
 
 
 class IMSCAGL(BaseEstimator, ClassifierMixin):
@@ -97,7 +98,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if (engine == "matlab") and (not oct2py_installed):
-            raise ModuleNotFoundError(oct2py_module_error)
+            raise ImportError(oct2py_module_error)
 
         self.n_clusters = n_clusters
         self.lambda1 = lambda1

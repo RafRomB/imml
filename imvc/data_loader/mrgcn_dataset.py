@@ -11,7 +11,7 @@ class MRGCNDataset(torch.utils.data.Dataset):
 
     def __init__(self, Xs: list, transform = None):
         if not torch_installed:
-            raise ModuleNotFoundError(torch_module_error)
+            raise ImportError(torch_module_error)
         if not isinstance(Xs, list):
             raise ValueError(f"Invalid Xs. It must be a list of array-likes. A {type(Xs)} was passed.")
 

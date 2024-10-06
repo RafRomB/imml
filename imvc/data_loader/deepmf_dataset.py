@@ -11,7 +11,7 @@ class DeepMFDataset(torch.utils.data.Dataset):
 
     def __init__(self, X, transform = None, target_transform = None):
         if not torch_installed:
-            raise ModuleNotFoundError(torch_module_error)
+            raise ImportError(torch_module_error)
         if not isinstance(X, torch.Tensor):
             raise ValueError(f"Invalid X. It must be a tensor. A {type(X)} was passed.")
 

@@ -36,7 +36,7 @@ def sample_data():
 
 def test_rpy2_not_installed():
     if not rpy2_installed:
-        with pytest.raises(ModuleNotFoundError, match="rpy2 needs to be installed to use r engine."):
+        with pytest.raises(ImportError, match="rpy2 needs to be installed to use r engine."):
             NEMO(engine="r")
 
 @pytest.mark.skipif(not rpy2_installed, reason="rpy2 is not installed.")
@@ -46,10 +46,10 @@ def test_r_dependencies_not_installed():
         if snftool_installed:
             NEMO(engine="r")
         else:
-            with pytest.raises(ModuleNotFoundError, match="SNFtool needs to be installed in R to use r engine."):
+            with pytest.raises(ImportError, match="SNFtool needs to be installed in R to use r engine."):
                 NEMO(engine="r")
     else:
-        with pytest.raises(ModuleNotFoundError, match="nemo needs to be installed in R to use r engine."):
+        with pytest.raises(ImportError, match="nemo needs to be installed in R to use r engine."):
             NEMO(engine="r")
 
 def test_default_params(sample_data):

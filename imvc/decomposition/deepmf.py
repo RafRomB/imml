@@ -83,7 +83,7 @@ class DeepMF(pl.LightningModule):
     def __init__(self, X = None, n_components: int =10, n_layers: int = 3, learning_rate: float = 1e-2, alpha: float = 0.01,
                  neighbor_proximity='Lap', loss_fun = torch.nn.MSELoss(), sigmoid: bool = False):
         if not torch_installed:
-            raise ModuleNotFoundError(torch_module_error)
+            raise ImportError(torch_module_error)
         super().__init__()
 
         if (X is None) or (not hasattr(X, 'shape')):

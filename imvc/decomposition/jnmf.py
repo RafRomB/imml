@@ -126,9 +126,9 @@ class jNMF(TransformerMixin, BaseEstimator):
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if engine == "r":
             if not rpy2_installed:
-                raise ModuleNotFoundError(rpy2_module_error)
+                raise ImportError(rpy2_module_error)
             elif not nnTensor_installed:
-                raise ModuleNotFoundError(nnTensor_module_error)
+                raise ImportError(nnTensor_module_error)
 
         if beta_loss is None:
             beta_loss = ["Frobenius", "KL", "IS", "PLTF"]

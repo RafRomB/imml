@@ -20,7 +20,7 @@ def test_pytorch_not_installed(sample_data):
     if torch_installed:
         DeepMFDataset(X=sample_data)
     else:
-        with pytest.raises(ModuleNotFoundError, match="torch and lightning needs to be installed."):
+        with pytest.raises(ImportError, match="torch and lightning needs to be installed."):
             DeepMFDataset(X=sample_data)
 
 def test_default_params(sample_data):

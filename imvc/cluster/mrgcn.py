@@ -83,7 +83,7 @@ class MRGCN(pl.LightningModule):
     def __init__(self, n_clusters: int = 8, Xs = None, k_num:int = 10, learning_rate:float = 0.001, reg2:float = 1.,
                  reg3:float = 1.):
         if not torch_installed:
-            raise ModuleNotFoundError(torch_module_error)
+            raise ImportError(torch_module_error)
         super(MRGCN, self).__init__()
 
         if not isinstance(n_clusters, int):

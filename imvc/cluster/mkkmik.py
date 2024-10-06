@@ -8,12 +8,13 @@ from sklearn.gaussian_process import kernels
 
 from ..utils import check_Xs, DatasetUtils
 
+oct2py_installed = False
+oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
 try:
     import oct2py
     oct2py_installed = True
 except ImportError:
-    oct2py_installed = False
-    oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
+    pass
 
 
 class MKKMIK(BaseEstimator, ClassifierMixin):
@@ -94,7 +95,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if (engine == "matlab") and (not oct2py_installed):
-            raise ModuleNotFoundError(oct2py_module_error)
+            raise ImportError(oct2py_module_error)
         kernel_initializations = ['zeros', 'mean', 'knn', 'em', 'laplacian']
         if kernel_initialization not in kernel_initializations:
             raise ValueError(f"Invalid kernel_initialization. Expected one of: {kernel_initializations}")

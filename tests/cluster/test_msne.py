@@ -9,9 +9,9 @@ from imvc.cluster import MSNE
 
 @pytest.fixture
 def sample_data():
-    X = np.random.default_rng(42).random((25, 10))
-    X = pd.DataFrame(X, index=list(ascii_lowercase)[:len(X)], columns= [f"feature{i}" for i in range(X.shape[1])])
-    X1, X2, X3 = X.iloc[:, :3], X.iloc[:, 3:5], X.iloc[:, 5:]
+    X = np.random.default_rng(42).random((21, 6))
+    X = pd.DataFrame(X)
+    X1, X2, X3 = X.iloc[:, :2], X.iloc[:, 2:5], X.iloc[:, 5:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 

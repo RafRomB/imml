@@ -34,7 +34,7 @@ def test_pytorch_not_installed(sample_data):
     if torch_installed:
         MRGCN(Xs=sample_data[0])
     else:
-        with pytest.raises(ModuleNotFoundError, match="torch and lightning needs to be installed."):
+        with pytest.raises(ImportError, match="torch and lightning needs to be installed."):
             MRGCN(Xs=sample_data[0])
 
 def test_default_params(sample_data):

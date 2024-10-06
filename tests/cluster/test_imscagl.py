@@ -1,4 +1,6 @@
 from string import ascii_lowercase
+from unittest import mock
+
 import pytest
 import numpy as np
 import pandas as pd
@@ -6,27 +8,32 @@ import pandas as pd
 from imvc.ampute import Amputer
 from imvc.cluster import IMSCAGL
 
-
 try:
     import oct2py
     oct2py_installed = True
 except ImportError:
     oct2py_installed = False
+estimator = IMSCAGL
 
 @pytest.fixture
 def sample_data():
-    X = np.random.default_rng(42).random((10, 10))
-    X = pd.DataFrame(X, index=list(ascii_lowercase)[:len(X)], columns= [f"feature{i}" for i in range(X.shape[1])])
-    X1, X2, X3 = X.iloc[:, :3], X.iloc[:, 3:5], X.iloc[:, 5:]
+    X = np.random.default_rng(42).random((8, 5))
+    X = pd.DataFrame(X)
+    X1, X2, X3 = X.iloc[:, :2], X.iloc[:, 2:4], X.iloc[:, 4:]
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
-def test_oct2py_not_installed():
+def test_oct2py_not_installed(monkeypatch):
     if oct2py_installed:
-        IMSCAGL(engine="matlab")
+        estimator(engine="matlab")
+        with mock.patch("imvc.cluster.imscagl.oct2py_installed", False):
+            with mock.patch("imvc.cluster.oslfimvc.oct2py_module_error",
+                            "Oct2Py needs to be installed to use matlab engine."):
+                with pytest.raises(ImportError, match="Oct2Py needs to be installed to use matlab engine."):
+                    estimator(engine="matlab")
     else:
-        with pytest.raises(ModuleNotFoundError, match="Oct2Py needs to be installed to use matlab engine."):
-            IMSCAGL(engine="matlab")
+        with pytest.raises(ImportError, match="Oct2Py needs to be installed to use matlab engine."):
+            estimator(engine="matlab")
 
 def test_default_params(sample_data):
     model = IMSCAGL(random_state=42)
