@@ -83,7 +83,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
         if n_clusters < 2:
             raise ValueError(f"Invalid n_clusters. It must be an greater than 1. {n_clusters} was passed.")
-        engines_options = ["matlab"]
+        engines_options = ["matlab", "python"]
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if (engine == "matlab") and (not oct2py_installed):
@@ -142,9 +142,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
                 self._oc.rand('seed', self.random_state)
             Z, obj = self._oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
         elif self.engine == "python":
-            if self.random_state is not None:
-                random.seed(self.random_state)
-
             Z, obj = self._imsc(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma)
         else:
             raise ValueError("Only engine=='matlab' and 'python are currently supported.")
@@ -197,6 +194,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         labels = self.fit(Xs)._predict(Xs)
         return labels
 
+
     def _imsc(self, X, Im, n_cluters, lbd, gamma):
         r"""
         Runs the IMSR clustering algorithm.
@@ -220,7 +218,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
         obj : float
         """
         V = len(X)
-        n = X[0].shape[1]
         max_iter = 100
 
         # Initialization
@@ -349,6 +346,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Z = Z1 + Z2
         return Z
+
 
     @staticmethod
     def _update_x(X, Im, Z):
