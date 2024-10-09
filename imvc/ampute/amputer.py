@@ -23,7 +23,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         Only relevant for mechanism = "mnar".
     p_obs: float, default=0.1
         Proportion of views with no missing that will be used for the logistic masking model. Relevant only for
-        mechanism = "MAR" or "mnar" with opt = "logistic" or "quantile".
+        mechanism = "mnar" with opt = "logistic" or "quantile".
     q: float, default=0.3
         Quantile level at which the cuts should occur.  Relevant only for mechanism= "mnar" with opt = "logistic"
         or "quantile".
@@ -261,8 +261,8 @@ class Amputer(BaseEstimator, TransformerMixin):
         d_na = d - d_params if exclude_inputs else d  ## number of variables masked with the logistic model
 
         ### Sample variables that will be parameters for the logistic regression:
-        idxs_params = np.random.default_rng(self.random_state).choice(d,
-                                                                      d_params, replace=False) if exclude_inputs else np.arange(d)
+        idxs_params = np.random.default_rng(self.random_state).choice(d, d_params, replace=False)\
+            if exclude_inputs else np.arange(d)
         idxs_nas = np.array([i for i in range(d) if i not in idxs_params]) if exclude_inputs else np.arange(d)
 
         ### Other variables will have NA proportions selected by a logistic model
@@ -291,8 +291,6 @@ class Amputer(BaseEstimator, TransformerMixin):
         # Set the first missing value in the target rows
         mask[first_missing_positions[:, 0], first_missing_positions[:, 1]] = True
         # Step 4: Apply remaining missing values using sorted probabilities (if needed)
-        remaining_missing_idxs = sorted_idxs_flat[n_rows_with_missing:]
-        # For each target row, keep applying missingness to remaining highest-probability values
         remaining_missing_rows = mask.any(axis=1)[:n_rows_with_missing]
         # We want to fill the remaining missing values efficiently
         remaining_space = np.where(remaining_missing_rows == False)[0]  # Identify rows that are not filled yet
