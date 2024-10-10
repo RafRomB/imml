@@ -167,7 +167,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
             s = DatasetUtils.get_missing_samples_by_view(Xs=transformed_Xs, return_as_list=True)
-            s = tuple([{"indx": pd.Series(i).add(1).to_list()} for i in s])
+            s = tuple([{"indx": np.array(pd.Series(i).add(1).to_list())} for i in s])
 
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
@@ -269,7 +269,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         for p in range(numker):
             KH_tmp = KH[:, :, p]
             KH2_tmp = KH2[:, :, p]
-            obs_index = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in np.array(S[p]['indx']).T])
+            obs_index = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in S[p]['indx'].T])
             KAp = KH_tmp[np.ix_(obs_index, obs_index)]
             KH2_tmp[np.ix_(obs_index, obs_index)] = (KAp + KAp.T)/2
             KH2[:, :, p] = KH2_tmp
@@ -400,6 +400,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         Lxcm = Kx0[:n - n0, n - n0:]
 
         Lxcmmm = np.linalg.lstsq((Lxmm + alpha0 * np.eye(n0)).T, -Lxcm.T)[0].T
+        print(Lxcmmm, "\n")
         Kycm = np.matmul(Kycc, Lxcmmm)
         Kymm = np.matmul(Lxcmmm.T, Kycm)
         Kyr0 = np.vstack([np.block([Kycc, Kycm]),
@@ -487,7 +488,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             obj.append(self.cal_objV2(H, KA, gamma))
             KC = self.my_comb_fun(KA, gamma ** qnorm)
 
-            if (iter > 2) and (np.abs((obj[iter - 1] - obj[iter]) / obj[iter - 1])) < 1e-4 or (iter > 30):
+            if (iter > 2) and ((np.abs((obj[iter - 1] - obj[iter]) / obj[iter - 1])) < 1e-4 or (iter > 30)):
                 flag = 0
 
         H_normalized = np.real(H / np.tile(np.sqrt(np.sum(H ** 2, 1)), reps=(cluster_count, 1)).T
