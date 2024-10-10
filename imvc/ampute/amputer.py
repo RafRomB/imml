@@ -129,10 +129,7 @@ class Amputer(BaseEstimator, TransformerMixin):
             elif self.mechanism == "pm":
                 pseudo_observed_view_indicator = self._pm_mask(sample_names=sample_names)
             elif self.mechanism == "mnar":
-                pseudo_observed_view_indicator = np.random.default_rng(self.random_state).normal(size=(len(Xs[0]),
-                                                                                                       self.n_views))
-                pseudo_observed_view_indicator = self._produce_missing(X= pseudo_observed_view_indicator,
-                                                                       sample_names=sample_names)
+                pseudo_observed_view_indicator = self._mnar_mask(sample_names=sample_names)
 
             pseudo_observed_view_indicator = pseudo_observed_view_indicator.astype(bool)
             transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
@@ -226,6 +223,23 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         pseudo_observed_view_indicator.loc[idxs_to_remove] = mask.astype(int)
         return pseudo_observed_view_indicator
+
+
+    def _mnar_mask(self, sample_names):
+        mask = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
+                                                                            random_state=self.random_state).index
+        idxs_to_remove = sample_names.difference(common_samples)
+        poss_mod_to_remove = range(1, self.n_views)
+        reference_var = np.random.default_rng(self.random_state).choice(poss_mod_to_remove, size=len(idxs_to_remove))
+        reference_var = pd.Series(reference_var, index=idxs_to_remove)
+        n_mods_to_remove = {n_mods_to_remove: np.random.default_rng(self.random_state + i).choice(poss_mod_to_remove,
+                                                                                                  size=n_mods_to_remove)
+                            for i,n_mods_to_remove in enumerate(np.unique(reference_var))}
+        for keys,values in n_mods_to_remove.items():
+            mask.loc[reference_var == keys, values] = 0
+
+        return mask
 
 
     def _pm_mask(self, sample_names):
