@@ -1,4 +1,6 @@
 import copy
+from pydoc import replace
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -37,15 +39,6 @@ class Amputer(BaseEstimator, TransformerMixin):
     random_state: int, default=None
         If int, random_state is the seed used by the random number generator.
 
-    References
-    ----------
-    .. [#amputerpaper1] Mayer, I., Sportisse, A., Josse, J., Tierney, N., & Vialaneix, N. (2024). R-miss-tastic: a
-                        unified platform for missing values methods and workflows. https://arxiv.org/abs/1908.04822
-    .. [#amputerpaper2] Muzellec B, Josse J, Boyer C, Cuturi M. Missing data imputation using optimal transport.
-                        In International Conference on Machine Learning 2020 Nov 21 (pp. 7130-7140). PMLR.
-    .. [#amputercode1] https://rmisstastic.netlify.app/
-    .. [#amputercode2] https://github.com/BorisMuzellec/MissingDataOT
-
     Example
     --------
     >>> from imvc.ampute import Amputer
@@ -55,26 +48,16 @@ class Amputer(BaseEstimator, TransformerMixin):
     >>> transformer.fit_transform(Xs)
     """
 
-    def __init__(self, p:float = 0.1, mechanism: str = "pm", opt:str = "logistic", p_obs:float = 0.1, q= 0.3,
-                 exclude_inputs:bool = True, p_params= 0.3, cut='both', random_state: int = None):
+    def __init__(self, p:float = 0.1, mechanism: str = "pm", weights: list = None, random_state: int = None):
 
         mechanisms_options = ["edm", "mcar", "mnar", "pm"]
         if mechanism not in mechanisms_options:
             raise ValueError(f"Invalid mechanism. Expected one of: {mechanisms_options}")
 
-        opt_options = ["logistic", "selfmasked"]
-        if opt not in opt_options:
-            raise ValueError(f"Invalid opt. Expected one of: {opt_options}")
-
         self.mechanism = mechanism
         self.p = p
+        self.weights = weights
         self.random_state = random_state
-        self.opt = opt
-        self.p_obs = p_obs
-        self.q = q
-        self.exclude_inputs = exclude_inputs
-        self.p_params = p_params
-        self.cut = cut
 
 
     def fit(self, Xs: list, y=None):
@@ -143,47 +126,6 @@ class Amputer(BaseEstimator, TransformerMixin):
         return transformed_Xs
 
 
-    def _produce_missing(self, X, sample_names):
-        """
-        Generate missing values for specifics missing-data mechanism and proportion of missing values.
-
-        Parameters
-        ----------
-        X : torch.DoubleTensor or np.ndarray, shape (n, d)
-            Data for which missing values will be simulated.
-            If a numpy array is provided, it will be converted to a pytorch tensor.
-        p_miss : float
-            Proportion of missing values to generate for variables which will have missing values.
-        mecha : str,
-                Indicates the missing-data mechanism to be used. "mcar" by default, "MAR", "mnar" or "MNARsmask"
-        opt: str,
-             For mecha = "mnar", it indicates how the missing-data mechanism is generated: using a logistic
-             regression ("logistic"), quantile censorship ("quantile") or logistic regression for generating a
-             self-masked mnar mechanism ("selfmasked").
-        p_obs : float
-                If mecha = "MAR", or mecha = "mnar" with opt = "logistic" or "quanti", proportion of variables
-                with *no* missing values that will be used for the logistic masking model.
-        q : float
-            If mecha = "mnar" and opt = "quanti", quantile level at which the cuts should occur.
-
-        Returns
-        ----------
-        A dictionary containing:
-        'X_init': the initial data matrix.
-        'X_incomp': the data with the generated missing values.
-        'mask': a matrix indexing the generated missing values.
-        """
-
-        if self.mechanism == "mnar" and self.opt == "logistic":
-            mask = self._MNAR_mask_logistic(X=X, p=self.p, p_params=self.p_params,
-                                            exclude_inputs=self.exclude_inputs)
-        elif self.mechanism == "mnar" and self.opt == "selfmasked":
-            mask = self._MNAR_self_mask_logistic(X=X, p=self.p)
-
-        X = pd.DataFrame(np.invert(mask).astype(int), index=sample_names)
-        return X
-
-
     def _edm_mask(self, sample_names):
         pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
@@ -230,14 +172,17 @@ class Amputer(BaseEstimator, TransformerMixin):
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        poss_mod_to_remove = range(1, self.n_views)
-        reference_var = np.random.default_rng(self.random_state).choice(poss_mod_to_remove, size=len(idxs_to_remove))
+        poss_mod_to_remove = list(range(1, self.n_views))
+        reference_var = np.random.default_rng(self.random_state).choice(poss_mod_to_remove,
+                                                                        p = self.weights,
+                                                                        size=len(idxs_to_remove))
         reference_var = pd.Series(reference_var, index=idxs_to_remove)
         n_mods_to_remove = {n_mods_to_remove: np.random.default_rng(self.random_state + i).choice(poss_mod_to_remove,
-                                                                                                  size=n_mods_to_remove)
+                                                                                                  size=n_mods_to_remove,
+                                                                                                  replace=False)
                             for i,n_mods_to_remove in enumerate(np.unique(reference_var))}
         for keys,values in n_mods_to_remove.items():
-            mask.loc[reference_var == keys, values] = 0
+            mask.loc[reference_var[reference_var == keys].index, values] = 0
 
         return mask
 
@@ -265,123 +210,3 @@ class Amputer(BaseEstimator, TransformerMixin):
                     mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool)).astype(int)
             pseudo_observed_view_indicator.loc[idxs_to_remove, mask.columns] = mask.astype(int)
         return pseudo_observed_view_indicator
-
-
-    def _MNAR_mask_logistic(self, X, p, p_params=.3, exclude_inputs=True):
-        n, d = X.shape
-        mask = np.zeros((n, d)).astype(bool)
-
-        d_params = max(int(p_params * d), 1) if exclude_inputs else d  ## number of variables used as inputs (at least 1)
-        d_na = d - d_params if exclude_inputs else d  ## number of variables masked with the logistic model
-
-        ### Sample variables that will be parameters for the logistic regression:
-        idxs_params = np.random.default_rng(self.random_state).choice(d, d_params, replace=False)\
-            if exclude_inputs else np.arange(d)
-        idxs_nas = np.array([i for i in range(d) if i not in idxs_params]) if exclude_inputs else np.arange(d)
-
-        ### Other variables will have NA proportions selected by a logistic model
-        ### The parameters of this logistic model are random.
-
-        ### Pick coefficients so that W^Tx has unit variance (avoids shrinking)
-        coeffs = self._pick_coeffs(X, idxs_obs=idxs_params, idxs_nas=idxs_nas)
-        ### Pick the intercepts to have a desired amount of missing values
-        intercepts = self._fit_intercepts(X[:, idxs_params], coeffs, p)
-
-        ps = np.dot(X[:, idxs_params], coeffs) + intercepts
-        ps = 1 / (1 + np.exp(-ps))
-
-        # Deterministically ensure proportion of missing values equals p
-        # Step 1: Determine the number of rows to have missing values
-        n_rows_with_missing = int(np.floor(p * n))  # Target number of rows with missing values
-        # Step 2: Sort the probabilities across the matrix and retain indices
-        ps_flat = ps.flatten()  # Flatten ps into a 1D array
-        idxs_flat = np.transpose([np.tile(np.arange(n), d_na), np.repeat(idxs_nas, n)])  # Flatten
-        sorted_indices = np.argsort(-ps_flat)  # Sort probabilities in descending order (most likely missing first)
-        sorted_idxs_flat = idxs_flat[sorted_indices]  # Apply sorted order to row/col indices
-        # Step 3: Ensure one missing value per row and assign missingness
-        unique_rows, first_occurrence_idx = np.unique(sorted_idxs_flat[:, 0], return_index=True)
-        # First missing positions are based on sorted probabilities
-        first_missing_positions = sorted_idxs_flat[first_occurrence_idx[:n_rows_with_missing]]
-        # Set the first missing value in the target rows
-        mask[first_missing_positions[:, 0], first_missing_positions[:, 1]] = True
-        # Step 4: Apply remaining missing values using sorted probabilities (if needed)
-        remaining_missing_rows = mask.any(axis=1)[:n_rows_with_missing]
-        # We want to fill the remaining missing values efficiently
-        remaining_space = np.where(remaining_missing_rows == False)[0]  # Identify rows that are not filled yet
-        if len(remaining_space) > 0:
-            mask[remaining_space, :] = True
-
-        # Mask some values used in the logistic model at random (if exclude_inputs is True)
-        if exclude_inputs:
-            n_masked_params = int(np.floor(p * n))  # Proportion of rows that should have missing in the parameter variables
-            row_indices_params = np.random.default_rng(self.random_state).choice(n, n_masked_params, replace=False)
-            for row_idx in row_indices_params:
-                random_values = np.random.default_rng(self.random_state).random(d_params)
-                mask[row_idx, idxs_params] = random_values < p  # Randomly mask p proportion in the params columns
-
-        return mask
-
-    def _MNAR_self_mask_logistic(self, X, p):
-        """
-        Missing not at random mechanism with a logistic self-masking model. Variables have missing values probabilities
-        given by a logistic model, taking the same variable as input (hence, missingness is independent from one variable
-        to another). The intercepts are selected to attain the desired missing rate.
-
-        Parameters
-        ----------
-        X : torch.DoubleTensor or np.ndarray, shape (n, d)
-            Data for which missing values will be simulated.
-            If a numpy array is provided, it will be converted to a pytorch tensor.
-
-        p : float
-            Proportion of missing values to generate for variables which will have missing values.
-
-        Returns
-        -------
-        mask : torch.BoolTensor or np.ndarray (depending on type of X)
-            Mask of generated missing values (True if the value is missing).
-
-        """
-
-        n, d = X.shape
-        ### Variables will have NA proportions that depend on those observed variables, through a logistic model
-        ### The parameters of this logistic model are random.
-
-        ### Pick coefficients so that W^Tx has unit variance (avoids shrinking)
-        coeffs = self._pick_coeffs(X=X, self_mask=True)
-        ### Pick the intercepts to have a desired amount of missing values
-        intercepts = self._fit_intercepts(X=X, coeffs=coeffs, p=p, self_mask=True)
-
-        ps = X*coeffs + intercepts
-        ps = 1 / (1 + np.exp(-ps))
-
-        ber = np.random.default_rng(self.random_state).random((n, d))
-        mask = ber < ps
-        return mask
-
-
-    def _pick_coeffs(self, X, idxs_obs=None, idxs_nas=None, self_mask=False):
-        n, d = X.shape
-        if self_mask:
-            coeffs = np.random.default_rng(self.random_state).normal(size=d)
-            Wx = X * coeffs
-            coeffs /= np.std(Wx, 0)
-        else:
-            d_obs = len(idxs_obs)
-            d_na = len(idxs_nas)
-            coeffs = np.random.default_rng(self.random_state).normal(size=(d_obs, d_na))
-            Wx = np.dot(X[:, idxs_obs], coeffs)
-            coeffs /= np.std(Wx, 0, keepdims=True)
-        return coeffs
-
-    def _fit_intercepts(self, X, coeffs, p, self_mask=False):
-        if self_mask:
-            d = len(coeffs)
-            intercepts = [optimize.bisect(lambda x: (1 / (1 + np.exp(-(X * coeffs[j] + x)))).mean() - p, -50, 50) for j
-                          in range(d)]
-        else:
-            d_obs, d_na = coeffs.shape
-            intercepts = [
-                optimize.bisect(lambda x: (1 / (1 + np.exp(-(np.dot(X, coeffs[:, j]) + x)))).mean() - p, -50, 50) for j
-                in range(d_na)]
-        return intercepts
