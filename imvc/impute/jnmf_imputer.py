@@ -87,8 +87,11 @@ class jNMFImputer(jNMF):
         transformed_X : array-likes of shape (n_samples, n_components)
             The projected data.
         """
-        transformed_Xs = [np.dot(transformed_X + V, H.T)
-                          for transformed_X,V,H in zip(super().fit_transform(Xs), self.V_, self.H_)]
+        transformed_Xs = []
+        transformed_Xs_jnmf = super().fit_transform(Xs)
+        for transformed_X, V, H in zip(transformed_Xs_jnmf, self.V_, self.H_):
+            transformed_X = np.dot(transformed_X + V, H.T)
+            transformed_Xs.append(transformed_X)
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(X, index=X.index, columns=X.columns)

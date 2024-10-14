@@ -58,7 +58,7 @@ def test_extreme_p(sample_data):
 
 def test_param_mechanism(sample_data):
     p = 0.2
-    for mechanism in ["edm", "mcar", "pm"]:
+    for mechanism in ["edm", "mcar", "pm", "mnar"]:
         amputer = Amputer(p=p, mechanism=mechanism, random_state=42)
         for Xs in sample_data:
             transformed_Xs = amputer.fit_transform(Xs)
@@ -73,22 +73,6 @@ def test_param_mechanism(sample_data):
                     assert sum(missing) == len(Xs) -1
                 else:
                     assert sum(missing) == len(Xs)
-
-def test_transform_mnar_logistic(sample_data):
-    p = 0.2
-    amputer = Amputer(p=p, mechanism="mnar", opt="logistic", random_state=42)
-    for Xs in sample_data:
-        transformed_Xs = amputer.fit_transform(Xs)
-        assert len(transformed_Xs) == len(Xs)
-        assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p * 100)
-        assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p) * 100)
-
-def test_transform_mnar_selfmasked(sample_data):
-    p = 0.2
-    amputer = Amputer(p=p, mechanism="mnar", opt="selfmasked", random_state=42)
-    for Xs in sample_data:
-        transformed_Xs = amputer.fit_transform(Xs)
-        assert len(transformed_Xs) == len(Xs)
 
 if __name__ == "__main__":
     pytest.main()

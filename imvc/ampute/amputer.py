@@ -1,11 +1,7 @@
 import copy
-from pydoc import replace
-
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
-from scipy import optimize
-
 from ..utils import DatasetUtils
 
 
@@ -19,23 +15,9 @@ class Amputer(BaseEstimator, TransformerMixin):
         Percentaje of incomplete samples.
     mechanism: str, default="edm"
         One of ["edm", 'mcar', 'mnar', 'pm'].
-    opt: str, default="logistic"
-        The type of model to be used for generating missing views. Current options are: regression ("logistic"),
-        or logistic regression for generating a self-masked mnar mechanism ("selfmasked").
-        Only relevant for mechanism = "mnar".
-    p_obs: float, default=0.1
-        Proportion of views with no missing that will be used for the logistic masking model. Relevant only for
-        mechanism = "mnar" with opt = "logistic" or "quantile".
-    q: float, default=0.3
-        Quantile level at which the cuts should occur.  Relevant only for mechanism= "mnar" with opt = "logistic"
-        or "quantile".
-    exclude_inputs: bool, default=True
-        Whether to exclude the original input views when generating missing. If True, only the generated missing views
-        are considered.
-    p_params: float, default=0.3
-        Proportion of missing views to generate for views that will be missing.
-    cut: str, default='both'
-        Specifies the type of cut for generating missing values. Options include: both', 'upper' or 'lower'.
+    weights: list, default=None
+        The probabilities associated with each number of missing modalities. If not given, the sample
+        assumes a uniform distribution.
     random_state: int, default=None
         If int, random_state is the seed used by the random number generator.
 
@@ -172,14 +154,17 @@ class Amputer(BaseEstimator, TransformerMixin):
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        poss_mod_to_remove = list(range(1, self.n_views))
-        reference_var = np.random.default_rng(self.random_state).choice(poss_mod_to_remove,
+        reference_var = np.random.default_rng(self.random_state).choice(range(1, self.n_views),
                                                                         p = self.weights,
                                                                         size=len(idxs_to_remove))
         reference_var = pd.Series(reference_var, index=idxs_to_remove)
-        n_mods_to_remove = {n_mods_to_remove: np.random.default_rng(self.random_state + i).choice(poss_mod_to_remove,
-                                                                                                  size=n_mods_to_remove,
-                                                                                                  replace=False)
+        if self.random_state is None:
+            random_state = np.random.choice(100000)
+        else:
+            random_state = self.random_state
+        n_mods_to_remove = {n_mods_to_remove: np.random.default_rng(random_state + i).choice(self.n_views,
+                                                                                             size=n_mods_to_remove,
+                                                                                             replace=False)
                             for i,n_mods_to_remove in enumerate(np.unique(reference_var))}
         for keys,values in n_mods_to_remove.items():
             mask.loc[reference_var[reference_var == keys].index, values] = 0
