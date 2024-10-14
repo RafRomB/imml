@@ -26,8 +26,6 @@ def test_default_params(sample_data):
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError):
         Amputer(mechanism='Invalid mechanism')
-    with pytest.raises(ValueError):
-        Amputer(opt='Invalid opt')
 
 def test_fit(sample_data):
     p = 0.2

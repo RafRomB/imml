@@ -13,6 +13,7 @@ except ImportError:
     oct2py_installed = False
 estimator = IMSR
 
+
 @pytest.fixture
 def sample_data():
     X = np.random.default_rng(42).random((8, 5))
@@ -34,7 +35,7 @@ def test_oct2py_not_installed(monkeypatch):
             estimator(engine="matlab")
 
 def test_default_params(sample_data):
-    model = IMSR(random_state=42)
+    model = estimator(random_state=42)
     if oct2py_installed:
         for Xs in sample_data:
             n_samples = len(Xs[0])

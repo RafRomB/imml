@@ -1,12 +1,9 @@
 import pytest
 import numpy as np
 import pandas as pd
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import MinMaxScaler
 
 from imvc.ampute import Amputer
 from imvc.feature_selection import jNMFFeatureSelector
-from imvc.preprocessing import MultiViewTransformer
 
 try:
     rpy2_installed = True
