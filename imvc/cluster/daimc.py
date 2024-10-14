@@ -231,7 +231,6 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             - B length: n_clusters
             - B[i] shape: (n_features_i, n_clusters)
         """
-        # np.random.seed(random_state)
 
         B = []
         U = []
