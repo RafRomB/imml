@@ -53,7 +53,6 @@ def test_default_params(sample_data):
         assert len(model.U_) == len(Xs)
         assert len(model.B_) == len(Xs)
 
-@pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_param_randomstate(sample_data):
     random_state = 42
     for engine in ["matlab", "python"]:
@@ -71,7 +70,6 @@ def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid n_clusters."):
         estimator(n_clusters=0)
 
-@pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_fit_predict(sample_data):
     n_clusters = 3
     for engine in ["matlab", "python"]:
@@ -95,7 +93,6 @@ def test_fit_predict(sample_data):
                 assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
                 assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
 
-@pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_missing_values_handling(sample_data):
     n_clusters = 3
     for engine in ["matlab", "python"]:
