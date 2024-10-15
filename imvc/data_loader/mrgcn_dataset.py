@@ -1,10 +1,9 @@
 try:
     import torch
-    import lightning as pl
     torch_installed = True
 except ImportError:
     torch_installed = False
-    torch_module_error = "torch and lightning needs to be installed."
+    torch_module_error = "torch needs to be installed."
 
 
 class MRGCNDataset(torch.utils.data.Dataset):

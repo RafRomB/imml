@@ -98,20 +98,25 @@ class jNMFFeatureSelector(jNMF):
         hs = hs.abs()
         selected_features = {}
         if self.select_by == "component":
+            hs = hs.loc[:, hs.max().sort_values(ascending=False).index]
             for col in hs:
-                selected_features[hs[col].idxmax()] = hs[col].max()
-                hs = hs.drop(labels=hs[col].idxmax())
+                component = hs[col]
+                feature = component.idxmax()
+                selected_features[feature] = component.max()
+                hs = hs.drop(labels=feature)
         elif self.select_by == "average":
             hs = hs.mean(axis=1)
             for i in range(self.n_components):
-                selected_features[hs.idxmax()] = hs.max()
-                hs = hs.drop(labels=hs.idxmax())
+                feature = hs.idxmax()
+                selected_features[feature] = hs.max()
+                hs = hs.drop(labels=feature)
             # selected_features = hs.mean(axis=1).nlargest(n=self.n_components).index.to_list()
         elif self.select_by == "max":
             hs = hs.stack().reset_index(drop=True, level=1)
             for i in range(self.n_components):
-                selected_features[hs.idxmax()] = hs.max()
-                hs = hs.drop(labels=hs.idxmax())
+                feature = hs.idxmax()
+                selected_features[feature] = hs.max()
+                hs = hs.drop(labels=feature)
             # selected_features = hs.stack().nlargest(n=self.n_components).reset_index(level=1).index.to_list()
         self.selected_features_ = list(selected_features.keys())
         self.weights_ = list(selected_features.values())

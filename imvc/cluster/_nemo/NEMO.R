@@ -135,5 +135,5 @@ nemo.clustering <- function(omics.list, num.clusters=NULL, num.neighbors=NA) {
   }
   clustering = spectralClustering(graph, num.clusters)
   names(clustering) = colnames(graph)
-  return(clustering)
+  return(list(clustering, graph)
 }

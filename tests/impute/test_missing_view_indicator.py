@@ -6,31 +6,28 @@ from imvc.impute import MissingViewIndicator, get_missing_view_indicator
 
 @pytest.fixture
 def sample_data():
-    X1 = pd.DataFrame(np.random.default_rng(42).random((5, 3)), index=['a', 'b', 'c', 'd', 'e'],
-                      columns=['feature1', 'feature2', 'feature3'])
-    X2 = pd.DataFrame(np.random.default_rng(42).random((5, 2)), index=['a', 'b', 'c', 'd', 'e'],
-                      columns=['feature4', 'feature5'])
-    X1.iloc[[2,4], :] = np.nan
-    X2.iloc[1, :] = np.nan
+    X = np.random.default_rng(42).random((5, 5))
+    X = pd.DataFrame(X)
+    X1, X2 = X.iloc[:, :3].copy(), X.iloc[:, 3:].copy()
+    X1.loc[[2,4], :] = np.nan
+    X2.loc[1, :] = np.nan
     Xs_pandas, Xs_numpy = [X1, X2], [X1.values, X2.values]
-    expected_indicator_pandas = pd.DataFrame({
+    observed_view_indicator = pd.DataFrame({
         0: [False, False, True, False, True],
         1: [False, True, False, False, False]
-    }, index=['a', 'b', 'c', 'd', 'e'])
-    expected_indicator_numpy = expected_indicator_pandas.values
-    return Xs_pandas, expected_indicator_pandas, Xs_numpy, expected_indicator_numpy
+    })
+    observed_view_indicator = observed_view_indicator.values
+    return Xs_pandas, Xs_numpy, observed_view_indicator
 
 def test_get_missing_view_indicator(sample_data):
-    Xs_pandas, expected_indicator_pandas, Xs_numpy, expected_indicator_numpy = sample_data
-    indicator = get_missing_view_indicator(Xs_pandas)
-    pd.testing.assert_frame_equal(indicator, expected_indicator_pandas)
-    indicator = get_missing_view_indicator(Xs_numpy)
-    np.equal(indicator, expected_indicator_numpy)
+    observed_view_indicator = sample_data[-1]
+    for Xs in sample_data[:2]:
+        indicator = get_missing_view_indicator(Xs)
+        np.equal(indicator, observed_view_indicator)
 
 def test_missing_view_indicator_class(sample_data):
-    Xs_pandas, expected_indicator_pandas, Xs_numpy, expected_indicator_numpy = sample_data
-    transformer = MissingViewIndicator()
-    indicator = transformer.fit_transform(Xs_pandas)
-    pd.testing.assert_frame_equal(indicator, expected_indicator_pandas)
-    indicator = transformer.fit_transform(Xs_numpy)
-    np.equal(indicator, expected_indicator_numpy)
+    observed_view_indicator = sample_data[-1]
+    for Xs in sample_data[:2]:
+        transformer = MissingViewIndicator()
+        indicator = transformer.fit_transform(Xs)
+        np.equal(indicator, observed_view_indicator)

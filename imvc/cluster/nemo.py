@@ -174,6 +174,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
             transformed_Xs = spectral_embedding(model.affinity_matrix_, n_components=self.n_clusters_,
                                                 eigen_solver=model.eigen_solver, random_state=self.random_state,
                                                 eigen_tol=model.eigen_tol, drop_first=False)
+            self.embedding_ = transformed_Xs
 
 
         elif self.engine == "R":
@@ -183,10 +184,10 @@ class NEMO(BaseEstimator, ClassifierMixin):
                 self.n_clusters = nemo.nemo.num.clusters(affinity_matrix)
             if self.random_state is not None:
                 rbase.set_seed(self.random_state)
-            labels = snftool.spectralClustering(affinity_matrix, self.n_clusters_)
+            preds = snftool.spectralClustering(affinity_matrix, self.n_clusters_)
+            labels, affinity_matrix = preds[0], preds[1]
 
         self.labels_ = labels
-        self.embedding_ = transformed_Xs
         self.affinity_matrix_ = affinity_matrix
 
         return self

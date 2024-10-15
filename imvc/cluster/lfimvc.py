@@ -80,7 +80,8 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, n_clusters: int = 8, kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
-                 lambda_reg: float = 1., max_iter=200, random_state:int = None, engine: str ="matlab", verbose = False):
+                 lambda_reg: float = 1., max_iter: int = 200, random_state:int = None, engine: str ="matlab",
+                 verbose = False):
         if not isinstance(n_clusters, int):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
         if n_clusters < 2:
@@ -141,11 +142,8 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
             transformed_Xs = simple_view_imputer(Xs)
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
-
-            if self.random_state is not None:
-                np.random.seed(self.random_state)
             U, WP, HP, obj = self.incomplete_multikernel_late_fusion_clustering(transformed_Xs, self.n_clusters,
-                                                                                    self.lambda_reg, self.max_iter)
+                                                                                self.lambda_reg)
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= U)
@@ -195,39 +193,39 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         labels = self.fit(Xs)._predict(Xs)
         return labels
 
-    def k_center(self, KH):
-        r"""
-        Center a kernel matrix.
-        """
-        n = KH.shape[1]
-
-        if np.ndim(KH) == 2:
-            D = np.sum(KH) / n
-            E = np.sum(D) / n
-            J = np.matmul(np.ones(shape=(n, 1)), D)
-            KH -= J - J.T + np.matmul(E, np.ones(shape=(n, n)))
-            K = 0.5 * (KH + KH.T)
-
-        elif np.ndim(KH) == 3:
-            for i in range(KH.shape[2]):
-                D = np.sum(KH[:, :, i], 0) / n
-                E = np.sum(D) / n
-                J = np.ones(shape=(n,)) * D
-                KH[:, :, i] = KH[:, :, i] - J - J.T + E * np.ones(shape=(n, n))
-                KH[:, :, i] = 0.5 * (KH[:, :, i] + KH[:, :, i].T) + 1e-12 * np.eye(n)
-
-        return KH
-
-    def k_norm(self, KH):
-        r"""
-        Normalize a kernel matrix.
-        """
-        if KH.shape[2] > 1:
-            for i in range(KH.shape[2]):
-                KH[:, :, i] = KH[:, :, i] / np.sqrt(np.outer(np.diag(KH[:, :, i]), np.diag(KH[:, :, i]).T))
-        else:
-            KH = KH / np.sqrt(np.matmul(np.diag(KH),np.diag(KH).T))
-        return KH
+    # def k_center(self, KH):
+    #     r"""
+    #     Center a kernel matrix.
+    #     """
+    #     n = KH.shape[1]
+    #
+    #     if np.ndim(KH) == 2:
+    #         D = np.sum(KH) / n
+    #         E = np.sum(D) / n
+    #         J = np.matmul(np.ones(shape=(n, 1)), D)
+    #         KH -= J - J.T + np.matmul(E, np.ones(shape=(n, n)))
+    #         K = 0.5 * (KH + KH.T)
+    #
+    #     elif np.ndim(KH) == 3:
+    #         for i in range(KH.shape[2]):
+    #             D = np.sum(KH[:, :, i], 0) / n
+    #             E = np.sum(D) / n
+    #             J = np.ones(shape=(n,)) * D
+    #             KH[:, :, i] = KH[:, :, i] - J - J.T + E * np.ones(shape=(n, n))
+    #             KH[:, :, i] = 0.5 * (KH[:, :, i] + KH[:, :, i].T) + 1e-12 * np.eye(n)
+    #
+    #     return KH
+    #
+    # def k_norm(self, KH):
+    #     r"""
+    #     Normalize a kernel matrix.
+    #     """
+    #     if KH.shape[2] > 1:
+    #         for i in range(KH.shape[2]):
+    #             KH[:, :, i] = KH[:, :, i] / np.sqrt(np.outer(np.diag(KH[:, :, i]), np.diag(KH[:, :, i]).T))
+    #     else:
+    #         KH = KH / np.sqrt(np.matmul(np.diag(KH),np.diag(KH).T))
+    #     return KH
 
     def my_kernel_kmeans(self, K, n_clusters):
         r"""
@@ -301,7 +299,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
 
         return HP
 
-    def incomplete_multikernel_late_fusion_clustering(self, KH, n_clusters, lambda_reg, normalize):
+    def incomplete_multikernel_late_fusion_clustering(self, KH, n_clusters, lambda_reg):
         r"""
         Runs the LFIMVC clustering algorithm.
 
@@ -323,9 +321,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         HP: 3-D array of shape (n_samples, n_clusters, n_views)
         obj: list of float
         """
-        if normalize:
-            KH = self.k_center(KH)  # K_center debuggé
-            KH = self.k_norm(KH)  # K_norm debuggé
+        # if normalize:
+        #     KH = self.k_center(KH)  # K_center debuggé
+        #     KH = self.k_norm(KH)  # K_norm debuggé
 
         num = KH.shape[0]  # Number of samples
         numker = KH.shape[2]  # Number of kernels
