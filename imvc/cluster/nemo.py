@@ -1,3 +1,5 @@
+import os.path
+from os.path import dirname
 from typing import Union
 import numpy as np
 import pandas as pd
@@ -5,32 +7,33 @@ import snf
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
+from snf.compute import affinity_matrix
 
 from ..impute import get_observed_view_indicator
-from ..utils import check_Xs
+from ..utils import check_Xs, DatasetUtils
 
+rpy2_installed = False
+rpy2_module_error = "rpy2 needs to be installed to use r engine."
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
+    import rpy2.robjects as robjects
     from ..utils import _convert_df_to_r_object
     rpy2_installed = True
 except ImportError:
-    rpy2_installed = False
-    rpy2_module_error = "rpy2 needs to be installed to use r engine."
+    pass
 
+snftool_installed = False
+snftool_module_error = "SNFtool needs to be installed in R to use r engine."
 if rpy2_installed:
     rbase = importr("base")
-    try:
-        nemo = importr("nemo")
-        nemo_installed = True
-    except PackageNotInstalledError:
-        nemo_installed = False
-        nemo_module_error = "nemo needs to be installed in R to use r engine."
+    r_folder = dirname(__file__)
+    r_folder = os.path.join(r_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+    robjects.r['source'](os.path.join(r_folder, 'NEMO.R'))
     try:
         snftool_installed = True
         snftool = importr("SNFtool")
     except PackageNotInstalledError:
-        snftool_installed = False
-        snftool_module_error = "SNFtool needs to be installed in R to use r engine."
+        pass
 
 
 class NEMO(BaseEstimator, ClassifierMixin):
@@ -106,11 +109,11 @@ class NEMO(BaseEstimator, ClassifierMixin):
         if engine == "r":
             if not rpy2_installed:
                 raise ImportError(rpy2_module_error)
-            elif not nemo_installed:
-                raise ImportError(nemo_module_error)
             elif not snftool_installed:
                 raise ImportError(snftool_module_error)
 
+        if n_clusters is None:
+            n_clusters = list(range(2, 16))
         self.n_clusters = n_clusters
         self.num_neighbors = num_neighbors
         self.num_neighbors_ratio = num_neighbors_ratio
@@ -139,9 +142,9 @@ class NEMO(BaseEstimator, ClassifierMixin):
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
+        if not isinstance(Xs[0], pd.DataFrame):
+            Xs = [pd.DataFrame(X) for X in Xs]
         if self.engine == 'python':
-            if not isinstance(Xs[0], pd.DataFrame):
-                Xs = [pd.DataFrame(X) for X in Xs]
             observed_view_indicator = get_observed_view_indicator(Xs)
             samples = observed_view_indicator.index
 
@@ -169,7 +172,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
             self.n_clusters_ = self.n_clusters if isinstance(self.n_clusters, int) else \
                 snf.get_n_clusters(arr= affinity_matrix.values, n_clusters= self.n_clusters)[0]
 
-            model = SpectralClustering(n_clusters= self.n_clusters_, random_state= self.random_state)
+            model = SpectralClustering(n_clusters= self.n_clusters_, random_state= self.random_state,
+                                       affinity="precomputed")
             labels = model.fit_predict(X= affinity_matrix)
             transformed_Xs = spectral_embedding(model.affinity_matrix_, n_components=self.n_clusters_,
                                                 eigen_solver=model.eigen_solver, random_state=self.random_state,
@@ -177,15 +181,23 @@ class NEMO(BaseEstimator, ClassifierMixin):
             self.embedding_ = transformed_Xs
 
 
-        elif self.engine == "R":
-            transformed_Xs = _convert_df_to_r_object(Xs)
-            affinity_matrix = nemo.nemo.affinity.graph(transformed_Xs, k=self.num_neighbors)
-            if (self.n_clusters is None):
-                self.n_clusters = nemo.nemo.num.clusters(affinity_matrix)
+        elif self.engine == "r":
+            transformed_Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
+            transformed_Xs = [X.T for X in transformed_Xs]
+            transformed_Xs = _convert_df_to_r_object(transformed_Xs)
+            num_neighbors = np.nan if self.num_neighbors is None else self.num_neighbors
+            output = robjects.globalenv['nemo.affinity.graph'](transformed_Xs, num_neighbors,
+                                                                        self.num_neighbors_ratio)
+            affinity_matrix, self.num_neighbors_ = output[0], list(output[1])
+            if isinstance(self.n_clusters, list):
+                self.n_clusters_ = int(robjects.globalenv['nemo.num.clusters'](affinity_matrix)[0])
+            else:
+                self.n_clusters_ = self.n_clusters
             if self.random_state is not None:
                 rbase.set_seed(self.random_state)
-            preds = snftool.spectralClustering(affinity_matrix, self.n_clusters_)
-            labels, affinity_matrix = preds[0], preds[1]
+            labels = snftool.spectralClustering(affinity_matrix, self.n_clusters_)
+            labels, affinity_matrix = np.array(labels), np.array(affinity_matrix)
+            labels -= 1
 
         self.labels_ = labels
         self.affinity_matrix_ = affinity_matrix
