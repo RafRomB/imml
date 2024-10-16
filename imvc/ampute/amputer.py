@@ -13,8 +13,8 @@ class Amputer(BaseEstimator, TransformerMixin):
     ----------
     p: float, default=0.1
         Percentaje of incomplete samples.
-    mechanism: str, default="edm"
-        One of ["edm", 'mcar', 'mnar', 'pm'].
+    mechanism: str, default="um"
+        One of ["um", 'mcar', 'mnar', 'pm'].
     weights: list, default=None
         The probabilities associated with each number of missing modalities. If not given, the sample
         assumes a uniform distribution.
@@ -32,7 +32,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
     def __init__(self, p:float = 0.1, mechanism: str = "pm", weights: list = None, random_state: int = None):
 
-        mechanisms_options = ["edm", "mcar", "mnar", "pm"]
+        mechanisms_options = ["um", "mcar", "mnar", "pm"]
         if mechanism not in mechanisms_options:
             raise ValueError(f"Invalid mechanism. Expected one of: {mechanisms_options}")
 
@@ -87,8 +87,8 @@ class Amputer(BaseEstimator, TransformerMixin):
                 Xs = [X.values for X in Xs]
             sample_names = pd.Index(list(range(len(Xs[0]))))
 
-            if self.mechanism == "edm":
-                pseudo_observed_view_indicator = self._edm_mask(sample_names=sample_names)
+            if self.mechanism == "um":
+                pseudo_observed_view_indicator = self._um_mask(sample_names=sample_names)
             elif self.mechanism == "mcar":
                 pseudo_observed_view_indicator = self._mcar_mask(sample_names=sample_names)
             elif self.mechanism == "pm":
@@ -108,7 +108,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         return transformed_Xs
 
 
-    def _edm_mask(self, sample_names):
+    def _um_mask(self, sample_names):
         pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index

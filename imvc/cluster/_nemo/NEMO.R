@@ -48,11 +48,6 @@ nemo.num.clusters <- function(W, NUMC=2:15) {
   }
 }
 
-#' @title Spectral clustering
-#' @name spectralClustering
-#' @export
-spectralClustering = SNFtool::spectralClustering
-
 
 #' @title Num neighbors ratio
 #' @name NUM.NEIGHBORS.RATIO
@@ -133,7 +128,7 @@ nemo.clustering <- function(omics.list, num.clusters=NULL, num.neighbors=NA) {
   if (is.na(num.clusters)) {
     num.clusters = nemo.num.clusters(graph)
   }
-  clustering = spectralClustering(graph, num.clusters)
+  clustering = SNFtool::spectralClustering(graph, num.clusters)
   names(clustering) = colnames(graph)
   return(clustering)
 }

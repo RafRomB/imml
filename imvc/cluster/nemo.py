@@ -30,8 +30,8 @@ if rpy2_installed:
     r_folder = os.path.join(r_folder, "_" + (os.path.basename(__file__).split(".")[0]))
     robjects.r['source'](os.path.join(r_folder, 'NEMO.R'))
     try:
-        snftool_installed = True
         snftool = importr("SNFtool")
+        snftool_installed = True
     except PackageNotInstalledError:
         pass
 

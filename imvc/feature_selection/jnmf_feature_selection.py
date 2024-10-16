@@ -17,17 +17,25 @@ class jNMFFeatureSelector(jNMF):
     ----------
     select_by : str, default="component"
         Criterion used to select features. Must be one of ["component", "max", "average"]:
-
         - "component": Selects the feature with the largest contribution for each component.
         - "max": Selects the features with the largest overall contribution.
         - "average": Selects the features with the highest average contribution across all components.
+    f_per_component : int, default=1
+        Number of features to select per component.
+        - If `select_by="component"`, this controls how many features are selected for each component.
+        - If `select_by="max"`, the top `n_components`*`f_per_component` features across all components are selected.
+        - If `select_by="average"`, it selects `n_components`*`f_per_component` features with the highest
+            average contribution for each component.
     kwargs : dict
         Arguments passed to the `jNMF` method.
 
     Attributes
     ----------
-    selected_features_ : list of str of shape (n_components,)
+    selected_features_ : list of str of shape (n_components * f_per_component,)
         List of selected features.
+    weights_ : list of float of shape (n_components * f_per_component,)
+        The importance or contribution scores of the selected features in absolute values. These scores reflect how
+        strongly each feature contributes to the components derived from jNMF.
 
     References
     ----------
@@ -59,14 +67,15 @@ class jNMFFeatureSelector(jNMF):
     """
 
 
-    def __init__(self, select_by: str = "component", **kwargs):
+    def __init__(self, select_by: str = "component", f_per_component: int = 1, **kwargs):
         select_by_options = ["max", "component", "average"]
         if select_by not in select_by_options:
             raise ValueError(f"Invalid select_by. Expected one of {select_by}. {select_by_options} was passed.")
 
         super().__init__(**kwargs)
         self.select_by = select_by
-        self.transform_ = None
+        self.f_per_component = f_per_component
+        # self.transform_ = None
 
 
     def fit(self, Xs, y = None):
@@ -98,26 +107,25 @@ class jNMFFeatureSelector(jNMF):
         hs = hs.abs()
         selected_features = {}
         if self.select_by == "component":
-            hs = hs.loc[:, hs.max().sort_values(ascending=False).index]
-            for col in hs:
-                component = hs[col]
-                feature = component.idxmax()
-                selected_features[feature] = component.max()
-                hs = hs.drop(labels=feature)
+            for n in range(self.f_per_component):
+                hs = hs.loc[:, hs.max().sort_values(ascending=False).index]
+                for col in hs:
+                    component = hs[col]
+                    feature = component.idxmax()
+                    selected_features[feature] = component.max()
+                    hs = hs.drop(labels=feature)
         elif self.select_by == "average":
             hs = hs.mean(axis=1)
-            for i in range(self.n_components):
+            for i in range(self.n_components * self.f_per_component):
                 feature = hs.idxmax()
                 selected_features[feature] = hs.max()
                 hs = hs.drop(labels=feature)
-            # selected_features = hs.mean(axis=1).nlargest(n=self.n_components).index.to_list()
         elif self.select_by == "max":
             hs = hs.stack().reset_index(drop=True, level=1)
-            for i in range(self.n_components):
+            for i in range(self.n_components * self.f_per_component):
                 feature = hs.idxmax()
                 selected_features[feature] = hs.max()
                 hs = hs.drop(labels=feature)
-            # selected_features = hs.stack().nlargest(n=self.n_components).reset_index(level=1).index.to_list()
         self.selected_features_ = list(selected_features.keys())
         self.weights_ = list(selected_features.values())
         return self

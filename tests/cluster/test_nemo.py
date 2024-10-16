@@ -12,13 +12,14 @@ try:
 except ImportError:
     rpy2_installed = False
 
+snftool_installed = False
 if rpy2_installed:
     rbase = importr("base")
     try:
-        snftool_installed = True
         snftool = importr("SNFtool")
+        snftool_installed = True
     except PackageNotInstalledError:
-        snftool_installed = False
+        pass
 estimator = NEMO
 
 
@@ -30,6 +31,7 @@ def sample_data():
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
+@pytest.mark.skipif(not snftool_installed, reason="snftool is not installed.")
 def test_rpy2_not_installed(monkeypatch):
     if rpy2_installed:
         estimator(engine="r")
@@ -54,7 +56,7 @@ def test_r_dependencies_not_installed():
 def test_param_randomstate(sample_data):
     random_state = 42
     for engine in ["r", "python"]:
-        if (engine == "r") and not rpy2_installed:
+        if (engine == "r") and (not rpy2_installed or not snftool_installed):
             continue
         else:
             labels = estimator(engine=engine, random_state=random_state).fit_predict(sample_data[0])
@@ -79,7 +81,7 @@ def test_default_params(sample_data):
 
 def test_custom_parameters(sample_data):
     for engine in ["r", "python"]:
-        if (engine == "r") and not rpy2_installed:
+        if (engine == "r") and (not rpy2_installed or not snftool_installed):
             continue
         else:
             model = estimator(n_clusters=list(range(2, 4)), num_neighbors=3, random_state=42, engine=engine)
@@ -106,7 +108,7 @@ def test_invalid_params(sample_data):
 def test_fit_predict(sample_data):
     n_clusters = 3
     for engine in ["r", "python"]:
-        if (engine == "r") and not rpy2_installed:
+        if (engine == "r") and (not rpy2_installed or not snftool_installed):
             continue
         else:
             model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
@@ -128,7 +130,7 @@ def test_fit_predict(sample_data):
 def test_missing_values_handling(sample_data):
     n_clusters = 3
     for engine in ["r", "python"]:
-        if (engine == "r") and not rpy2_installed:
+        if (engine == "r") and (not rpy2_installed or not snftool_installed):
             continue
         else:
             model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)

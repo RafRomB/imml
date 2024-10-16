@@ -16,7 +16,7 @@ class CreateResultTable:
         for k, v in {k: v for k, v in indexes_results.items() if k != "dataset"}.items():
             results = results.merge(pd.Series(v, name=k), how="cross")
         # change the name when there is no missing
-        results.loc[(results["amputation_mechanism"] == "edm") & (
+        results.loc[(results["amputation_mechanism"] == "um") & (
                 results["missing_percentage"] == 0), "amputation_mechanism"] = "No"
         results = results.set_index(indexes_names)
 

@@ -20,7 +20,7 @@ class NormalizerNaN(Normalizer):
     >>> from imvc.ampute import Amputer
     >>> from imvc.preprocessing import NormalizerNaN, MultiViewTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
-    >>> amp = Amputer(p=0.3, mechanism="edm")
+    >>> amp = Amputer(p=0.3, mechanism="um")
     >>> Xs = amp.fit_transform(Xs)
     >>> transformer = MultiViewTransformer(NormalizerNaN())
     >>> transformer.fit_transform(Xs)
