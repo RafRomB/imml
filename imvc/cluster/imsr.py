@@ -39,8 +39,8 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
-    engine : str, default=matlab
-        Engine to use for computing the model. Current options are 'matlab'.
+    engine : str, default=python
+        Engine to use for computing the model. Current options are 'matlab' or 'python'.
     verbose : bool, default=False
         Verbosity mode.
 
@@ -78,7 +78,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, n_clusters: int = 8, lbd : float = 1, gamma: float = 1, random_state:int = None,
-                 engine: str ="matlab", verbose = False):
+                 engine: str ="python", verbose = False):
         if not isinstance(n_clusters, int):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
         if n_clusters < 2:

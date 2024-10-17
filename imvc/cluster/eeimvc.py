@@ -41,8 +41,8 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         this hyperparameter.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
-    engine : str, default=matlab
-        Engine to use for computing the model.
+    engine : str, default=python
+        Engine to use for computing the model. Current options are 'matlab' or 'python'.
     verbose : bool, default=False
         Verbosity mode.
 
@@ -86,7 +86,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, n_clusters: int = 8, kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
                  lambda_reg: float = 1., qnorm: float = 2., random_state: int = None,
-                 engine: str ="matlab", verbose = False):
+                 engine: str ="python", verbose = False):
         if not isinstance(n_clusters, int):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
         if n_clusters < 2:
