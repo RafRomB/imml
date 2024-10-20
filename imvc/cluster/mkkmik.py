@@ -85,7 +85,8 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
     def __init__(self, n_clusters: int = 8, kernel_initialization: str = "zeros",
                  kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
-                 qnorm: float = 2., random_state: int = None, engine: str = "matlab", verbose=False):
+                 qnorm: float = 2., random_state: int = None, engine: str = "matlab",
+                 verbose=False, clean_space: bool = True):
 
         if not isinstance(n_clusters, int):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
@@ -109,10 +110,12 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         self.verbose = verbose
         self.kernel_initializations = {"zeros": "algorithm2", "mean": "algorithm3", "knn": "algorithm0",
                                        "em": "algorithm6", "laplacian": "algorithm4"}
+        self.clean_space = clean_space
 
         if self.engine == "matlab":
             matlab_folder = dirname(__file__)
             matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+            self._matlab_folder = matlab_folder
             matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
             self._oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
@@ -162,6 +165,9 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         self.embedding_, self.gamma_, self.KA_, self.loss_ = H_normalized, gamma, KA, obj
         self.n_iter_ = len(self.loss_)
 
+        if self.clean_space:
+            self._clean_space()
+
         return self
 
     def _predict(self, Xs):
@@ -202,3 +208,10 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
+
+
+    def _clean_space(self):
+        if self.engine == "matlab":
+            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+            del self._oc
+        return None

@@ -165,6 +165,9 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         self.labels_ = model.fit_predict(X= F)
         self.embedding_ = F
 
+        if self.clean_space:
+            self._clean_space()
+
         return self
 
 

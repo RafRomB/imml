@@ -1,6 +1,4 @@
-from string import ascii_lowercase
 from unittest import mock
-
 import pytest
 import numpy as np
 import pandas as pd

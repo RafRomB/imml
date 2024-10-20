@@ -88,7 +88,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
     def __init__(self, n_clusters: int = 8, dele: float = 0.1, lamb: int = 100000, beta: int = 1, k: int = 3,
                  neighbor_mode: str = 'KNN', weight_mode: str = 'Binary', max_iter: int = 100,
-                 random_state: int = None, engine: str = "matlab", verbose = False):
+                 random_state: int = None, engine: str = "matlab", verbose = False, clean_space: bool = True):
         if not isinstance(n_clusters, int):
             raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
         if n_clusters < 2:
@@ -114,10 +114,12 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         self.random_state = random_state
         self.engine = engine
         self.verbose = verbose
+        self.clean_space = clean_space
 
         if self.engine == "matlab":
             matlab_folder = dirname(__file__)
             matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
+            self._matlab_folder = matlab_folder
             matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
             self._oc = oct2py.Oct2Py(temp_dir= matlab_folder)
             for matlab_file in matlab_files:
@@ -179,6 +181,9 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         self.loss_ = loss[:, 0]
         self.n_iter_ = len(self.loss_)
 
+        if self.clean_space:
+            self._clean_space()
+
         return self
 
 
@@ -221,3 +226,10 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
         labels = self.fit(Xs)._predict(Xs)
         return labels
+
+
+    def _clean_space(self):
+        if self.engine == "matlab":
+            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+            del self._oc
+        return None
