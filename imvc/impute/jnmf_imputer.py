@@ -62,7 +62,7 @@ class jNMFImputer(jNMF):
                           for transformed_X,V,H in zip(super().transform(Xs), self.V_, self.H_)]
 
         if self.transform_ == "pandas":
-            transformed_Xs = [pd.DataFrame(X, index=X.index, columns=X.columns)
+            transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)
                               for transformed_X, X in zip(transformed_Xs, Xs)]
         return transformed_Xs
 
@@ -89,12 +89,13 @@ class jNMFImputer(jNMF):
         """
         transformed_Xs = []
         transformed_Xs_jnmf = super().fit_transform(Xs)
-        for transformed_X, V, H in zip(transformed_Xs_jnmf, self.V_, self.H_):
-            transformed_X = np.dot(transformed_X + V, H.T)
+        for V, H in zip(self.V_, self.H_):
+            transformed_X = np.dot(transformed_Xs_jnmf + V, H.T)
             transformed_Xs.append(transformed_X)
 
         if self.transform_ == "pandas":
-            transformed_Xs = [pd.DataFrame(X, index=X.index, columns=X.columns)
+            transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)
                               for transformed_X, X in zip(transformed_Xs, Xs)]
+
         return transformed_Xs
 

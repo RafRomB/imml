@@ -280,7 +280,10 @@ class jNMF(TransformerMixin, BaseEstimator):
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
+            self.transform_ = "numpy"
             Xs = [pd.DataFrame(X) for X in Xs]
+        else:
+            self.transform_ = "pandas"
 
         if self.engine=="r":
             transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(

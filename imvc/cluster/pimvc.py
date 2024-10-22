@@ -55,6 +55,8 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Engine to use for computing the model. Currently only 'matlab' is supported.
     verbose : bool, default=False
         Verbosity mode.
+    clean_space : bool, default=True
+        If engine is 'matlab' and clean_space is True, the session will be closed after fitting the model.
 
     Attributes
     ----------
@@ -231,5 +233,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     def _clean_space(self):
         if self.engine == "matlab":
             [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+            self._oc.exit()
             del self._oc
         return None
+
