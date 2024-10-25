@@ -1,5 +1,6 @@
 import pandas as pd
 import numpy as np
+from sklearn.impute import SimpleImputer
 
 from ..decomposition import jNMF
 
@@ -87,8 +88,10 @@ class jNMFImputer(jNMF):
         transformed_X : array-likes of shape (n_samples, n_components)
             The projected data.
         """
+
+        transformed_Xs_jnmf = [SimpleImputer().set_output(transform="pandas").fit_transform(X) for X in Xs]
+        transformed_Xs_jnmf = super().fit_transform(transformed_Xs_jnmf)
         transformed_Xs = []
-        transformed_Xs_jnmf = super().fit_transform(Xs)
         for V, H in zip(self.V_, self.H_):
             transformed_X = np.dot(transformed_Xs_jnmf + V, H.T)
             transformed_Xs.append(transformed_X)
