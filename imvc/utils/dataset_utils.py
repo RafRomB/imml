@@ -89,13 +89,13 @@ class DatasetUtils:
         summary = {
             "Complete samples": DatasetUtils.get_n_complete_samples(Xs),
             "Incomplete samples": DatasetUtils.get_n_incomplete_samples(Xs),
-            "Observed samples in modality": [len(Xs[0]) - len(X_id) for X_id in
+            "Observed samples per modality": [len(Xs[0]) - len(X_id) for X_id in
                                               DatasetUtils.get_missing_samples_by_view(Xs)],
-            "Missing samples in modality": [len(X_id) for X_id in
+            "Missing samples per modality": [len(X_id) for X_id in
                                              DatasetUtils.get_missing_samples_by_view(Xs)],
-            "% Observed samples in modality": [round((len(Xs[0]) - len(X_id)) / len(Xs[0]) * 100) for X_id in
+            "% Observed samples per modality": [round((len(Xs[0]) - len(X_id)) / len(Xs[0]) * 100) for X_id in
                                                 DatasetUtils.get_missing_samples_by_view(Xs)],
-            "% Missing samples in modality": [round(len(X_id) / len(Xs[0]) * 100) for X_id in
+            "% Missing samples per modality": [round(len(X_id) / len(Xs[0]) * 100) for X_id in
                                                DatasetUtils.get_missing_samples_by_view(Xs)],
         }
         return summary

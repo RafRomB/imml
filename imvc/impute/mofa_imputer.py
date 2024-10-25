@@ -49,9 +49,16 @@ class MOFAImputer(MOFA):
             Xs = [pd.DataFrame(X) for X in Xs]
 
         self.fit(Xs)
-        transformed_Xs = self._impute(Xs=Xs, transformed_X=self.factors_, weights=self.weights_)
+        transformed_Xs = []
+        for idx, w in enumerate(self.weights_):
+            transformed_X = np.dot(np.nan_to_num(self.factors_, nan=0.0), w.T)
+            transformed_X = pd.DataFrame(transformed_X, columns=Xs[idx].columns)
+            transformed_Xs.append(Xs[idx].fillna(transformed_X))
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index) for X,transformed_X in zip(Xs,transformed_Xs)]
+        else:
+            transformed_Xs = [transformed_X.values for transformed_X in transformed_Xs]
+
         return transformed_Xs
 

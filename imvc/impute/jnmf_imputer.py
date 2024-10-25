@@ -15,16 +15,18 @@ class jNMFImputer(jNMF):
 
     References
     ----------
-    .. [#jnmfpaper1] Liviu Badea, (2008) Extracting Gene Expression Profiles Common to Colon and Pancreatic
-                    Adenocarcinoma using Simultaneous nonnegative matrix factorization. Pacific Symposium on
-                    Biocomputing 13:279-290.
-    .. [#jnmfpaper2] Shihua Zhang, et al. (2012) Discovery of multi-dimensional modules by integrative analysis of
+    .. [#jnmfpaper1] Tsuyuzaki et al., (2023). nnTensor: An R package for non-negative matrix/tensor decomposition.
+                     Journal of Open Source Software, 8(84), 5015, https://doi.org/10.21105/joss.05015
+    .. [#jnmfpaper2] Liviu Badea, (2008) Extracting Gene Expression Profiles Common to Colon and Pancreatic
+                     Adenocarcinoma using Simultaneous nonnegative matrix factorization. Pacific Symposium on
+                     Biocomputing 13:279-290.
+    .. [#jnmfpaper3] Shihua Zhang, et al. (2012) Discovery of multi-dimensional modules by integrative analysis of
                      cancer genomic data. Nucleic Acids Research 40(19), 9379-9391.
-    .. [#jnmfpaper3] Zi Yang, et al. (2016) A non-negative matrix factorization method for detecting modules in
+    .. [#jnmfpaper4] Zi Yang, et al. (2016) A non-negative matrix factorization method for detecting modules in
                      heterogeneous omics multi-modal data, Bioinformatics 32(1), 1-8.
-    .. [#jnmfpaper4] Y. Kenan Yilmaz et al., (2010) Probabilistic Latent Tensor Factorization, International Conference
+    .. [#jnmfpaper5] Y. Kenan Yilmaz et al., (2010) Probabilistic Latent Tensor Factorization, International Conference
                      on Latent Variable Analysis and Signal Separation 346-353.
-    .. [#jnmfpaper5] N. Fujita et al., (2018) Biomarker discovery by integrated joint non-negative matrix factorization
+    .. [#jnmfpaper6] N. Fujita et al., (2018) Biomarker discovery by integrated joint non-negative matrix factorization
                      and pathway signature analyses, Scientific Report.
     .. [#jnmfcode1] https://rdrr.io/cran/nnTensor/man/jNMF.html
     .. [#jnmfcode2] https://github.com/rikenbit/nnTensor
@@ -92,13 +94,16 @@ class jNMFImputer(jNMF):
         transformed_Xs_jnmf = [SimpleImputer().set_output(transform="pandas").fit_transform(X) for X in Xs]
         transformed_Xs_jnmf = super().fit_transform(transformed_Xs_jnmf)
         transformed_Xs = []
-        for V, H in zip(self.V_, self.H_):
+        for X, V, H in zip(Xs, self.V_, self.H_):
             transformed_X = np.dot(transformed_Xs_jnmf + V, H.T)
+            transformed_X = pd.DataFrame(X).fillna(transformed_X)
             transformed_Xs.append(transformed_X)
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)
                               for transformed_X, X in zip(transformed_Xs, Xs)]
+        else:
+            transformed_Xs = [transformed_X.values for transformed_X in transformed_Xs]
 
         return transformed_Xs
 

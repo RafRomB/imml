@@ -178,9 +178,6 @@ class MOFA(TransformerMixin, BaseEstimator):
         ws = self.weights_
         winv = [np.linalg.pinv(w) for w in ws]
         transformed_Xs = [np.dot(X, w.T) for X,w in zip(Xs, winv)]
- #       if self.impute:
- #           imputed_Xs = self._impute(Xs=Xs, transformed_X=transformed_Xs, weights=ws)
- #           transformed_Xs = [np.dot(X, w.T) for X, w in zip(imputed_Xs, winv)]
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index) for X,transformed_X in zip(Xs,transformed_Xs)]
@@ -211,15 +208,6 @@ class MOFA(TransformerMixin, BaseEstimator):
         if self.transform_ == "pandas":
             transformed_X = pd.DataFrame(transformed_X)
         return transformed_X
-
-
-    def _impute(self, Xs, transformed_X, weights):
-        imputed_Xs = []
-        for idx, w in enumerate(weights):
-            imputed_X = np.dot(np.nan_to_num(transformed_X, nan=0.0), w.T)
-            imputed_X = pd.DataFrame(imputed_X, columns=Xs[idx].columns)
-            imputed_Xs.append(Xs[idx].fillna(imputed_X))
-        return imputed_Xs
 
     
     def _run_mofa(self, data):
