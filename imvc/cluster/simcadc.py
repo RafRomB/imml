@@ -166,6 +166,10 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
                                                 self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
                                                 mean_view_profile, self.beta, self.gamma, nout=7)
             obj = obj[0]
+
+            if self.clean_space:
+                self._clean_space()
+
         elif self.engine=="python":
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
@@ -196,9 +200,6 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         self.A_ = a
         self.Z_, self.loss_, self.iter_ = z, obj, iter
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -245,10 +246,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 
 

@@ -36,9 +36,9 @@ def test_oct2py_not_installed(monkeypatch):
             estimator(engine="matlab")
 
 def test_default_params(sample_data):
-    model = IMSCAGL(random_state=42)
     if oct2py_installed:
         for Xs in sample_data:
+            model = estimator(random_state=42)
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)
             assert labels is not None
@@ -51,7 +51,6 @@ def test_default_params(sample_data):
             assert model.embedding_.shape == (n_samples, model.n_clusters)
 
 def test_invalid_params(sample_data):
-    estimator = IMSCAGL
     with pytest.raises(ValueError, match="Invalid engine."):
         estimator(engine='invalid')
     with pytest.raises(ValueError, match="Invalid n_clusters."):
@@ -61,9 +60,9 @@ def test_invalid_params(sample_data):
 
 def test_fit_predict(sample_data):
     n_clusters = 3
-    model = IMSCAGL(n_clusters=n_clusters, random_state=42)
     if oct2py_installed:
         for Xs in sample_data:
+            model = estimator(n_clusters=n_clusters, random_state=42)
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)
             assert labels is not None
@@ -77,9 +76,9 @@ def test_fit_predict(sample_data):
 
 def test_missing_values_handling(sample_data):
     n_clusters = 2
-    model = IMSCAGL(n_clusters=n_clusters, random_state=42)
     if oct2py_installed:
         for Xs in sample_data:
+            model = estimator(n_clusters=n_clusters, random_state=42)
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)

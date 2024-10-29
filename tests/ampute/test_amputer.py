@@ -56,7 +56,7 @@ def test_extreme_p(sample_data):
 
 def test_param_mechanism(sample_data):
     p = 0.2
-    for mechanism in ["edm", "mcar", "pm", "mnar"]:
+    for mechanism in ["um", "mcar", "pm", "mnar"]:
         amputer = Amputer(p=p, mechanism=mechanism, random_state=42)
         for Xs in sample_data:
             transformed_Xs = amputer.fit_transform(Xs)

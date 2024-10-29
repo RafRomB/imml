@@ -21,14 +21,5 @@ def test_default_params(sample_data):
         assert len(transformed_Xs) == len(Xs)
         assert transformed_Xs[0].shape == Xs[0].shape
 
-def test_set_output(sample_data):
-    transformer = MOFAImputer(n_components=5, random_state=42, verbose=True).set_output(transform="pandas")
-    assert transformer.transform_ == "pandas"
-    for Xs in sample_data:
-        transformed_Xs = transformer.fit_transform(Xs)
-        assert len(transformed_Xs) == len(Xs)
-        assert transformed_Xs[0].shape == Xs[0].shape
-        assert isinstance(transformed_Xs[1], pd.DataFrame)
-
 if __name__ == "__main__":
     pytest.main()

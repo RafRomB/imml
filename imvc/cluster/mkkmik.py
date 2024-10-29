@@ -162,13 +162,13 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             KA = KA[:, 0]
             obj = obj[0]
 
+            if self.clean_space:
+                self._clean_space()
+
         model = KMeans(n_clusters=self.n_clusters, n_init="auto", random_state=self.random_state)
         self.labels_ = model.fit_predict(X=H_normalized)
         self.embedding_, self.gamma_, self.KA_, self.loss_ = H_normalized, gamma, KA, obj
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -213,9 +213,8 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 

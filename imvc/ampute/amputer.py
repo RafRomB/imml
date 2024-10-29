@@ -30,7 +30,7 @@ class Amputer(BaseEstimator, TransformerMixin):
     >>> transformer.fit_transform(Xs)
     """
 
-    def __init__(self, p:float = 0.1, mechanism: str = "pm", weights: list = None, random_state: int = None):
+    def __init__(self, p:float = 0.1, mechanism: str = "um", weights: list = None, random_state: int = None):
 
         mechanisms_options = ["um", "mcar", "mnar", "pm"]
         if mechanism not in mechanisms_options:

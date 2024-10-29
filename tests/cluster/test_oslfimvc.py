@@ -36,8 +36,8 @@ def test_oct2py_not_installed(monkeypatch):
 
 @pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_default_params(sample_data):
-    model = estimator(random_state=42)
     for Xs in sample_data:
+        model = estimator(random_state=42)
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -63,8 +63,8 @@ def test_invalid_params(sample_data):
 @pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_fit_predict(sample_data):
     n_clusters = 3
-    model = estimator(n_clusters=n_clusters, random_state=42)
     for Xs in sample_data:
+        model = estimator(n_clusters=n_clusters, random_state=42)
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
         assert labels is not None
@@ -82,8 +82,8 @@ def test_fit_predict(sample_data):
 @pytest.mark.skipif(not oct2py_installed, reason="Oct2py is not installed.")
 def test_missing_values_handling(sample_data):
     n_clusters = 2
-    model = estimator(n_clusters=n_clusters, random_state=42)
     for Xs in sample_data:
+        model = estimator(n_clusters=n_clusters, random_state=42)
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)

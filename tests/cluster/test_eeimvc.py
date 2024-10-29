@@ -71,9 +71,8 @@ def test_fit_predict(sample_data):
     for engine in ["matlab", "python"]:
         if (engine == "matlab") and not oct2py_installed:
             continue
-        else:
-            model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
         for Xs in sample_data:
+            model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)
             assert labels is not None
@@ -94,9 +93,8 @@ def test_missing_values_handling(sample_data):
     for engine in ["matlab", "python"]:
         if (engine == "matlab") and not oct2py_installed:
             continue
-        else:
-            model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
         for Xs in sample_data:
+            model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)

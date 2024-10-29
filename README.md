@@ -60,7 +60,7 @@ for each sample.
 We show a simple example of how it works.
 
 ```python
-from imvc.datasets import LoadDataset
+from datasets import LoadDataset
 from imvc.cluster import DAIMC
 from imvc.ampute import Amputer
 
@@ -68,7 +68,7 @@ from imvc.ampute import Amputer
 Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
 
 # Create an instance of an algorithm with 3 clusters
-estimator = DAIMC(n_clusters = 3)
+estimator = DAIMC(n_clusters=3)
 
 # Fit the model and get predictions
 labels = estimator.fit_predict(Xs)

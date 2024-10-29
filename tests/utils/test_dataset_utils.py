@@ -36,12 +36,12 @@ def test_summary(sample_data):
         assert isinstance(summary["Complete samples"], int)
         assert isinstance(summary["Incomplete samples"], int)
         assert summary["Complete samples"] + summary["Incomplete samples"] == len(Xs[0])
-        assert len(summary["Observed samples in modality"]) == len(Xs)
-        assert len(summary["Missing samples in modality"]) == len(Xs)
-        assert len(summary["% Observed samples in modality"]) == len(Xs)
-        assert any([i <= 100 for i in summary["% Observed samples in modality"]])
-        assert len(summary["% Missing samples in modality"]) == len(Xs)
-        assert any([i <= 100 for i in summary["% Missing samples in modality"]])
+        assert len(summary["Observed samples per modality"]) == len(Xs)
+        assert len(summary["Missing samples per modality"]) == len(Xs)
+        assert len(summary["% Observed samples per modality"]) == len(Xs)
+        assert any([i <= 100 for i in summary["% Observed samples per modality"]])
+        assert len(summary["% Missing samples per modality"]) == len(Xs)
+        assert any([i <= 100 for i in summary["% Missing samples per modality"]])
 
 def test_get_n_views(sample_data):
     for Xs in sample_data[:2]:

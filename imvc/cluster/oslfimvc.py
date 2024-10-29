@@ -153,13 +153,13 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
             beta = beta[:,0]
             obj = obj[0]
 
+            if self.clean_space:
+                self._clean_space()
+
         model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= U)
         self.embedding_, self.WP_, self.C_, self.beta_, self.loss_ = U, WP, C, beta, obj
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -206,10 +206,9 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 
 

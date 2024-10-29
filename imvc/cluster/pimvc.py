@@ -168,15 +168,15 @@ class PIMVC(BaseEstimator, ClassifierMixin):
                                                "WeightMode": self.weight_mode,
                                                "k": self.k}, nout=2)
 
+            if self.clean_space:
+                self._clean_space()
+
         model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         v = v.T
         self.labels_ = model.fit_predict(X= v)
         self.embedding_ = v
         self.loss_ = loss[:, 0]
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -223,9 +223,8 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 

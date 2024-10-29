@@ -113,7 +113,7 @@ class jNMF(TransformerMixin, BaseEstimator):
     >>> from sklearn.pipeline import make_pipeline
     >>> from sklearn.preprocessing import MinMaxScaler
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = jNMF(n_components = 5).set_output(transform="pandas")
+    >>> transformer = jNMF(n_components = 5)
     >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer)
     >>> transformed_X = pipeline.fit_transform(Xs)
     """

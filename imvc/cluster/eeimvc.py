@@ -159,6 +159,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
             beta = beta[:,0]
             obj = obj[0]
 
+            if self.clean_space:
+                self._clean_space()
+
         elif self.engine=="python":
             observed_view_indicator = get_observed_view_indicator(Xs)
             if isinstance(observed_view_indicator, pd.DataFrame):
@@ -179,9 +182,6 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         self.labels_ = model.fit_predict(X=H_normalized)
         self.embedding_, self.WP_, self.HP_, self.beta_, self.loss_ = H_normalized, WP, HP, beta, obj
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -228,10 +228,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 
 

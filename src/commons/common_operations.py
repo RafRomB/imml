@@ -5,9 +5,9 @@ import shutil
 from datetime import datetime
 import numpy as np
 import pandas as pd
-from imvc.datasets import LoadDataset
+from datasets import LoadDataset
 
-from settings import RANDOM_STATE, TIME_LIMIT, INCOMPLETE_RESULTS_PATH
+from settings import RANDOM_STATE, TIME_LIMIT
 from src.utils.create_result_table import CreateResultTable
 from src.clustering.run_clustering import RunClustering
 

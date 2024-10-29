@@ -58,19 +58,9 @@ def test_fit_transform(sample_data):
         assert len(transformer.weights_) == len(Xs)
         assert transformer.weights_[0].shape == (Xs[0].shape[1], n_components)
 
-def test_set_output(sample_data):
-    transformer = MOFA(n_components=5, random_state=42, verbose=True,
-                       train_options={"iter":2}).set_output(transform="pandas")
-    assert transformer.transform_ == "pandas"
-    for Xs in sample_data:
-        transformed_X = transformer.fit_transform(Xs)
-        assert isinstance(transformed_X, pd.DataFrame)
-        transformed_X = transformer.transform(Xs)
-        assert isinstance(transformed_X[0], pd.DataFrame)
-
 def test_missing_values_handling(sample_data):
     n_components = 5
-    transformer = MOFA(n_components=n_components, random_state=42).set_output(transform="pandas")
+    transformer = MOFA(n_components=n_components, random_state=42)
     for Xs in sample_data:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])

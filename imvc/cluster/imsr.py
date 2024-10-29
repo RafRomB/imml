@@ -147,6 +147,10 @@ class IMSR(BaseEstimator, ClassifierMixin):
             if self.random_state is not None:
                 self._oc.rand('seed', self.random_state)
             Z, obj = self._oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
+
+            if self.clean_space:
+                self._clean_space()
+
         elif self.engine == "python":
             Z, obj = self._imsc(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma)
         else:
@@ -156,9 +160,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
         self.labels_ = model.fit_predict(X= Z)
         self.embedding_, self.loss_ = Z, obj
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -205,10 +206,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 
 

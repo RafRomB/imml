@@ -149,6 +149,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             b = [np.array(arr[0]) for arr in b]
             u = [np.array(arr[0]) for arr in u]
 
+            if self.clean_space:
+                self._clean_space()
+
         elif self.engine == "python":
             transformed_Xs, observed_view_indicator = self._processing_xs(Xs)
             w = tuple([np.diag(missing_view) for missing_view in observed_view_indicator.T])
@@ -161,9 +164,6 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         self.U_ = u
         self.embedding_ = v
         self.B_ = b
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -209,10 +209,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 
 

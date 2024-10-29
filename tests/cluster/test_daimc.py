@@ -73,47 +73,45 @@ def test_fit_predict(sample_data):
     for engine in ["matlab", "python"]:
         if (engine == "matlab") and not oct2py_installed:
             continue
-        else:
+        for Xs in sample_data:
             model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
-            for Xs in sample_data:
-                n_samples = len(Xs[0])
-                labels = model.fit_predict(Xs)
-                assert labels is not None
-                assert len(labels) == n_samples
-                assert len(np.unique(labels)) == n_clusters
-                assert min(labels) == 0
-                assert max(labels) == (n_clusters - 1)
-                assert not np.isnan(labels).any()
-                assert not np.isnan(model.embedding_).any().any()
-                assert model.embedding_.shape == (n_samples, n_clusters)
-                assert len(model.U_) == len(Xs)
-                assert len(model.B_) == len(Xs)
-                assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
-                assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
+            n_samples = len(Xs[0])
+            labels = model.fit_predict(Xs)
+            assert labels is not None
+            assert len(labels) == n_samples
+            assert len(np.unique(labels)) == n_clusters
+            assert min(labels) == 0
+            assert max(labels) == (n_clusters - 1)
+            assert not np.isnan(labels).any()
+            assert not np.isnan(model.embedding_).any().any()
+            assert model.embedding_.shape == (n_samples, n_clusters)
+            assert len(model.U_) == len(Xs)
+            assert len(model.B_) == len(Xs)
+            assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
+            assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
 
 def test_missing_values_handling(sample_data):
     n_clusters = 3
     for engine in ["matlab", "python"]:
         if (engine == "matlab") and not oct2py_installed:
             continue
-        else:
+        for Xs in sample_data:
+            Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
             model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
-            for Xs in sample_data:
-                Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
-                n_samples = len(Xs[0])
-                labels = model.fit_predict(Xs)
-                assert labels is not None
-                assert len(labels) == n_samples
-                assert len(np.unique(labels)) == n_clusters
-                assert min(labels) == 0
-                assert max(labels) == (n_clusters - 1)
-                assert not np.isnan(labels).any()
-                assert not np.isnan(model.embedding_).any().any()
-                assert model.embedding_.shape == (n_samples, n_clusters)
-                assert len(model.U_) == len(Xs)
-                assert len(model.B_) == len(Xs)
-                assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
-                assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
+            n_samples = len(Xs[0])
+            labels = model.fit_predict(Xs)
+            assert labels is not None
+            assert len(labels) == n_samples
+            assert len(np.unique(labels)) == n_clusters
+            assert min(labels) == 0
+            assert max(labels) == (n_clusters - 1)
+            assert not np.isnan(labels).any()
+            assert not np.isnan(model.embedding_).any().any()
+            assert model.embedding_.shape == (n_samples, n_clusters)
+            assert len(model.U_) == len(Xs)
+            assert len(model.B_) == len(Xs)
+            assert model.U_[0].shape == (Xs[0].shape[1], n_clusters)
+            assert model.B_[0].shape == (Xs[0].shape[1], n_clusters)
 
 
 if __name__ == "__main__":

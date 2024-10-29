@@ -35,9 +35,9 @@ def test_oct2py_not_installed(monkeypatch):
             estimator(engine="matlab")
 
 def test_default_params(sample_data):
-    model = SIMCADC(random_state=42)
     if oct2py_installed:
         for Xs in sample_data:
+            model = estimator(random_state=42)
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)
             assert labels is not None
@@ -72,32 +72,30 @@ def test_fit_predict(sample_data):
     for engine in ["matlab", "python"]:
         if (engine == "matlab") and not oct2py_installed:
             continue
-        else:
-            model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
-            for Xs in sample_data:
-                n_samples = len(Xs[0])
-                labels = model.fit_predict(Xs)
-                assert labels is not None
-                assert len(labels) == n_samples
-                assert len(np.unique(labels)) == n_clusters
-                assert min(labels) == 0
-                assert max(labels) == (n_clusters - 1)
-                assert not np.isnan(labels).any()
-                assert not np.isnan(model.embedding_).any().any()
-                assert model.embedding_.shape == (n_samples, n_clusters)
-                assert model.V_.shape == (model.n_clusters, model.n_clusters)
-                assert model.A_.shape == (model.n_clusters, model.n_clusters)
-                assert model.Z_.shape == (model.n_clusters, n_samples)
-                assert model.n_iter_ > 0
+        for Xs in sample_data:
+            model = estimator(n_clusters=n_clusters, random_state=42)
+            n_samples = len(Xs[0])
+            labels = model.fit_predict(Xs)
+            assert labels is not None
+            assert len(labels) == n_samples
+            assert len(np.unique(labels)) == n_clusters
+            assert min(labels) == 0
+            assert max(labels) == (n_clusters - 1)
+            assert not np.isnan(labels).any()
+            assert not np.isnan(model.embedding_).any().any()
+            assert model.embedding_.shape == (n_samples, n_clusters)
+            assert model.V_.shape == (model.n_clusters, model.n_clusters)
+            assert model.A_.shape == (model.n_clusters, model.n_clusters)
+            assert model.Z_.shape == (model.n_clusters, n_samples)
+            assert model.n_iter_ > 0
 
 def test_missing_values_handling(sample_data):
     n_clusters = 3
     for engine in ["matlab", "python"]:
         if (engine == "matlab") and not oct2py_installed:
             continue
-        else:
-            model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
         for Xs in sample_data:
+            model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
             n_samples = len(Xs[0])
             labels = model.fit_predict(Xs)

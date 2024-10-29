@@ -1,6 +1,5 @@
 import imvc.ampute
 import imvc.cluster
-import imvc.datasets
 import imvc.decomposition
 import imvc.impute
 import imvc.preprocessing

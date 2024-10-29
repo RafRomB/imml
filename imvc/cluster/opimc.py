@@ -148,11 +148,11 @@ class OPIMC(BaseEstimator, ClassifierMixin):
                 self._oc.rand('seed', self.random_state)
             labels, V = self._oc.OPIMC(transformed_Xs, w, options, observed_view_indicator, nout= 2)
 
+            if self.clean_space:
+                self._clean_space()
+
         self.labels_ = pd.factorize(labels[:,0])[0]
         self.embedding_ = V
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -199,9 +199,8 @@ class OPIMC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 

@@ -142,6 +142,10 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
                 self._oc.rand('seed', self.random_state)
             U, WP,HP, obj = self._oc.IncompleteMultikernelLatefusionclusteringV1Hv(transformed_Xs, self.n_clusters,
                                                                              self.lambda_reg, self.max_iter, nout=4)
+
+            if self.clean_space:
+                self._clean_space()
+
         elif self.engine=="python":
             transformed_Xs = simple_view_imputer(Xs)
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
@@ -153,9 +157,6 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         self.labels_ = model.fit_predict(X= U)
         self.embedding_, self.WP_, self.HP_, self.loss_ = U, WP, HP, obj
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -202,10 +203,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 
 

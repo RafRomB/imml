@@ -160,6 +160,9 @@ class OMVC(BaseEstimator, ClassifierMixin):
             v = [np.array(arr) for arr in v[0]]
             u = [np.array(arr[0]) for arr in u]
 
+            if self.clean_space:
+                self._clean_space()
+
         model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= u_star_loss)
         self.U_ = u
@@ -169,9 +172,6 @@ class OMVC(BaseEstimator, ClassifierMixin):
             loss = np.array([[loss]])
         self.loss_ = loss[0]
         self.n_iter_ = len(self.loss_)
-
-        if self.clean_space:
-            self._clean_space()
 
         return self
 
@@ -218,9 +218,8 @@ class OMVC(BaseEstimator, ClassifierMixin):
 
 
     def _clean_space(self):
-        if self.engine == "matlab":
-            [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
-            self._oc.exit()
-            del self._oc
+        [os.remove(os.path.join(self._matlab_folder, x)) for x in ["reader.mat", "writer.mat"]]
+        self._oc.exit()
+        del self._oc
         return None
 
