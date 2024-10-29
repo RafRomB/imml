@@ -3,3 +3,4 @@ from .observed_view_indicator import ObservedViewIndicator, get_observed_view_in
 from .simple_view_imputer import SimpleViewImputer, simple_view_imputer
 from .mofa_imputer import MOFAImputer
 from .jnmf_imputer import jNMFImputer
+from .dfmf_imputer import DFMFImputer

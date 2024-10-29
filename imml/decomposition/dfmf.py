@@ -132,7 +132,10 @@ class DFMF(TransformerMixin, BaseEstimator):
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
+            self.transform_ = "numpy"
             Xs = [pd.DataFrame(X) for X in Xs]
+        else:
+            self.transform_ = "pandas"
         self.ts_ = [fusion.ObjectType(f'Type {i + 1}', self.n_components) for i in range(len(Xs))]
         relations = [fusion.Relation(X.values, self.t_, t) for X,t in zip(Xs, self.ts_)]
         fusion_graph = fusion.FusionGraph(relations)
@@ -166,21 +169,4 @@ class DFMF(TransformerMixin, BaseEstimator):
         if self.transform_ == "pandas":
             transformed_X = pd.DataFrame(transformed_X, index= Xs[0].index)
         return transformed_X
-
-
-    def set_output(self, *, transform=None):
-        r"""
-        Set output container.
-
-        Parameters
-        ----------
-        transform : str
-            Only 'pandas' is currently supported.
-
-        Returns
-        -------
-        self:  returns an instance of self.
-        """
-        self.transform_ = transform
-        return self
 

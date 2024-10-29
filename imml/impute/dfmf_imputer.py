@@ -3,9 +3,11 @@ import numpy as np
 from sklearn.impute import SimpleImputer
 
 from ..decomposition import jNMF
+from ..decomposition._skfusion import fusion
+from ..utils import check_Xs
 
 
-class jNMFImputer(jNMF):
+class DFMFImputer(jNMF):
     r"""
     Impute missing data in multi-view datasets using the Joint Non-negative Matrix Factorization (jNMF) method.
 
@@ -48,55 +50,15 @@ class jNMFImputer(jNMF):
         transformed_Xs : list of array-likes, shape (n_samples, n_components)
             The projected data.
         """
-        transformed_Xs = [np.dot(transformed_X + V, H.T)
-                          for transformed_X,V,H in zip(super().transform(Xs), self.V_, self.H_)]
-
-        if self.transform_ == "pandas":
-            transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)
-                              for transformed_X, X in zip(transformed_Xs, Xs)]
-        return transformed_Xs
-
-
-    def fit_transform(self, Xs, y = None, **fit_params):
-        r"""
-        Fit to data, then transform it.
-
-        Parameters
-        ----------
-        Xs : list of array-likes
-            - Xs length: n_views
-            - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
-        y : Ignored
-            Not used, present here for API consistency by convention.
-        fit_params : Ignored
-            Not used, present here for API consistency by convention.
-
-        Returns
-        -------
-        transformed_X : array-likes of shape (n_samples, n_components)
-            The projected data.
-        """
-
+        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        if not isinstance(Xs[0], pd.DataFrame):
+            Xs = [pd.DataFrame(X) for X in Xs]
         if self.filling:
-            transformed_Xs_jnmf = [SimpleImputer().set_output(transform="pandas").fit_transform(X) for X in Xs]
-            transformed_Xs_jnmf = super().fit_transform(transformed_Xs_jnmf)
-        else:
-            transformed_Xs_jnmf = super().fit_transform(Xs)
-        transformed_Xs = []
-        for X, V, H in zip(Xs, self.V_, self.H_):
-            transformed_X = np.dot(transformed_Xs_jnmf + V, H.T)
-            if isinstance(Xs[0], pd.DataFrame):
-                transformed_X = X.fillna(pd.DataFrame(transformed_X, index=X.index, columns=X.columns))
-            else:
-                transformed_X = pd.DataFrame(X).fillna(pd.DataFrame(transformed_X))
-            transformed_Xs.append(transformed_X)
+            Xs = [SimpleImputer().set_output(transform="pandas").fit_transform(X) for X in Xs]
+        relations = [fusion.Relation(X.values, self.t_, t) for X,t in zip(Xs, self.ts_)]
+        transformed_Xs = [self.fuser_.complete(relation) for relation in relations]
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)
                               for transformed_X, X in zip(transformed_Xs, Xs)]
-        elif self.transform_ == "numpy":
-            transformed_Xs = [transformed_X.values for transformed_X in transformed_Xs]
-
         return transformed_Xs
-
