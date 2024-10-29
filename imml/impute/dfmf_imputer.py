@@ -1,13 +1,10 @@
 import pandas as pd
-import numpy as np
-from sklearn.impute import SimpleImputer
 
-from ..decomposition import jNMF
-from ..decomposition._skfusion import fusion
+from ..decomposition import DFMF
 from ..utils import check_Xs
 
 
-class DFMFImputer(jNMF):
+class DFMFImputer(DFMF):
     r"""
     Impute missing data in multi-view datasets using the Joint Non-negative Matrix Factorization (jNMF) method.
 
@@ -29,12 +26,11 @@ class DFMFImputer(jNMF):
     """
 
 
-    def __init__(self, filling: bool = False, **kwargs):
+    def __init__(self, **kwargs):
         super().__init__(**kwargs)
-        self.filling = filling
 
 
-    def transform(self, Xs):
+    def fit_transform(self, Xs):
         r"""
         Project data into the learned space.
 
@@ -50,13 +46,8 @@ class DFMFImputer(jNMF):
         transformed_Xs : list of array-likes, shape (n_samples, n_components)
             The projected data.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
-        if not isinstance(Xs[0], pd.DataFrame):
-            Xs = [pd.DataFrame(X) for X in Xs]
-        if self.filling:
-            Xs = [SimpleImputer().set_output(transform="pandas").fit_transform(X) for X in Xs]
-        relations = [fusion.Relation(X.values, self.t_, t) for X,t in zip(Xs, self.ts_)]
-        transformed_Xs = [self.fuser_.complete(relation) for relation in relations]
+        self.fit(Xs)
+        transformed_Xs = [self.fuser_.complete(relation) for relation in self.fuser_.fusion_graph.relations]
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)

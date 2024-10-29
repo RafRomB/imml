@@ -28,6 +28,7 @@ def test_transform(sample_data):
         transformed_Xs = transformer.transform(Xs)
         assert len(transformed_Xs) == len(Xs)
         assert transformed_Xs[0].shape == Xs[0].shape
+        assert not any([np.isnan(transformed_X).any().any() for transformed_X in transformed_Xs])
 
 if __name__ == "__main__":
     pytest.main()

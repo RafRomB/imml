@@ -20,7 +20,7 @@ def test_default_params(sample_data):
         transformed_Xs = transformer.fit_transform(Xs)
         assert len(transformed_Xs) == len(Xs)
         assert transformed_Xs[0].shape == Xs[0].shape
-        assert any(np.isnan(transformed_X).any() for transformed_X in transformed_Xs)
+        assert not any([np.isnan(transformed_X).any().any() for transformed_X in transformed_Xs])
 
 if __name__ == "__main__":
     pytest.main()

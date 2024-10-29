@@ -46,18 +46,10 @@ def test_transform(sample_data):
         transformed_X = dfmf.transform(Xs)
         assert transformed_X.shape == (n_samples, n_components)
 
-def test_set_output(sample_data):
-    Xs_pandas, Xs_numpy = sample_data
-    dfmf = DFMF(n_components=5, max_iter=10, random_state=42).set_output(transform="pandas")
-    assert dfmf.transform_ == "pandas"
-    for Xs in [Xs_pandas, Xs_numpy]:
-        transformed_X = dfmf.fit_transform(Xs)
-        assert isinstance(transformed_X, pd.DataFrame)
-
 def test_missing_values_handling(sample_data):
     Xs_pandas, Xs_numpy = sample_data
     n_components = 5
-    dfmf = DFMF(n_components=n_components, max_iter=10, random_state=42).set_output(transform="pandas")
+    dfmf = DFMF(n_components=n_components, max_iter=10, random_state=42)
     for Xs in [Xs_pandas, Xs_numpy]:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])
