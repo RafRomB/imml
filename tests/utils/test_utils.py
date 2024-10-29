@@ -2,7 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.utils import check_Xs
+from imml.utils import check_Xs
 
 
 def test_valid_inputs():

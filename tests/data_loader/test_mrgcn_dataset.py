@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 import pytest
 
-from imvc.data_loader import MRGCNDataset
+from imml.data_loader import MRGCNDataset
 
 try:
     import torch

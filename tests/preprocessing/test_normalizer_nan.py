@@ -1,6 +1,6 @@
 import pytest
 import numpy as np
-from imvc.preprocessing import NormalizerNaN
+from imml.preprocessing import NormalizerNaN
 
 
 @pytest.fixture

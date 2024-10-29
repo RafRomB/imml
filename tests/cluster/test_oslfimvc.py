@@ -3,8 +3,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.ampute import Amputer
-from imvc.cluster import OSLFIMVC
+from imml.ampute import Amputer
+from imml.cluster import OSLFIMVC
 from unittest import mock
 
 try:
@@ -25,8 +25,8 @@ def sample_data():
 def test_oct2py_not_installed(monkeypatch):
     if oct2py_installed:
         estimator(engine="matlab")
-        with mock.patch("imvc.cluster.oslfimvc.oct2py_installed", False):
-            with mock.patch("imvc.cluster.oslfimvc.oct2py_module_error",
+        with mock.patch("imml.cluster.oslfimvc.oct2py_installed", False):
+            with mock.patch("imml.cluster.oslfimvc.oct2py_module_error",
                             "Oct2Py needs to be installed to use matlab engine."):
                 with pytest.raises(ImportError, match="Oct2Py needs to be installed to use matlab engine."):
                     estimator(engine="matlab")

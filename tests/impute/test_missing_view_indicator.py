@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imvc.impute import MissingViewIndicator, get_missing_view_indicator
+from imml.impute import MissingViewIndicator, get_missing_view_indicator
 
 
 @pytest.fixture

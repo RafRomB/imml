@@ -35,7 +35,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name = 'nutrimouse')
         """
         module_path = dirname(__file__)
@@ -104,7 +104,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_bbcsport()
         """
 
@@ -149,7 +149,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_bdgp()
         """
         output = LoadDataset.load_dataset(dataset_name="bdgp", return_y=return_y, return_metadata=return_metadata)
@@ -195,7 +195,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_buaa()
         """
         output = LoadDataset.load_dataset(dataset_name="buaa", return_y=return_y, return_metadata=return_metadata)
@@ -243,7 +243,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_caltech101()
         """
         output = LoadDataset.load_dataset(dataset_name= "caltech101", return_y = return_y, return_metadata = return_metadata)
@@ -290,7 +290,7 @@ class LoadDataset:
 
          Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_digits()
         """
         output = LoadDataset.load_dataset(dataset_name= "digits", return_y = return_y, return_metadata = return_metadata)
@@ -331,7 +331,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_metabric()
         """
         output = LoadDataset.load_dataset(dataset_name= "metabric", return_y = return_y, return_metadata = return_metadata)
@@ -377,7 +377,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_nuswide()
         """
         output = LoadDataset.load_dataset(dataset_name= "nuswide", return_y = return_y, return_metadata = return_metadata)
@@ -425,7 +425,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_nutrimouse()
         """
         output = LoadDataset.load_dataset(dataset_name= "nutrimouse", return_y = return_y, return_metadata = return_metadata)
@@ -469,7 +469,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_sensIT300()
         """
         output = LoadDataset.load_dataset(dataset_name= "sensIT300", return_y = return_y, return_metadata = return_metadata)
@@ -508,7 +508,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_simulated_gm()
         """
         output = LoadDataset.load_dataset(dataset_name= "simulated_gm", return_y = return_y, return_metadata = return_metadata)
@@ -549,7 +549,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_simulated_InterSIM()
         """
         output = LoadDataset.load_dataset(dataset_name= "simulated_InterSIM", return_y = return_y, return_metadata = return_metadata)
@@ -592,7 +592,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_simulated_netMUG()
         """
         output = LoadDataset.load_dataset(dataset_name= "simulated_netMUG", return_y = return_y, return_metadata = return_metadata)
@@ -637,7 +637,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_statlog()
         """
         output = LoadDataset.load_dataset(dataset_name= "statlog", return_y = return_y, return_metadata = return_metadata)
@@ -683,7 +683,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_tcga()
         """
         output = LoadDataset.load_dataset(dataset_name= "tcga", return_y = return_y, return_metadata = return_metadata)
@@ -726,7 +726,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_webkb()
         """
         output = LoadDataset.load_dataset(dataset_name= "webkb", return_y = return_y, return_metadata = return_metadata)
@@ -770,7 +770,7 @@ class LoadDataset:
 
         Examples
         --------
-        >>> from imvc.datasets import LoadDataset
+        >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_wisconsin()
         """
         output = LoadDataset.load_dataset(dataset_name= "wisconsin", return_y = return_y, return_metadata = return_metadata)

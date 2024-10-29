@@ -1,11 +1,11 @@
 import numpy as np
 import pytest
 import pandas as pd
-from imvc.preprocessing import (
+from imml.preprocessing import (
     DropView, ConcatenateViews, SingleView, AddMissingViews, SortData,
     concatenate_views, drop_view, single_view, add_missing_views, sort_data
 )
-from imvc.utils import DatasetUtils
+from imml.utils import DatasetUtils
 
 def create_sample_data():
     # Utility function to create sample data

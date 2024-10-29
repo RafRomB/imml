@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imvc.impute import jNMFImputer
+from imml.impute import jNMFImputer
 
 
 @pytest.fixture

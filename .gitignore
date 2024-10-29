@@ -137,5 +137,5 @@ test.py
 # data
 datasets/data/
 
-!/imvc/cluster/*/reader.mat
-!/imvc/cluster/*/writer.mat
+!/imml/cluster/*/reader.mat
+!/imml/cluster/*/writer.mat

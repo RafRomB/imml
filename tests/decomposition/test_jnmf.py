@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.ampute import Amputer
-from imvc.decomposition import jNMF
+from imml.ampute import Amputer
+from imml.decomposition import jNMF
 
 try:
     rpy2_installed = True

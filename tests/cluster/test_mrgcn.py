@@ -4,10 +4,10 @@ from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import FunctionTransformer
 
-from imvc.ampute import Amputer
-from imvc.preprocessing import MultiViewTransformer
-from imvc.cluster import MRGCN
-from imvc.data_loader import MRGCNDataset
+from imml.ampute import Amputer
+from imml.preprocessing import MultiViewTransformer
+from imml.cluster import MRGCN
+from imml.data_loader import MRGCNDataset
 
 try:
     import torch

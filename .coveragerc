@@ -1,9 +1,9 @@
 [run]
 omit =
-    imvc/decomposition/_skfusion/*
-    imvc/decomposition/_deepmf/*
-    imvc/decomposition/_mofa/*
+    imml/decomposition/_skfusion/*
+    imml/decomposition/_deepmf/*
+    imml/decomposition/_mofa/*
 
-    imvc/cluster/_monet/*
-    imvc/cluster/_msne/*
-    imvc/cluster/_sumo/*
+    imml/cluster/_monet/*
+    imml/cluster/_msne/*
+    imml/cluster/_sumo/*

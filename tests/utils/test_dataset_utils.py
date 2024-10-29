@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imvc.utils import DatasetUtils
+from imml.utils import DatasetUtils
 
 @pytest.fixture
 def sample_data():

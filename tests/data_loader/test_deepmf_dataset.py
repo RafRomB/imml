@@ -1,7 +1,7 @@
 import numpy as np
 import pytest
 
-from imvc.data_loader import DeepMFDataset
+from imml.data_loader import DeepMFDataset
 
 try:
     import torch

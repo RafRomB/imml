@@ -5,8 +5,8 @@ import os.path
 import shutil
 import numpy as np
 from sklearn.utils import shuffle
-from imvc.ampute import Amputer
-from imvc.impute import get_observed_view_indicator
+from imml.ampute import Amputer
+from imml.impute import get_observed_view_indicator
 
 from settings import PROFILES_PATH, DATASET_TABLE_PATH, RANDOM_STATE, probs, amputation_mechanisms, runs_per_alg
 from src.commons import CommonOperations

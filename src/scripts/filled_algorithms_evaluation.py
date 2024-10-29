@@ -9,9 +9,9 @@ from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
 from sklearn.cluster import KMeans
 
-from imvc.decomposition import MOFA, jNMF, DFMF
-from imvc.preprocessing import MultiViewTransformer, ConcatenateViews, NormalizerNaN
-from imvc.cluster import NEMO, DAIMC, PIMVC, SIMCADC, OSLFIMVC, MSNE, MKKMIK, LFIMVC, EEIMVC, SUMO, OPIMC, OMVC, MONET, \
+from imml.decomposition import MOFA, jNMF, DFMF
+from imml.preprocessing import MultiViewTransformer, ConcatenateViews, NormalizerNaN
+from imml.cluster import NEMO, DAIMC, PIMVC, SIMCADC, OSLFIMVC, MSNE, MKKMIK, LFIMVC, EEIMVC, SUMO, OPIMC, OMVC, MONET, \
     IMSR, IMSCAGL
 
 from settings import FILLED_SUBRESULTS_PATH, FILLED_RESULTS_PATH, FILLED_LOGS_PATH, FILLED_ERRORS_PATH, \

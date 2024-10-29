@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imvc.impute import MOFAImputer
+from imml.impute import MOFAImputer
 
 
 @pytest.fixture

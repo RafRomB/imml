@@ -3,8 +3,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.ampute import Amputer
-from imvc.decomposition import DFMF
+from imml.ampute import Amputer
+from imml.decomposition import DFMF
 
 
 @pytest.fixture

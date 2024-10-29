@@ -2,8 +2,8 @@ import pandas as pd
 import pytest
 import numpy as np
 
-from imvc.decomposition import DeepMF
-from imvc.data_loader import DeepMFDataset
+from imml.decomposition import DeepMF
+from imml.data_loader import DeepMFDataset
 
 try:
     import torch

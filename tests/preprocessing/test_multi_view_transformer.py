@@ -5,7 +5,7 @@ from sklearn.impute import SimpleImputer
 from sklearn.preprocessing import StandardScaler
 from sklearn.utils.validation import check_is_fitted
 
-from imvc.preprocessing import MultiViewTransformer
+from imml.preprocessing import MultiViewTransformer
 
 @pytest.fixture
 def sample_data():

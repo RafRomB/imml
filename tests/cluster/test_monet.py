@@ -3,8 +3,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.ampute import Amputer
-from imvc.cluster import MONET
+from imml.ampute import Amputer
+from imml.cluster import MONET
 
 
 @pytest.fixture

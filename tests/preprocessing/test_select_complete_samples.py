@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imvc.preprocessing import SelectCompleteSamples, select_complete_samples
+from imml.preprocessing import SelectCompleteSamples, select_complete_samples
 
 
 @pytest.fixture

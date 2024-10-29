@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.ampute import Amputer
-from imvc.feature_selection import jNMFFeatureSelector
+from imml.ampute import Amputer
+from imml.feature_selection import jNMFFeatureSelector
 
 try:
     rpy2_installed = True

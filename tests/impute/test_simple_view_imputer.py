@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imvc.impute import SimpleViewImputer, simple_view_imputer
+from imml.impute import SimpleViewImputer, simple_view_imputer
 
 @pytest.fixture
 def sample_data():

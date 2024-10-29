@@ -2,8 +2,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.ampute import Amputer
-from imvc.decomposition import MOFA
+from imml.ampute import Amputer
+from imml.decomposition import MOFA
 
 
 @pytest.fixture

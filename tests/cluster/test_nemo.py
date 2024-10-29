@@ -3,8 +3,8 @@ import pytest
 import numpy as np
 import pandas as pd
 
-from imvc.ampute import Amputer
-from imvc.cluster import NEMO
+from imml.ampute import Amputer
+from imml.cluster import NEMO
 
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
@@ -35,8 +35,8 @@ def sample_data():
 def test_rpy2_not_installed(monkeypatch):
     if rpy2_installed:
         estimator(engine="r")
-        with mock.patch("imvc.cluster.nemo.rpy2_installed", False):
-            with mock.patch("imvc.cluster.nemo.rpy2_module_error",
+        with mock.patch("imml.cluster.nemo.rpy2_installed", False):
+            with mock.patch("imml.cluster.nemo.rpy2_module_error",
                             "rpy2 needs to be installed to use r engine."):
                 with pytest.raises(ImportError, match="rpy2 needs to be installed to use r engine."):
                     estimator(engine="r")

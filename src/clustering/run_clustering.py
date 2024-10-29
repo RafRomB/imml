@@ -5,8 +5,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from imvc.preprocessing import MultiViewTransformer, ConcatenateViews, select_complete_samples
-from imvc.utils import DatasetUtils
+from imml.preprocessing import MultiViewTransformer, ConcatenateViews, select_complete_samples
+from imml.utils import DatasetUtils
 from settings import PROFILES_PATH
 
 from src.models import Model

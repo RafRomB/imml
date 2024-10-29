@@ -2,9 +2,9 @@ import pytest
 import numpy as np
 import pandas as pd
 from string import ascii_lowercase
-from imvc.ampute import Amputer
-from imvc.impute import get_missing_view_indicator
-from imvc.utils import DatasetUtils
+from imml.ampute import Amputer
+from imml.impute import get_missing_view_indicator
+from imml.utils import DatasetUtils
 
 
 @pytest.fixture

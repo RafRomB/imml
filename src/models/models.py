@@ -8,9 +8,9 @@ from snf import compute
 from torch.utils.data import DataLoader
 from pyrea import clusterer, view, fuser, execute_ensemble, consensus
 
-from imvc.cluster import MRGCN
-from imvc.data_loader import MRGCNDataset
-from imvc.data_loader import DeepMFDataset
+from imml.cluster import MRGCN
+from imml.data_loader import MRGCNDataset
+from imml.data_loader import DeepMFDataset
 
 from src.utils import Utils
 
