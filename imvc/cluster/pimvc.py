@@ -154,15 +154,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
             raise ValueError(f"n_clusters ({self.n_clusters}) should be smaller or equal to " +
                              f"the smallest n_features_i ({min([X.shape[1] for X in Xs])}).")
 
-
         if self.engine=="matlab":
-            matlab_folder = dirname(__file__)
-            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
-            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
-            oc = oct2py.Oct2Py(temp_dir= matlab_folder)
-            for matlab_file in matlab_files:
-                with open(os.path.join(matlab_folder, matlab_file)) as f:
-                    oc.eval(f.read())
 
             observed_view_indicator = get_observed_view_indicator(Xs)
             if isinstance(observed_view_indicator, pd.DataFrame):

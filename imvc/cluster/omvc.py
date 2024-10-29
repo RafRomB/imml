@@ -137,14 +137,6 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            matlab_folder = dirname(__file__)
-            matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
-            matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
-            oc = oct2py.Oct2Py(temp_dir= matlab_folder)
-            for matlab_file in matlab_files:
-                with open(os.path.join(matlab_folder, matlab_file)) as f:
-                    oc.eval(f.read())
-
             n_views = len(Xs)
             ones = np.ones((n_views, 1))
             option = {"k": self.n_clusters, "maxiter": self.max_iter, "tol": self.tol, "num_cluster": self.n_clusters,

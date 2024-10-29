@@ -1,4 +1,3 @@
-import copy
 import os
 import contextlib
 import tempfile
@@ -139,6 +138,11 @@ class MOFA(TransformerMixin, BaseEstimator):
         self :  returns an instance of self.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        if not isinstance(Xs[0], pd.DataFrame):
+            self.transform_ = "numpy"
+            Xs = [pd.DataFrame(X) for X in Xs]
+        else:
+            self.transform_ = "pandas"
         if self.verbose:
             self._run_mofa(data = [[X] for X in Xs])
         else:
@@ -226,21 +230,4 @@ class MOFA(TransformerMixin, BaseEstimator):
             self.mofa_.model = _ModifiedStochasticBayesNet(self.mofa_.model.dim, self.mofa_.model.nodes)
         self.mofa_.run()
         return None
-
-
-    def set_output(self, *, transform=None):
-        r"""
-        Set output container.
-
-        Parameters
-        ----------
-        transform : str
-            Only 'pandas' is currently supported.
-
-        Returns
-        -------
-        self:  returns an instance of self.
-        """
-        self.transform_ = transform
-        return self
 

@@ -77,7 +77,6 @@ class jNMFFeatureSelector(jNMF):
         super().__init__(**kwargs)
         self.select_by = select_by
         self.f_per_component = f_per_component
-        # self.transform_ = None
 
 
     def fit(self, Xs, y = None):

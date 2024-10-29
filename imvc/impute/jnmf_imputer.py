@@ -45,6 +45,11 @@ class jNMFImputer(jNMF):
     """
 
 
+    def __init__(self, filling: bool = False, **kwargs):
+        super().__init__(**kwargs)
+        self.filling = filling
+
+
     def transform(self, Xs):
         r"""
         Project data into the learned space.
@@ -91,18 +96,24 @@ class jNMFImputer(jNMF):
             The projected data.
         """
 
-        transformed_Xs_jnmf = [SimpleImputer().set_output(transform="pandas").fit_transform(X) for X in Xs]
-        transformed_Xs_jnmf = super().fit_transform(transformed_Xs_jnmf)
+        if self.filling:
+            transformed_Xs_jnmf = [SimpleImputer().set_output(transform="pandas").fit_transform(X) for X in Xs]
+            transformed_Xs_jnmf = super().fit_transform(transformed_Xs_jnmf)
+        else:
+            transformed_Xs_jnmf = super().fit_transform(Xs)
         transformed_Xs = []
         for X, V, H in zip(Xs, self.V_, self.H_):
             transformed_X = np.dot(transformed_Xs_jnmf + V, H.T)
-            transformed_X = pd.DataFrame(X).fillna(transformed_X)
+            if isinstance(Xs[0], pd.DataFrame):
+                transformed_X = X.fillna(pd.DataFrame(transformed_X, index=X.index, columns=X.columns))
+            else:
+                transformed_X = pd.DataFrame(X).fillna(pd.DataFrame(transformed_X))
             transformed_Xs.append(transformed_X)
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)
                               for transformed_X, X in zip(transformed_Xs, Xs)]
-        else:
+        elif self.transform_ == "numpy":
             transformed_Xs = [transformed_X.values for transformed_X in transformed_Xs]
 
         return transformed_Xs
