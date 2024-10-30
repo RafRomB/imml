@@ -9,6 +9,7 @@ import torch
 from sklearn.cluster import KMeans
 from sklearn.decomposition import NMF
 from sklearn.feature_selection import VarianceThreshold
+from sklearn.impute import SimpleImputer
 from sklearn.pipeline import make_pipeline
 from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
 from mvlearn.decomposition import AJIVE, GroupPCA
@@ -63,6 +64,9 @@ algorithms = {
     "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                     MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     EEIMVC()), "params": {}},
+    "NEMO": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                  MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                    NEMO()), "params": {}},
     "IMSCAGL": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
                                    IMSCAGL()), "params": {}},
@@ -75,6 +79,13 @@ algorithms = {
     "MKKMIK": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                     MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     MKKMIK()), "params": {}},
+    "MRGCN": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
+                                    MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
+                                   MultiViewTransformer(SimpleImputer(strategy= "constant",
+                                                                      fill_value=0.0).set_output(transform="pandas")),
+                                   MultiViewTransformer(FunctionTransformer(
+                                       lambda x: torch.from_numpy(x.values.astype(np.float32))))),
+              "params": {}},
     "MONET": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                    MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                    MONET()), "params": {}},
@@ -102,27 +113,23 @@ algorithms = {
     "DeepMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                     ConcatenateViews(), StandardScaler(),
                                     FunctionTransformer(lambda x: torch.from_numpy(x).float().cuda().t()),
-                                    DeepMF(), FunctionTransformer(lambda x: x.cpu().detach().numpy()),
+                                    DeepMF, FunctionTransformer(lambda x: x.cpu().detach().numpy()),
                                     StandardScaler(), KMeans(n_init= "auto")),
                  "params": {}},
     "DFMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                  DFMF().set_output(transform="pandas"),
+                                  DFMF(),
                                   StandardScaler().set_output(transform="pandas"), KMeans(n_init= "auto")),
              "params": {}},
     "MOFA": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                  MOFA().set_output(transform="pandas"),
+                                  MOFA(),
                                   ConcatenateViews(), StandardScaler().set_output(transform="pandas"), KMeans(n_init= "auto")),
              "params": {}},
     "jNMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")),
-                                  jNMF().set_output(transform="pandas"),
+                                  jNMF(),
                                   StandardScaler().set_output(transform="pandas"), KMeans(n_init= "auto")),
-             "params": {}},
-    "MRGCN": {"alg": make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
-                                   MultiViewTransformer(FunctionTransformer(
-                                       lambda x: torch.from_numpy(x.values.astype(np.float32))))),
              "params": {}},
 }
 
@@ -156,7 +163,7 @@ for dataset_name in datasets:
 
     for idx, row in results[(~results["finished"]) & (results["dataset"] == dataset_name)].iterrows():
         alg_name = row["algorithm"]
-        if alg_name in ["IntNMF", "COCA", "jNMF", "NEMO"]:
+        if alg_name in ["IntNMF", "COCA", "jNMF"]:
             continue
         alg = algorithms[alg_name]
         with open(TIME_LOGS_PATH, "a") as f:
