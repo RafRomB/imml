@@ -2,29 +2,12 @@ import argparse
 import os
 import time
 from datetime import datetime
-
-import numpy as np
 import pandas as pd
-import torch
-from sklearn.cluster import KMeans
-from sklearn.decomposition import NMF
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.impute import SimpleImputer
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
-from mvlearn.decomposition import AJIVE, GroupPCA
-from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from imml.cluster import OSLFIMVC, DAIMC, EEIMVC, LFIMVC, MKKMIK, MSNE, SIMCADC, PIMVC, IMSR, OMVC, OPIMC, SUMO, NEMO, \
-    IMSCAGL
-from imml.cluster.monet import MONET
-from imml.decomposition import DFMF, MOFA, DeepMF, jNMF
-from imml.preprocessing import MultiViewTransformer, NormalizerNaN, ConcatenateViews
 
 from src.models import Model
 from settings import TIME_RESULTS_PATH, TIME_LOGS_PATH, TIME_ERRORS_PATH, RANDOM_STATE, DATASET_TABLE_PATH
 from src.commons import CommonOperations
-from src.scripts.incomplete_algorithms_evaluation import algorithms as incomplete_algorithms
-from src.scripts.complete_algorithms_evaluation import algorithms as complete_algorithms
+from src.models import incomplete_algorithms, complete_algorithms
 
 
 datasets = pd.read_csv(DATASET_TABLE_PATH)["dataset"].to_list()

@@ -1,19 +1,11 @@
 import os.path
 from pandarallel import pandarallel
-import pandas as pd
-from sklearn.decomposition import NMF
-from sklearn.feature_selection import VarianceThreshold
-from sklearn.pipeline import make_pipeline
-from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransformer
-from sklearn.cluster import KMeans
-from mvlearn.decomposition import AJIVE, GroupPCA
-from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
-from imml.preprocessing import MultiViewTransformer, ConcatenateViews
 
 from settings import COMPLETE_SUBRESULTS_PATH, COMPLETE_RESULTS_PATH, COMPLETE_LOGS_PATH, COMPLETE_ERRORS_PATH, \
     TIME_RESULTS_PATH, DATASET_TABLE_PATH, amputation_mechanisms, runs_per_alg, probs, \
     imputation, COMPLETE_RESULTS_FILE, COMPLETE_ERRORS_FILE, COMPLETE_SUBRESULTS_FOLDER, COMPLETE_LOGS_FILE
 from src.commons import CommonOperations
+from src.models import complete_algorithms as algorithms
 
 args = CommonOperations.get_args()
 
@@ -27,42 +19,6 @@ if not args.save_results:
 if args.n_jobs > 1:
     pandarallel.initialize(nb_workers= args.n_jobs)
 
-algorithms = {
-    "Concat": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  ConcatenateViews(),
-                                    StandardScaler().set_output(transform='pandas'),
-                                    KMeans(n_init= "auto")), "language": "Python"},
-    "NMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  ConcatenateViews(),
-                                  MinMaxScaler().set_output(transform='pandas'),
-                                  NMF().set_output(transform='pandas'), StandardScaler(), KMeans(n_init= "auto")), "language": "Python"},
-    "MVSC": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-                                                  MultiviewSpectralClustering()),
-                             "language": "Python"},
-    "MVCRSC": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  MultiViewTransformer(StandardScaler().set_output(transform= "pandas")),
-                                                       MultiviewCoRegSpectralClustering()),
-                                  "language": "Python"},
-    "GPCA": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  MultiViewTransformer(StandardScaler()), GroupPCA(), StandardScaler(), KMeans(n_init= "auto")),
-                 "language": "Python"},
-    "AJIVE": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  MultiViewTransformer(StandardScaler()), AJIVE(),
-                                   MultiViewTransformer(FunctionTransformer(pd.DataFrame)), ConcatenateViews(),
-                                   StandardScaler(), KMeans(n_init= "auto")),
-              "language": "Python"},
-    "SNF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  MultiViewTransformer(StandardScaler().set_output(transform= "pandas"))), "language": "Python"},
-    "Parea": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                 MultiViewTransformer(StandardScaler().set_output(transform="pandas"))), "language": "Python"},
-    "COCA": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas"))),
-              "language": "R"},
-    "IntNMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                  MultiViewTransformer(MinMaxScaler().set_output(transform="pandas"))),
-             "language": "R"},
-}
 incomplete_algorithms = False
 CommonOperations.run_script(dataset_table_path=DATASET_TABLE_PATH, algorithms=algorithms, probs=probs,
                             amputation_mechanisms=amputation_mechanisms, imputation=imputation,
