@@ -30,9 +30,9 @@ class DFMFImputer(DFMF):
         super().__init__(**kwargs)
 
 
-    def fit_transform(self, Xs):
+    def fit_transform(self, Xs, y = None, **fit_params):
         r"""
-        Project data into the learned space.
+        Fit to data, then impute them.
 
         Parameters
         ----------
@@ -43,11 +43,16 @@ class DFMFImputer(DFMF):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_components)
-            The projected data.
+        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
+            The transformed data with filled missing samples.
         """
+
         self.fit(Xs)
-        transformed_Xs = [self.fuser_.complete(relation) for relation in self.fuser_.fusion_graph.relations]
+        imputed_Xs = [self.fuser_.complete(relation) for relation in self.fuser_.fusion_graph.relations]
+        transformed_Xs = []
+        for X, transformed_X in zip(Xs, imputed_Xs):
+            transformed_X = pd.DataFrame(transformed_X, columns=X.columns)
+            transformed_Xs.append(X.fillna(transformed_X))
 
         if self.transform_ == "pandas":
             transformed_Xs = [pd.DataFrame(transformed_X, index=X.index, columns=X.columns)
