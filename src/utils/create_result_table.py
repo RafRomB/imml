@@ -9,14 +9,14 @@ class CreateResultTable:
 
 
     @staticmethod
-    def create_results_table(datasets, indexes_results, indexes_names, amputation_mechanisms, two_view_datasets):
+    def create_results_table(datasets, indexes_results, indexes_names, amputation_mechanisms, algorithms):
         # create df with all datasets
         results = pd.DataFrame(datasets, columns=["dataset"])
         # merge result df with all experimental options
         for k, v in {k: v for k, v in indexes_results.items() if k != "dataset"}.items():
             results = results.merge(pd.Series(v, name=k), how="cross")
         # change the name when there is no missing
-        results.loc[(results["amputation_mechanism"] == "um") & (
+        results.loc[(results["amputation_mechanism"] == amputation_mechanisms[0]) & (
                 results["missing_percentage"] == 0), "amputation_mechanism"] = "No"
         results = results.set_index(indexes_names)
 
@@ -37,14 +37,8 @@ class CreateResultTable:
         results.loc[results_amputation_mechanism_none.index].index = pd.MultiIndex.from_frame(
             results_amputation_mechanism_none_tochange)
 
-        # when there are only two views, remove amputation for multiple views
-        for amputation_mechanism, dataset in itertools.product(["mnar"], two_view_datasets):
-            idx_to_drop = results.xs(dataset, level="dataset",
-                                     drop_level=False).xs(amputation_mechanism, level="amputation_mechanism",
-                                                          drop_level=False).index
-            results = results.drop(idx_to_drop)
-
         results[["finished", "completed"]] = False
+        results["engine"] = results["algorithm"].apply(lambda x: algorithms[x]["engine"])
         return results
 
 

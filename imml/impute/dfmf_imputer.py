@@ -49,6 +49,8 @@ class DFMFImputer(DFMF):
 
         self.fit(Xs)
         imputed_Xs = [self.fuser_.complete(relation) for relation in self.fuser_.fusion_graph.relations]
+        if not isinstance(Xs[0], pd.DataFrame):
+            Xs = [pd.DataFrame(X) for X in Xs]
         transformed_Xs = []
         for X, transformed_X in zip(Xs, imputed_Xs):
             transformed_X = pd.DataFrame(transformed_X, columns=X.columns)

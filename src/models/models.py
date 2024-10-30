@@ -35,8 +35,7 @@ class Model:
 
 
     def sklearn_method(self, train_Xs, n_clusters, random_state, run_n):
-        model, params = self.alg["alg"], self.alg["params"]
-        model = self.framework(model=model, n_clusters=n_clusters, random_state=random_state, run_n=run_n)
+        model = self.framework(model=self.alg["alg"], n_clusters=n_clusters, random_state=random_state, run_n=run_n)
         clusters = model.fit_predict(train_Xs)
         if self.alg == "MOFA":
             transformed_Xs = model[2].factors_

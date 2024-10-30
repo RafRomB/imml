@@ -7,7 +7,7 @@ import numpy as np
 import pandas as pd
 from datasets import LoadDataset
 
-from settings import RANDOM_STATE, TIME_LIMIT
+from settings import RANDOM_STATE, TIME_LIMIT, runs_per_long_alg, EXTREME_TIME_LIMIT
 from src.utils.create_result_table import CreateResultTable
 from src.clustering.run_clustering import RunClustering
 
@@ -18,22 +18,23 @@ class CommonOperations:
     @staticmethod
     def get_list_of_datasets(path):
         dataset_table = pd.read_csv(path)
-        dataset_table = dataset_table.reindex(dataset_table.index.append(dataset_table.index[dataset_table["dataset"]=="nutrimouse"])).sort_index().reset_index(drop=True)
+        dataset_table = dataset_table.reindex(dataset_table.index.append(
+            dataset_table.index[dataset_table["dataset"]=="nutrimouse"]))
+        dataset_table = dataset_table.sort_index().reset_index(drop=True)
         dataset_table.loc[dataset_table["dataset"] == "nutrimouse", "dataset"] = ["nutrimouse_genotype", "nutrimouse_diet"]
         datasets = dataset_table["dataset"].to_list()
-        two_view_datasets = dataset_table[dataset_table["n_features"].apply(lambda x: len(eval(x)) == 2)]["dataset"].to_list()
-        return datasets, two_view_datasets
+        return datasets
 
 
     @staticmethod
-    def get_results_table(datasets, algorithms, probs, amputation_mechanisms, imputation, runs_per_alg, two_view_datasets):
+    def get_results_table(datasets, algorithms, probs, amputation_mechanisms, imputation, runs_per_alg):
         indexes_results = {"dataset": datasets, "algorithm": list(algorithms.keys()), "missing_percentage": probs,
                            "amputation_mechanism": amputation_mechanisms, "imputation": imputation, "run_n": runs_per_alg}
         indexes_names = list(indexes_results.keys())
         results = CreateResultTable.create_results_table(datasets=datasets, indexes_results=indexes_results,
                                                          indexes_names=indexes_names,
                                                          amputation_mechanisms=amputation_mechanisms,
-                                                         two_view_datasets=two_view_datasets)
+                                                         algorithms=algorithms)
         return indexes_names, results
 
 
@@ -120,6 +121,10 @@ class CommonOperations:
         parser.add_argument('-continue_benchmarking', default=False, action='store_true')
         parser.add_argument('-n_jobs', default=1, type=int)
         parser.add_argument('-save_results', default=False, action='store_true')
+        parser.add_argument('-Python', default=False, action='store_true')
+        parser.add_argument('-R', default=False, action='store_true')
+        parser.add_argument('-Matlab', default=False, action='store_true')
+        parser.add_argument('-limit', default=True, action='store_true')
         args = parser.parse_args()
         return args
 
@@ -150,8 +155,9 @@ class CommonOperations:
 
 
     @staticmethod
-    def limit_time(results, time_results_path, datasets, algorithms):
+    def limit_time(results, time_results_path, datasets, algorithms, args):
         results["time_limited"] = True
+        results["extreme_time_limited"] = True
         time_results = pd.read_csv(time_results_path)
         for dataset_name, (alg_name, alg) in itertools.product(datasets, algorithms.items()):
             if (dataset_name in time_results["dataset"].unique()) and (alg_name in time_results["algorithm"].unique()):
@@ -160,6 +166,21 @@ class CommonOperations:
                 if ((time_alg_dat > TIME_LIMIT) or (time_alg_dat <= 0) or np.isnan(time_alg_dat)
                         or (not time_results.loc[mask, "completed"].iloc[0])):
                     results.loc[(dataset_name, alg_name), "time_limited"] = False
+                    if time_alg_dat > EXTREME_TIME_LIMIT:
+                        results.loc[(dataset_name, alg_name), "extreme_time_limited"] = False
+
+        results = results.loc[results["extreme_time_limited"]]
+        mask = results["time_limited"]
+        if args["limit"]:
+            mask = (mask | (results["run_n"] <= runs_per_long_alg))
+        results = results.loc[mask]
+        return results
+
+
+    @staticmethod
+    def select_languages_to_run(results, args):
+        results["run_language"] = True
+        results["run_language"] = results["language"].apply(lambda x: args[x])
         return results
 
 
@@ -167,23 +188,23 @@ class CommonOperations:
     def get_unfinished_results(dataset_table_path, algorithms, probs, amputation_mechanisms, imputation, runs_per_alg,
                                args, subresults_path, logs_file, error_file, results_path, time_results_path,
                                incomplete_algorithms):
-        datasets, two_view_datasets = CommonOperations.get_list_of_datasets(dataset_table_path)
+        datasets = CommonOperations.get_list_of_datasets(dataset_table_path)
         indexes_names, results = CommonOperations.get_results_table(datasets=datasets, algorithms=algorithms,
                                                                     probs=probs,
                                                                     amputation_mechanisms=amputation_mechanisms,
-                                                                    imputation=imputation, runs_per_alg=runs_per_alg,
-                                                                    two_view_datasets=two_view_datasets)
+                                                                    imputation=imputation, runs_per_alg=runs_per_alg)
         results = CommonOperations.load_benchmarking(args=args, results=results, subresults_path=subresults_path,
                                                      logs_file=logs_file, error_file=error_file,
                                                      results_path=results_path,
                                                      indexes_names=indexes_names)
         results = CommonOperations.limit_time(results=results, time_results_path=time_results_path, datasets=datasets,
-                                              algorithms=algorithms)
+                                              algorithms=algorithms, args=args)
+        results = CommonOperations.select_languages_to_run(results=results, args=args)
 
         if incomplete_algorithms:
             results = results.xs(False, level="imputation", drop_level=False)
         results = results.sort_index(level="missing_percentage", sort_remaining=False)
-        unfinished_results = results.loc[~results["finished"] & results["time_limited"]]
+        unfinished_results = results.loc[~results["finished"] & results["run_language"]]
         return indexes_names, results, unfinished_results
 
 
