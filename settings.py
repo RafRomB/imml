@@ -71,5 +71,5 @@ imputation = [True, False]
 runs_per_alg = np.arange(30)
 runs_per_long_alg = 1
 TIME_LIMIT = 300
-EXTREME_TIME_LIMIT = 3600
+EXTREME_TIME_LIMIT = 500
 
