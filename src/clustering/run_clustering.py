@@ -121,7 +121,7 @@ class RunClustering:
 
         if not all(missing_clusters_mask):
             clusters_excluding_missing = y_pred[missing_clusters_mask].astype(int)
-            X_excluding_missing = train_X.iloc[missing_clusters_mask]
+            X_excluding_missing = train_X.loc[missing_clusters_mask]
             clusters_excluding_missing = pd.factorize(clusters_excluding_missing)[0]
 
             summary_results = GetMetrics.compute_unsupervised_metrics(y_pred=clusters_excluding_missing,

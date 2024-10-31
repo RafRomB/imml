@@ -49,8 +49,8 @@ class Model:
         return clusters, transformed_Xs
 
 
-    def snf(self, train_Xs, n_clusters, random_state, run_n, params):
-        model = self.alg["alg"]
+    def snf(self, train_Xs, n_clusters, random_state, run_n):
+        model, params = self.alg["alg"], self.alg["params"]
         train_Xs = model.fit_transform(train_Xs)
         k_snf = np.ceil(len(train_Xs[0]) / 10).astype(int)
         affinities = compute.make_affinity(train_Xs, normalize=False, K=k_snf)
@@ -63,8 +63,8 @@ class Model:
         return clusters, transformed_Xs
 
 
-    def parea(self, train_Xs, n_clusters, random_state, run_n, params):
-        model = self.alg["alg"]
+    def parea(self, train_Xs, n_clusters, random_state, run_n):
+        model, params = self.alg["alg"], self.alg["params"]
         train_Xs = model.fit_transform(train_Xs)
 
         c_1_type, c_2_type, c_1_pre_type, c_2_pre_type = ('hierarchical',) *4
@@ -102,9 +102,9 @@ class Model:
         return labels, transformed_Xs
 
 
-    def intnmf(self, train_Xs, n_clusters, random_state, run_n, params):
+    def intnmf(self, train_Xs, n_clusters, random_state, run_n):
         nmf = importr("IntNMF")
-        model = self.alg["alg"]
+        model, params = self.alg["alg"], self.alg["params"]
         train_Xs = model.fit_transform(train_Xs)
         clusters = nmf.nmf_mnnals(dat=Utils.convert_df_to_r_object(train_Xs),
                                   k=n_clusters, seed=int(random_state + run_n))[-1]
@@ -112,9 +112,9 @@ class Model:
         return clusters, model
 
 
-    def coca(self, train_Xs, n_clusters, random_state, run_n, params):
+    def coca(self, train_Xs, n_clusters, random_state, run_n):
         base, coca = importr("base"), importr("coca")
-        model = self.alg["alg"]
+        model, params = self.alg["alg"], self.alg["params"]
         train_Xs = model.fit_transform(train_Xs)
         base.set_seed(int(random_state + run_n))
         transformed_Xs = coca.buildMOC(Utils.convert_df_to_r_object(train_Xs), M=len(train_Xs), K=n_clusters)[0]
@@ -145,8 +145,8 @@ class Model:
         return model
 
 
-    def deepmf(self, train_Xs, n_clusters, random_state, run_n, params):
-        pipeline = self.alg["alg"]
+    def deepmf(self, train_Xs, n_clusters, random_state, run_n):
+        pipeline, params = self.alg["alg"], self.alg["params"]
         transformed_Xs = pipeline[:4].fit_transform(train_Xs)
         train_data = DeepMFDataset(X=transformed_Xs)
         train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=True)
@@ -162,7 +162,7 @@ class Model:
 
 
     def mrgcn(self, train_Xs, n_clusters, random_state, run_n, params):
-        pipeline = self.alg["alg"]
+        pipeline, params = self.alg["alg"], self.alg["params"]
         transformed_Xs = pipeline.fit_transform(train_Xs)
         train_data = MRGCNDataset(Xs=transformed_Xs)
         with isolate_rng():

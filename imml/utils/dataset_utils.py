@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 
 from . import check_Xs
-from ..impute.observed_view_indicator import get_observed_view_indicator
+from ..impute import get_observed_view_indicator, get_missing_view_indicator
 
 
 class DatasetUtils:
@@ -501,15 +501,20 @@ class DatasetUtils:
         >>> DatasetUtils.remove_missing_sample_from_view(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        pandas_format = isinstance(Xs[0], pd.DataFrame)
-        if pandas_format:
-            samples = Xs[0].index
-            Xs = [X.values for X in Xs]
-        masks = [np.invert(np.isnan(X).all(1)) for X in Xs]
-        transformed_Xs = [X[mask] for X, mask in zip(Xs, masks)]
-        if pandas_format:
-            transformed_Xs = [pd.DataFrame(transformed_X, index=samples[mask])
-                              for transformed_X, mask in zip(transformed_Xs, masks)]
+        observed_view_indicator = get_missing_view_indicator(Xs)
+        if observed_view_indicator.any().any():
+            pandas_format = isinstance(Xs[0], pd.DataFrame)
+            if pandas_format:
+                cols = [X.columns for X in Xs]
+                samples = Xs[0].index
+                Xs = [X.values for X in Xs]
+            masks = [np.invert(np.isnan(X).all(1)) for X in Xs]
+            transformed_Xs = [X[mask] for X, mask in zip(Xs, masks)]
+            if pandas_format:
+                transformed_Xs = [pd.DataFrame(transformed_X, index=samples[mask], columns=col)
+                                  for transformed_X, mask, col in zip(transformed_Xs, masks, cols)]
+        else:
+            transformed_Xs = Xs
         return transformed_Xs
 
 
