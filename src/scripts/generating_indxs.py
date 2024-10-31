@@ -20,7 +20,7 @@ if not args.continue_indxs:
     shutil.rmtree(PROFILES_PATH, ignore_errors=True)
     os.mkdir(PROFILES_PATH)
 
-datasets, two_view_datasets = CommonOperations.get_list_of_datasets(DATASET_TABLE_PATH)
+datasets = CommonOperations.get_list_of_datasets(DATASET_TABLE_PATH)
 
 for dataset_name in datasets:
     Xs, y, n_clusters = CommonOperations.load_Xs_y(dataset_name=dataset_name)
@@ -38,10 +38,9 @@ for dataset_name in datasets:
             continue
         try:
             random_state = RANDOM_STATE + run_n
-            if (dataset_name in two_view_datasets) and (amputation_mechanism in ["mnar"]):
-                continue
             *train_Xs, y_train = shuffle(*Xs, y, random_state=random_state)
             p = prob/100
+
 
             if p != 0:
                 amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)

@@ -124,6 +124,7 @@ class CommonOperations:
         parser.add_argument('-Python', default=False, action='store_true')
         parser.add_argument('-R', default=False, action='store_true')
         parser.add_argument('-Matlab', default=False, action='store_true')
+        parser.add_argument('-DL', default=False, action='store_true')
         parser.add_argument('-limit', default=True, action='store_true')
         args = parser.parse_args()
         return args
@@ -171,8 +172,8 @@ class CommonOperations:
 
         results = results.loc[results["extreme_time_limited"]]
         mask = results["time_limited"]
-        if args["limit"]:
-            mask = (mask | (results["run_n"] <= runs_per_long_alg))
+        if args.limit:
+            mask = (mask | (results.index.get_level_values("run_n") <= runs_per_long_alg))
         results = results.loc[mask]
         return results
 
@@ -180,7 +181,8 @@ class CommonOperations:
     @staticmethod
     def select_languages_to_run(results, args):
         results["run_language"] = True
-        results["run_language"] = results["language"].apply(lambda x: args[x])
+        lang_dict = {"Python": args.Python, "Matlab": args.Matlab, "R": args.R, "DL": args.DL}
+        results["run_language"] = results["language"].apply(lambda x: lang_dict[x])
         return results
 
 

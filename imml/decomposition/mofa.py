@@ -210,7 +210,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         """
         transformed_X = self.fit(Xs).factors_
         if self.transform_ == "pandas":
-            transformed_X = pd.DataFrame(transformed_X)
+            transformed_X = pd.DataFrame(transformed_X, index=Xs[0].index)
         return transformed_X
 
     

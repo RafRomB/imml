@@ -15,6 +15,7 @@ class CreateResultTable:
         # merge result df with all experimental options
         for k, v in {k: v for k, v in indexes_results.items() if k != "dataset"}.items():
             results = results.merge(pd.Series(v, name=k), how="cross")
+        results["language"] = results["algorithm"].apply(lambda x: algorithms[x]["language"])
         # change the name when there is no missing
         results.loc[(results["amputation_mechanism"] == amputation_mechanisms[0]) & (
                 results["missing_percentage"] == 0), "amputation_mechanism"] = "No"
@@ -38,7 +39,6 @@ class CreateResultTable:
             results_amputation_mechanism_none_tochange)
 
         results[["finished", "completed"]] = False
-        results["engine"] = results["algorithm"].apply(lambda x: algorithms[x]["engine"])
         return results
 
 

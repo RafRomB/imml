@@ -124,7 +124,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
         embeddings = model.get_embeddings()
         self.labels_ = KMeans(n_clusters=self.n_clusters, n_init="auto", verbose=self.verbose,
                               random_state=self.random_state).fit_predict(embeddings)
-        self.embedding_ = embeddings
+        self.embedding_ = embeddings.values
         return self
 
 

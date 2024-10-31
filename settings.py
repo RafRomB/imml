@@ -68,8 +68,8 @@ UNS_METRICS_INCOMPLETE_ALG_PATH = os.path.join(RESULTS_FOLDER, UNS_METRICS_INCOM
 amputation_mechanisms = ["um", 'mcar', 'mnar', "pm"]
 probs = np.arange(100, step= 10)
 imputation = [True, False]
-runs_per_alg = np.arange(30)
+runs_per_alg = np.arange(10)
 runs_per_long_alg = 1
-TIME_LIMIT = 300
-EXTREME_TIME_LIMIT = 500
+TIME_LIMIT = 30
+EXTREME_TIME_LIMIT = 60
 

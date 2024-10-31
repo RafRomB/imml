@@ -1,9 +1,12 @@
+import copy
+
 import numpy as np
 import pandas as pd
 from lightning import Trainer
 from lightning.pytorch.utilities.seed import isolate_rng
 from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
+from sklearn.pipeline import make_pipeline
 from snf import compute
 from torch.utils.data import DataLoader
 from pyrea import clusterer, view, fuser, execute_ensemble, consensus
@@ -35,26 +38,24 @@ class Model:
 
 
     def sklearn_method(self, train_Xs, n_clusters, random_state, run_n):
-        model = self.framework(model=self.alg["alg"], n_clusters=n_clusters, random_state=random_state, run_n=run_n)
-        clusters = model.fit_predict(train_Xs)
-        if self.alg == "MOFA":
-            transformed_Xs = model[2].factors_
-            transformed_Xs = model[3].trasform(transformed_Xs)
-        else:
-            try:
-                transformed_Xs = model[-1].embedding_
-            except AttributeError:
-                transformed_Xs = model[:-1].transform(train_Xs)
+        model, params = self.alg["alg"], self.alg["params"]
+        model = self.framework(model=model, n_clusters=n_clusters, random_state=random_state, run_n=run_n, params=params)
+        transformed_Xs = model[:-1].fit_transform(train_Xs)
+        clusters = model[-1].fit_predict(transformed_Xs)
+        try:
+            transformed_Xs = model[-1].embedding_
+        except AttributeError:
+            pass
         return clusters, transformed_Xs
 
 
-    def snf(self, train_Xs, n_clusters, random_state, run_n):
+    def snf(self, train_Xs, n_clusters, random_state, run_n, params):
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
         k_snf = np.ceil(len(train_Xs[0]) / 10).astype(int)
         affinities = compute.make_affinity(train_Xs, normalize=False, K=k_snf)
         fused = compute.snf(affinities, K=k_snf)
-        sc = SpectralClustering(n_clusters=n_clusters, random_state=random_state + run_n)
+        sc = SpectralClustering(n_clusters=n_clusters, random_state=random_state + run_n, affinity="precomputed")
         clusters = sc.fit_predict(fused)
         transformed_Xs = spectral_embedding(sc.affinity_matrix_, n_components=n_clusters, eigen_solver=sc.eigen_solver,
                                             random_state=sc.random_state, eigen_tol=sc.eigen_tol, drop_first=False)
@@ -62,7 +63,7 @@ class Model:
         return clusters, transformed_Xs
 
 
-    def parea(self, train_Xs, n_clusters, random_state, run_n):
+    def parea(self, train_Xs, n_clusters, random_state, run_n, params):
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
 
@@ -101,7 +102,7 @@ class Model:
         return labels, transformed_Xs
 
 
-    def intnmf(self, train_Xs, n_clusters, random_state, run_n):
+    def intnmf(self, train_Xs, n_clusters, random_state, run_n, params):
         nmf = importr("IntNMF")
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
@@ -111,7 +112,7 @@ class Model:
         return clusters, model
 
 
-    def coca(self, train_Xs, n_clusters, random_state, run_n):
+    def coca(self, train_Xs, n_clusters, random_state, run_n, params):
         base, coca = importr("base"), importr("coca")
         model = self.alg["alg"]
         train_Xs = model.fit_transform(train_Xs)
@@ -123,25 +124,28 @@ class Model:
         return clusters, transformed_Xs
 
 
-    def gpca(self, model, n_clusters, random_state, run_n):
+    def gpca(self, model, n_clusters, random_state, run_n, params):
         model[2].set_params(n_components=n_clusters, random_state=random_state + run_n, multiview_output=False)
-        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters,
+                                                     random_state=random_state + run_n, **params))
         return model
 
 
-    def ajive(self, model, n_clusters, random_state, run_n):
+    def ajive(self, model, n_clusters, random_state, run_n, params):
         model[2].set_params(joint_rank=n_clusters, random_state=random_state + run_n)
-        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters,
+                                                     random_state=random_state + run_n, **params))
         return model
 
 
-    def nmf(self, model, n_clusters, random_state, run_n):
+    def nmf(self, model, n_clusters, random_state, run_n, params):
         model[-3].set_params(n_components=n_clusters, random_state=random_state + run_n)
-        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters,
+                                                     random_state=random_state + run_n, **params))
         return model
 
 
-    def deepmf(self, train_Xs, n_clusters, random_state, run_n):
+    def deepmf(self, train_Xs, n_clusters, random_state, run_n, params):
         pipeline = self.alg["alg"]
         transformed_Xs = pipeline[:4].fit_transform(train_Xs)
         train_data = DeepMFDataset(X=transformed_Xs)
@@ -151,12 +155,13 @@ class Model:
         with isolate_rng():
             trainer.fit(transformer, train_dataloader)
         transformed_Xs = transformer.transform(transformed_Xs)
-        pipeline[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        pipeline = make_pipeline(*pipeline[:-1], pipeline[-1](n_clusters=n_clusters,
+                                                              random_state=random_state + run_n, **params))
         clusters = pipeline[5:].fit_predict(transformed_Xs)
         return clusters, transformed_Xs
 
 
-    def mrgcn(self, train_Xs, n_clusters, random_state, run_n):
+    def mrgcn(self, train_Xs, n_clusters, random_state, run_n, params):
         pipeline = self.alg["alg"]
         transformed_Xs = pipeline.fit_transform(train_Xs)
         train_data = MRGCNDataset(Xs=transformed_Xs)
@@ -174,24 +179,27 @@ class Model:
         return clusters, transformed_Xs
 
 
-    def dfmf(self, model, n_clusters, random_state, run_n):
+    def dfmf(self, model, n_clusters, random_state, run_n, params):
         model[2].set_params(n_components=n_clusters, random_state=random_state + run_n)
-        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters,
+                                                     random_state=random_state + run_n, **params))
         return model
 
 
-    def mofa(self, model, n_clusters, random_state, run_n):
-        model[2].set_params(factors=n_clusters, random_state=random_state + run_n)
-        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
-        return model
-
-
-    def jnmf(self, model, n_clusters, random_state, run_n):
+    def mofa(self, model, n_clusters, random_state, run_n, params):
         model[2].set_params(n_components=n_clusters, random_state=random_state + run_n)
-        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters,
+                                                     random_state=random_state + run_n, **params))
         return model
 
 
-    def standard(self, model, n_clusters, random_state, run_n):
-        model[-1].set_params(n_clusters=n_clusters, random_state=random_state + run_n)
+    def jnmf(self, model, n_clusters, random_state, run_n, params):
+        model[2].set_params(n_components=n_clusters, random_state=random_state + run_n)
+        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters,
+                                                     random_state=random_state + run_n, **params))
+        return model
+
+
+    def standard(self, model, n_clusters, random_state, run_n, params):
+        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters, random_state=random_state + run_n, **params))
         return model

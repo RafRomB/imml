@@ -5,6 +5,7 @@ import pandas as pd
 
 from imml.ampute import Amputer
 from imml.cluster import MSNE
+estimator = MSNE
 
 
 @pytest.fixture
@@ -16,7 +17,7 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 def test_default_params(sample_data):
-    model = MSNE(random_state=42)
+    model = estimator(random_state=42)
     for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -30,7 +31,6 @@ def test_default_params(sample_data):
         assert model.embedding_.shape == (n_samples, model.embed_size)
 
 def test_invalid_params(sample_data):
-    estimator = MSNE
     with pytest.raises(ValueError, match="Invalid n_clusters."):
         estimator(n_clusters='invalid')
     with pytest.raises(ValueError, match="Invalid n_clusters."):
@@ -40,7 +40,7 @@ def test_invalid_params(sample_data):
 
 def test_fit_predict(sample_data):
     n_clusters = 3
-    model = MSNE(n_clusters=n_clusters, random_state=42, verbose=True)
+    model = estimator(n_clusters=n_clusters, random_state=42, verbose=True)
     for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)
@@ -55,7 +55,7 @@ def test_fit_predict(sample_data):
 
 def test_missing_values_handling(sample_data):
     n_clusters = 2
-    model = MSNE(n_clusters=n_clusters, random_state=42)
+    model = estimator(n_clusters=n_clusters, random_state=42)
     for Xs in sample_data:
         Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
         n_samples = len(Xs[0])
