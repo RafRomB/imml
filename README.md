@@ -45,7 +45,7 @@ https://cran.r-project.org/doc/manuals/r-release/R-admin.html
 The easiest way to install this package is using pip. Simply run the following command:
 
 ```bash
-pip install imv_ulearn
+pip install imml
 ```
 
 ## Usage
@@ -60,22 +60,18 @@ for each sample.
 We show a simple example of how it works.
 
 ```python
-from datasets import LoadDataset
-from imml.cluster import DAIMC
+from imml.cluster import NEMO
 from imml.ampute import Amputer
 
-# Load an incomplete multi-view dataset
+# Load an incomplete multi-view dataset. In this case, we will create a random dataset
 Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
 
-# Create an instance of an algorithm with 3 clusters
-estimator = DAIMC(n_clusters=3)
-
-# Fit the model and get predictions
-labels = estimator.fit_predict(Xs)
-
-# you can also add missing views
-transformer = Amputer(p=0.2, mechanism="MCAR", random_state=42)
+# (Optional step) Add missing modalities
+transformer = Amputer(p=0.2, mechanism="mcar")
 Xs = transformer.fit_transform(Xs)
+
+# Define an instance of an algorithm with 3 clusters
+estimator = NEMO(n_clusters=3)
 
 # Fit the model and get predictions
 labels = estimator.fit_predict(Xs)
