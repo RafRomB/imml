@@ -183,6 +183,7 @@ class CommonOperations:
         results["run_language"] = True
         lang_dict = {"Python": args.Python, "Matlab": args.Matlab, "R": args.R, "DL": args.DL}
         results["run_language"] = results["language"].apply(lambda x: lang_dict[x])
+        results = results.loc[results["run_language"]]
         return results
 
 
@@ -206,7 +207,7 @@ class CommonOperations:
         if incomplete_algorithms:
             results = results.xs(False, level="imputation", drop_level=False)
         results = results.sort_index(level="missing_percentage", sort_remaining=False)
-        unfinished_results = results.loc[~results["finished"] & results["run_language"]]
+        unfinished_results = results.loc[~results["finished"]]
         return indexes_names, results, unfinished_results
 
 

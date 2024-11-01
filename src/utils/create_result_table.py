@@ -59,13 +59,13 @@ class CreateResultTable:
                 subresults_files = subresults_files[subresults_files["finished"]]
                 # add them to our result df
                 results.loc[subresults_files.index, subresults_files.columns] = subresults_files
-            drop_columns = ["comments", "language"]
-            # fix nan values
-            results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")
-            try:
-                results[results_.columns] = results_.parallel_applymap(lambda x: eval(str(x)))
-            except:
-                results[results_.columns] = results_.applymap(lambda x: eval(str(x)))
+            # drop_columns = ["comments", "language"]
+            # # fix nan values
+            # results_ = results.select_dtypes(object).drop(columns=drop_columns).replace(np.nan, "np.nan")
+            # try:
+            #     results[results_.columns] = results_.parallel_applymap(lambda x: eval(str(x)))
+            # except:
+            #     results[results_.columns] = results_.applymap(lambda x: eval(str(x)))
         return results
 
 
