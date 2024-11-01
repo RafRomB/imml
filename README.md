@@ -60,11 +60,12 @@ for each sample.
 We show a simple example of how it works.
 
 ```python
+import numpy as np
 from imml.cluster import NEMO
 from imml.ampute import Amputer
 
 # Load an incomplete multi-view dataset. In this case, we will create a random dataset
-Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+Xs = [np.random.random((10, 5)) for _ in range(3)]
 
 # (Optional step) Add missing modalities
 transformer = Amputer(p=0.2, mechanism="mcar")
