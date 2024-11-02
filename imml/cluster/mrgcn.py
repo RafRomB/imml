@@ -6,13 +6,16 @@ try:
     from torch import nn
     import lightning.pytorch as pl
     from torch.nn import functional as F
+    DLBaseeModule = pl.LightningModule
     torch_installed = True
 except ImportError:
     torch_installed = False
     torch_module_error = "torch and lightning needs to be installed."
+    DLBaseeModule = object
 
+DLBaseeModule = pl.LightningModule if torch_installed else object
 
-class MRGCN(pl.LightningModule):
+class MRGCN(DLBaseeModule):
     r"""
     Multi-Reconstruction Graph Convolutional Network (MRGCN).
 

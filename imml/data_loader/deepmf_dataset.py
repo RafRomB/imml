@@ -1,12 +1,15 @@
 try:
     import torch
+    DLBaseDataset = torch.utils.data.Dataset
     torch_installed = True
 except ImportError:
     torch_installed = False
     torch_module_error = "torch needs to be installed."
+    DLBaseDataset = object
 
+DLBaseDataset = torch.utils.data.Dataset if torch_installed else object
 
-class DeepMFDataset(torch.utils.data.Dataset):
+class DeepMFDataset(DLBaseDataset):
 
     def __init__(self, X, transform = None, target_transform = None):
         if not torch_installed:

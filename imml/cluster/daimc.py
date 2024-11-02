@@ -3,7 +3,6 @@ from os.path import dirname
 import numpy as np
 import pandas as pd
 from control.matlab import lyap
-from oct2py import kill_octave
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 

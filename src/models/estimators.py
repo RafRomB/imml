@@ -1,6 +1,4 @@
-import numpy as np
 import pandas as pd
-import torch
 from mvlearn.cluster import MultiviewSpectralClustering, MultiviewCoRegSpectralClustering
 from mvlearn.decomposition import GroupPCA, AJIVE
 from sklearn.cluster import KMeans
@@ -59,7 +57,7 @@ complete_algorithms = {
 incomplete_algorithms = {
     "DAIMC": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                    MultiViewTransformer(NormalizerNaN().set_output(transform="pandas")),
-                                   DAIMC), "language": "Python", "params": {}},
+                                   DAIMC), "language": "Matlab", "params": {"engine": "matlab"}},
     "EEIMVC": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                     MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                     EEIMVC), "language": "Python", "params": {}},
@@ -82,8 +80,7 @@ incomplete_algorithms = {
                                     MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                    MultiViewTransformer(SimpleImputer(strategy= "constant",
                                                                       fill_value=0.0).set_output(transform="pandas")),
-                                   MultiViewTransformer(FunctionTransformer(
-                                       lambda x: torch.from_numpy(x.values.astype(np.float32))))),
+                                   ),
               "language": "DL", "params": {}},
     "MONET": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                    MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
@@ -111,7 +108,6 @@ incomplete_algorithms = {
                                   SUMO), "language": "Python", "params": {}},
     "DeepMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                     ConcatenateViews(), StandardScaler(),
-                                    FunctionTransformer(lambda x: torch.from_numpy(x).float().cuda().t()),
                                     DeepMF, FunctionTransformer(lambda x: x.cpu().detach().numpy()),
                                     StandardScaler(), KMeans(n_init= "auto")),
                  "language": "DL", "params": {}},
@@ -127,7 +123,7 @@ incomplete_algorithms = {
              "language": "Python", "params": {"n_init": "auto"}},
     "jNMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")),
-                                  jNMF(),
+                                  jNMF,
                                   StandardScaler().set_output(transform="pandas"), KMeans),
              "language": "R", "params": {"n_init": "auto"}},
 }

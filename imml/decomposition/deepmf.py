@@ -8,13 +8,14 @@ try:
     import torch
     import torch.nn
     import lightning.pytorch as pl
+    DLBaseeModule = pl.LightningModule
     torch_installed = True
 except ImportError:
     torch_installed = False
     torch_module_error = "torch and lightning needs to be installed."
+    DLBaseeModule = object
 
-
-class DeepMF(pl.LightningModule):
+class DeepMF(DLBaseeModule):
     r"""
     DeepMF, a deep neural network-based factorization model, elucidates the association between
     feature-associated and sample-associated latent matrices, and is robust to noisy and missing values. It only accepts
@@ -81,11 +82,13 @@ class DeepMF(pl.LightningModule):
     """
 
     def __init__(self, X = None, n_components: int =10, n_layers: int = 3, learning_rate: float = 1e-2, alpha: float = 0.01,
-                 neighbor_proximity='Lap', loss_fun = torch.nn.MSELoss(), sigmoid: bool = False):
+                 neighbor_proximity='Lap', loss_fun=None, sigmoid: bool = False):
         if not torch_installed:
             raise ImportError(torch_module_error)
         super().__init__()
 
+        if loss_fun is None:
+            loss_fun = torch.nn.MSELoss()
         if (X is None) or (not hasattr(X, 'shape')):
             raise ValueError(f"Invalid X. It must be an array-like object. A {type(X)} was passed.")
         if not isinstance(n_components, int):

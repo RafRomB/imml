@@ -1,12 +1,13 @@
 try:
     import torch
+    DLBaseDataset = torch.utils.data.Dataset
     torch_installed = True
 except ImportError:
     torch_installed = False
     torch_module_error = "torch needs to be installed."
+    DLBaseDataset = object
 
-
-class MRGCNDataset(torch.utils.data.Dataset):
+class MRGCNDataset(DLBaseDataset):
 
     def __init__(self, Xs: list, transform = None):
         if not torch_installed:

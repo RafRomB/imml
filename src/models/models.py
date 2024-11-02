@@ -1,19 +1,16 @@
-import copy
-
 import numpy as np
 import pandas as pd
-from lightning import Trainer
-from lightning.pytorch.utilities.seed import isolate_rng
 from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
 from sklearn.pipeline import make_pipeline
+from sklearn.preprocessing import FunctionTransformer
 from snf import compute
-from torch.utils.data import DataLoader
 from pyrea import clusterer, view, fuser, execute_ensemble, consensus
 
 from imml.cluster import MRGCN
 from imml.data_loader import MRGCNDataset
 from imml.data_loader import DeepMFDataset
+from imml.preprocessing import MultiViewTransformer
 
 from src.utils import Utils
 
@@ -23,6 +20,15 @@ try:
 except ImportError:
     rpy2_installed = False
     error_message = "rpy2 needs to be installed to use r engine."
+try:
+    import torch
+    from lightning import Trainer
+    from lightning.pytorch.utilities.seed import isolate_rng
+    from torch.utils.data import DataLoader
+    torch_installed = True
+except ImportError:
+    torch_installed = False
+    torch_module_error = "torch and lightning needs to be installed."
 
 
 class Model:
@@ -106,10 +112,11 @@ class Model:
         nmf = importr("IntNMF")
         model, params = self.alg["alg"], self.alg["params"]
         train_Xs = model.fit_transform(train_Xs)
-        clusters = nmf.nmf_mnnals(dat=Utils.convert_df_to_r_object(train_Xs),
-                                  k=n_clusters, seed=int(random_state + run_n))[-1]
-        clusters = np.array(clusters) - 1
-        return clusters, model
+        output = nmf.nmf_mnnals(dat=Utils.convert_df_to_r_object(train_Xs),
+                                  k=n_clusters, seed=int(random_state + run_n))
+        transformed_Xs = np.array(output[1])
+        clusters = np.array(output[-1]) - 1
+        return clusters, transformed_Xs
 
 
     def coca(self, train_Xs, n_clusters, random_state, run_n):
@@ -147,6 +154,9 @@ class Model:
 
     def deepmf(self, train_Xs, n_clusters, random_state, run_n):
         pipeline, params = self.alg["alg"], self.alg["params"]
+        pipeline = make_pipeline(*pipeline[:3],
+                                 FunctionTransformer(lambda x: torch.from_numpy(x).float().cuda().t()),
+                                 *pipeline[3:])
         transformed_Xs = pipeline[:4].fit_transform(train_Xs)
         train_data = DeepMFDataset(X=transformed_Xs)
         train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=True)
@@ -163,6 +173,8 @@ class Model:
 
     def mrgcn(self, train_Xs, n_clusters, random_state, run_n, params):
         pipeline, params = self.alg["alg"], self.alg["params"]
+        pipeline = make_pipeline(*pipeline, MultiViewTransformer(FunctionTransformer(
+            lambda x: torch.from_numpy(x.values.astype(np.float32)))))
         transformed_Xs = pipeline.fit_transform(train_Xs)
         train_data = MRGCNDataset(Xs=transformed_Xs)
         with isolate_rng():
@@ -194,9 +206,10 @@ class Model:
 
 
     def jnmf(self, model, n_clusters, random_state, run_n, params):
-        model[2].set_params(n_components=n_clusters, random_state=random_state + run_n)
-        model = make_pipeline(*model[:-1], model[-1](n_clusters=n_clusters,
-                                                     random_state=random_state + run_n, **params))
+        model = make_pipeline(*model[:2],
+                              model[2](n_components=n_clusters, random_state=random_state + run_n),
+                              model[3],
+                              model[-1](n_clusters=n_clusters, random_state=random_state + run_n, **params))
         return model
 
 
