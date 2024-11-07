@@ -16,6 +16,7 @@ from ..utils import check_Xs, DatasetUtils
 
 try:
     import oct2py
+
     oct2py_installed = True
 except ImportError:
     oct2py_installed = False
@@ -119,7 +120,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             matlab_folder = dirname(__file__)
             matlab_folder = os.path.join(matlab_folder, "_" + (os.path.basename(__file__).split(".")[0]))
             matlab_files = [x for x in os.listdir(matlab_folder) if x.endswith(".m")]
-            self._oc = oct2py.Oct2Py(temp_dir= matlab_folder)
+            self._oc = oct2py.Oct2Py(temp_dir=matlab_folder)
             for matlab_file in matlab_files:
                 with open(os.path.join(matlab_folder, matlab_file)) as f:
                     self._oc.eval(f.read())
@@ -157,11 +158,11 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
             if self.random_state is not None:
                 self._oc.rand('seed', self.random_state)
-            H_normalized,gamma,obj,KA = self._oc.myabsentmultikernelclustering(transformed_Xs, s, self.n_clusters,
-                                                                         self.qnorm, kernel, nout=4)
+            H_normalized, gamma, obj, KA = self._oc.myabsentmultikernelclustering(transformed_Xs, s, self.n_clusters,
+                                                                                  self.qnorm, kernel, nout=4)
             KA = KA[:, 0]
             obj = obj[0]
-        elif self.engine=="python":
+        elif self.engine == "python":
             if isinstance(Xs[0], pd.DataFrame):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
@@ -176,7 +177,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             if self.random_state is not None:
                 np.random.seed(self.random_state)
             H_normalized, gamma, obj, KA = self.my_absent_multikernel_clustering(transformed_Xs, s, self.n_clusters,
-                                                                                  self.qnorm, kernel)
+                                                                                 self.qnorm, kernel)
 
         model = KMeans(n_clusters=self.n_clusters, n_init="auto", random_state=self.random_state)
         self.labels_ = model.fit_predict(X=H_normalized)
@@ -224,30 +225,6 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         labels = self.fit(Xs)._predict(Xs)
         return labels
 
-    def algorithm0(self, K, S, k):
-        KM = self.algorithm2(K, S)
-        ImputedKM = KM
-        numker = KM.shape[2]
-        for p in range(numker):
-            Indx = np.setdiff1d(ar1=[i for i in range(numker)], ar2=p)
-            MissingIndex = [i - 1 for i in S[p]['indx']]
-            Tempk = np.sum(KM[:, :, Indx], 2) / numker
-
-            knn = NearestNeighbors(n_neighbors=k + 1)
-            knn.fit(Tempk)
-            IDX = knn.kneighbors(Tempk[np.ix_(MissingIndex), :], return_distance=False)
-
-            for j in range(len(MissingIndex)):
-                heheTemp = np.mean(Tempk[np.ix_(IDX[j, 1:k + 1]), :], axis=0)
-                ImputedKM[np.ix_(MissingIndex[j]), :, p] = heheTemp
-                ImputedKM[:, np.ix_(MissingIndex[j]), p] = heheTemp
-
-            # Ensure matrix is symmetric
-            ImputedKM[:, :, p] = (ImputedKM[:, :, p] + ImputedKM[:, :, p].T) / 2
-
-        return ImputedKM
-
-
     def algorithm2(self, KH, S):
         r"""
         Process KH with the missing index.
@@ -269,59 +246,12 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         for p in range(numker):
             KH_tmp = KH[:, :, p]
             KH2_tmp = KH2[:, :, p]
-            obs_index = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in S[p]['indx'].T])
+            obs_index = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i - 1 for i in S[p]['indx'].T])
             KAp = KH_tmp[np.ix_(obs_index, obs_index)]
-            KH2_tmp[np.ix_(obs_index, obs_index)] = (KAp + KAp.T)/2
+            KH2_tmp[np.ix_(obs_index, obs_index)] = (KAp + KAp.T) / 2
             KH2[:, :, p] = KH2_tmp
 
         return KH2
-
-
-    def algorithm3(self, KH, S):
-        num = KH.shape[0]
-        numker = KH.shape[2]
-        KH3 = np.zeros(shape=(num, num, numker))
-        for p in range(numker):
-            indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i - 1 for i in S[p]['indx']])
-            n0 = len(S[p]['indx'])
-            KAp = KH[np.ix_(indx, indx), p]
-            KH3[np.ix_(indx, indx), p] = (KAp + KAp.T) / 2
-            KH3[np.ix_(indx, [i - 1 for i in S[p]['indx'].T]), p] = np.tile(np.mean(KAp, 1), reps=(n0, 1)).T
-            KH3[np.ix_([i - 1 for i in S[p]['indx'].T], indx), p] = np.tile(np.mean(KAp, 1), reps=(n0, 1))
-            KH3[np.ix_([i - 1 for i in S[p]['indx'].T], [i - 1 for i in S[p]['indx']].T), p] = np.tile(
-                np.mean(KH3[np.ix_([i - 1 for i in S[p]['indx']].T, indx), p], 1), reps=(n0, 1)).T
-
-        return KH3
-
-
-    def algorithm4(self, KH, S, numclass, alpha0):
-        num = KH.shape[0]
-        numker = KH.shape[2]
-        gamma0 = np.ones(shape=(numker, 1)) / numker
-        KH3 = np.zeros(shape=(num, num, numker))
-        for p in range(numker):
-            indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in S[p]['indx'].T])
-            KAp = KH[np.ix_(indx, indx), p]
-            KH3[np.ix_(indx, indx), p] = (KAp + KAp.T) / 2
-
-        Kmatrix = self.my_comb_fun(KH3, gamma0**2)
-        H = self.my_kernel_kmeans(Kmatrix, numclass)
-        Kx = np.eye(num) - np.matmul(H, H.T)
-        for p in range(numker):
-            obs_indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in S[p]['indx']])
-            KH3[:, :, p] = self.absent_kernel_imputation(Kx, KH3[np.ix_(obs_indx, obs_indx), p], S[p]['indx'], alpha0)
-
-        return KH3
-
-
-    def algorithm6(self, KH, S):
-        num = KH.shape[0]
-        numker = KH.shape[2]
-        KH6 = np.zeros(shape=(num, num, numker))
-        for p in range(numker):
-            KH[np.ix_([i-1 for i in S[p]['indx']].T, [i-1 for i in S[p]['indx']].T), p] = math.nan
-            KH6[:, :, p] = self.data_completion(KH[:, :, p], 'EM')
-
 
     def data_completion(self, X, method):
         if not np.isnan(X).any():
@@ -358,7 +288,6 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         return K
 
-
     def k_norm(self, K):
         if K.shape[2] > 1:
             for i in range(K.shape[2]):
@@ -368,7 +297,6 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             K = K / np.sqrt(np.matmul(np.diag(K), np.diag(K).T))
 
         return K
-
 
     def my_comb_fun(self, Y, gamma):
         m = Y.shape[2]
@@ -380,14 +308,12 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         return cF
 
-
     def my_kernel_kmeans(self, K, cluster_count):
         K = (K + K.T) / 2
         _, H = eigs(K, cluster_count, which='LR')
         H_normalized = H
 
-        return H_normalized
-
+        return np.real(H_normalized)
 
     def absent_kernel_imputation(self, Kx, Kycc, mset, alpha0):
         n = Kx.shape[0]
@@ -395,24 +321,22 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         cset = np.setdiff1d(ar1=[i for i in range(n)], ar2=mset)
         Kx0 = Kx[np.ix_(np.concatenate((cset, mset), axis=None), np.concatenate((cset, mset), axis=None))]
 
-        Lxmm = Kx0[n-n0:, n-n0:]
+        Lxmm = Kx0[n - n0:, n - n0:]
         Lxmm = (Lxmm + Lxmm.T) / 2
         Lxcm = Kx0[:n - n0, n - n0:]
 
         Lxcmmm = np.linalg.lstsq((Lxmm + alpha0 * np.eye(n0)).T, -Lxcm.T)[0].T
-        print(Lxcmmm, "\n")
         Kycm = np.matmul(Kycc, Lxcmmm)
         Kymm = np.matmul(Lxcmmm.T, Kycm)
         Kyr0 = np.vstack([np.block([Kycc, Kycm]),
-                         np.block([Kycm.T, Kymm])])
+                          np.block([Kycm.T, Kymm])])
         Kyr0 = (Kyr0 + Kyr0.T) / 2
 
         val = np.sort(np.concatenate((cset, mset), axis=None))
         indxxx = np.argsort(np.concatenate((cset, mset), axis=None))
-        Kyr = Kyr0[indxxx, indxxx] + 1e-12 * np.eye(n)
+        Kyr = Kyr0[np.ix_(indxxx, indxxx)] + 1e-12 * np.eye(n)
 
         return Kyr
-
 
     def updapte_absent_kernel_weightsV2(self, T, K, qnorm):
         num = K.shape[0]
@@ -429,7 +353,6 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         return gamma
 
-
     def cal_objV2(self, T, K, gamma0):
         nb_kernel = K.shape[2]
         num = K.shape[0]
@@ -441,28 +364,14 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         obj = gamma0.T * ZH1 * gamma0
         return obj[0][0]
 
-
     def my_absent_multikernel_clustering(self, K, S, cluster_count, qnorm, algorithm_choose):
-        functions = {
-            'algorithm0': self.algorithm0,
-            'algorithm2': self.algorithm2,
-            'algorithm3': self.algorithm3,
-            'algorithm4': self.algorithm4,
-            'algorithm6': self.algorithm6,
-        }
-
+        print("t")
         num = K.shape[0]
         nb_kernel = K.shape[2]
         alpha0 = 1e-3
         gamma = np.ones(shape=(nb_kernel, 1)) / nb_kernel
 
-        if algorithm_choose in functions:
-            if algorithm_choose == 'algorithm0':
-                func = functions[algorithm_choose]
-                KA = func(K, S, 7)
-            else:
-                func = functions[algorithm_choose]
-                KA = func(K, S)
+        KA = self.algorithm2(K, S)
 
         KC = self.my_comb_fun(KA, gamma ** qnorm)
         flag = 1
@@ -479,7 +388,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
                     KA[:, :, p] = K[:, :, p]
                 else:
                     Kx = np.eye(num) - np.matmul(H, H.T)
-                    mis_indx = [i-1 for i in S[p]['indx']]
+                    mis_indx = [i - 1 for i in S[p]['indx']]
                     obs_indx = np.setdiff1d(ar1=[i for i in range(num)], ar2=mis_indx)
                     K_tmp = K[:, :, p]
                     KA[:, :, p] = self.absent_kernel_imputation(Kx, K_tmp[np.ix_(obs_indx, obs_indx)], mis_indx, alpha0)
@@ -491,6 +400,5 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
             if (iter > 2) and ((np.abs((obj[iter - 1] - obj[iter]) / obj[iter - 1])) < 1e-4 or (iter > 30)):
                 flag = 0
 
-        H_normalized = np.real(H / np.tile(np.sqrt(np.sum(H ** 2, 1)), reps=(cluster_count, 1)).T
-)
+        H_normalized = np.real(H / np.tile(np.sqrt(np.sum(H ** 2, 1)), reps=(cluster_count, 1)).T)
         return H_normalized, gamma, obj, KA
