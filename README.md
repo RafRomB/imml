@@ -62,7 +62,7 @@ We show a simple example of how it works.
 ```python
 from imml.cluster import NEMO
 
-# Load an incomplete multi-view dataset
+# Load an incomplete multi-modal dataset.
 Xs = ...
 
 # Define an instance of an algorithm with 3 clusters
