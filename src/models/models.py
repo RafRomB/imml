@@ -9,7 +9,6 @@ from pyrea import clusterer, view, fuser, execute_ensemble, consensus
 
 from imml.cluster import MRGCN
 from imml.data_loader import MRGCNDataset
-from imml.data_loader import DeepMFDataset
 from imml.preprocessing import MultiViewTransformer
 
 from src.utils import Utils
@@ -34,7 +33,7 @@ except ImportError:
 class Model:
     def __init__(self, alg_name, alg):
         self.alg_name = alg_name
-        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "DeepMF", "Parea", "MRGCN"]\
+        self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "Parea", "MRGCN"]\
             else "sklearn_method"
         self.method = eval(f"self.{self.method.lower()}")
         self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "jNMF"]\
@@ -152,26 +151,7 @@ class Model:
         return model
 
 
-    def deepmf(self, train_Xs, n_clusters, random_state, run_n):
-        pipeline, params = self.alg["alg"], self.alg["params"]
-        pipeline = make_pipeline(*pipeline[:3],
-                                 FunctionTransformer(lambda x: torch.from_numpy(x).float().cuda().t()),
-                                 *pipeline[3:])
-        transformed_Xs = pipeline[:4].fit_transform(train_Xs)
-        train_data = DeepMFDataset(X=transformed_Xs)
-        train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=True)
-        trainer = Trainer(max_epochs=10, logger=False, enable_checkpointing=False)
-        transformer = pipeline[4](X=transformed_Xs)
-        with isolate_rng():
-            trainer.fit(transformer, train_dataloader)
-        transformed_Xs = transformer.transform(transformed_Xs)
-        pipeline = make_pipeline(*pipeline[:-1], pipeline[-1](n_clusters=n_clusters,
-                                                              random_state=random_state + run_n, **params))
-        clusters = pipeline[5:].fit_predict(transformed_Xs)
-        return clusters, transformed_Xs
-
-
-    def mrgcn(self, train_Xs, n_clusters, random_state, run_n, params):
+    def mrgcn(self, train_Xs, n_clusters, random_state, run_n):
         pipeline, params = self.alg["alg"], self.alg["params"]
         pipeline = make_pipeline(*pipeline, MultiViewTransformer(FunctionTransformer(
             lambda x: torch.from_numpy(x.values.astype(np.float32)))))
@@ -207,7 +187,7 @@ class Model:
 
     def jnmf(self, model, n_clusters, random_state, run_n, params):
         model = make_pipeline(*model[:2],
-                              model[2](n_components=n_clusters, random_state=random_state + run_n),
+                              model[2](n_components=n_clusters, random_state=int(random_state + run_n)),
                               model[3],
                               model[-1](n_clusters=n_clusters, random_state=random_state + run_n, **params))
         return model

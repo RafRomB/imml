@@ -10,7 +10,7 @@ from sklearn.preprocessing import StandardScaler, MinMaxScaler, FunctionTransfor
 
 from imml.cluster import DAIMC, EEIMVC, NEMO, IMSCAGL, IMSR, LFIMVC, MKKMIK, MONET, MSNE, OMVC, OPIMC, OSLFIMVC, PIMVC, \
     SIMCADC, SUMO
-from imml.decomposition import DeepMF, DFMF, MOFA, jNMF
+from imml.decomposition import DFMF, MOFA, jNMF
 from imml.preprocessing import MultiViewTransformer, ConcatenateViews, NormalizerNaN
 
 complete_algorithms = {
@@ -106,11 +106,6 @@ incomplete_algorithms = {
     "SUMO": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                   SUMO), "language": "Python", "params": {}},
-    "DeepMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
-                                    ConcatenateViews(), StandardScaler(),
-                                    DeepMF, FunctionTransformer(lambda x: x.cpu().detach().numpy()),
-                                    StandardScaler(), KMeans(n_init= "auto")),
-                 "language": "DL", "params": {}},
     "DFMF": {"alg": make_pipeline(MultiViewTransformer(VarianceThreshold().set_output(transform="pandas")),
                                   MultiViewTransformer(StandardScaler().set_output(transform="pandas")),
                                   DFMF(),

@@ -5,7 +5,9 @@ from settings import COMPLETE_SUBRESULTS_PATH, COMPLETE_RESULTS_PATH, COMPLETE_L
     TIME_RESULTS_PATH, DATASET_TABLE_PATH, amputation_mechanisms, runs_per_alg, probs, \
     imputation, COMPLETE_RESULTS_FILE, COMPLETE_ERRORS_FILE, COMPLETE_SUBRESULTS_FOLDER, COMPLETE_LOGS_FILE
 from src.commons import CommonOperations
-from src.models import complete_algorithms as algorithms
+from src.models import complete_algorithms, incomplete_algorithms
+
+algorithms = {**complete_algorithms, **incomplete_algorithms}
 
 args = CommonOperations.get_args()
 

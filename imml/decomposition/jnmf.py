@@ -231,8 +231,6 @@ class jNMF(TransformerMixin, BaseEstimator):
             Xs = [pd.DataFrame(X) for X in Xs]
 
         if self.engine == "r":
-            from rpy2.robjects.packages import importr
-            nnTensor = importr("nnTensor")
             transformed_Xs, transformed_mask, beta_loss, init_W, init_V, init_H, weights = self._prepare_variables(
                 Xs=Xs, beta_loss=self.beta_loss, init_W=self.init_W, init_V=self.init_V, init_H=self.H_,
                 weights=self.weights)

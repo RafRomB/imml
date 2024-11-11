@@ -167,13 +167,14 @@ class CommonOperations:
                 if ((time_alg_dat > TIME_LIMIT) or (time_alg_dat <= 0) or np.isnan(time_alg_dat)
                         or (not time_results.loc[mask, "completed"].iloc[0])):
                     results.loc[(dataset_name, alg_name), "time_limited"] = False
-                    if time_alg_dat > EXTREME_TIME_LIMIT:
+                    if ((time_alg_dat > EXTREME_TIME_LIMIT) or (time_alg_dat <= 0) or np.isnan(time_alg_dat)
+                            or (not time_results.loc[mask, "completed"].iloc[0])):
                         results.loc[(dataset_name, alg_name), "extreme_time_limited"] = False
 
         results = results.loc[results["extreme_time_limited"]]
         mask = results["time_limited"]
         if args.limit:
-            mask = (mask | (results.index.get_level_values("run_n") <= runs_per_long_alg))
+            mask = (mask | (results.index.get_level_values("run_n") < runs_per_long_alg))
         results = results.loc[mask]
         return results
 
