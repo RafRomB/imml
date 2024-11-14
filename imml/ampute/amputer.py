@@ -2,39 +2,43 @@ import copy
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
+
 from ..utils import DatasetUtils
 
 
 class Amputer(BaseEstimator, TransformerMixin):
     r"""
-    Ampute a complete multi-view datasets.
+    Simulate an incomplete multi-modal dataset with block-wise missing data from a fully observed multi-modal dataset.
 
     Parameters
     ----------
     p: float, default=0.1
         Percentaje of incomplete samples.
     mechanism: str, default="um"
-        One of ["um", 'mcar', 'mnar', 'pm'].
+        One of ["um", 'mcar', 'mnar', 'pm'], corresponding to unpaired missing, missing completely at random,
+        missing not at random, and partial missing, respectively.
     weights: list, default=None
         The probabilities associated with each number of missing modalities. If not given, the sample
-        assumes a uniform distribution.
+        assumes a uniform distribution. Only used if mechanism = "mnar".
     random_state: int, default=None
         If int, random_state is the seed used by the random number generator.
 
     Example
     --------
+    >>> import numpy as np
     >>> from imml.ampute import Amputer
-    >>> from imml.datasets import LoadDataset
-    >>> Xs = LoadDataset.load_dataset("nutrimouse")
-    >>> transformer = Amputer(p= 0.2)
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> transformer = Amputer(p= 0.2, random_state=42)
     >>> transformer.fit_transform(Xs)
     """
 
-    def __init__(self, p:float = 0.1, mechanism: str = "um", weights: list = None, random_state: int = None):
+    def __init__(self, p: float = 0.1, mechanism: str = "um", weights: list = None, random_state: int = None):
 
         mechanisms_options = ["um", "mcar", "mnar", "pm"]
         if mechanism not in mechanisms_options:
             raise ValueError(f"Invalid mechanism. Expected one of: {mechanisms_options}")
+        if p < 0 or p > 1:
+            raise ValueError(f"Invalid p. Expected between 0 and 1.")
 
         self.mechanism = mechanism
         self.p = p
@@ -49,9 +53,9 @@ class Amputer(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -59,25 +63,25 @@ class Amputer(BaseEstimator, TransformerMixin):
         -------
         self :  returns an instance of self.
         """
-        self.n_views = len(Xs)
+        self.n_mods = len(Xs)
         return self
 
 
     def transform(self, Xs: list):
         r"""
-        Ampute a multi-view dataset.
+        Ampute a fully observed multi-modal dataset.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features)
-            The amputed multi-view dataset.
+        transformed_Xs : list of array-likes, shape (n_samples, n_features), length n_mods
+            The amputed multi-modal dataset.
         """
         if self.p > 0:
             pandas_format = isinstance(Xs[0], pd.DataFrame)
@@ -109,14 +113,14 @@ class Amputer(BaseEstimator, TransformerMixin):
 
 
     def _um_mask(self, sample_names):
-        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         sampled_names = copy.deepcopy(common_samples)
-        n_missing = int(len(sample_names.difference(sampled_names)) / self.n_views)
-        for X_idx in range(self.n_views):
+        n_missing = int(len(sample_names.difference(sampled_names)) / self.n_mods)
+        for X_idx in range(self.n_mods):
             x_per_view = sample_names.difference(sampled_names)
-            if X_idx != self.n_views - 1:
+            if X_idx != self.n_mods - 1:
                 x_per_view = pd.Series(x_per_view, index=x_per_view).sample(n=n_missing,
                                                                             replace=False,
                                                                             random_state=self.random_state).index
@@ -128,7 +132,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
 
     def _mcar_mask(self, sample_names):
-        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
@@ -138,7 +142,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         samples_to_fix = mask.nunique(axis=1).eq(1)
         if samples_to_fix.any():
             samples_to_fix = samples_to_fix[samples_to_fix]
-            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_views,
+            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_mods,
                                                                              size=len(samples_to_fix))
             for view_idx in np.unique(views_to_fix):
                 samples = views_to_fix == view_idx
@@ -150,11 +154,11 @@ class Amputer(BaseEstimator, TransformerMixin):
 
 
     def _mnar_mask(self, sample_names):
-        mask = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        mask = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        reference_var = np.random.default_rng(self.random_state).choice(range(1, self.n_views),
+        reference_var = np.random.default_rng(self.random_state).choice(range(1, self.n_mods),
                                                                         p = self.weights,
                                                                         size=len(idxs_to_remove))
         reference_var = pd.Series(reference_var, index=idxs_to_remove)
@@ -162,7 +166,7 @@ class Amputer(BaseEstimator, TransformerMixin):
             random_state = np.random.choice(100000)
         else:
             random_state = self.random_state
-        n_mods_to_remove = {n_mods_to_remove: np.random.default_rng(random_state + i).choice(self.n_views,
+        n_mods_to_remove = {n_mods_to_remove: np.random.default_rng(random_state + i).choice(self.n_mods,
                                                                                              size=n_mods_to_remove,
                                                                                              replace=False)
                             for i,n_mods_to_remove in enumerate(np.unique(reference_var))}
@@ -173,20 +177,20 @@ class Amputer(BaseEstimator, TransformerMixin):
 
 
     def _pm_mask(self, sample_names):
-        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_views)), index=sample_names)
+        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        if self.n_views == 2:
-            col = np.random.default_rng(self.random_state).choice(self.n_views)
+        if self.n_mods == 2:
+            col = np.random.default_rng(self.random_state).choice(self.n_mods)
             pseudo_observed_view_indicator.loc[idxs_to_remove, col] = 0
         else:
             n_incomplete_modalities = np.random.default_rng(self.random_state).choice(
-                np.arange(1, self.n_views), size=1)[0]
+                np.arange(1, self.n_mods), size=1)[0]
             mask = np.random.default_rng(self.random_state).choice(2,
                                                                    size=(len(idxs_to_remove), n_incomplete_modalities))
             mask = pd.DataFrame(mask, index=idxs_to_remove,
-                                columns=np.random.default_rng(self.random_state).choice(self.n_views,
+                                columns=np.random.default_rng(self.random_state).choice(self.n_mods,
                                                                                         size=n_incomplete_modalities,
                                                                                         replace=False))
             samples_to_fix = mask.nunique(axis=1).eq(1)
