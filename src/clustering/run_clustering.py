@@ -101,7 +101,7 @@ class RunClustering:
 
         dict_results = {
             "n_samples": len(train_X),
-            "n_views": len(train_Xs),
+            "n_mods": len(train_Xs),
             "n_incomplete_samples": DatasetUtils.get_n_incomplete_samples(train_Xs),
             "n_complete_samples": DatasetUtils.get_n_complete_samples(train_Xs),
             "time": elapsed_time,

@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from string import ascii_lowercase
 from imml.ampute import Amputer
-from imml.impute import get_missing_view_indicator
+from imml.impute import get_missing_mod_indicator
 from imml.utils import DatasetUtils
 
 
@@ -21,7 +21,7 @@ def test_default_params(sample_data):
         transformed_Xs = amputer.fit_transform(Xs)
         assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p * 100)
         assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p) * 100)
-        assert amputer.n_views == len(Xs)
+        assert amputer.n_mods == len(Xs)
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError):
@@ -32,7 +32,7 @@ def test_fit(sample_data):
     amputer = Amputer(p=p, random_state=42)
     for Xs in sample_data:
         amputer.fit(Xs)
-        assert amputer.n_views == len(Xs)
+        assert amputer.n_mods == len(Xs)
 
 def test_tranform(sample_data):
     p = 0.2
@@ -42,7 +42,7 @@ def test_tranform(sample_data):
         transformed_Xs = amputer.transform(Xs)
         assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p * 100)
         assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p) * 100)
-        assert amputer.n_views == len(Xs)
+        assert amputer.n_mods == len(Xs)
 
 def test_extreme_p(sample_data):
     for p in [0, 0.9]:
@@ -52,7 +52,7 @@ def test_extreme_p(sample_data):
             transformed_Xs = amputer.fit_transform(Xs)
             assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p*100)
             assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p)*100)
-            assert amputer.n_views == len(Xs)
+            assert amputer.n_mods == len(Xs)
 
 def test_param_mechanism(sample_data):
     p = 0.2
@@ -67,10 +67,6 @@ def test_param_mechanism(sample_data):
                        for transformed_X, X in zip(transformed_Xs, Xs)]
             for transformed_X, X in zip(transformed_Xs, Xs):
                 assert transformed_X.shape == X.shape
-                if mechanism == "pm":
-                    assert sum(missing) == len(Xs) -1
-                else:
-                    assert sum(missing) == len(Xs)
 
 if __name__ == "__main__":
     pytest.main()

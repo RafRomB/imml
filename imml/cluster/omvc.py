@@ -51,9 +51,9 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : array-like of shape (n_samples, n_clusters)
         Common consensus, latent feature matrix across all the views to be used as input for the KMeans clustering step.
-    U_ : list of n_views array-like of shape (n_samples, n_clusters)
+    U_ : list of n_mods array-like of shape (n_samples, n_clusters)
         Basis matrix.
-    V_ : list of n_views array-like of shape (n_features_i, n_clusters)
+    V_ : list of n_mods array-like of shape (n_features_i, n_clusters)
         Latent feature matrix.
     loss_ : array-like of shape (n_iter_,)
         Values of the loss function.
@@ -69,16 +69,12 @@ class OMVC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import OMVC
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = StandardScaler().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = OMVC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
 
     """
 
@@ -124,9 +120,9 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -137,8 +133,8 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            n_views = len(Xs)
-            ones = np.ones((n_views, 1))
+            n_mods = len(Xs)
+            ones = np.ones((n_mods, 1))
             option = {"k": self.n_clusters, "maxiter": self.max_iter, "tol": self.tol, "num_cluster": self.n_clusters,
                       "decay": self.decay, "alpha": 1e-2*ones, "beta": 1e-7*ones,
                       "pass": self.n_pass}
@@ -183,9 +179,9 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -203,9 +199,9 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

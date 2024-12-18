@@ -9,7 +9,7 @@ from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
 from snf.compute import affinity_matrix
 
-from ..impute import get_observed_view_indicator
+from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs, DatasetUtils
 
 rpy2_installed = False
@@ -40,11 +40,11 @@ class NEMO(BaseEstimator, ClassifierMixin):
     r"""
     NEighborhood based Multi-Omics clustering (NEMO).
 
-    NEMO is a method used for clustering data from multiple views sources. This algorithm operates
+    NEMO is a method used for clustering data from multiple modalities sources. This algorithm operates
     through three main stages. Initially, it constructs a similarity matrix for each modality that represents the
-    similarities between different samples. Then, it merges these individual view matrices into a unified one,
-    combining the information from all views. Finally, the algorithm performs the actual clustering process on this
-    integrated network, grouping similar samples together based on their multi-views data patterns.
+    similarities between different samples. Then, it merges these individual modality matrices into a unified one,
+    combining the information from all modalities. Finally, the algorithm performs the actual clustering process on this
+    integrated network, grouping similar samples together based on their multi-modal data patterns.
 
     Parameters
     ----------
@@ -52,9 +52,9 @@ class NEMO(BaseEstimator, ClassifierMixin):
         The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
         with this range of number of clusters to choose between.
     num_neighbors : list or int, default=None
-        The number of neighbors to use for each view. It can either be a number, a list of numbers or None. If it is a
-        number, this is the number of neighbors used for all views. If this is a list, the number of neighbors are
-        taken for each view from that list. If it is None, each view chooses the number of neighbors to be the number
+        The number of neighbors to use for each modality. It can either be a number, a list of numbers or None. If it is a
+        number, this is the number of neighbors used for all modalities. If this is a list, the number of neighbors are
+        taken for each modality from that list. If it is None, each modality chooses the number of neighbors to be the number
         of samples divided by num_neighbors_ratio.
     num_neighbors_ratio : int, default=6
         The number of clusters to generate. If it is not provided, it will be estimated by the algorithm.
@@ -78,7 +78,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Final number of clusters.
     num_neighbors_ : int
         Final number of neighbors.
-    affinity_matrix_ : np.array(n_samples, n_samples)
+    affinity_matrix_ : np.array (n_samples, n_samples)
         Affinity matrix.
 
     References
@@ -89,15 +89,11 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import NEMO
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = StandardScaler().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = NEMO(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
     >>> labels = estimator.fit_predict(Xs)
     """
 
@@ -130,9 +126,9 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -145,7 +141,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
         if self.engine == 'python':
-            observed_view_indicator = get_observed_view_indicator(Xs)
+            observed_view_indicator = get_observed_mod_indicator(Xs)
             samples = observed_view_indicator.index
 
             if self.num_neighbors is None:
@@ -212,9 +208,9 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -232,9 +228,9 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

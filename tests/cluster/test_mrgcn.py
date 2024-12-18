@@ -7,7 +7,7 @@ from sklearn.preprocessing import FunctionTransformer
 from imml.ampute import Amputer
 from imml.preprocessing import MultiViewTransformer
 from imml.cluster import MRGCN
-from imml.data_loader import MRGCNDataset
+from imml.load import MRGCNDataset
 
 try:
     import torch

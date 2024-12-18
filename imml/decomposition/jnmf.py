@@ -23,12 +23,13 @@ if rpy2_installed:
         nnTensor_module_error = "nnTensor needs to be installed in R to use r engine."
 
 
-class jNMF(TransformerMixin, BaseEstimator):
+class JNMF(TransformerMixin, BaseEstimator):
     r"""
-    Joint Non-negative Matrix Factorization Algorithms (jNMF).
+    Joint Non-negative Matrix Factorization (JNMF).
 
-    jNMF decompose the matrices to two low-dimensional factor matrices. It can deal with both view- and
-    feature-wise missing.
+    JNMF decompose the matrices to two low-dimensional factor matrices.
+
+    It can deal with both modality- and feature-wise missing.
 
     Parameters
     ----------
@@ -74,9 +75,9 @@ class jNMF(TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
-    H_ : list of n_views array-likes of shape (n_features_i, n_components)
+    H_ : list of n_mods array-likes of shape (n_features_i, n_components)
         List of specific factorization matrix.
-    V_ : list of n_views array-likes of shape (n_samples, n_components)
+    V_ : list of n_mods array-likes of shape (n_samples, n_components)
         List of specific factorization matrix.
     reconstruction_err_ : list of float
         Beta-divergence between the training data X and the reconstructed data WH from the fitted model.
@@ -102,20 +103,17 @@ class jNMF(TransformerMixin, BaseEstimator):
                      on Latent Variable Analysis and Signal Separation 346-353.
     .. [#jnmfpaper6] N. Fujita et al., (2018) Biomarker discovery by integrated joint non-negative matrix factorization
                      and pathway signature analyses, Scientific Report.
-    .. [#jnmfcode1] https://rdrr.io/cran/nnTensor/man/jNMF.html
+    .. [#jnmfcode1] https://rdrr.io/cran/nnTensor/man/JNMF.html
     .. [#jnmfcode2] https://github.com/rikenbit/nnTensor
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
-    >>> from imml.decomposition import jNMF
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.preprocessing import MinMaxScaler
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = jNMF(n_components = 5)
-    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer)
-    >>> transformed_X = pipeline.fit_transform(Xs)
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from imml.decomposition import JNMF
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).uniform(size=(20, 10))) for i in range(3)]
+    >>> transformer = JNMF(n_components = 5)
+    >>> transformed_Xs = transformer.fit_transform(Xs)
     """
 
     def __init__(self, n_components : int = 10, init_W = None, init_V = None, init_H = None,
@@ -165,9 +163,9 @@ class jNMF(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -217,9 +215,9 @@ class jNMF(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -265,9 +263,9 @@ class jNMF(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
         fit_params : Ignored

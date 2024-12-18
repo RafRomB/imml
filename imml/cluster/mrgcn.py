@@ -21,19 +21,19 @@ class MRGCN(DLBaseeModule):
 
     MRGCN encodes and reconstructs data and similarity relationships from multiple sources simultaneously,
     consolidating them into a shared latent embedding space. Additionally, MRGCN utilizes an indicator matrix to
-    represent the presence of missing views, effectively merging the processing of complete and incomplete multi-view
+    represent the presence of missing modalities, effectively merging the processing of complete and incomplete multi-modal
     data within a single unified framework.
 
     Incomplete samples should be filled with 0.
 
-    It should be used with PyTorch Lightning. The class MRGCN provides a Dataset class for this algorithm.
+    It should be used with PyTorch Lightning. The class MRGCNDataset provides a loader for this algorithm.
 
     Parameters
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
     Xs : list of array-likes, default=None
-        Multi-view dataset. It will be used to create the neural network architecture.
+        Multi-modal dataset. It will be used to create the neural network architecture.
     k_num : int, default=10
         Number of neighbors to use.
     learning_rate : float, default=1e-3
@@ -57,30 +57,19 @@ class MRGCN(DLBaseeModule):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
-    >>> from sklearn.preprocessing import FunctionTransformer, StandardScaler
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.impute import SimpleImputer
-    >>> from imml.preprocessing import MultiViewTransformer
     >>> import numpy as np
-    >>> from imml.data_loader import MRGCNDataset
+    >>> import pandas as pd
+    >>> from imml.cluster import MRGCN
     >>> from lightning import Trainer
     >>> from torch.utils.data import DataLoader
-
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> scaler = StandardScaler().set_output(transform="pandas")
-    >>> imputer = SimpleImputer(strategy= "constant", fill_value=0.0).set_output(transform="pandas")
-    >>> transformer = lambda x: torch.from_numpy(x.values.astype(np.float32)))
-    >>> pipeline = make_pipeline(MultiViewTransformer(scaler), MultiViewTransformer(imputer), MultiViewTransformer(transformer))
-    >>> transformed_Xs = pipeline.fit_transform(Xs)
-
-    >>> train_data = MRGCNDataset(Xs=transformed_Xs)
-    >>> train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=True)
-    >>> trainer = Trainer(max_epochs=100, logger=False, enable_checkpointing=False)
-    >>> estimator = MRGCN(Xs=transformed_Xs, n_clusters=2)
+    >>> from imml.load import MRGCNDataset
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> train_data = MRGCNDataset(Xs=Xs)
+    >>> train_dataloader = DataLoader(dataset=train_data)
+    >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
+    >>> estimator = MRGCN(Xs=Xs, n_clusters=2)
     >>> trainer.fit(estimator, train_dataloader)
-    >>> train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=False)
-    >>> trainer.predict(estimator, train_dataloader)
+    >>> labels = trainer.predict(estimator, train_dataloader)[0]
     """
 
     def __init__(self, n_clusters: int = 8, Xs = None, k_num:int = 10, learning_rate:float = 0.001, reg2:float = 1.,
@@ -110,7 +99,7 @@ class MRGCN(DLBaseeModule):
 
         self.data = Xs
         self.n_features_ = [X.shape[1] for X in Xs]
-        self.n_views_ = len(Xs)
+        self.n_mods_ = len(Xs)
         self.learning_rate = learning_rate
         self.criterion = torch.nn.MSELoss(reduction='sum')
         self.n_clusters = n_clusters
@@ -169,7 +158,7 @@ class MRGCN(DLBaseeModule):
         z = self._embedding(batch=batch)
         loss_x = 0
         loss_a = 0
-        for X_idx in range(self.n_views_):
+        for X_idx in range(self.n_mods_):
             weight = getattr(self, f"weight{X_idx}")
             a = torch.sigmoid(torch.matmul(torch.matmul(z, weight), z.T))
             loss_a += self.criterion(a, self.gs[X_idx].to(a.device))

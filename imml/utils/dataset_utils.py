@@ -4,43 +4,43 @@ import numpy as np
 import pandas as pd
 
 from . import check_Xs
-from ..impute import get_observed_view_indicator, get_missing_view_indicator
+from ..impute import get_observed_mod_indicator, get_missing_mod_indicator
 
 
 class DatasetUtils:
     r"""
-    A utility class that provides general methods for working with multi-view datasets.
+    A utility class that provides general methods for working with multi-modal datasets.
     """
 
     @staticmethod
     def convert_to_imvd(Xs: list, observed_view_indicator) -> list:
         r"""
-        Generate view missingness patterns in complete multi-view datasets.
+        Generate block-wise missingness patterns in complete multi-modal datasets.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
-        observed_view_indicator: array-like of shape (n_samples, n_views)
-            Boolean array-like indicating observed views for each sample.
+            A list of different modalities.
+        observed_view_indicator: array-like of shape (n_samples, n_mods)
+            Boolean array-like indicating observed modalities for each sample.
 
         Returns
         -------
         transformed_Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Examples
         --------
         >>> from imml.datasets import LoadDataset
-        >>> from imml.impute import ObservedViewIndicator
+        >>> from imml.impute import ObservedModIndicator
         >>> from imml.ampute import Amputer
         >>> from sklearn.pipeline import make_pipeline
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> transformer = make_pipeline(Amputer(p=0.2, mechanism="mcar", random_state=42), ObservedViewIndicator().set_output(transformed="pandas"))
+        >>> transformer = make_pipeline(Amputer(p=0.2, mechanism="mcar", random_state=42), ObservedModIndicator().set_output(transformed="pandas"))
         >>> observed_view_indicator = transformer.fit_transform(Xs)
         >>> DatasetUtils.convert_to_imvd(Xs = Xs, observed_view_indicator = observed_view_indicator)
         """
@@ -64,26 +64,26 @@ class DatasetUtils:
     @staticmethod
     def get_summary(Xs: list) -> int:
         r"""
-        Get a summary of an incomplete multi-view dataset.
+        Get a summary of an incomplete multi-modal dataset.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
         summary: dict
-            Summary of an incomplete multi-view dataset.
+            Summary of an incomplete multi-modal dataset.
 
         Examples
         --------
         >>> from imml.utils import DatasetUtils
         >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> DatasetUtils.get_n_views(Xs = Xs)
+        >>> DatasetUtils.get_n_mods(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
         summary = {
@@ -102,50 +102,50 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_n_views(Xs: list) -> int:
+    def get_n_mods(Xs: list) -> int:
         r"""
-        Get the number of views of a multi-view dataset.
+        Get the number of modalities of a multi-modal dataset.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
-        n_views: int
-            Number of views.
+        n_mods: int
+            Number of modalities.
 
         Examples
         --------
         >>> from imml.utils import DatasetUtils
         >>> from imml.datasets import LoadDataset
         >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-        >>> DatasetUtils.get_n_views(Xs = Xs)
+        >>> DatasetUtils.get_n_mods(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        n_views = len(Xs)
-        return n_views
+        n_mods = len(Xs)
+        return n_mods
 
 
     @staticmethod
     def get_n_samples_by_view(Xs: list) -> int:
         r"""
-        Get the number of samples in each view.
+        Get the number of samples in each modality.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
         n_samples_by_view: pd.Series
-            Number of samples in each view.
+            Number of samples in each modality.
 
         Examples
         --------
@@ -155,7 +155,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_n_samples_by_view(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        n_samples_by_view = get_observed_view_indicator(Xs)
+        n_samples_by_view = get_observed_mod_indicator(Xs)
         n_samples_by_view = n_samples_by_view.sum(axis=0)
         return n_samples_by_view
 
@@ -163,14 +163,14 @@ class DatasetUtils:
     @staticmethod
     def get_complete_sample_names(Xs: list) -> pd.Index:
         r"""
-        Get complete samples in a multi-view dataset.
+        Get complete samples in a multi-modal dataset.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -187,7 +187,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_complete_sample_names(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        samples = get_observed_view_indicator(Xs)
+        samples = get_observed_mod_indicator(Xs)
         if not isinstance(samples, pd.DataFrame):
             samples = pd.DataFrame(samples)
         samples = samples[samples.all(1)].index
@@ -197,14 +197,14 @@ class DatasetUtils:
     @staticmethod
     def get_incomplete_sample_names(Xs: list) -> pd.Index:
         r"""
-        Get incomplete samples in a multi-view dataset.
+        Get incomplete samples in a multi-modal dataset.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -221,7 +221,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_incomplete_sample_names(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        samples = get_observed_view_indicator(Xs)
+        samples = get_observed_mod_indicator(Xs)
         if not isinstance(samples, pd.DataFrame):
             samples = pd.DataFrame(samples)
         samples = samples[~samples.all(1)].index
@@ -236,9 +236,9 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -271,16 +271,16 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         return_as_list : bool, default=True
             If True, the function will return a list; a dict otherwise.
 
         Returns
         -------
         samples: list or dict of pd.Index
-            If list, each element in the list is the sample names for each view. If dict, keys are the views and the
+            If list, each element in the list is the sample names for each view. If dict, keys are the modalities and the
             values are the sample names.
 
         Examples
@@ -292,7 +292,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_samples_by_view(Xs = Xs)
         """
-        observed_view_indicator = get_observed_view_indicator(Xs)
+        observed_view_indicator = get_observed_mod_indicator(Xs)
         if isinstance(Xs[0], pd.DataFrame):
             observed_view_indicator = pd.DataFrame(observed_view_indicator, index=Xs[0].index)
         else:
@@ -312,11 +312,11 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         return_as_list : bool, default=True
-            If list, each element in the list is the sample names for each view. If dict, keys are the views and the
+            If list, each element in the list is the sample names for each view. If dict, keys are the modalities and the
             values are the sample names.
 
         Returns
@@ -334,7 +334,7 @@ class DatasetUtils:
         >>> DatasetUtils.get_missing_samples_by_view(Xs = Xs)
         """
 
-        observed_view_indicator = get_observed_view_indicator(Xs)
+        observed_view_indicator = get_observed_mod_indicator(Xs)
         if isinstance(Xs[0], pd.DataFrame):
             observed_view_indicator = pd.DataFrame(observed_view_indicator, index=Xs[0].index)
         else:
@@ -356,9 +356,9 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -387,9 +387,9 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -418,9 +418,9 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -449,9 +449,9 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -480,16 +480,16 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
         transformed_Xs: list of array-likes.
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Examples
         --------
@@ -501,7 +501,7 @@ class DatasetUtils:
         >>> DatasetUtils.remove_missing_sample_from_view(Xs = Xs)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        observed_view_indicator = get_missing_view_indicator(Xs)
+        observed_view_indicator = get_missing_mod_indicator(Xs)
         if observed_view_indicator.any().any():
             pandas_format = isinstance(Xs[0], pd.DataFrame)
             if pandas_format:
@@ -526,16 +526,16 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         keys : list, default=None
             keys for the dict. If None, it will use numbers starting from 0.
 
         Returns
         -------
         transformed_Xs: dict of array-likes.
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[key] shape: (n_samples, n_features_i)
 
         Examples
@@ -561,15 +561,15 @@ class DatasetUtils:
         Parameters
         ----------
         Xs : dict of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[key] shape: (n_samples, n_features_i)
 
         Returns
         -------
         transformed_Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Examples
         --------

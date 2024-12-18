@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 
-from ..impute import get_observed_view_indicator, simple_view_imputer
+from ..impute import get_observed_mod_indicator, simple_view_imputer
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -22,9 +22,6 @@ class OPIMC(BaseEstimator, ClassifierMixin):
 
     OPIMC deals with large scale incomplete multi-view clustering problem by considering the instance missing
     information with the help of regularized matrix factorization and weighted matrix factorization.
-
-    It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
-    this algorithm.
 
     Parameters
     ----------
@@ -66,15 +63,12 @@ class OPIMC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import OPIMC
-    >>> from imml.preprocessing import NormalizerNaN, MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = OPIMC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, alpha: float = 10, num_passes: int = 1, max_iter: int = 30,
@@ -119,9 +113,9 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -136,7 +130,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            observed_view_indicator = get_observed_view_indicator(transformed_Xs)
+            observed_view_indicator = get_observed_mod_indicator(transformed_Xs)
             transformed_Xs = simple_view_imputer(transformed_Xs, value="zeros")
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = tuple(transformed_Xs)
@@ -164,9 +158,9 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -184,9 +178,9 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

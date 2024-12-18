@@ -6,7 +6,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
 
-from ..impute import get_observed_view_indicator
+from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -50,11 +50,11 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : np.array
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    WP_ : array-like of shape (n_clusters, n_clusters, n_views)
+    WP_ : array-like of shape (n_clusters, n_clusters, n_mods)
         p-th permutation matrix.
     C_ : array-like of shape (n_clusters, n_clusters)
         Centroids.
-    beta_ : array-like of shape (n_views,)
+    beta_ : array-like of shape (n_mods,)
         Adaptive weights of clustering matrices.
     loss_ : array-like of shape (n_iter_,)
         Values of the loss function.
@@ -71,16 +71,12 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import OSLFIMVC
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = StandardScaler().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = OSLFIMVC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
 
     """
 
@@ -124,9 +120,9 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -137,12 +133,12 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            observed_view_indicator = get_observed_view_indicator(Xs)
+            observed_view_indicator = get_observed_mod_indicator(Xs)
             if isinstance(observed_view_indicator, pd.DataFrame):
                 observed_view_indicator = observed_view_indicator.reset_index(drop=True)
             elif isinstance(observed_view_indicator[0], np.ndarray):
                 observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            s = [view[view == 0].index.values for _,view in observed_view_indicator.items()]
+            s = [modality[modality == 0].index.values for _,modality in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             s = tuple([{"indx": i +1} for i in s])
@@ -171,9 +167,9 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -191,9 +187,9 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

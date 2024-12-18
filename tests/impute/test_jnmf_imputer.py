@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imml.impute import jNMFImputer
+from imml.impute import JNMFImputer
 
 
 @pytest.fixture
@@ -15,14 +15,14 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 def test_default_params(sample_data):
-    transformer = jNMFImputer(random_state=42)
+    transformer = JNMFImputer(random_state=42)
     for Xs in sample_data:
         transformed_Xs = transformer.fit_transform(Xs)
         assert len(transformed_Xs) == len(Xs)
         assert transformed_Xs[0].shape == Xs[0].shape
 
 def test_transform(sample_data):
-    transformer = jNMFImputer(random_state=42)
+    transformer = JNMFImputer(random_state=42)
     for Xs in sample_data:
         transformer.fit(Xs)
         transformed_Xs = transformer.transform(Xs)

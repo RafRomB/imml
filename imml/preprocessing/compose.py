@@ -128,7 +128,7 @@ def concatenate_views(Xs: list):
     Parameters
     ----------
     Xs : list of array-likes
-        - Xs length: n_views
+        - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 
@@ -153,7 +153,7 @@ def drop_view(Xs, X_idx : int = 0):
     Parameters
     ----------
     Xs : list of array-likes
-        - Xs length: n_views
+        - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
     X_idx : int, default=0
@@ -165,7 +165,7 @@ def drop_view(Xs, X_idx : int = 0):
         The transformed multi-view dataset.
     """
     if X_idx >= len(Xs):
-        raise ValueError("X_idx out of range. Should be between 0 and n_views - 1")
+        raise ValueError("X_idx out of range. Should be between 0 and n_mods - 1")
     Xs = check_Xs(Xs, force_all_finite='allow-nan')
     transformed_Xs = Xs[:X_idx] + Xs[X_idx+1 :]
     return transformed_Xs
@@ -178,7 +178,7 @@ def single_view(Xs, X_idx : int = 0):
     Parameters
     ----------
     Xs : list of array-likes
-        - Xs length: n_views
+        - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
     X_idx : int, default=0
@@ -190,7 +190,7 @@ def single_view(Xs, X_idx : int = 0):
         The transformed dataset.
     """
     if X_idx >= len(Xs):
-        raise ValueError("X_idx out of range. Should be between 0 and n_views - 1")
+        raise ValueError("X_idx out of range. Should be between 0 and n_mods - 1")
     Xs = check_Xs(Xs, force_all_finite='allow-nan')
     transformed_X = Xs[X_idx]
     return transformed_X
@@ -231,7 +231,7 @@ def sort_data(Xs: list):
     Parameters
     ----------
     Xs : list of array-likes
-        - Xs length: n_views
+        - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
         A list of different views.
 

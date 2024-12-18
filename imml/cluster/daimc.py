@@ -6,7 +6,7 @@ from control.matlab import lyap
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..impute import get_observed_view_indicator, simple_view_imputer
+from ..impute import get_observed_mod_indicator, simple_view_imputer
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -27,17 +27,14 @@ class DAIMC(BaseEstimator, ClassifierMixin):
     matrix across views and employs L2,1-Norm regularized regression to establish a consensus basis matrix, minimizing
     the impact of missing instances.
 
-    It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
-    this algorithm.
-
     Parameters
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
     alpha : float, default=1
-        nonnegative.
+        Nonnegative value.
     beta : float, default=1
-        Define the trade-off between sparsity and accuracy of regression for the i-th view.
+        Define the trade-off between sparsity and accuracy of regression for the i-th modality.
     random_state : int, default=None
         Determines the randomness. Use an int to make the randomness deterministic.
     engine : str, default=python
@@ -53,9 +50,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : array-like of shape (n_samples, n_clusters)
         Commont latent feature matrix to be used as input for the KMeans clustering step.
-    U_ : list of n_views array-like of shape (n_features_i, n_clusters)
+    U_ : list of n_mods array-like of shape (n_features_i, n_clusters)
         Basis matrices.
-    B_ : list of n_views array-like of shape (n_features_i, n_clusters)
+    B_ : list of n_mods array-like of shape (n_features_i, n_clusters)
         Regression coefficient matrices.
 
     References
@@ -70,15 +67,12 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import DAIMC
-    >>> from imml.preprocessing import NormalizerNaN, MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = DAIMC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, alpha: float = 1, beta: float = 1, random_state: int = None,
@@ -122,9 +116,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -173,9 +167,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -193,9 +187,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -293,7 +287,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : list of array-likes
-            - X length: n_views
+            - X length: n_mods
             - X[i] shape: (n_samples, n_features_i)
             A list of different views.
         W : tuple of array
@@ -377,7 +371,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : list of array-likes
-            - X length: n_views
+            - X length: n_mods
             - X[i] shape: (n_samples, n_features_i)
             A list of different views.
         W : tuple of array
@@ -438,7 +432,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             transformed_Xs = [X.values for X in Xs]
         elif isinstance(Xs[0], np.ndarray):
             transformed_Xs = Xs
-        observed_view_indicator = get_observed_view_indicator(transformed_Xs)
+        observed_view_indicator = get_observed_mod_indicator(transformed_Xs)
         transformed_Xs = simple_view_imputer(transformed_Xs, value="zeros")
         transformed_Xs = [X.T for X in transformed_Xs]
         transformed_Xs = tuple(transformed_Xs)

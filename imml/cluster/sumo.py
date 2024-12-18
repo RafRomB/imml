@@ -30,11 +30,11 @@ class SUMO(BaseEstimator, ClassifierMixin):
     n_clusters : int, default=8
         The number of clusters to generate. If it is not provided, it will use the default one from the algorithm.
     method : str or list of str, default='euclidean'
-        either one method of sample-sample similarity calculation, or list of methods for every view (available
+        either one method of sample-sample similarity calculation, or list of methods for every modality (available
         methods: ['euclidean', 'cosine', 'pearson', 'spearman']).
     missing : float or list of float, default=[0.1]
         acceptable fraction of available values for assessment of distance/similarity between pairs of samples - either
-        one value or list for every view.
+        one value or list for every modality.
     neighbours : float, default=0.1
         fraction of nearest neighbours to use for sample similarity calculation using Euclidean distance
         similarity.
@@ -77,7 +77,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Multiview graph.
     nmf_ : UnsupervisedSumoNMF
         The nonnegative matrix factorization (NMF) object.
-    similarity_ : dict of length n_views, with views as keys and an array-like of shape (n_samples,n_samples) as values.
+    similarity_ : dict of length n_mods, with views as keys and an array-like of shape (n_samples,n_samples) as values.
         List of adjacency matrix.
     cophenet_list_ : ndarray of shape (rep,).
         Object created by SUMO
@@ -93,15 +93,12 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import SUMO
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = SUMO(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, method: Union[str, list] = None, missing: list = None,
@@ -175,9 +172,9 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -209,7 +206,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         # create adjacency matrices
         for X_idx, X in enumerate(Xs):
             if self.verbose:
-                print(f"#View: {X_idx}")
+                print(f"#Modality: {X_idx}")
                 print(f"Feature matrix: ({X.shape[0]} samples x {X.shape[1]} features)")
             # create adjacency matrix
             a = feature_to_adjacency(X.values, missing=self.missing[X_idx], method=self.method[X_idx],
@@ -273,9 +270,9 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -294,9 +291,9 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 

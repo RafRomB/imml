@@ -5,7 +5,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..impute import get_observed_view_indicator
+from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs, DatasetUtils
 
 oct2py_installed = False
@@ -24,9 +24,6 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
     IMSCAGL utilizes graph learning and spectral clustering techniques to derive a unified representation for
     incomplete multiview clustering.
 
-    It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
-    this algorithm.
-
     Parameters
     ----------
     n_clusters : int, default=8
@@ -42,7 +39,8 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
     neighbor_mode : str, default='KNN'
         Indicates how to construct the graph. Options are 'KNN' (default), and 'Supervised'.
     weight_mode : str, default='Binary'
-        Indicates how to assign weights for each edge in the graph. Options are 'Binary' (default), 'Cosine' and 'HeatKernel'.
+        Indicates how to assign weights for each edge in the graph. Options
+        are 'Binary' (default), 'Cosine' and 'HeatKernel'.
     max_iter : int, default=100
         Maximum number of iterations.
     miu : float, default=0.01
@@ -78,15 +76,12 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import IMSCAGL
-    >>> from imml.preprocessing import NormalizerNaN, MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = IMSCAGL(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, lambda1: float = 0.1, lambda2: float = 1000, lambda3: float = 100, k: int = 5,
@@ -137,9 +132,9 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -152,7 +147,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         if self.engine=="matlab":
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
-            observed_view_indicator = get_observed_view_indicator(Xs=Xs)
+            observed_view_indicator = get_observed_mod_indicator(Xs=Xs)
             transformed_Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
             w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]
             w = [eye.loc[samples,:].values for eye, (_, samples) in zip(w, observed_view_indicator.items())]
@@ -183,9 +178,9 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -203,9 +198,9 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

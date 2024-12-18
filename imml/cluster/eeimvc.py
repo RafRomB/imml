@@ -9,7 +9,7 @@ from scipy.sparse.linalg import eigs
 from numpy.linalg import svd
 
 
-from ..impute import get_observed_view_indicator
+from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -31,8 +31,8 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    kernel : callable, default=kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
-        Specifies the kernel type to be used in the algorithm.
+    kernel : callable, default=None
+        Specifies the kernel type to be used in the algorithm. By default, it applies dot product kernel.
     lambda_reg : float, default=1.
         Regularization parameter. The algorithm demonstrated stable performance across a wide range of
         this hyperparameter.
@@ -54,11 +54,11 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    WP_ : array-like of shape (n_clusters, n_clusters, n_views)
+    WP_ : array-like of shape (n_clusters, n_clusters, n_mods)
         p-th permutation matrix.
-    HP_ : array-like of shape (n_samples, n_clusters, n_views)
+    HP_ : array-like of shape (n_samples, n_clusters, n_mods)
         missing part of the p-th base clustering matrix.
-    beta_ : array-like of shape (n_views,)
+    beta_ : array-like of shape (n_mods,)
         Adaptive weights of clustering matrices.
     loss_ : array-like of shape (n_iter_,)
         Values of the loss function.
@@ -74,19 +74,15 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import EEIMVC
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = StandardScaler().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = EEIMVC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
+    def __init__(self, n_clusters: int = 8, kernel: callable = None,
                  lambda_reg: float = 1., qnorm: float = 2., random_state: int = None,
                  engine: str ="python", verbose = False, clean_space: bool = True):
         if not isinstance(n_clusters, int):
@@ -98,6 +94,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if (engine == "matlab") and (not oct2py_installed):
             raise ImportError(oct2py_module_error)
+
+        if kernel is None:
+            kernel = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
 
         self.n_clusters = n_clusters
         self.qnorm = qnorm
@@ -126,9 +125,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -143,10 +142,10 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            observed_view_indicator = get_observed_view_indicator(transformed_Xs)
+            observed_view_indicator = get_observed_mod_indicator(transformed_Xs)
             if isinstance(observed_view_indicator, np.ndarray):
                 observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            s = [view[view == 0].index.values for _,view in observed_view_indicator.items()]
+            s = [modality[modality == 0].index.values for _,modality in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             s = tuple([{"indx": i +1} for i in s])
@@ -163,18 +162,18 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
                 self._clean_space()
 
         elif self.engine=="python":
-            observed_view_indicator = get_observed_view_indicator(Xs)
+            observed_view_indicator = get_observed_mod_indicator(Xs)
             if isinstance(observed_view_indicator, pd.DataFrame):
                 observed_view_indicator = observed_view_indicator.reset_index(drop=True)
             elif isinstance(observed_view_indicator[0], np.ndarray):
                 observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            s = [view[view == 0].index.values for _, view in observed_view_indicator.items()]
+            s = [modality[modality == 0].index.values for _, modality in observed_view_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
             s = tuple([{"indx": i + 1} for i in s])
 
-            H_normalized, WP, HP, beta, obj = self.incomplete_late_fusion_MKCOrthHp_lamba(transformed_Xs, s,
+            H_normalized, WP, HP, beta, obj = self._incomplete_late_fusion_MKCOrthHp_lamba(transformed_Xs, s,
                                                                                       self.n_clusters,
                                                                                       self.qnorm, self.lambda_reg)
 
@@ -193,9 +192,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -213,9 +212,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -235,22 +234,22 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
 
 
-    def my_initialization_Hp(self, KH, S, n_clusters):
+    def _my_initialization_Hp(self, KH, S, n_clusters):
         r"""
         Initialize HP and WP variable.
 
         Parameters
         ----------
         KH: 3-D array of shape(n_samples, n_samples, kernels)
-        S: tuple of shape (n_views)
+        S: tuple of shape (n_mods)
             - S[i]['indx']: array of missing values column
         n_clusters: int
             The number of clusters.
 
         Returns
         -------
-        HP: 3-d array of shape (n_samples, n_clusters, n_views)
-        WP: 3-d array of shape (n_clusters, n_clusters, n_views)
+        HP: 3-d array of shape (n_samples, n_clusters, n_mods)
+        WP: 3-d array of shape (n_clusters, n_clusters, n_mods)
         """
         numker = KH.shape[2]
         num = KH.shape[0]
@@ -272,19 +271,19 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
         return HP, WP
 
-    def algorithm2(self, KH, S):
+    def _algorithm2(self, KH, S):
         r"""
         Process KH with the missing index.
 
         Parameters
         ----------
         KH: 3-D array of shape(n_samples, n_samples, kernels)
-        S: tuple of shape (n_views)
+        S: tuple of shape (n_mods)
             - S[i]['indx']: array of missing values column
 
         Returns
         -------
-        KH2: 3-D array of shape (n_samples, n_samples, n_views)
+        KH2: 3-D array of shape (n_samples, n_samples, n_mods)
         """
         num = KH.shape[0]
         numker = KH.shape[2]
@@ -302,14 +301,14 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         return KH2
 
 
-    def my_comb_fun(self, Y, beta):
+    def _my_comb_fun(self, Y, beta):
         r"""
         Process data with beta values
 
         Parameters
         ----------
         Y: 3-D array of shape(n_samples, n_samples, kernels)
-        beta: list of float (len=n_views)
+        beta: list of float (len=n_mods)
 
         Returns
         -------
@@ -325,7 +324,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         return cF
 
 
-    def my_kernal_kmeans(self, K, n_clusters):
+    def _my_kernal_kmeans(self, K, n_clusters):
         r"""
         Determines eigenvectors.
 
@@ -346,18 +345,18 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         return H_normalized
 
 
-    def update_WP_absent_clustering_V1(self, HP, Hstar):
+    def _update_WP_absent_clustering_V1(self, HP, Hstar):
         r"""
         Update the WP variable.
 
         Parameters
         ----------
-        HP: 3-D array of shape (n_samples, n_clusters, n_views)
+        HP: 3-D array of shape (n_samples, n_clusters, n_mods)
         Hstar: 2-D array of shape (n_samples, n_clusters)
 
         Returns
         -------
-        WP: 3-d array of shape (n_clusters, n_clusters, n_views)
+        WP: 3-d array of shape (n_clusters, n_clusters, n_mods)
         """
         k = HP.shape[1]
         numker = HP.shape[2]
@@ -371,7 +370,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         return WP
 
 
-    def update_HP_absent_clustering_OrthHp(self, WP, Hstar, S, HP00):
+    def _update_HP_absent_clustering_OrthHp(self, WP, Hstar, S, HP00):
         r"""
         Update the HP variable.
 
@@ -411,7 +410,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         return HP
 
 
-    def update_beta_absent_clustering(self, HP, WP, Hstar, qnorm):
+    def _update_beta_absent_clustering(self, HP, WP, Hstar, qnorm):
         r"""
         Update the beta variable
 
@@ -436,7 +435,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         return beta
 
 
-    def incomplete_late_fusion_MKCOrthHp_lamba(self, KH, S, n_clusters, qnorm, lambda_reg):
+    def _incomplete_late_fusion_MKCOrthHp_lamba(self, KH, S, n_clusters, qnorm, lambda_reg):
         r"""
         Runs the EEIMVC clustering algorithm.
 
@@ -461,12 +460,12 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         num = KH.shape[1]
         numker = KH.shape[2]
         maxIter = 100
-        HP, WP = self.my_initialization_Hp(KH, S, n_clusters)
+        HP, WP = self._my_initialization_Hp(KH, S, n_clusters)
         HP00 = HP
         beta = np.ones(shape=(numker, 1)) * (1/numker)**(1/qnorm)
-        KA = self.algorithm2(KH, S)
-        KC = self.my_comb_fun(KA, beta)
-        H0 = self.my_kernal_kmeans(KC, n_clusters)
+        KA = self._algorithm2(KH, S)
+        KC = self._my_comb_fun(KA, beta)
+        H0 = self._my_kernal_kmeans(KC, n_clusters)
 
         flag = 1
         iter = 0
@@ -483,9 +482,9 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
             V = Vh.T.conj()
 
             Hstar = Uh @ V.T
-            WP = self.update_WP_absent_clustering_V1(HP, Hstar)
-            HP = self.update_HP_absent_clustering_OrthHp(WP, Hstar, S, HP00)
-            beta = self.update_beta_absent_clustering(HP, WP, Hstar, qnorm)
+            WP = self._update_WP_absent_clustering_V1(HP, Hstar)
+            HP = self._update_HP_absent_clustering_OrthHp(WP, Hstar, S, HP00)
+            beta = self._update_beta_absent_clustering(HP, WP, Hstar, qnorm)
 
             RpHpwp = np.zeros(shape=(num, n_clusters))
             for p in range(numker):

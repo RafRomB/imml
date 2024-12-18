@@ -29,9 +29,6 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
     anchor graph. The anchor graph construction and a structure alignment are jointly optimized to enhance
     clustering quality.
 
-    It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
-    this algorithm.
-
     Parameters
     ----------
     n_clusters : int, default=8
@@ -64,7 +61,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
     A_ : array-like of shape (n_clusters, n_clusters)
         Learned anchors.
     Z_ : array-like of shape (n_clusters, n_samples)
-        View-specific anchor graph.
+        modality-specific anchor graph.
     loss_ : array-like of shape (n_iter_,)
         Values of the loss function.
     n_iter_ : int
@@ -78,15 +75,12 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import SIMCADC
-    >>> from imml.preprocessing import NormalizerNaN, MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = SIMCADC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, lambda_parameter: float = 1, n_anchors: int = None,
@@ -131,9 +125,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -189,7 +183,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
             if self.random_state is not None:
                 np.random.seed(self.random_state)
-            u, v, a, w, z, iter, obj = self.SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
+            u, v, a, w, z, iter, obj = self._SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
                                                      self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
                                                      mean_view_profile, self.beta, self.gamma)
 
@@ -211,9 +205,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -231,9 +225,9 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -253,7 +247,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
 
 
-    def eproj_simplex_new(self, v, k=1):
+    def _eproj_simplex_new(self, v, k=1):
         r"""
         Adjust the v variable if needed.
 
@@ -297,13 +291,13 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             return v0
 
 
-    def SIMC(self, Y, num_sample, lambda_parameter, n_clusters, n_anchors, N, Ne, E, beta, gamma):
+    def _SIMC(self, Y, num_sample, lambda_parameter, n_clusters, n_anchors, N, Ne, E, beta, gamma):
         r"""
         Runs the SIMCADC algorithm.
 
         Parameters
         ----------
-        Y: list of array-likes of length (n_views)
+        Y: list of array-likes of length (n_mods)
             - Y[i] shape: (n_samples, n_features_i)
         num_sample: int
             Number of samples
@@ -313,11 +307,11 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             The number of clusters to generate.
         n_anchors : int, default=None
             Number of anchors. If None, use n_clusters.
-        N: list of arrays-likes of length (n_views)
+        N: list of arrays-likes of length (n_mods)
             - N[i] shape: (missing_view_columns, n_features_i)
-        Ne: list of arrays-likes of length (n_views)
-            Number of missing view columns
-        E: list of arrays-likes of length (n_views)
+        Ne: list of arrays-likes of length (n_mods)
+            Number of missing modality columns
+        E: list of arrays-likes of length (n_mods)
             - E[i] shape: (n_features_i, missing_view_columns)
         beta: float, default=1.0
         gamma: float, default=1.0
@@ -390,7 +384,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
                 C1 = C1.T
                 for ii in range(num_sample):
                     ut = C1[:, ii] / C2
-                    Z[iv][:, ii] = self.eproj_simplex_new(ut)
+                    Z[iv][:, ii] = self._eproj_simplex_new(ut)
 
             # Update Z_final
             C3 = sum(gamma * np.matmul(Z[iv].T, R[iv].T) for iv in range(num_view))
@@ -398,7 +392,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             C4 = num_view * gamma + 1
             for ii in range(num_sample):
                 ut = C3[:, ii] / C4
-                Z_final[:, ii] = self.eproj_simplex_new(ut)
+                Z_final[:, ii] = self._eproj_simplex_new(ut)
 
             # Update E
             for iv in range(num_view):

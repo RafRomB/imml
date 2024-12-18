@@ -12,7 +12,9 @@ class DFMF(TransformerMixin, BaseEstimator):
     Data Fusion by Matrix Factorization (DFMF).
 
     DMFM is a data fusion approach with penalized matrix tri-factorization (DFMF) that simultaneously factorizes
-    data matrices to reveal hidden associations. This method can deal with both view- and single-wise missing.
+    data matrices to reveal hidden associations.
+
+    This method can deal with both block- and single-wise missing.
 
     Parameters
     ----------
@@ -63,19 +65,13 @@ class DFMF(TransformerMixin, BaseEstimator):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.decomposition import DFMF
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> from sklearn.cluster import KMeans
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = DFMF(n_components = 5).set_output(transform="pandas")
-    >>> estimator = KMeans(n_clusters = 3)
-    >>> pipeline = make_pipeline(MultiViewTransformer(StandardScaler().set_output(transform="pandas")), transformer, StandardScaler(), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> transformer = DFMF(n_components = 5)
+    >>> transformed_Xs = transformer.fit_transform(Xs)
     """
-
 
     def __init__(self, n_components : int = 10, max_iter: int = 100, init_type: Union[str, list] = 'random_c', n_run: int = 1,
                  stopping=None, stopping_system=None, verbose=0, compute_err=False, callback=None,
@@ -120,9 +116,9 @@ class DFMF(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -150,9 +146,9 @@ class DFMF(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

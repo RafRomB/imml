@@ -2,28 +2,26 @@ import pandas as pd
 import numpy as np
 from sklearn.impute import SimpleImputer
 
-from ..decomposition import jNMF
+from ..decomposition import JNMF
 
 
-class jNMFImputer(jNMF):
+class JNMFImputer(JNMF):
     r"""
-    Impute missing data in multi-view datasets using the Joint Non-negative Matrix Factorization (jNMF) method.
+    Impute missing data in a dataset using the `JNMF` method.
 
-    By decomposing the dataset into joint low-dimensional representations, this method can effectively fill in
-    incomplete samples in a way that leverages shared structure across different data views. It supports both
-    block-wise and feature-wise missing data imputation.
+    This class extends the `JNMF` class to provide functionality for filling in incomplete samples by
+    addressing both block-wise and feature-wise missing data. As a subclass of JNMF, `JNMFImputer` inherits all
+    input parameters and attributes from `JNMF`. Consequently, it uses the same `fit` method as DFMF JNMF
+    training the model.
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
-    >>> from imml.feature_selection import jNMFFeatureSelector
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.preprocessing import MinMaxScaler
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = jNMFFeatureSelector(n_components = 5).set_output(transform="pandas")
-    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer)
-    >>> transformed_Xs = pipeline.fit_transform(Xs)
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from imml.impute import JNMFImputer
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> transformer = JNMFImputer(n_components = 5)
+    >>> labels = transformer.fit_transform(Xs)
     """
 
 
@@ -34,19 +32,19 @@ class jNMFImputer(jNMF):
 
     def transform(self, Xs):
         r"""
-        Project data into the learned space.
+        Impute unseen data.
 
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_components)
-            The projected data.
+        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
+            The transformed data with filled missing samples.
         """
         transformed_Xs = [np.dot(transformed_X + V, H.T)
                           for transformed_X,V,H in zip(super().transform(Xs), self.V_, self.H_)]
@@ -59,7 +57,7 @@ class jNMFImputer(jNMF):
 
     def fit_transform(self, Xs, y = None, **fit_params):
         r"""
-        Fit to data, then transform it.
+        Fit to data, then impute them.
 
         Parameters
         ----------
@@ -75,7 +73,7 @@ class jNMFImputer(jNMF):
         Returns
         -------
         transformed_X : array-likes of shape (n_samples, n_components)
-            The projected data.
+            The transformed data with filled missing samples.
         """
 
         if self.filling:

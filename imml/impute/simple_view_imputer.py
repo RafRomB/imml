@@ -2,7 +2,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from ..impute import get_observed_view_indicator
+from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
 
@@ -13,14 +13,14 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     value : str, optional (default='mean')
-        The method to use for filling missing views. Possible values:
-        - 'mean': replace missing samples with the mean of each feature in the corresponding view.
+        The method to use for filling missing modalities. Possible values:
+        - 'mean': replace missing samples with the mean of each feature in the corresponding modality.
         - 'zeros': replace missing samples with zeros.
 
     Attributes
     ----------
-    features_view_mean_list_ : array-like of shape (n_views,)
-        The mean value of each feature in the corresponding view, if value='mean'
+    features_view_mean_list_ : array-like of shape (n_mods,)
+        The mean value of each feature in the corresponding modality, if value='mean'
     Example
     --------
     >>> from imml.datasets import LoadDataset
@@ -49,9 +49,9 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
                 Not used, present here for API consistency by convention.
 
@@ -75,9 +75,9 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -92,7 +92,7 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
             features = [X.columns for X in Xs]
             dtypes = [X.dtypes.to_dict() for X in Xs]
             Xs = [X.values for X in Xs]
-        observed_view_indicator = get_observed_view_indicator(Xs = Xs)
+        observed_view_indicator = get_observed_mod_indicator(Xs = Xs)
         n_samples = len(observed_view_indicator)
 
         transformed_Xs = []
@@ -118,14 +118,14 @@ def simple_view_imputer(Xs : list, y = None, value : str = 'mean'):
     Parameters
     ----------
     Xs : list of array-likes
-        - Xs length: n_views
+        - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features)
-        A list of different views.
+        A list of different modalities.
     y : Ignored
             Not used, present here for API consistency by convention.
     value : str, optional (default='mean')
-        The method to use for filling missing views. Possible values:
-        - 'mean': replace missing samples with the mean of each feature in the corresponding view.
+        The method to use for filling missing modalities. Possible values:
+        - 'mean': replace missing samples with the mean of each feature in the corresponding modality.
         - 'zeros': replace missing samples with zeros.
 
     Returns
@@ -140,7 +140,7 @@ def simple_view_imputer(Xs : list, y = None, value : str = 'mean'):
         features = [X.columns for X in Xs]
         dtypes = [X.dtypes.to_dict() for X in Xs]
         Xs = [X.values for X in Xs]
-    observed_view_indicator = get_observed_view_indicator(Xs=Xs)
+    observed_view_indicator = get_observed_mod_indicator(Xs=Xs)
     n_samples = len(observed_view_indicator)
 
     transformed_Xs = []

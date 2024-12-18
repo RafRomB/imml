@@ -16,12 +16,12 @@ class MOFA(TransformerMixin, BaseEstimator):
     Multi-Omics Factor Analysis (MOFA).
 
     MOFA is a factor analysis model that provides a general framework for the integration of (originally, multi-omic
-    data sets) incomplete multi-view datasets, in an unsupervised fashion. Intuitively, MOFA can be viewed as a
-    versatile and statistically rigorous generalization of principal component analysis to multi-views data. Given
-    several data matrices with measurements of multiple -views data types on the same or on overlapping sets of
+    data sets) incomplete multi-modal datasets, in an unsupervised fashion. Intuitively, MOFA can be viewed as a
+    versatile and statistically rigorous generalization of principal component analysis to multi-modal data. Given
+    several data matrices with measurements of multiple data types on the same or on overlapping sets of
     samples, MOFA infers an interpretable low-dimensional representation in terms of a few latent factors.
 
-    It can deal with both view- and feature-wise missing and impute them.
+    It can deal with both modality- and feature-wise missing.
 
     Parameters
     ----------
@@ -54,7 +54,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         Entry point as the original library. This can be used for data analysis and explainability.
     factors_: array-like of shape (n_samples, n_components)
         Factors computed by the model.
-    weights_: list of n_views array-likes of shape (n_features_i, n_components)
+    weights_: list of n_mods array-likes of shape (n_features_i, n_components)
         Weights of the MOFA model.
 
     References
@@ -69,11 +69,12 @@ class MOFA(TransformerMixin, BaseEstimator):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.decomposition import MOFA
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> pipeline = MOFA().fit(Xs)
-    >>> transformed_Xs = pipeline.transform(Xs)
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> transformer = MOFA(n_components = 5)
+    >>> transformed_Xs = transformer.fit_transform(Xs)
     """
 
     
@@ -127,9 +128,9 @@ class MOFA(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -166,13 +167,13 @@ class MOFA(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
 
         Returns
         -------
-        transformed_Xs : list of n_views array-likes of shape (n_samples, n_components)
+        transformed_Xs : list of n_mods array-likes of shape (n_samples, n_components)
             The projected data.
         """
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
@@ -195,7 +196,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
         y : Ignored

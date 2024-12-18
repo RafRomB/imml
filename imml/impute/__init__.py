@@ -1,6 +1,6 @@
-from .missing_view_indicator import MissingViewIndicator, get_missing_view_indicator
-from .observed_view_indicator import ObservedViewIndicator, get_observed_view_indicator
+from .missing_mod_indicator import MissingModIndicator, get_missing_mod_indicator
+from .observed_mod_indicator import ObservedModIndicator, get_observed_mod_indicator
 from .simple_view_imputer import SimpleViewImputer, simple_view_imputer
 from .mofa_imputer import MOFAImputer
-from .jnmf_imputer import jNMFImputer
+from .jnmf_imputer import JNMFImputer
 from .dfmf_imputer import DFMFImputer

@@ -1,7 +1,7 @@
 import pandas as pd
 from sklearn.preprocessing import FunctionTransformer
 
-from ..impute import get_observed_view_indicator, get_missing_view_indicator
+from ..impute import get_observed_mod_indicator, get_missing_mod_indicator
 from ..utils import check_Xs
 
 
@@ -55,7 +55,7 @@ def select_incomplete_samples(Xs: list):
     pandas_format = isinstance(Xs[0], pd.DataFrame)
     if not pandas_format:
         Xs = [pd.DataFrame(X) for X in Xs]
-    sample_views = get_missing_view_indicator(Xs)
+    sample_views = get_missing_mod_indicator(Xs)
     complete_samples = sample_views.any(axis= 1)
     transformed_Xs = [X.loc[complete_samples] for X in Xs]
     if not pandas_format:

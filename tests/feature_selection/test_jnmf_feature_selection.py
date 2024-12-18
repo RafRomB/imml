@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 
 from imml.ampute import Amputer
-from imml.feature_selection import jNMFFeatureSelector
+from imml.feature_selection import JNMFFeatureSelector
 
 try:
     rpy2_installed = True
@@ -21,7 +21,7 @@ def sample_data():
 
 def test_default_params(sample_data):
     if rpy2_installed:
-        transformer = jNMFFeatureSelector(random_state=42)
+        transformer = JNMFFeatureSelector(random_state=42)
         for Xs in sample_data:
             transformer.fit(Xs)
             assert hasattr(transformer, 'selected_features_')
@@ -32,7 +32,7 @@ def test_default_params(sample_data):
 def test_fit(sample_data):
     n_components = 5
     if rpy2_installed:
-        transformer = jNMFFeatureSelector(n_components=n_components, max_iter=10, random_state=42)
+        transformer = JNMFFeatureSelector(n_components=n_components, max_iter=10, random_state=42)
         for Xs in sample_data:
             transformer.fit(Xs)
             assert hasattr(transformer, 'selected_features_')
@@ -43,7 +43,7 @@ def test_fit(sample_data):
 def test_transform(sample_data):
     n_components = 5
     if rpy2_installed:
-        transformer = jNMFFeatureSelector(n_components=n_components, random_state=42)
+        transformer = JNMFFeatureSelector(n_components=n_components, random_state=42)
         for Xs in sample_data:
             n_samples = len(Xs[0])
             transformer.fit(Xs)
@@ -55,7 +55,7 @@ def test_param_selectby(sample_data):
     n_components = 5
     if rpy2_installed:
         for select_by in ["max", "component", "average"]:
-            transformer = jNMFFeatureSelector(n_components=n_components, select_by=select_by,
+            transformer = JNMFFeatureSelector(n_components=n_components, select_by=select_by,
                                               random_state=42)
             for Xs in sample_data:
                 n_samples = len(Xs[0])
@@ -70,7 +70,7 @@ def test_param_selectby(sample_data):
 def test_missing_values_handling(sample_data):
     n_components = 5
     if rpy2_installed:
-        transformer = jNMFFeatureSelector(n_components=n_components, random_state=42)
+        transformer = JNMFFeatureSelector(n_components=n_components, random_state=42)
         for Xs in sample_data:
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
             n_samples = len(Xs[0])
@@ -84,7 +84,7 @@ def test_missing_values_handling(sample_data):
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid select_by"):
-        jNMFFeatureSelector(select_by="invalid")
+        JNMFFeatureSelector(select_by="invalid")
 
 
 if __name__ == "__main__":

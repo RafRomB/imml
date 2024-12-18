@@ -8,7 +8,7 @@ from snf import compute
 from pyrea import clusterer, view, fuser, execute_ensemble, consensus
 
 from imml.cluster import MRGCN
-from imml.data_loader import MRGCNDataset
+from imml.load import MRGCNDataset
 from imml.preprocessing import MultiViewTransformer
 
 from src.utils import Utils
@@ -36,7 +36,7 @@ class Model:
         self.method = alg_name.lower() if alg_name in ["SNF", "IntNMF", "COCA", "Parea", "MRGCN"]\
             else "sklearn_method"
         self.method = eval(f"self.{self.method.lower()}")
-        self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "jNMF"]\
+        self.framework = alg_name.lower() if alg_name in ["GPCA", "AJIVE", "NMF", "DFMF", "MOFA", "JNMF"]\
             else "standard"
         self.framework = eval(f"self.{self.framework.lower()}")
         self.alg = alg

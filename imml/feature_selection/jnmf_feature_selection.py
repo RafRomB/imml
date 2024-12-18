@@ -1,16 +1,16 @@
 import pandas as pd
 import numpy as np
 
-from ..decomposition import jNMF
+from ..decomposition import JNMF
 
 
-class jNMFFeatureSelector(jNMF):
+class JNMFFeatureSelector(JNMF):
     r"""
-    Feature selection for multi-view datasets using the Joint Non-negative Matrix Factorization (jNMF) method.
+    Feature selection for multi-view datasets using the Joint Non-negative Matrix Factorization (JNMF) method.
 
-    This class extends the functionality of the `jNMF` method to perform feature selection across multiple views or
+    This class extends the functionality of the `JNMF` method to perform feature selection across multiple views or
     blocks of data. The selected features are those with the highest contributions to the derived components from
-    jNMF. This feature selection can be based on either the largest contribution for each component, the maximum
+    JNMF. This feature selection can be based on either the largest contribution for each component, the maximum
     overall contribution, or the average contribution across all components.
 
     Parameters
@@ -27,7 +27,7 @@ class jNMFFeatureSelector(jNMF):
         - If `select_by="average"`, it selects `n_components`*`f_per_component` features with the highest
             average contribution for each component.
     kwargs : dict
-        Arguments passed to the `jNMF` method.
+        Arguments passed to the `JNMF` method.
 
     Attributes
     ----------
@@ -35,7 +35,7 @@ class jNMFFeatureSelector(jNMF):
         List of selected features.
     weights_ : list of float of shape (n_components * f_per_component,)
         The importance or contribution scores of the selected features in absolute values. These scores reflect how
-        strongly each feature contributes to the components derived from jNMF.
+        strongly each feature contributes to the components derived from JNMF.
 
     References
     ----------
@@ -52,20 +52,17 @@ class jNMFFeatureSelector(jNMF):
                      on Latent Variable Analysis and Signal Separation 346-353.
     .. [#jnmfpaper6] N. Fujita et al., (2018) Biomarker discovery by integrated joint non-negative matrix factorization
                      and pathway signature analyses, Scientific Report.
-    .. [#jnmfcode1] https://rdrr.io/cran/nnTensor/man/jNMF.html
+    .. [#jnmfcode1] https://rdrr.io/cran/nnTensor/man/JNMF.html
     .. [#jnmfcode2] https://github.com/rikenbit/nnTensor
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
-    >>> from imml.feature_selection import jNMFFeatureSelector
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.preprocessing import MinMaxScaler
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = jNMFFeatureSelector(n_components = 5).set_output(transform="pandas")
-    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer)
-    >>> transformed_Xs = pipeline.fit_transform(Xs)
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from imml.feature_selection import JNMFFeatureSelector
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).uniform(size=(20, 10))) for i in range(3)]
+    >>> transformer = JNMFFeatureSelector(n_components = 5)
+    >>> transformed_Xs = transformer.fit_transform(Xs)
     """
 
 
@@ -86,9 +83,9 @@ class jNMFFeatureSelector(jNMF):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -142,9 +139,9 @@ class jNMFFeatureSelector(jNMF):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

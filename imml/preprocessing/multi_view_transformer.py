@@ -16,7 +16,7 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    transformer_list_ : list of preprocessing (n_views,)
+    transformer_list_ : list of preprocessing (n_mods,)
         A list of preprocessing, one for each view of data.
     same_transformer_ : boolean
         A booleaing indicating if the same transformer will be applied on each view of data.
@@ -58,9 +58,9 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
 
@@ -84,9 +84,9 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

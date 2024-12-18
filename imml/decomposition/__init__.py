@@ -1,3 +1,3 @@
 from .dfmf import DFMF
-from .jnmf import jNMF
+from .jnmf import JNMF
 from .mofa import MOFA

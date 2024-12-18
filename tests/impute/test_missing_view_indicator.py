@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imml.impute import MissingViewIndicator, get_missing_view_indicator
+from imml.impute import MissingModIndicator, get_missing_mod_indicator
 
 
 @pytest.fixture
@@ -22,12 +22,12 @@ def sample_data():
 def test_get_missing_view_indicator(sample_data):
     observed_view_indicator = sample_data[-1]
     for Xs in sample_data[:2]:
-        indicator = get_missing_view_indicator(Xs)
+        indicator = get_missing_mod_indicator(Xs)
         np.equal(indicator, observed_view_indicator)
 
 def test_missing_view_indicator_class(sample_data):
     observed_view_indicator = sample_data[-1]
     for Xs in sample_data[:2]:
-        transformer = MissingViewIndicator()
+        transformer = MissingModIndicator()
         indicator = transformer.fit_transform(Xs)
         np.equal(indicator, observed_view_indicator)

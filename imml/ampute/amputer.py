@@ -142,10 +142,10 @@ class Amputer(BaseEstimator, TransformerMixin):
         samples_to_fix = mask.nunique(axis=1).eq(1)
         if samples_to_fix.any():
             samples_to_fix = samples_to_fix[samples_to_fix]
-            views_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_mods,
+            mods_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_mods,
                                                                              size=len(samples_to_fix))
-            for view_idx in np.unique(views_to_fix):
-                samples = views_to_fix == view_idx
+            for view_idx in np.unique(mods_to_fix):
+                samples = mods_to_fix == view_idx
                 samples = samples_to_fix[samples].index
                 mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool)).astype(int)
 
@@ -181,12 +181,12 @@ class Amputer(BaseEstimator, TransformerMixin):
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        if self.n_mods == 2:
+        n_incomplete_modalities = np.random.default_rng(self.random_state).choice(
+            np.arange(1, self.n_mods), size=1)[0]
+        if (self.n_mods == 2) or (n_incomplete_modalities == 1):
             col = np.random.default_rng(self.random_state).choice(self.n_mods)
             pseudo_observed_view_indicator.loc[idxs_to_remove, col] = 0
         else:
-            n_incomplete_modalities = np.random.default_rng(self.random_state).choice(
-                np.arange(1, self.n_mods), size=1)[0]
             mask = np.random.default_rng(self.random_state).choice(2,
                                                                    size=(len(idxs_to_remove), n_incomplete_modalities))
             mask = pd.DataFrame(mask, index=idxs_to_remove,
@@ -196,9 +196,9 @@ class Amputer(BaseEstimator, TransformerMixin):
             samples_to_fix = mask.nunique(axis=1).eq(1)
             if samples_to_fix.any():
                 samples_to_fix = samples_to_fix[samples_to_fix]
-                views_to_fix = np.random.default_rng(self.random_state).choice(mask.columns, size=len(samples_to_fix))
-                for view_idx in np.unique(views_to_fix):
-                    samples = views_to_fix == view_idx
+                mods_to_fix = np.random.default_rng(self.random_state).choice(mask.columns, size=len(samples_to_fix))
+                for view_idx in np.unique(mods_to_fix):
+                    samples = mods_to_fix == view_idx
                     samples = samples_to_fix[samples].index
                     mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool)).astype(int)
             pseudo_observed_view_indicator.loc[idxs_to_remove, mask.columns] = mask.astype(int)

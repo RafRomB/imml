@@ -7,7 +7,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from scipy.sparse.linalg import eigs
 
-from ..impute import get_observed_view_indicator
+from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -25,9 +25,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
     IMSR performs feature extraction, imputation and self-representation learning to obtain a low-rank regularized
     consensus coefficient matrix.
-
-    It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
-    this algorithm.
 
     Parameters
     ----------
@@ -70,15 +67,12 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import IMSR
-    >>> from imml.preprocessing import NormalizerNaN, MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = IMSR(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, lbd : float = 1, gamma: float = 1, random_state:int = None,
@@ -123,9 +117,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -137,7 +131,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
-        observed_view_indicator = get_observed_view_indicator(Xs)
+        observed_view_indicator = get_observed_mod_indicator(Xs)
         if isinstance(observed_view_indicator, pd.DataFrame):
             observed_view_indicator = observed_view_indicator.reset_index(drop=True)
         observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in observed_view_indicator.items()]
@@ -171,9 +165,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -191,9 +185,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -220,9 +214,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-        Im : array of shape (n_views, columns_with_missing_values)
+        Im : array of shape (n_mods, columns_with_missing_values)
         n_cluters : int
             The number of clusters.
         lbd : float, default=1
@@ -272,9 +266,9 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : list of array-likes
-            - X length: n_views
+            - X length: n_mods
             - X[i] shape: (n_samples, n_features_i)
-        beta : list of n_views values
+        beta : list of n_mods values
         lbd : float, default=1
             Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
 
@@ -325,10 +319,10 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
         F : list of array-likes of shape (n_clusters, n_samples)
-        beta : list of n_views values
+        beta : list of n_mods values
         lbd : float, default=1
             Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
         gamma : float, default=1
@@ -374,15 +368,15 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-        Im : array of shape (n_views, columns_with_missing_values)
+        Im : array of shape (n_mods, columns_with_missing_values)
         Z : list of array-likes of shape (n_samples, n_samples)
 
         Returns
         -------
         X : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
         """
         V = len(X)

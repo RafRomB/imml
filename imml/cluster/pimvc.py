@@ -4,7 +4,7 @@ import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..impute import get_observed_view_indicator
+from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -20,16 +20,13 @@ class PIMVC(BaseEstimator, ClassifierMixin):
     r"""
     Projective Incomplete Multi-View Clustering (PIMVC).
 
-    The objective of PIMVC is to simultaneously discover the projection matrix for each view and establish a unified
+    The objective of PIMVC is to simultaneously discover the projection matrix for each modality and establish a unified
     feature representation shared across incomplete multiple views, facilitating clustering. Essentially, PIMVC
-    transforms the traditional multi-view matrix factorization model into a multi-view projection learning model. By
-    consolidating various view-specific objective losses into a cohesive subspace of equal dimensions, it adeptly
-    handles the challenge where a single view might overly influence consensus representation learning due to
+    transforms the traditional multi-modality matrix factorization model into a multi-modality projection learning model. By
+    consolidating various modality-specific objective losses into a cohesive subspace of equal dimensions, it adeptly
+    handles the challenge where a single modality might overly influence consensus representation learning due to
     imbalanced information across views stemming from diverse dimensions. Furthermore, to capture the data geometric
     structure, PIMVC incorporates a penalty term for graph regularization.
-
-    It is recommended to normalize (Normalizer or NormalizerNaN in case incomplete views) the data before applying
-    this algorithm.
 
     Parameters
     ----------
@@ -77,15 +74,12 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import PIMVC
-    >>> from imml.preprocessing import NormalizerNaN, MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = NormalizerNaN().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = PIMVC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, dele: float = 0.1, lamb: int = 100000, beta: int = 1, k: int = 3,
@@ -136,9 +130,9 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -156,7 +150,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
         if self.engine=="matlab":
 
-            observed_view_indicator = get_observed_view_indicator(Xs)
+            observed_view_indicator = get_observed_mod_indicator(Xs)
             if isinstance(observed_view_indicator, pd.DataFrame):
                 observed_view_indicator = observed_view_indicator.values
             transformed_Xs = tuple([X.T for X in Xs])
@@ -188,9 +182,9 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -208,9 +202,9 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

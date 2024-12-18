@@ -10,7 +10,7 @@ class LoadDataset:
     @staticmethod
     def load_dataset(dataset_name: str, return_y: bool = False, return_metadata: bool = False):
         r"""
-        Load a multi-view dataset.
+        Load a multi-modal dataset.
 
         Parameters
         ----------
@@ -25,9 +25,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -69,9 +69,9 @@ class LoadDataset:
         r"""
         The BBCSport dataset comprises five kinds of sports news articles (i.e., athletics, cricket, football, rugby
         tennis) collected from the BBC Sport website. This specific subset includes 116 samples and is
-        represented by four different views.
+        represented by four different modalities.
 
-        Samples: 116; Views: 4; Features: [1991, 2063, 2113, 2158]; Clusters: 5.
+        Samples: 116; modalities: 4; Features: [1991, 2063, 2113, 2158]; Clusters: 5.
 
         Parameters
         ----------
@@ -83,9 +83,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -119,7 +119,7 @@ class LoadDataset:
         containing 2,500 samples featuring five distinct objects. Each sample within this dataset is characterized
         by a 1750-dimensional visual feature and a 79-dimensional textual feature.
 
-        Samples: 2500; Views: 2; Features: [1750, 79]; Clusters: 5.
+        Samples: 2500; modalities: 2; Features: [1750, 79]; Clusters: 5.
 
         Parameters
         ----------
@@ -131,9 +131,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -175,9 +175,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -221,9 +221,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -268,9 +268,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -315,9 +315,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -358,9 +358,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -405,9 +405,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -452,9 +452,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -493,9 +493,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -533,9 +533,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -575,9 +575,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -620,9 +620,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -663,9 +663,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -709,9 +709,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional
@@ -753,9 +753,9 @@ class LoadDataset:
         Returns
         -------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
         metadata : optional

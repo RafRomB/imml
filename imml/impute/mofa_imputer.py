@@ -16,14 +16,12 @@ class MOFAImputer(MOFA):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.impute import MOFAImputer
-    >>> from imml.ampute import Amputer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> amp = Amputer(p=0.3, random_state=42)
-    >>> Xs = amp.fit_transform(Xs)
-    >>> transformer = MOFAImputer()
-    >>> transformer.fit_transform(Xs)
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> transformer = MOFAImputer(n_components = 5)
+    >>> labels = transformer.fit_transform(Xs)
     """
 
 
@@ -35,12 +33,16 @@ class MOFAImputer(MOFA):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
+            - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
+        y : Ignored
+            Not used, present here for API consistency by convention.
+        fit_params : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
+        transformed_X : array-likes of shape (n_samples, n_components)
             The transformed data with filled missing samples.
         """
 

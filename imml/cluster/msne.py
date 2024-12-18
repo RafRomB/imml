@@ -13,7 +13,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
     Multiple Similarity Network Embedding (MSNE).
 
     Created originally as a partial multi-omics integrative method for cancer subtyping, MSNE integrates the
-    multi-views information by embedding the neighbor relations of samples defined by the random walk on multiple
+    multi-modal information by embedding the neighbor relations of samples defined by the random walk on multiple
     similarity networks.
 
     Parameters
@@ -37,7 +37,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
     n_jobs : int (default=1)
         The number of jobs to run in parallel. None means 1 unless in a joblib.parallel_backend context. -1 means
         using all processors.
-.
+
     Attributes
     ----------
     labels_ : array-like of shape (n_samples,)
@@ -53,16 +53,12 @@ class MSNE(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> from imml.preprocessing import MultiViewTransformer
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import MSNE
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = StandardScaler().set_output(transform="pandas")
-    >>> estimator = MSNE(n_clusters = 3)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> estimator = MSNE(n_clusters = 2)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, k: int = 20, walk_length: int = 20, num_walks: int = 100,
@@ -91,9 +87,9 @@ class MSNE(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
 
@@ -135,9 +131,9 @@ class MSNE(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -156,9 +152,9 @@ class MSNE(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------

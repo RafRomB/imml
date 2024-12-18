@@ -6,23 +6,21 @@ from ..utils import check_Xs
 
 class DFMFImputer(DFMF):
     r"""
-    Impute missing data in multi-view datasets using the Joint Non-negative Matrix Factorization (jNMF) method.
+    Impute missing data in a dataset using the `DFMF` method.
 
-    By decomposing the dataset into joint low-dimensional representations, this method can effectively fill in
-    incomplete samples in a way that leverages shared structure across different data views. It supports both
-    block-wise and feature-wise missing data imputation.
+    This class extends the `DFMF` class to provide functionality for filling in incomplete samples by
+    addressing both block-wise and feature-wise missing data. As a subclass of DFMF, `DFMFImputer` inherits all
+    input parameters and attributes from `DFMF`. Consequently, it uses the same `fit` method as DFMF for
+    training the model.
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
-    >>> from imml.feature_selection import jNMFFeatureSelector
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from sklearn.preprocessing import MinMaxScaler
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = jNMFFeatureSelector(n_components = 5).set_output(transform="pandas")
-    >>> pipeline = make_pipeline(MultiViewTransformer(MinMaxScaler().set_output(transform="pandas")), transformer)
-    >>> transformed_Xs = pipeline.fit_transform(Xs)
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from imml.impute import DFMFImputer
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> transformer = DFMFImputer(n_components = 5)
+    >>> labels = transformer.fit_transform(Xs)
     """
 
 
@@ -38,12 +36,16 @@ class DFMFImputer(DFMF):
         ----------
         Xs : list of array-likes
             - Xs length: n_views
-            - Xs[i] shape: (n_samples, n_features_i)
+            - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
+        y : Ignored
+            Not used, present here for API consistency by convention.
+        fit_params : Ignored
+            Not used, present here for API consistency by convention.
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
+        transformed_X : array-likes of shape (n_samples, n_components)
             The transformed data with filled missing samples.
         """
 

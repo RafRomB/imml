@@ -6,7 +6,7 @@ import shutil
 import numpy as np
 from sklearn.utils import shuffle
 from imml.ampute import Amputer
-from imml.impute import get_observed_view_indicator
+from imml.impute import get_observed_mod_indicator
 
 from settings import PROFILES_PATH, DATASET_TABLE_PATH, RANDOM_STATE, probs, amputation_mechanisms, runs_per_alg
 from src.commons import CommonOperations
@@ -46,7 +46,7 @@ for dataset_name in datasets:
                 amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)
                 train_Xs = amp.fit_transform(train_Xs)
 
-            observed_view_indicator = get_observed_view_indicator(train_Xs)
+            observed_view_indicator = get_observed_mod_indicator(train_Xs)
             try:
                 lower_index = observed_view_indicator.index.astype(np.int16)
                 assert (train_Xs[0].index == lower_index).all()

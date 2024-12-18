@@ -1,27 +1,36 @@
+# -*- coding: utf-8 -*-
+#
 # Configuration file for the Sphinx documentation builder.
 #
-# For the full list of built-in configuration values, see the documentation:
-# https://www.sphinx-doc.org/en/master/usage/configuration.html
+# This file does only contain a selection of the most common options. For a
+# full list see the documentation:
+# http://www.sphinx-doc.org/en/main/config
 
-# -- Project information -----------------------------------------------------
-# https://www.sphinx-doc.org/en/master/usage/configuration.html#project-information
+# -- Path setup --------------------------------------------------------------
 
+# If extensions (or modules to document with autodoc) are in another directory,
+# add these directories to sys.path here. If the directory is relative to the
+# documentation root, use os.path.abspath to make it absolute, like shown here.
+#
 import os
+import re
 import sys
-
-# Use RTD Theme
+from distutils.version import LooseVersion
+import matplotlib
 import sphinx_rtd_theme
+import sphinx_gallery
 
 sys.path.insert(0, os.path.abspath(".."))
 
 # -- Project information -----------------------------------------------------
 
-project = "imvl"
-copyright = "2024"
-authors = u"Alberto Lopez"
+project = 'imml'
+copyright = '2024, '
+authors = ''
+release = '0.1.0'
 
 # The short X.Y version
-# Find version.
+# Find imml version.
 PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 for line in open(os.path.join(PROJECT_PATH, "..", project, "__init__.py")):
     if line.startswith("__version__ = "):
@@ -43,6 +52,12 @@ extensions = [
     "sphinx.ext.intersphinx",
     'sphinx_gallery.gen_gallery',
 ]
+
+if LooseVersion(sphinx_gallery.__version__) < LooseVersion('0.2'):
+    raise ImportError('Must have at least version 0.2 of sphinx-gallery, got '
+                      '%s' % (sphinx_gallery.__version__,))
+
+matplotlib.use('agg')
 
 # -- sphinxcontrib.rawfiles
 #rawfiles = ["CNAME"]
@@ -90,6 +105,7 @@ html_theme_options = {
     "navigation_depth": 3,
     "logo_only": True,
 }
+html_logo = f"./figures/logo_{project}.png"
 
 html_context = {
     # Enable the "Edit in GitHub link within the header of each page.
@@ -115,13 +131,6 @@ html_context = {
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = f"{project}doc"
-
-# -- Options for LaTeX output ------------------------------------------------
-
-
-def setup(app):
-    # to hide/show the prompt in code examples:
-    app.add_js_file("js/copybutton.js")
 
 latex_elements = {
     # The paper size ('letterpaper' or 'a4paper').
@@ -182,10 +191,43 @@ intersphinx_mapping = {
 
 sphinx_gallery_conf = {
     'doc_module': project,
-    'examples_dirs': '../examples',
-    'gallery_dirs': 'auto_examples',
+    'examples_dirs': '../tutorials',
+    'gallery_dirs': 'auto_tutorials',
     'reference_url': {
         project: None,
     },
-    'ignore_pattern': r'noinclude\.py'
+   'ignore_pattern': r'noinclude\.py',
+   'filename_pattern': r'\.py',
+   'capture_repr': ('_repr_html_', '__repr__'),
 }
+
+
+def remove_prefix_from_rst(app, exception):
+    if exception is None:
+        modules_dir = os.path.join(app.srcdir, "modules")
+        files = os.listdir(modules_dir)
+        files = [filename for filename in files if filename != f"{project}.rst"]
+
+        # Process each .rst file in the modules directory
+        for filename in files:
+            filepath = os.path.join(modules_dir, filename)
+
+            if filename.startswith(f"{project}.") and filename.endswith(".rst"):
+                new_filename = filename.replace(f"{project}.", "", 1)
+                os.rename(filepath, os.path.join(modules_dir, new_filename))
+                filepath = os.path.join(modules_dir, new_filename)
+
+            with open(filepath, "r") as file:
+                content = file.read()
+
+            updated_content = re.sub(r"\b{project}\.", "", content)
+
+            # Write the updated content back to the file
+            with open(filepath, "w") as file:
+                file.write(updated_content)
+
+
+# Connect this function to the 'build-finished' event
+def setup(app):
+    app.add_js_file("js/copybutton.js")
+    app.connect("build-finished", remove_prefix_from_rst)

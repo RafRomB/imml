@@ -13,21 +13,21 @@ except ImportError:
     rpy2_module_error = "rpy2 needs to be installed to use r engine."
 
 
-def check_Xs(Xs, enforce_views=None, copy=False, force_all_finite="allow-nan",return_dimensions=False):
+def check_Xs(Xs, enforce_modalities=None, copy=False, force_all_finite="allow-nan",return_dimensions=False):
     r"""
     Checks Xs and ensures it to be a list of 2D matrices.
 
     Parameters
     ----------
     Xs : list of array-likes
-        - Xs length: n_views
+        - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
-        A list of different views.
-    enforce_views : int, (default=not checked)
-        If provided, ensures this number of views in Xs. Otherwise not checked.
+        A list of different modalities.
+    enforce_modalities : int, (default=not checked)
+        If provided, ensures this number of modalities in Xs. Otherwise not checked.
     copy : boolean, (default=False)
         If True, the returned Xs is a copy of the input Xs, and operations on the output will not affect the input.
-        If False, the returned Xs is a view of the input Xs, and operations on the output will change the input.
+        If False, the returned Xs is a modality of the input Xs, and operations on the output will change the input.
     force_all_finite : bool or 'allow-nan', default='allow-nan'
         Whether to raise an error on np.inf, np.nan, pd.NA in array. The possibilities are:
         - True: Force all values of array to be finite.
@@ -35,9 +35,9 @@ def check_Xs(Xs, enforce_views=None, copy=False, force_all_finite="allow-nan",re
         - 'allow-nan': accepts only np.nan and pd.NA values in array. Values
           cannot be infinite.
     return_dimensions : boolean, (default=False)
-        If True, the function also returns the dimensions of the multiview dataset. The dimensions are n_views,
-        n_samples, n_features where n_samples and n_views are respectively the number of views and the number of
-        samples, and n_features is a list of length n_views containing the number of features of each view.
+        If True, the function also returns the dimensions of the multiview dataset. The dimensions are n_mods,
+        n_samples, n_features where n_samples and n_mods are respectively the number of modalities and the number of
+        samples, and n_features is a list of length n_mods containing the number of features of each modality.
 
     References
     ----------
@@ -49,15 +49,15 @@ def check_Xs(Xs, enforce_views=None, copy=False, force_all_finite="allow-nan",re
     -------
     Xs_converted : object
         The converted and validated Xs (list of data arrays).
-    n_views : int
-        The number of views in the dataset. Returned only if
+    n_mods : int
+        The number of modalities in the dataset. Returned only if
         ``return_dimensions`` is ``True``.
     n_samples : int
         The number of samples in the dataset. Returned only if
         ``return_dimensions`` is ``True``.
     n_features : list
-        List of length ``n_views`` containing the number of features in
-        each view. Returned only if ``return_dimensions`` is ``True``.
+        List of length ``n_mods`` containing the number of features in
+        each modality. Returned only if ``return_dimensions`` is ``True``.
     """
     if not isinstance(Xs, list):
         if not isinstance(Xs, np.ndarray):
@@ -69,14 +69,14 @@ def check_Xs(Xs, enforce_views=None, copy=False, force_all_finite="allow-nan",re
         else:
             Xs = list(Xs)
 
-    n_views = len(Xs)
-    if n_views == 0:
+    n_mods = len(Xs)
+    if n_mods == 0:
         msg = "Length of input list must be greater than 0"
         raise ValueError(msg)
 
-    if enforce_views is not None and n_views != enforce_views:
-        msg = "Wrong number of views. Expected {} but found {}".format(
-            enforce_views, n_views
+    if enforce_modalities is not None and n_mods != enforce_modalities:
+        msg = "Wrong number of modalities. Expected {} but found {}".format(
+            enforce_modalities, n_mods
         )
         raise ValueError(msg)
 
@@ -90,7 +90,7 @@ def check_Xs(Xs, enforce_views=None, copy=False, force_all_finite="allow-nan",re
     if return_dimensions:
         n_samples = Xs[0].shape[0]
         n_features = [X.shape[1] for X in Xs]
-        return Xs, n_views, n_samples, n_features
+        return Xs, n_mods, n_samples, n_features
     else:
         return Xs
 

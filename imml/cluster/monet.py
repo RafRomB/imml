@@ -74,8 +74,8 @@ class MONET(BaseEstimator, ClassifierMixin):
     total_weight_ : float
         Sum of the weights (similarity between samples within the module) of all modules.
     view_graphs_ : list of dataframes of shape (n_samples, n_samples)
-        Graph of each view.
-    mod_views_ : list of length n_views.
+        Graph of each modality.
+    mod_views_ : list of length n_mods.
         Views used for each module.
     n_clusters_ : int
         Number of clusters.
@@ -88,9 +88,10 @@ class MONET(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import MONET
-    >>> Xs = LoadDataset.load_dataset("nutrimouse")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = MONET()
     >>> labels = estimator.fit_predict(Xs)
     """
@@ -132,7 +133,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
         y : array-like, shape (n_samples,)
@@ -187,7 +188,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
 
@@ -208,7 +209,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different views.
 
@@ -330,7 +331,7 @@ class MONET(BaseEstimator, ClassifierMixin):
     def _create_env(self, samples, glob_var, data, percentile_remove_edge):
         """
         Create all the variables used during MONET's run:
-        modules, view, etc, and associating them with a Global instance.
+        modules, modality, etc, and associating them with a Global instance.
         """
         all_sam_names = set(samples)
         glob_var.samples = {sample: _Sample(sample) for sample in all_sam_names}

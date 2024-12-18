@@ -51,9 +51,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : np.array
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    WP_ : array-like of shape (n_clusters, n_clusters, n_views)
+    WP_ : array-like of shape (n_clusters, n_clusters, n_mods)
         p-th permutation matrix.
-    HP_ : array-like of shape (n_samples, n_clusters, n_views)
+    HP_ : array-like of shape (n_samples, n_clusters, n_mods)
         missing part of the p-th base clustering matrix.
     loss_ : array-like of shape (n_iter_,)
         Values of the loss function.
@@ -69,16 +69,12 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
 
     Example
     --------
-    >>> from sklearn.pipeline import make_pipeline
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.cluster import LFIMVC
-    >>> from sklearn.preprocessing import StandardScaler
-    >>> from imml.preprocessing import MultiViewTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> normalizer = StandardScaler().set_output(transform="pandas")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = LFIMVC(n_clusters = 2)
-    >>> pipeline = make_pipeline(MultiViewTransformer(normalizer), estimator)
-    >>> labels = pipeline.fit_predict(Xs)
+    >>> labels = estimator.fit_predict(Xs)
     """
 
     def __init__(self, n_clusters: int = 8, kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
@@ -121,9 +117,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
 
@@ -150,7 +146,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
             transformed_Xs = simple_view_imputer(Xs)
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
-            U, WP, HP, obj = self.incomplete_multikernel_late_fusion_clustering(transformed_Xs, self.n_clusters,
+            U, WP, HP, obj = self._incomplete_multikernel_late_fusion_clustering(transformed_Xs, self.n_clusters,
                                                                                 self.lambda_reg)
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
@@ -168,9 +164,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -188,9 +184,9 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different modalities.
 
         Returns
         -------
@@ -244,7 +240,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
     #         KH = KH / np.sqrt(np.matmul(np.diag(KH),np.diag(KH).T))
     #     return KH
 
-    def my_kernel_kmeans(self, K, n_clusters):
+    def _my_kernel_kmeans(self, K, n_clusters):
         r"""
         Determines eigenvectors.
 
@@ -263,18 +259,18 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         H_normalized = H / np.tile(np.sqrt(np.sum(H ** 2, 1)), reps=(n_clusters, 1)).T
         return H_normalized
 
-    def update_wp_absent_clustering_v1(self, HP, Hstar):
+    def _update_wp_absent_clustering_v1(self, HP, Hstar):
         r"""
         Update WP variable.
 
         Parameters
         ----------
-        HP: 3-D array of shape (n_samples, n_clusters, n_views)
+        HP: 3-D array of shape (n_samples, n_clusters, n_mods)
         Hstar: 2-D array of shape (n_samples, n_clusters)
 
         Returns
         -------
-        WP: 3-D array of shape (n_clusters, n_clusters, n_views)
+        WP: 3-D array of shape (n_clusters, n_clusters, n_mods)
         """
         k = HP.shape[1]
         numker = HP.shape[2]
@@ -287,22 +283,22 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
 
         return WP
 
-    def update_hp_absent_clustering_v1(self, WP, Hstar, lambda_reg, HP00):
+    def _update_hp_absent_clustering_v1(self, WP, Hstar, lambda_reg, HP00):
         r"""
         Update HP variable.
 
         Parameters
         ----------
-        WP: 3-D array of shape (n_clusters, n_clusters, n_views)
+        WP: 3-D array of shape (n_clusters, n_clusters, n_mods)
         Hstar: 2-D array of shape (n_samples, n_clusters)
         lambda_reg : float, default=1.
             Regularization parameter. The algorithm demonstrated stable performance across a wide range of
             this hyperparameter.
-        HP00: 3-D array of shape (n_samples, n_clusters, n_views)
+        HP00: 3-D array of shape (n_samples, n_clusters, n_mods)
 
         Returns
         -------
-        HP: 3-D array of shape (n_samples, n_clusters, n_views)
+        HP: 3-D array of shape (n_samples, n_clusters, n_mods)
         """
         num = HP00.shape[0]
         k = HP00.shape[1]
@@ -316,13 +312,13 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
 
         return HP
 
-    def incomplete_multikernel_late_fusion_clustering(self, KH, n_clusters, lambda_reg):
+    def _incomplete_multikernel_late_fusion_clustering(self, KH, n_clusters, lambda_reg):
         r"""
         Runs the LFIMVC clustering algorithm.
 
         Parameters
         ----------
-        KH: 3-D array of shape (n_samples, ?, n_views)
+        KH: 3-D array of shape (n_samples, ?, n_mods)
         n_clusters : int, default=8
             The number of clusters to generate.
         lambda_reg : float, default=1.
@@ -334,7 +330,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Returns
         -------
         H_normalized: list of array-likes of shape (n_samples, n_clusters)
-        WP: 3-D array of shape (n_clusters, n_clusters, n_views)
+        WP: 3-D array of shape (n_clusters, n_clusters, n_mods)
         HP: 3-D array of shape (n_samples, n_clusters, n_views)
         obj: list of float
         """
@@ -347,7 +343,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
 
         HP = np.zeros(shape=(num, n_clusters, numker))
         for ker in range(numker):
-            HP[:, :, ker] = self.my_kernel_kmeans(KH[:, :, ker], n_clusters)
+            HP[:, :, ker] = self._my_kernel_kmeans(KH[:, :, ker], n_clusters)
 
         max_iter = 200
         WP = np.zeros(shape=(n_clusters, n_clusters, numker))
@@ -370,8 +366,8 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
             V = Vh.T.conj()
             Hstar = np.matmul(Uh, V.T)
 
-            WP = self.update_wp_absent_clustering_v1(HP, Hstar)
-            HP = self.update_hp_absent_clustering_v1(WP, Hstar, lambda_reg, HP00)
+            WP = self._update_wp_absent_clustering_v1(HP, Hstar)
+            HP = self._update_hp_absent_clustering_v1(WP, Hstar, lambda_reg, HP00)
 
             RpHpwp = np.zeros(shape=(num, n_clusters))
             obj2 = 0
