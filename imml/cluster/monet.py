@@ -73,7 +73,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         samples (under the "samples" attribute) and its set of views (the "views" attribute).
     total_weight_ : float
         Sum of the weights (similarity between samples within the module) of all modules.
-    view_graphs_ : list of dataframes of shape (n_samples, n_samples)
+    mod_graphs_ : list of dataframes of shape (n_samples, n_samples)
         Graph of each modality.
     mod_views_ : list of length n_mods.
         Views used for each module.
@@ -135,6 +135,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
+
             A list of different views.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
@@ -149,7 +150,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         for X in Xs:
             X.index = X.index.astype(str)
         samples = Xs[0].index
-        Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
+        Xs = DatasetUtils.remove_missing_sample_from_mod(Xs=Xs)
         data = {}
 
         if self.similarity_mode == "corr":
@@ -190,6 +191,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
+
             A list of different views.
 
         Returns
@@ -211,6 +213,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
+
             A list of different views.
 
         Returns

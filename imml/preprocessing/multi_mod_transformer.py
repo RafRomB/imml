@@ -4,30 +4,30 @@ from sklearn.base import BaseEstimator, TransformerMixin
 from ..utils import check_Xs
 
 
-class MultiViewTransformer(BaseEstimator, TransformerMixin):
+class MultiModTransformer(BaseEstimator, TransformerMixin):
     r"""
-    A transformer that applies the same transformation to multiple views of data.
+    A transformer that applies the same transformation to multiple modalities of data.
 
     Parameters
     ----------
     transformer : scikit-learn transformer object or list of scikit-learn transformer object
-        A scikit-learn transformer object that will be used to transform each view of data. If a list is provided,
-        each transformer will be applied on each view, otherwise the same transformer will be applied on each view.
+        A scikit-learn transformer object that will be used to transform each modality of data. If a list is provided,
+        each transformer will be applied on each modality, otherwise the same transformer will be applied on each modality.
 
     Attributes
     ----------
     transformer_list_ : list of preprocessing (n_mods,)
-        A list of preprocessing, one for each view of data.
+        A list of preprocessing, one for each modality of data.
     same_transformer_ : boolean
-        A booleaing indicating if the same transformer will be applied on each view of data.
+        A booleaing indicating if the same transformer will be applied on each modality of data.
 
     Example
     --------
     >>> from imml.datasets import LoadDataset
-    >>> from imml.preprocessing import MultiViewTransformer
+    >>> from imml.preprocessing import MultiModTransformer
     >>> from sklearn.impute import SimpleImputer
     >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
-    >>> transformer = MultiViewTransformer(transformer = SimpleImputer.set_output(transform = 'pandas'))
+    >>> transformer = MultiModTransformer(transformer = SimpleImputer.set_output(transform = 'pandas'))
     >>> transformer.fit_transform(Xs)
     """
 
@@ -60,6 +60,7 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : array-like, shape (n_samples,)
             Labels for each sample. Only used by supervised algorithms.
@@ -86,12 +87,13 @@ class MultiViewTransformer(BaseEstimator, TransformerMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
         -------
         transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
-            A list of transformed views of data, one for each input view.
+            A list of transformed mods of data, one for each input modality.
         """
 
         Xs = check_Xs(Xs, force_all_finite='allow-nan')

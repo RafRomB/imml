@@ -6,7 +6,7 @@ from control.matlab import lyap
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..impute import get_observed_mod_indicator, simple_view_imputer
+from ..impute import get_observed_mod_indicator, simple_mod_imputer
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -20,7 +20,7 @@ except ImportError:
 
 class DAIMC(BaseEstimator, ClassifierMixin):
     r"""
-    Doubly Aligned Incomplete Multi-view Clustering (DAIMC).
+    Doubly Aligned Incomplete Multi-view Clustering (DAIMC). [#daimcpaper1]_ [#daimcpaper2]_ [#daimccode]_
 
     The DAIMC algorithm integrates weighted semi-nonnegative matrix factorization (semi-NMF) to address incomplete
     multi-view clustering challenges. It leverages instance alignment information to learn a unified latent feature
@@ -118,6 +118,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -130,9 +131,9 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            transformed_Xs, observed_view_indicator = self._processing_xs(Xs)
+            transformed_Xs, observed_mod_indicator = self._processing_xs(Xs)
 
-            w = tuple([self._oc.diag(missing_view) for missing_view in observed_view_indicator.T])
+            w = tuple([self._oc.diag(missing_mod) for missing_mod in observed_mod_indicator.T])
             if self.random_state is not None:
                 self._oc.rand('seed', self.random_state)
             u_0, v_0, b_0 = self._oc.newinit(transformed_Xs, w, self.n_clusters, len(transformed_Xs),
@@ -146,8 +147,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
                 self._clean_space()
 
         elif self.engine == "python":
-            transformed_Xs, observed_view_indicator = self._processing_xs(Xs)
-            w = tuple([np.diag(missing_view) for missing_view in observed_view_indicator.T])
+            transformed_Xs, observed_mod_indicator = self._processing_xs(Xs)
+            w = tuple([np.diag(missing_mod) for missing_mod in observed_mod_indicator.T])
             u_0, v_0, b_0 = self._new_init(transformed_Xs, w, self.n_clusters, len(transformed_Xs))
             u, v, b, f = self._daimc(transformed_Xs, w, u_0, v_0, b_0, self.n_clusters,
                                      len(transformed_Xs), {"afa": self.alpha, "beta": self.beta})
@@ -169,6 +170,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -189,6 +191,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -219,7 +222,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         X : list of array-likes
             - X length: viewNum
             - X[i] shape: (n_samples, n_features_i)
-            A list of different views.
+            A list of different mods.
         W : tuple of array
             - W length : viewNum
             - W[i] shape : (n_samples, n_samples)
@@ -432,8 +435,8 @@ class DAIMC(BaseEstimator, ClassifierMixin):
             transformed_Xs = [X.values for X in Xs]
         elif isinstance(Xs[0], np.ndarray):
             transformed_Xs = Xs
-        observed_view_indicator = get_observed_mod_indicator(transformed_Xs)
-        transformed_Xs = simple_view_imputer(transformed_Xs, value="zeros")
+        observed_mod_indicator = get_observed_mod_indicator(transformed_Xs)
+        transformed_Xs = simple_mod_imputer(transformed_Xs, value="zeros")
         transformed_Xs = [X.T for X in transformed_Xs]
         transformed_Xs = tuple(transformed_Xs)
-        return transformed_Xs, observed_view_indicator
+        return transformed_Xs, observed_mod_indicator

@@ -27,7 +27,7 @@ class JNMF(TransformerMixin, BaseEstimator):
     r"""
     Joint Non-negative Matrix Factorization (JNMF).
 
-    JNMF decompose the matrices to two low-dimensional factor matrices.
+    JNMF decompose the matrices to low-dimensional factor matrices.
 
     It can deal with both modality- and feature-wise missing.
 
@@ -165,6 +165,7 @@ class JNMF(TransformerMixin, BaseEstimator):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -217,6 +218,7 @@ class JNMF(TransformerMixin, BaseEstimator):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

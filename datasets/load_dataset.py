@@ -27,6 +27,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -85,6 +86,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -133,6 +135,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -177,6 +180,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -223,6 +227,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -270,6 +275,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -317,6 +323,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -360,6 +367,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -407,6 +415,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -454,6 +463,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -495,6 +505,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -535,6 +546,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -577,6 +589,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -622,6 +635,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -665,6 +679,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -711,6 +726,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels
@@ -755,6 +771,7 @@ class LoadDataset:
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : optional, array-like of shape (n_samples,)
             Array with labels

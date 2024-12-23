@@ -37,6 +37,7 @@ def get_missing_mod_indicator(Xs : list, y = None):
     Xs : list of array-likes
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features)
+
         A list of different modalities.
     y : Ignored
         Not used, present here for API consistency by convention.

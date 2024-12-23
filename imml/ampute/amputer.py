@@ -55,6 +55,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -76,6 +77,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -92,16 +94,16 @@ class Amputer(BaseEstimator, TransformerMixin):
             sample_names = pd.Index(list(range(len(Xs[0]))))
 
             if self.mechanism == "um":
-                pseudo_observed_view_indicator = self._um_mask(sample_names=sample_names)
+                pseudo_observed_mod_indicator = self._um_mask(sample_names=sample_names)
             elif self.mechanism == "mcar":
-                pseudo_observed_view_indicator = self._mcar_mask(sample_names=sample_names)
+                pseudo_observed_mod_indicator = self._mcar_mask(sample_names=sample_names)
             elif self.mechanism == "pm":
-                pseudo_observed_view_indicator = self._pm_mask(sample_names=sample_names)
+                pseudo_observed_mod_indicator = self._pm_mask(sample_names=sample_names)
             elif self.mechanism == "mnar":
-                pseudo_observed_view_indicator = self._mnar_mask(sample_names=sample_names)
+                pseudo_observed_mod_indicator = self._mnar_mask(sample_names=sample_names)
 
-            pseudo_observed_view_indicator = pseudo_observed_view_indicator.astype(bool)
-            transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=pseudo_observed_view_indicator)
+            pseudo_observed_mod_indicator = pseudo_observed_mod_indicator.astype(bool)
+            transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_mod_indicator=pseudo_observed_mod_indicator)
 
             if pandas_format:
                 transformed_Xs = [pd.DataFrame(X, index=rownames, columns=colnames[X_idx])
@@ -113,30 +115,30 @@ class Amputer(BaseEstimator, TransformerMixin):
 
 
     def _um_mask(self, sample_names):
-        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
+        pseudo_observed_mod_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         sampled_names = copy.deepcopy(common_samples)
         n_missing = int(len(sample_names.difference(sampled_names)) / self.n_mods)
         for X_idx in range(self.n_mods):
-            x_per_view = sample_names.difference(sampled_names)
+            x_per_mod = sample_names.difference(sampled_names)
             if X_idx != self.n_mods - 1:
-                x_per_view = pd.Series(x_per_view, index=x_per_view).sample(n=n_missing,
+                x_per_mod = pd.Series(x_per_mod, index=x_per_mod).sample(n=n_missing,
                                                                             replace=False,
                                                                             random_state=self.random_state).index
-            sampled_names = sampled_names.append(x_per_view)
-            idxs_to_remove = common_samples.append(x_per_view)
+            sampled_names = sampled_names.append(x_per_mod)
+            idxs_to_remove = common_samples.append(x_per_mod)
             idxs_to_remove = sample_names.difference(idxs_to_remove)
-            pseudo_observed_view_indicator.loc[idxs_to_remove, X_idx] = 0
-        return pseudo_observed_view_indicator
+            pseudo_observed_mod_indicator.loc[idxs_to_remove, X_idx] = 0
+        return pseudo_observed_mod_indicator
 
 
     def _mcar_mask(self, sample_names):
-        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
+        pseudo_observed_mod_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        shape = pseudo_observed_view_indicator.loc[idxs_to_remove].shape
+        shape = pseudo_observed_mod_indicator.loc[idxs_to_remove].shape
         mask = np.random.default_rng(self.random_state).choice(2, size=shape)
         mask = pd.DataFrame(mask, index=idxs_to_remove)
         samples_to_fix = mask.nunique(axis=1).eq(1)
@@ -144,13 +146,13 @@ class Amputer(BaseEstimator, TransformerMixin):
             samples_to_fix = samples_to_fix[samples_to_fix]
             mods_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_mods,
                                                                              size=len(samples_to_fix))
-            for view_idx in np.unique(mods_to_fix):
-                samples = mods_to_fix == view_idx
+            for mod_idx in np.unique(mods_to_fix):
+                samples = mods_to_fix == mod_idx
                 samples = samples_to_fix[samples].index
-                mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool)).astype(int)
+                mask.loc[samples, mod_idx] = np.invert(mask.loc[samples, mod_idx].astype(bool)).astype(int)
 
-        pseudo_observed_view_indicator.loc[idxs_to_remove] = mask.astype(int)
-        return pseudo_observed_view_indicator
+        pseudo_observed_mod_indicator.loc[idxs_to_remove] = mask.astype(int)
+        return pseudo_observed_mod_indicator
 
 
     def _mnar_mask(self, sample_names):
@@ -177,7 +179,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
 
     def _pm_mask(self, sample_names):
-        pseudo_observed_view_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
+        pseudo_observed_mod_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
@@ -185,7 +187,7 @@ class Amputer(BaseEstimator, TransformerMixin):
             np.arange(1, self.n_mods), size=1)[0]
         if (self.n_mods == 2) or (n_incomplete_modalities == 1):
             col = np.random.default_rng(self.random_state).choice(self.n_mods)
-            pseudo_observed_view_indicator.loc[idxs_to_remove, col] = 0
+            pseudo_observed_mod_indicator.loc[idxs_to_remove, col] = 0
         else:
             mask = np.random.default_rng(self.random_state).choice(2,
                                                                    size=(len(idxs_to_remove), n_incomplete_modalities))
@@ -197,9 +199,9 @@ class Amputer(BaseEstimator, TransformerMixin):
             if samples_to_fix.any():
                 samples_to_fix = samples_to_fix[samples_to_fix]
                 mods_to_fix = np.random.default_rng(self.random_state).choice(mask.columns, size=len(samples_to_fix))
-                for view_idx in np.unique(mods_to_fix):
-                    samples = mods_to_fix == view_idx
+                for mod_idx in np.unique(mods_to_fix):
+                    samples = mods_to_fix == mod_idx
                     samples = samples_to_fix[samples].index
-                    mask.loc[samples, view_idx] = np.invert(mask.loc[samples, view_idx].astype(bool)).astype(int)
-            pseudo_observed_view_indicator.loc[idxs_to_remove, mask.columns] = mask.astype(int)
-        return pseudo_observed_view_indicator
+                    mask.loc[samples, mod_idx] = np.invert(mask.loc[samples, mod_idx].astype(bool)).astype(int)
+            pseudo_observed_mod_indicator.loc[idxs_to_remove, mask.columns] = mask.astype(int)
+        return pseudo_observed_mod_indicator

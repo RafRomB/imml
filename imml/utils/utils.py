@@ -15,13 +15,14 @@ except ImportError:
 
 def check_Xs(Xs, enforce_modalities=None, copy=False, force_all_finite="allow-nan",return_dimensions=False):
     r"""
-    Checks Xs and ensures it to be a list of 2D matrices.
+    Checks Xs and ensures it to be a list of 2D matrices. Adapted from `̀mvlearn` [#checkxspaper]_ [#checkxscode]_ .
 
     Parameters
     ----------
     Xs : list of array-likes
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
+
         A list of different modalities.
     enforce_modalities : int, (default=not checked)
         If provided, ensures this number of modalities in Xs. Otherwise not checked.
@@ -30,20 +31,21 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, force_all_finite="allow-na
         If False, the returned Xs is a modality of the input Xs, and operations on the output will change the input.
     force_all_finite : bool or 'allow-nan', default='allow-nan'
         Whether to raise an error on np.inf, np.nan, pd.NA in array. The possibilities are:
+
         - True: Force all values of array to be finite.
         - False: accepts np.inf, np.nan, pd.NA in array.
         - 'allow-nan': accepts only np.nan and pd.NA values in array. Values
           cannot be infinite.
     return_dimensions : boolean, (default=False)
-        If True, the function also returns the dimensions of the multiview dataset. The dimensions are n_mods,
+        If True, the function also returns the dimensions of the multi-modal dataset. The dimensions are n_mods,
         n_samples, n_features where n_samples and n_mods are respectively the number of modalities and the number of
         samples, and n_features is a list of length n_mods containing the number of features of each modality.
 
     References
     ----------
-    .. [#checkxscode] Perry, Ronan, et al. "mvlearn: Multiview Machine Learning in Python." Journal of Machine
+    .. [#checkxspaper] Perry, Ronan, et al. "mvlearn: Multiview Machine Learning in Python." Journal of Machine
                       Learning Research 22.109 (2021): 1-7.
-    .. [#checkxspaper] https://mvlearn.github.io/references/utils.html
+    .. [#checkxscode] https://mvlearn.github.io/references/utils.html
 
     Returns
     -------

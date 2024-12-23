@@ -58,7 +58,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         Kernel weights.
     KA_ : array-like of shape (n_samples, n_mods)
         Kernel sub-matrix.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -129,6 +129,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -144,7 +145,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            s = DatasetUtils.get_missing_samples_by_view(Xs=transformed_Xs, return_as_list=True)
+            s = DatasetUtils.get_missing_samples_by_mod(Xs=transformed_Xs, return_as_list=True)
             s = tuple([{"indx": pd.Series(i).add(1).to_list()} for i in s])
 
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
@@ -177,6 +178,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -196,6 +198,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

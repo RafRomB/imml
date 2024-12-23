@@ -13,7 +13,7 @@ from ..utils import check_Xs
 
 class MOFA(TransformerMixin, BaseEstimator):
     r"""
-    Multi-Omics Factor Analysis (MOFA).
+    Multi-Omics Factor Analysis (MOFA). [#mofapaper1]_ [#mofapaper2]_ [#mofacode]_
 
     MOFA is a factor analysis model that provides a general framework for the integration of (originally, multi-omic
     data sets) incomplete multi-modal datasets, in an unsupervised fashion. Intuitively, MOFA can be viewed as a
@@ -130,6 +130,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -169,7 +170,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+            A list of different mods.
 
         Returns
         -------
@@ -198,7 +199,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+            A list of different mods.
         y : Ignored
             Not used, present here for API consistency by convention.
         fit_params : Ignored

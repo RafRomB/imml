@@ -35,9 +35,10 @@ class DFMFImputer(DFMF):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+
+            A list of different mods.
         y : Ignored
             Not used, present here for API consistency by convention.
         fit_params : Ignored

@@ -128,6 +128,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -141,8 +142,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
         if self.engine == 'python':
-            observed_view_indicator = get_observed_mod_indicator(Xs)
-            samples = observed_view_indicator.index
+            observed_mod_indicator = get_observed_mod_indicator(Xs)
+            samples = observed_mod_indicator.index
 
             if self.num_neighbors is None:
                 self.num_neighbors_ = [round(len(X)/self.num_neighbors_ratio) for X in Xs]
@@ -152,8 +153,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
                 self.num_neighbors_ = self.num_neighbors
 
             affinity_matrix = pd.DataFrame(np.zeros((len(samples), len(samples))), columns = samples, index = samples)
-            for X, neigh, view_idx in zip(Xs, self.num_neighbors_, range(len(Xs))):
-                X = X.loc[observed_view_indicator[view_idx]]
+            for X, neigh, mod_idx in zip(Xs, self.num_neighbors_, range(len(Xs))):
+                X = X.loc[observed_mod_indicator[mod_idx]]
                 sim_data = pd.DataFrame(snf.make_affinity(X, metric = self.metric, K=neigh, normalize=False),
                                             index= X.index, columns= X.index)
                 sim_data = sim_data.mask(sim_data.rank(axis=1, method='min', ascending=False) > neigh, 0)
@@ -163,7 +164,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
                 sim_data += sim_data.T
                 affinity_matrix.loc[sim_data.index, sim_data.columns] += sim_data
 
-            affinity_matrix /= observed_view_indicator.sum(1)
+            affinity_matrix /= observed_mod_indicator.sum(1)
 
             self.n_clusters_ = self.n_clusters if isinstance(self.n_clusters, int) else \
                 snf.get_n_clusters(arr= affinity_matrix.values, n_clusters= self.n_clusters)[0]
@@ -178,7 +179,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
 
         elif self.engine == "r":
-            transformed_Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
+            transformed_Xs = DatasetUtils.remove_missing_sample_from_mod(Xs=Xs)
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = _convert_df_to_r_object(transformed_Xs)
             num_neighbors = np.nan if self.num_neighbors is None else self.num_neighbors
@@ -210,6 +211,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -230,6 +232,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

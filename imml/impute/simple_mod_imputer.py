@@ -6,7 +6,7 @@ from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
 
-class SimpleViewImputer(BaseEstimator, TransformerMixin):
+class SimpleModImputer(BaseEstimator, TransformerMixin):
     r"""
     Fill incomplete samples of a dataset using a specified method.
 
@@ -19,17 +19,17 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
 
     Attributes
     ----------
-    features_view_mean_list_ : array-like of shape (n_mods,)
+    features_mod_mean_list_ : array-like of shape (n_mods,)
         The mean value of each feature in the corresponding modality, if value='mean'
     Example
     --------
     >>> from imml.datasets import LoadDataset
-    >>> from imml.impute import SimpleViewImputer
+    >>> from imml.impute import SimpleModImputer
     >>> from imml.ampute import Amputer
     >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
     >>> amp = Amputer(p=0.3, random_state=42)
     >>> Xs = amp.fit_transform(Xs)
-    >>> transformer = SimpleViewImputer(value = 'mean')
+    >>> transformer = SimpleModImputer(value = 'mean')
     >>> transformer.fit_transform(Xs)
     """
 
@@ -51,6 +51,7 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
                 Not used, present here for API consistency by convention.
@@ -62,7 +63,7 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
 
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
         if self.value == "mean":
-            self.features_view_mean_list_ = [np.nanmean(X, axis=0) for X in Xs]
+            self.features_mod_mean_list_ = [np.nanmean(X, axis=0) for X in Xs]
         elif self.value == "zeros":
             pass
         return self
@@ -77,6 +78,7 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -92,18 +94,18 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
             features = [X.columns for X in Xs]
             dtypes = [X.dtypes.to_dict() for X in Xs]
             Xs = [X.values for X in Xs]
-        observed_view_indicator = get_observed_mod_indicator(Xs = Xs)
-        n_samples = len(observed_view_indicator)
+        observed_mod_indicator = get_observed_mod_indicator(Xs = Xs)
+        n_samples = len(observed_mod_indicator)
 
         transformed_Xs = []
         for X_idx, X in enumerate(Xs):
             n_features = X.shape[1]
             if self.value == "mean":
-                features_view_mean = self.features_view_mean_list_[X_idx]
-                transformed_X = np.tile(features_view_mean, (n_samples ,1))
+                features_mod_mean = self.features_mod_mean_list_[X_idx]
+                transformed_X = np.tile(features_mod_mean, (n_samples ,1))
             elif self.value == "zeros":
                 transformed_X = np.zeros((n_samples, n_features))
-            transformed_X[observed_view_indicator[:, X_idx]] = X[observed_view_indicator[:, X_idx]]
+            transformed_X[observed_mod_indicator[:, X_idx]] = X[observed_mod_indicator[:, X_idx]]
             if pandas_format:
                 transformed_X = pd.DataFrame(transformed_X, index=samples, columns=features[X_idx])
                 transformed_X = transformed_X.astype(dtypes[X_idx])
@@ -111,7 +113,7 @@ class SimpleViewImputer(BaseEstimator, TransformerMixin):
         return transformed_Xs
 
 
-def simple_view_imputer(Xs : list, y = None, value : str = 'mean'):
+def simple_mod_imputer(Xs : list, y = None, value : str = 'mean'):
     r"""
     Transform the input data by filling missing samples.
 
@@ -140,21 +142,21 @@ def simple_view_imputer(Xs : list, y = None, value : str = 'mean'):
         features = [X.columns for X in Xs]
         dtypes = [X.dtypes.to_dict() for X in Xs]
         Xs = [X.values for X in Xs]
-    observed_view_indicator = get_observed_mod_indicator(Xs=Xs)
-    n_samples = len(observed_view_indicator)
+    observed_mod_indicator = get_observed_mod_indicator(Xs=Xs)
+    n_samples = len(observed_mod_indicator)
 
     transformed_Xs = []
     for X_idx, X in enumerate(Xs):
         n_features = X.shape[1]
         if value == "mean":
-            features_view_mean = np.nanmean(X, axis=0)
-            transformed_X = np.tile(features_view_mean, (n_samples, 1))
+            features_mod_mean = np.nanmean(X, axis=0)
+            transformed_X = np.tile(features_mod_mean, (n_samples, 1))
         elif value == "zeros":
             transformed_X = np.zeros((n_samples, n_features))
         else:
             raise ValueError(f"Invalid value. Expected one of: ['mean', 'zeros']")
 
-        transformed_X[observed_view_indicator[:, X_idx]] = X[observed_view_indicator[:, X_idx]]
+        transformed_X[observed_mod_indicator[:, X_idx]] = X[observed_mod_indicator[:, X_idx]]
         if pandas_format:
             transformed_X = pd.DataFrame(transformed_X, index=samples, columns=features[X_idx])
             transformed_X = transformed_X.astype(dtypes[X_idx])

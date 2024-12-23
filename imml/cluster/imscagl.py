@@ -29,9 +29,9 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
     n_clusters : int, default=8
         The number of clusters to generate.
     lambda1 : float, default=0.1
-        Penalty parameter for learning model of the multiview subspace clustering.
+        Penalty parameter for learning model of the multi-modal subspace clustering.
     lambda2 : float, default=1000
-        Penalty parameter for learning model of the multiview subspace clustering.
+        Penalty parameter for learning model of the multi-modal subspace clustering.
     lambda3 : float, default=100
         Penalty parameter for learning the consensus representation from those cluster indicator matrices of all views.
     k : int, default=5
@@ -134,6 +134,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -147,10 +148,10 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         if self.engine=="matlab":
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
-            observed_view_indicator = get_observed_mod_indicator(Xs=Xs)
-            transformed_Xs = DatasetUtils.remove_missing_sample_from_view(Xs=Xs)
+            observed_mod_indicator = get_observed_mod_indicator(Xs=Xs)
+            transformed_Xs = DatasetUtils.remove_missing_sample_from_mod(Xs=Xs)
             w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]
-            w = [eye.loc[samples,:].values for eye, (_, samples) in zip(w, observed_view_indicator.items())]
+            w = [eye.loc[samples,:].values for eye, (_, samples) in zip(w, observed_mod_indicator.items())]
             w = tuple(w)
 
             transformed_Xs = tuple([X.T for X in transformed_Xs])
@@ -180,6 +181,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -200,6 +202,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

@@ -1,7 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from imml.impute import SimpleViewImputer, simple_view_imputer
+from imml.impute import SimpleModImputer, simple_mod_imputer
 
 @pytest.fixture
 def sample_data():
@@ -18,15 +18,15 @@ def sample_data():
 def test_mean_imputation(sample_data):
     indxs, means = sample_data[2:]
     for Xs in sample_data[:2]:
-        imputer = SimpleViewImputer(value='mean')
+        imputer = SimpleModImputer(value='mean')
         transformed_Xs = imputer.fit_transform(Xs)
         assert len(transformed_Xs) == 2
-        assert len(transformed_Xs) == len(imputer.features_view_mean_list_)
-        for X_transformed,idx, features_view_mean, mes in zip(transformed_Xs, indxs,
-                                                              imputer.features_view_mean_list_, means):
-            assert X_transformed.shape[1] == len(features_view_mean)
+        assert len(transformed_Xs) == len(imputer.features_mod_mean_list_)
+        for X_transformed,idx, features_mod_mean, mes in zip(transformed_Xs, indxs,
+                                                              imputer.features_mod_mean_list_, means):
+            assert X_transformed.shape[1] == len(features_mod_mean)
             assert not np.isnan(X_transformed).any().any()
-            assert np.allclose(features_view_mean, mes)
+            assert np.allclose(features_mod_mean, mes)
             if isinstance(X_transformed, pd.DataFrame):
                 assert np.allclose(X_transformed.iloc[idx], mes)
             elif isinstance(X_transformed, np.ndarray):
@@ -35,7 +35,7 @@ def test_mean_imputation(sample_data):
 def test_zeros_imputation(sample_data):
     indxs, means = sample_data[2:]
     for Xs in sample_data[:2]:
-        imputer = SimpleViewImputer(value='zeros')
+        imputer = SimpleModImputer(value='zeros')
         transformed_Xs = imputer.fit_transform(Xs)
         assert len(transformed_Xs) == 2
         for X_transformed,idx in zip(transformed_Xs, indxs):
@@ -46,17 +46,17 @@ def test_zeros_imputation(sample_data):
 
 def test_invalid_value():
     with pytest.raises(ValueError, match="Invalid value. Expected one of:"):
-        SimpleViewImputer(value='invalid')
+        SimpleModImputer(value='invalid')
 
 def test_transform_without_fit(sample_data):
-    imputer = SimpleViewImputer(value='mean')
+    imputer = SimpleModImputer(value='mean')
     with pytest.raises(AttributeError):
         imputer.transform(sample_data[0])
 
 def test_mean_imputation_function(sample_data):
     indxs, means = sample_data[2:]
     for Xs in sample_data[:2]:
-        transformed_Xs = simple_view_imputer(Xs, value='mean')
+        transformed_Xs = simple_mod_imputer(Xs, value='mean')
         assert len(transformed_Xs) == 2
         for X_transformed,idx, mes in zip(transformed_Xs, indxs, means):
             assert not np.isnan(X_transformed).any().any()
@@ -68,7 +68,7 @@ def test_mean_imputation_function(sample_data):
 def test_zeros_imputation_function(sample_data):
     indxs, means = sample_data[2:]
     for Xs in sample_data[:2]:
-        transformed_Xs = simple_view_imputer(Xs, value='zeros')
+        transformed_Xs = simple_mod_imputer(Xs, value='zeros')
         assert len(transformed_Xs) == 2
         for X_transformed,idx in zip(transformed_Xs, indxs):
             assert not np.isnan(X_transformed).any().any()
@@ -80,7 +80,7 @@ def test_zeros_imputation_function(sample_data):
 def test_invalid_value_function(sample_data):
     Xs_pandas, Xs_numpy, indxs, means = sample_data
     with pytest.raises(ValueError, match="Invalid value. Expected one of:"):
-        simple_view_imputer(Xs_pandas, value='invalid')
+        simple_mod_imputer(Xs_pandas, value='invalid')
 
 
 if __name__ == "__main__":

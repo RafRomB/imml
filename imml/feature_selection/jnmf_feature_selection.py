@@ -6,9 +6,10 @@ from ..decomposition import JNMF
 
 class JNMFFeatureSelector(JNMF):
     r"""
-    Feature selection for multi-view datasets using the Joint Non-negative Matrix Factorization (JNMF) method.
+    Feature selection for multi-modal datasets using the Joint Non-negative Matrix Factorization (JNMF) method.
+    [#jnmfpaper1]_ [#jnmfpaper2]_ [#jnmfpaper3]_ [#jnmfpaper4]_ [#jnmfpaper5]_ [#jnmfpaper6]_ [#jnmfcode1]_ [#jnmfcode2]_
 
-    This class extends the functionality of the `JNMF` method to perform feature selection across multiple views or
+    This class extends the functionality of the `JNMF` method to perform feature selection across multiple modalities or
     blocks of data. The selected features are those with the highest contributions to the derived components from
     JNMF. This feature selection can be based on either the largest contribution for each component, the maximum
     overall contribution, or the average contribution across all components.
@@ -17,15 +18,18 @@ class JNMFFeatureSelector(JNMF):
     ----------
     select_by : str, default="component"
         Criterion used to select features. Must be one of ["component", "max", "average"]:
+
         - "component": Selects the feature with the largest contribution for each component.
         - "max": Selects the features with the largest overall contribution.
         - "average": Selects the features with the highest average contribution across all components.
+
     f_per_component : int, default=1
         Number of features to select per component.
+
         - If `select_by="component"`, this controls how many features are selected for each component.
-        - If `select_by="max"`, the top `n_components`*`f_per_component` features across all components are selected.
-        - If `select_by="average"`, it selects `n_components`*`f_per_component` features with the highest
-            average contribution for each component.
+        - If `select_by="max"`, the top `n_components` * `f_per_component` features across all components are selected.
+        - If `select_by="average"`, it selects `n_components` * `f_per_component` features with the highest average contribution for each component.
+
     kwargs : dict
         Arguments passed to the `JNMF` method.
 
@@ -85,6 +89,7 @@ class JNMFFeatureSelector(JNMF):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -141,6 +146,7 @@ class JNMFFeatureSelector(JNMF):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -166,9 +172,10 @@ class JNMFFeatureSelector(JNMF):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+
+            A list of different mods.
         y : Ignored
             Not used, present here for API consistency by convention.
         fit_params : Ignored

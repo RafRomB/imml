@@ -42,8 +42,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Verbosity mode.
     clean_space : bool, default=True
         If engine is 'matlab' and clean_space is True, the session will be closed after fitting the model.
-    clean_space : bool, default=True
-        If engine is 'matlab' and clean_space is True, the session will be closed after fitting the model.
 
     Attributes
     ----------
@@ -51,7 +49,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -119,6 +117,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -131,22 +130,22 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
-        observed_view_indicator = get_observed_mod_indicator(Xs)
-        if isinstance(observed_view_indicator, pd.DataFrame):
-            observed_view_indicator = observed_view_indicator.reset_index(drop=True)
-        observed_view_indicator = [(1 + missing_view[missing_view == 0].index).to_list() for _, missing_view in observed_view_indicator.items()]
+        observed_mod_indicator = get_observed_mod_indicator(Xs)
+        if isinstance(observed_mod_indicator, pd.DataFrame):
+            observed_mod_indicator = observed_mod_indicator.reset_index(drop=True)
+        observed_mod_indicator = [(1 + missing_mod[missing_mod == 0].index).to_list() for _, missing_mod in observed_mod_indicator.items()]
         transformed_Xs = [X.T.values for X in Xs]
 
         if self.engine=="matlab":
             if self.random_state is not None:
                 self._oc.rand('seed', self.random_state)
-            Z, obj = self._oc.IMSC(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
+            Z, obj = self._oc.IMSC(transformed_Xs, tuple(observed_mod_indicator), self.n_clusters, self.lbd, self.gamma, nout=2)
 
             if self.clean_space:
                 self._clean_space()
 
         elif self.engine == "python":
-            Z, obj = self._imsc(transformed_Xs, tuple(observed_view_indicator), self.n_clusters, self.lbd, self.gamma)
+            Z, obj = self._imsc(transformed_Xs, tuple(observed_mod_indicator), self.n_clusters, self.lbd, self.gamma)
         else:
             raise ValueError("Only engine=='matlab' and 'python are currently supported.")
 
@@ -167,6 +166,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -187,6 +187,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -400,7 +401,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         Parameters
         ----------
         X : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
         Z : list of array-likes of shape (n_samples, n_samples)
         F

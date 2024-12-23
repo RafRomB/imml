@@ -56,7 +56,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Centroids.
     beta_ : array-like of shape (n_mods,)
         Adaptive weights of clustering matrices.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -122,6 +122,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -133,12 +134,12 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            observed_view_indicator = get_observed_mod_indicator(Xs)
-            if isinstance(observed_view_indicator, pd.DataFrame):
-                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
-            elif isinstance(observed_view_indicator[0], np.ndarray):
-                observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            s = [modality[modality == 0].index.values for _,modality in observed_view_indicator.items()]
+            observed_mod_indicator = get_observed_mod_indicator(Xs)
+            if isinstance(observed_mod_indicator, pd.DataFrame):
+                observed_mod_indicator = observed_mod_indicator.reset_index(drop=True)
+            elif isinstance(observed_mod_indicator[0], np.ndarray):
+                observed_mod_indicator = pd.DataFrame(observed_mod_indicator)
+            s = [modality[modality == 0].index.values for _,modality in observed_mod_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             s = tuple([{"indx": i +1} for i in s])
@@ -169,6 +170,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -189,6 +191,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

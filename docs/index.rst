@@ -1,17 +1,41 @@
-.. imvl documentation master file, created by
-   sphinx-quickstart on Fri Aug 23 20:49:03 2024.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
+..  -*- coding: utf-8 -*-
 
-imvl documentation
-==================
+Overview of `iMML`
+====================
 
-Add your content using ``reStructuredText`` syntax. See the
-`reStructuredText <https://www.sphinx-doc.org/en/master/usage/restructuredtext/index.html>`_
-documentation for details.
+.. include:: overview.rst
+   :start-line: 2
 
+Documentation
+=============
 
 .. toctree::
-   :maxdepth: 2
-   :caption: Contents:
+   :maxdepth: 1
+   :caption: iMML
+
+   overview
+   installation
+   tutorials
+   modules/imml
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Development
+
+   development/contributing
+   development/changelog
+   development/license
+
+.. toctree::
+   :maxdepth: 1
+   :caption: Links
+
+   GitHub <github>
+   PyPI <pypi>
+
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`search`
 

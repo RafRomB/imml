@@ -11,17 +11,17 @@ def sample_data():
     X1.loc[[2,4], :] = np.nan
     X2.loc[1, :] = np.nan
     Xs_pandas, Xs_numpy = [X1, X2], [X1.values, X2.values]
-    observed_view_indicator = pd.DataFrame({
+    observed_mod_indicator = pd.DataFrame({
         0: [True, True, False, True, False],
         1: [True, False, True, True, True]
     })
-    observed_view_indicator = observed_view_indicator.values
-    return Xs_pandas, Xs_numpy, observed_view_indicator
+    observed_mod_indicator = observed_mod_indicator.values
+    return Xs_pandas, Xs_numpy, observed_mod_indicator
 
 def test_convert_to_imvd(sample_data):
-    observed_view_indicator = sample_data[-1]
+    observed_mod_indicator = sample_data[-1]
     for Xs in sample_data[:2]:
-        transformed_Xs = DatasetUtils.convert_to_imvd(Xs, observed_view_indicator)
+        transformed_Xs = DatasetUtils.convert_to_imvd(Xs, observed_mod_indicator)
         assert len(transformed_Xs) == len(Xs)
         values_to_compare = [2,1]
         for i, X in enumerate(Xs):
@@ -43,16 +43,16 @@ def test_summary(sample_data):
         assert len(summary["% Missing samples per modality"]) == len(Xs)
         assert any([i <= 100 for i in summary["% Missing samples per modality"]])
 
-def test_get_n_views(sample_data):
+def test_get_n_mods(sample_data):
     for Xs in sample_data[:2]:
-        n_views = DatasetUtils.get_n_views(Xs)
-        assert n_views == len(Xs)
+        n_mods = DatasetUtils.get_n_mods(Xs)
+        assert n_mods == len(Xs)
 
-def test_get_n_samples_by_view(sample_data):
+def test_get_n_samples_by_mod(sample_data):
     for Xs in sample_data[:2]:
-        n_samples_by_view = DatasetUtils.get_n_samples_by_view(Xs)
+        n_samples_by_mod = DatasetUtils.get_n_samples_by_mod(Xs)
         values_to_compare = [3,4]
-        assert all(n_samples_by_view == values_to_compare)
+        assert all(n_samples_by_mod == values_to_compare)
 
 def test_get_complete_sample_names(sample_data):
     for Xs in sample_data[:2]:
@@ -75,29 +75,29 @@ def test_get_sample_names(sample_data):
         values_to_compare = pd.Index(range(len(sample_names)))
         assert sample_names.equals(values_to_compare)
 
-def test_get_samples_by_view(sample_data):
+def test_get_samples_by_mod(sample_data):
     for Xs in sample_data[:2]:
-        samples_by_view = DatasetUtils.get_samples_by_view(Xs, return_as_list=True)
-        assert len(samples_by_view) == len(Xs)
+        samples_by_mod = DatasetUtils.get_samples_by_mod(Xs, return_as_list=True)
+        assert len(samples_by_mod) == len(Xs)
         values_to_compare = [[0, 1, 3], [0, 2, 3, 4]]
-        for i in range(len(samples_by_view)):
-            assert samples_by_view[i].equals(pd.Index(values_to_compare[i]))
-        samples_by_view = DatasetUtils.get_samples_by_view(Xs, return_as_list=False)
-        assert len(samples_by_view) == len(Xs)
-        for i in range(len(samples_by_view)):
-            assert samples_by_view[i].equals(pd.Index(values_to_compare[i]))
+        for i in range(len(samples_by_mod)):
+            assert samples_by_mod[i].equals(pd.Index(values_to_compare[i]))
+        samples_by_mod = DatasetUtils.get_samples_by_mod(Xs, return_as_list=False)
+        assert len(samples_by_mod) == len(Xs)
+        for i in range(len(samples_by_mod)):
+            assert samples_by_mod[i].equals(pd.Index(values_to_compare[i]))
 
-def test_get_missing_samples_by_view(sample_data):
+def test_get_missing_samples_by_mod(sample_data):
     for Xs in sample_data[:2]:
-        missing_samples_by_view = DatasetUtils.get_missing_samples_by_view(Xs, return_as_list=True)
-        assert len(missing_samples_by_view) == len(Xs)
+        missing_samples_by_mod = DatasetUtils.get_missing_samples_by_mod(Xs, return_as_list=True)
+        assert len(missing_samples_by_mod) == len(Xs)
         values_to_compare = [[2, 4], [1]]
-        for i in range(len(missing_samples_by_view)):
-            assert pd.Index(missing_samples_by_view[i]).equals(pd.Index(values_to_compare[i]))
-        missing_samples_by_view = DatasetUtils.get_missing_samples_by_view(Xs, return_as_list=False)
-        assert len(missing_samples_by_view) == len(Xs)
-        for i in range(len(missing_samples_by_view)):
-            assert pd.Index(missing_samples_by_view[i]).equals(pd.Index(values_to_compare[i]))
+        for i in range(len(missing_samples_by_mod)):
+            assert pd.Index(missing_samples_by_mod[i]).equals(pd.Index(values_to_compare[i]))
+        missing_samples_by_mod = DatasetUtils.get_missing_samples_by_mod(Xs, return_as_list=False)
+        assert len(missing_samples_by_mod) == len(Xs)
+        for i in range(len(missing_samples_by_mod)):
+            assert pd.Index(missing_samples_by_mod[i]).equals(pd.Index(values_to_compare[i]))
 
 def test_get_n_complete_samples(sample_data):
     for Xs in sample_data[:2]:
@@ -119,24 +119,24 @@ def test_get_percentage_incomplete_samples(sample_data):
         percentage_incomplete = DatasetUtils.get_percentage_incomplete_samples(Xs)
         assert percentage_incomplete == (3 / 5) * 100
 
-def test_remove_missing_sample_from_view(sample_data):
+def test_remove_missing_sample_from_mod(sample_data):
     for Xs in sample_data[:2]:
-        cleaned_Xs = DatasetUtils.remove_missing_sample_from_view(Xs)
+        cleaned_Xs = DatasetUtils.remove_missing_sample_from_mod(Xs)
         values_to_compare = [3, 4]
         for to_compare, X in zip(values_to_compare, cleaned_Xs):
             assert len(X) == to_compare
 
 def test_convert_mvd_from_list_to_dict(sample_data):
     for Xs in sample_data[:2]:
-        Xs_dict = DatasetUtils.convert_mvd_from_list_to_dict(Xs)
+        Xs_dict = DatasetUtils.convert_mmd_from_list_to_dict(Xs)
         assert isinstance(Xs_dict, dict)
         assert len(Xs_dict) == len(Xs)
         assert all(isinstance(k, int) for k in Xs_dict.keys())
 
 def test_convert_mvd_from_dict_to_list(sample_data):
     for Xs in sample_data[:2]:
-        Xs_dict = DatasetUtils.convert_mvd_from_list_to_dict(Xs)
-        Xs_list = DatasetUtils.convert_mvd_from_dict_to_list(Xs_dict)
+        Xs_dict = DatasetUtils.convert_mmd_from_list_to_dict(Xs)
+        Xs_list = DatasetUtils.convert_mmd_from_dict_to_list(Xs_dict)
         assert len(Xs_list) == len(Xs)
         for X, X_converted in zip(Xs, Xs_list):
             assert np.array_equal(X, X_converted, equal_nan=True)

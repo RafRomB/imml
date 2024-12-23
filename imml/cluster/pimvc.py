@@ -61,7 +61,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Labels of each point in training data.
     embedding_ : array-like of shape (n_samples, n_clusters)
         Consensus clustering matrix to be used as input for the KMeans clustering step.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -132,6 +132,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -150,14 +151,14 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
         if self.engine=="matlab":
 
-            observed_view_indicator = get_observed_mod_indicator(Xs)
-            if isinstance(observed_view_indicator, pd.DataFrame):
-                observed_view_indicator = observed_view_indicator.values
+            observed_mod_indicator = get_observed_mod_indicator(Xs)
+            if isinstance(observed_mod_indicator, pd.DataFrame):
+                observed_mod_indicator = observed_mod_indicator.values
             transformed_Xs = tuple([X.T for X in Xs])
 
             if self.random_state is not None:
                 self._oc.rand('seed', self.random_state)
-            v, loss = self._oc.PIMVC(transformed_Xs, self.n_clusters, observed_view_indicator, self.lamb, self.beta,
+            v, loss = self._oc.PIMVC(transformed_Xs, self.n_clusters, observed_mod_indicator, self.lamb, self.beta,
                                self.max_iter, {"NeighborMode": self.neighbor_mode,
                                                "WeightMode": self.weight_mode,
                                                "k": self.k}, nout=2)
@@ -184,6 +185,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -204,6 +206,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

@@ -8,7 +8,7 @@ from sklearn.cluster import KMeans
 from scipy.linalg import svd
 from scipy.stats import zscore
 
-from ..impute import simple_view_imputer
+from ..impute import simple_mod_imputer
 from ..preprocessing import select_complete_samples
 from ..utils import check_Xs, DatasetUtils
 
@@ -62,7 +62,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Learned anchors.
     Z_ : array-like of shape (n_clusters, n_samples)
         modality-specific anchor graph.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -127,6 +127,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -140,25 +141,25 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         if self.engine=="matlab":
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
-            mean_view_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
-            incomplete_samples = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
-            mean_view_profile = [pd.DataFrame(np.tile(means, len(incom))).values for means, incom in
-                                  zip(mean_view_profile, incomplete_samples)]
+            mean_mod_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
+            incomplete_samples = DatasetUtils.get_missing_samples_by_mod(Xs=Xs, return_as_list=True)
+            mean_mod_profile = [pd.DataFrame(np.tile(means, len(incom))).values for means, incom in
+                                  zip(mean_mod_profile, incomplete_samples)]
 
-            transformed_Xs = simple_view_imputer(Xs, value="zeros")
-            transformed_Xs, mean_view_profile = tuple(transformed_Xs), tuple(mean_view_profile)
+            transformed_Xs = simple_mod_imputer(Xs, value="zeros")
+            transformed_Xs, mean_mod_profile = tuple(transformed_Xs), tuple(mean_mod_profile)
 
             w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]
             w = [eye.loc[samples,:].values for eye, samples in zip(w, incomplete_samples)]
             w = tuple(w)
 
-            n_incomplete_samples_view = list(len(incomplete_sample) for incomplete_sample in incomplete_samples)
+            n_incomplete_samples_mod = list(len(incomplete_sample) for incomplete_sample in incomplete_samples)
 
             # if self.random_state is not None:
             #     self._oc.rand('seed', self.random_state)
             u,v,a,w,z,iter,obj = self._oc.SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
-                                                self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
-                                                mean_view_profile, self.beta, self.gamma, nout=7)
+                                                self.n_clusters, self.n_anchors, w, n_incomplete_samples_mod,
+                                                mean_mod_profile, self.beta, self.gamma, nout=7)
             obj = obj[0]
 
             if self.clean_space:
@@ -167,25 +168,25 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         elif self.engine=="python":
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
-            mean_view_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
-            incomplete_samples = DatasetUtils.get_missing_samples_by_view(Xs=Xs, return_as_list=True)
-            mean_view_profile = [pd.DataFrame(np.tile(means, len(incom))).values for means, incom in
-                                 zip(mean_view_profile, incomplete_samples)]
+            mean_mod_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
+            incomplete_samples = DatasetUtils.get_missing_samples_by_mod(Xs=Xs, return_as_list=True)
+            mean_mod_profile = [pd.DataFrame(np.tile(means, len(incom))).values for means, incom in
+                                 zip(mean_mod_profile, incomplete_samples)]
 
-            transformed_Xs = simple_view_imputer(Xs, value="zeros")
+            transformed_Xs = simple_mod_imputer(Xs, value="zeros")
             # transformed_Xs, mean_view_profile = tuple(transformed_Xs), tuple(mean_view_profile)
 
             w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]
             w = [eye.loc[samples, :].values for eye, samples in zip(w, incomplete_samples)]
             # w = tuple(w)
 
-            n_incomplete_samples_view = list(len(incomplete_sample) for incomplete_sample in incomplete_samples)
+            n_incomplete_samples_mod = list(len(incomplete_sample) for incomplete_sample in incomplete_samples)
 
             if self.random_state is not None:
                 np.random.seed(self.random_state)
             u, v, a, w, z, iter, obj = self._SIMC(transformed_Xs, len(Xs[0]), self.lambda_parameter,
-                                                     self.n_clusters, self.n_anchors, w, n_incomplete_samples_view,
-                                                     mean_view_profile, self.beta, self.gamma)
+                                                     self.n_clusters, self.n_anchors, w, n_incomplete_samples_mod,
+                                                     mean_mod_profile, self.beta, self.gamma)
 
         model = KMeans(n_clusters= self.n_clusters, n_init= "auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X=u)
@@ -207,6 +208,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -227,6 +229,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

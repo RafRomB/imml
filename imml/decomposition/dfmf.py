@@ -118,6 +118,7 @@ class DFMF(TransformerMixin, BaseEstimator):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -148,6 +149,7 @@ class DFMF(TransformerMixin, BaseEstimator):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

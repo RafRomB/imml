@@ -55,7 +55,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Basis matrix.
     V_ : list of n_mods array-like of shape (n_features_i, n_clusters)
         Latent feature matrix.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -122,6 +122,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -143,15 +144,15 @@ class OMVC(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            missing_samples_by_view = DatasetUtils.get_missing_samples_by_view(Xs=transformed_Xs, return_as_list=True)
-            missing_samples_by_view = tuple([np.array(missing_samples)+1 for missing_samples in missing_samples_by_view])
+            missing_samples_by_mod = DatasetUtils.get_missing_samples_by_mod(Xs=transformed_Xs, return_as_list=True)
+            missing_samples_by_mod = tuple([np.array(missing_samples)+1 for missing_samples in missing_samples_by_mod])
             transformed_Xs = [np.nan_to_num(np.clip(X, a_min=0, a_max=None), nan=0.0) for X in transformed_Xs]
             transformed_Xs = [X/(X.sum().sum()) for X in transformed_Xs]
 
             if self.random_state is not None:
                 self._oc.rand('seed', self.random_state)
             u, v, u_star_loss, loss = self._oc.ONMF_Multi_PGD_search(transformed_Xs, option, len(Xs[0]),
-                                                               missing_samples_by_view, self.block_size, nout=4)
+                                                               missing_samples_by_mod, self.block_size, nout=4)
             u_star_loss = u_star_loss[self.n_pass-1]
             v = [np.array(arr) for arr in v[0]]
             u = [np.array(arr[0]) for arr in u]
@@ -181,6 +182,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -201,6 +203,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

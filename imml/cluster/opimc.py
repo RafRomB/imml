@@ -4,7 +4,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 
-from ..impute import get_observed_mod_indicator, simple_view_imputer
+from ..impute import get_observed_mod_indicator, simple_mod_imputer
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -115,6 +115,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -130,17 +131,17 @@ class OPIMC(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            observed_view_indicator = get_observed_mod_indicator(transformed_Xs)
-            transformed_Xs = simple_view_imputer(transformed_Xs, value="zeros")
+            observed_mod_indicator = get_observed_mod_indicator(transformed_Xs)
+            transformed_Xs = simple_mod_imputer(transformed_Xs, value="zeros")
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = tuple(transformed_Xs)
 
-            w = tuple([self._oc.diag(missing_view) for missing_view in observed_view_indicator])
+            w = tuple([self._oc.diag(missing_mod) for missing_mod in observed_mod_indicator])
             options = {"block_size": self.block_size, "k": self.n_clusters, "maxiter": self.max_iter,
                        "tol": self.tol, "pass": self.num_passes, "loss": 0, "alpha": self.alpha}
             if self.random_state is not None:
                 self._oc.rand('seed', self.random_state)
-            labels, V = self._oc.OPIMC(transformed_Xs, w, options, observed_view_indicator, nout= 2)
+            labels, V = self._oc.OPIMC(transformed_Xs, w, options, observed_mod_indicator, nout= 2)
 
             if self.clean_space:
                 self._clean_space()
@@ -160,6 +161,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -180,6 +182,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

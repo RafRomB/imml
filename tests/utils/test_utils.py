@@ -50,8 +50,8 @@ def test_invalid_inputs():
 
     X1 = np.array([[1, 2], [3, 4]])
     X2 = np.array([[5, 6], [7, 8]])
-    with pytest.raises(ValueError, match="Wrong number of views. Expected 3 but found 2"):
-        check_Xs([X1, X2], enforce_views=3)
+    with pytest.raises(ValueError, match="Wrong number of modalities. Expected 3 but found 2"):
+        check_Xs([X1, X2], enforce_modalities=3)
 
 
 def test_edge_cases():

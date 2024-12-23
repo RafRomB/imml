@@ -6,3 +6,4 @@ networkx>=2.5
 gensim>=4.2
 h5py>=3.6
 snfpy>=0
+control>=0

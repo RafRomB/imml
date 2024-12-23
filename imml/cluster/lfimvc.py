@@ -6,7 +6,7 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from scipy.sparse.linalg import eigs
 
-from ..impute import simple_view_imputer
+from ..impute import simple_mod_imputer
 from ..utils import check_Xs
 
 oct2py_installed = False
@@ -55,7 +55,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         p-th permutation matrix.
     HP_ : array-like of shape (n_samples, n_clusters, n_mods)
         missing part of the p-th base clustering matrix.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -119,6 +119,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -130,7 +131,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Xs = check_Xs(Xs, force_all_finite='allow-nan')
 
         if self.engine=="matlab":
-            transformed_Xs = simple_view_imputer(Xs)
+            transformed_Xs = simple_mod_imputer(Xs)
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
 
@@ -143,7 +144,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
                 self._clean_space()
 
         elif self.engine=="python":
-            transformed_Xs = simple_view_imputer(Xs)
+            transformed_Xs = simple_mod_imputer(Xs)
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             U, WP, HP, obj = self._incomplete_multikernel_late_fusion_clustering(transformed_Xs, self.n_clusters,
@@ -166,6 +167,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -186,6 +188,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

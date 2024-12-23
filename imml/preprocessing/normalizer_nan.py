@@ -18,11 +18,11 @@ class NormalizerNaN(Normalizer):
     >>> from imml.utils import DatasetUtils
     >>> from imml.datasets import LoadDataset
     >>> from imml.ampute import Amputer
-    >>> from imml.preprocessing import NormalizerNaN, MultiViewTransformer
+    >>> from imml.preprocessing import NormalizerNaN, MultiModTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
     >>> amp = Amputer(p=0.3, mechanism="um")
     >>> Xs = amp.fit_transform(Xs)
-    >>> transformer = MultiViewTransformer(NormalizerNaN())
+    >>> transformer = MultiModTransformer(NormalizerNaN())
     >>> transformer.fit_transform(Xs)
     """
 

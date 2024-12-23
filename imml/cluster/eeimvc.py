@@ -60,7 +60,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         missing part of the p-th base clustering matrix.
     beta_ : array-like of shape (n_mods,)
         Adaptive weights of clustering matrices.
-    loss_ : array-like of shape (n_iter_,)
+    loss_ : array-like of shape (n_iter\_,)
         Values of the loss function.
     n_iter_ : int
         Number of iterations.
@@ -127,6 +127,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -142,10 +143,10 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            observed_view_indicator = get_observed_mod_indicator(transformed_Xs)
-            if isinstance(observed_view_indicator, np.ndarray):
-                observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            s = [modality[modality == 0].index.values for _,modality in observed_view_indicator.items()]
+            observed_mod_indicator = get_observed_mod_indicator(transformed_Xs)
+            if isinstance(observed_mod_indicator, np.ndarray):
+                observed_mod_indicator = pd.DataFrame(observed_mod_indicator)
+            s = [modality[modality == 0].index.values for _,modality in observed_mod_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             s = tuple([{"indx": i +1} for i in s])
@@ -162,12 +163,12 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
                 self._clean_space()
 
         elif self.engine=="python":
-            observed_view_indicator = get_observed_mod_indicator(Xs)
-            if isinstance(observed_view_indicator, pd.DataFrame):
-                observed_view_indicator = observed_view_indicator.reset_index(drop=True)
-            elif isinstance(observed_view_indicator[0], np.ndarray):
-                observed_view_indicator = pd.DataFrame(observed_view_indicator)
-            s = [modality[modality == 0].index.values for _, modality in observed_view_indicator.items()]
+            observed_mod_indicator = get_observed_mod_indicator(Xs)
+            if isinstance(observed_mod_indicator, pd.DataFrame):
+                observed_mod_indicator = observed_mod_indicator.reset_index(drop=True)
+            elif isinstance(observed_mod_indicator[0], np.ndarray):
+                observed_mod_indicator = pd.DataFrame(observed_mod_indicator)
+            s = [modality[modality == 0].index.values for _, modality in observed_mod_indicator.items()]
             transformed_Xs = [self.kernel(X) for X in Xs]
             transformed_Xs = np.array(transformed_Xs).swapaxes(0, -1)
             transformed_Xs = np.nan_to_num(transformed_Xs, nan=0)
@@ -194,6 +195,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -214,6 +216,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns

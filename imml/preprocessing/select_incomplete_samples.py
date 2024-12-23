@@ -7,15 +7,16 @@ from ..utils import check_Xs
 
 class SelectIncompleteSamples(FunctionTransformer):
     r"""
-    Remove complete samples from a multi-view dataset. Apply FunctionTransformer (from Scikit-learn)
-    with select_incomplete_samples as a function.
+    Remove complete samples from a multi-modal dataset. Apply `FunctionTransformer` (from `Scikit-learn`)
+    with `select_incomplete_samples` as a function.
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.preprocessing import SelectIncompleteSamples
     >>> from imml.ampute import Amputer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
     >>> transformer = SelectIncompleteSamples()
     >>> transformer.fit_transform(Xs)
@@ -27,14 +28,15 @@ class SelectIncompleteSamples(FunctionTransformer):
 
 def select_incomplete_samples(Xs: list):
     r"""
-    Remove complete samples from a multi-view dataset.
+    Remove complete samples from a multi-modal dataset.
 
     Parameters
     ----------
     Xs : list of array-likes
-        - Xs length: n_views
+        - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features)
-        A list of different views.
+
+        A list of different mods.
 
     Returns
     -------
@@ -43,10 +45,11 @@ def select_incomplete_samples(Xs: list):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.preprocessing import select_incomplete_samples
     >>> from imml.ampute import Amputer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
     >>> select_incomplete_samples(Xs)
     """
@@ -55,8 +58,8 @@ def select_incomplete_samples(Xs: list):
     pandas_format = isinstance(Xs[0], pd.DataFrame)
     if not pandas_format:
         Xs = [pd.DataFrame(X) for X in Xs]
-    sample_views = get_missing_mod_indicator(Xs)
-    complete_samples = sample_views.any(axis= 1)
+    sample_mods = get_missing_mod_indicator(Xs)
+    complete_samples = sample_mods.any(axis= 1)
     transformed_Xs = [X.loc[complete_samples] for X in Xs]
     if not pandas_format:
         transformed_Xs = [X.values for X in transformed_Xs]

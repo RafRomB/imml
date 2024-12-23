@@ -9,7 +9,7 @@ from pyrea import clusterer, view, fuser, execute_ensemble, consensus
 
 from imml.cluster import MRGCN
 from imml.load import MRGCNDataset
-from imml.preprocessing import MultiViewTransformer
+from imml.preprocessing import MultiModTransformer
 
 from src.utils import Utils
 
@@ -153,7 +153,7 @@ class Model:
 
     def mrgcn(self, train_Xs, n_clusters, random_state, run_n):
         pipeline, params = self.alg["alg"], self.alg["params"]
-        pipeline = make_pipeline(*pipeline, MultiViewTransformer(FunctionTransformer(
+        pipeline = make_pipeline(*pipeline, MultiModTransformer(FunctionTransformer(
             lambda x: torch.from_numpy(x.values.astype(np.float32)))))
         transformed_Xs = pipeline.fit_transform(train_Xs)
         train_data = MRGCNDataset(Xs=transformed_Xs)

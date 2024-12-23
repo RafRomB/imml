@@ -74,10 +74,10 @@ class SUMO(BaseEstimator, ClassifierMixin):
     embedding_ : array-like of shape (n_samples, n_clusters)
         The final spectral representation of the data to be used as input for the KMeans clustering step.
     graph_ : MultiplexNet
-        Multiview graph.
+        Multi-modal graph.
     nmf_ : UnsupervisedSumoNMF
         The nonnegative matrix factorization (NMF) object.
-    similarity_ : dict of length n_mods, with views as keys and an array-like of shape (n_samples,n_samples) as values.
+    similarity_ : dict of length n_mods, with mods as keys and an array-like of shape (n_samples,n_samples) as values.
         List of adjacency matrix.
     cophenet_list_ : ndarray of shape (rep,).
         Object created by SUMO
@@ -174,6 +174,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.
@@ -272,6 +273,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -293,6 +295,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
         y : Ignored
             Not used, present here for API consistency by convention.

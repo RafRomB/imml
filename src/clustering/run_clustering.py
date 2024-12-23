@@ -5,7 +5,7 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
-from imml.preprocessing import MultiViewTransformer, ConcatenateViews, select_complete_samples
+from imml.preprocessing import MultiModTransformer, ConcatenateMods, select_complete_samples
 from imml.utils import DatasetUtils
 from settings import PROFILES_PATH
 
@@ -50,7 +50,7 @@ class RunClustering:
             y_train = y.loc[train_Xs[0].index]
 
             if impute:
-                train_Xs = MultiViewTransformer(SimpleImputer(strategy="mean").set_output(
+                train_Xs = MultiModTransformer(SimpleImputer(strategy="mean").set_output(
                     transform="pandas")).fit_transform(train_Xs)
             elif not incomplete_algorithms:
                 train_Xs = select_complete_samples(Xs=train_Xs)
@@ -67,7 +67,7 @@ class RunClustering:
             clusters = pd.Series(clusters, index=y_train.index)
 
             if isinstance(train_X, list):
-                train_X = ConcatenateViews().fit_transform(train_X)
+                train_X = ConcatenateMods().fit_transform(train_X)
             if np.isnan(train_X).any().any():
                 train_X = SimpleImputer(strategy="mean").fit_transform(train_X)
             if not isinstance(train_X, pd.DataFrame):

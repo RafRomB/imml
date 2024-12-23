@@ -10,8 +10,8 @@ class JNMFImputer(JNMF):
     Impute missing data in a dataset using the `JNMF` method.
 
     This class extends the `JNMF` class to provide functionality for filling in incomplete samples by
-    addressing both block-wise and feature-wise missing data. As a subclass of JNMF, `JNMFImputer` inherits all
-    input parameters and attributes from `JNMF`. Consequently, it uses the same `fit` method as DFMF JNMF
+    addressing both block-wise and feature-wise missing data. As a subclass of `JNMF`, `JNMFImputer` inherits all
+    input parameters and attributes from `JNMF`. Consequently, it uses the same `fit` method as `JNMF`
     training the model.
 
     Example
@@ -39,6 +39,7 @@ class JNMFImputer(JNMF):
         Xs : list of array-likes
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
+
             A list of different modalities.
 
         Returns
@@ -62,9 +63,10 @@ class JNMFImputer(JNMF):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_views
+            - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
-            A list of different views.
+
+            A list of different mods.
         y : Ignored
             Not used, present here for API consistency by convention.
         fit_params : Ignored
