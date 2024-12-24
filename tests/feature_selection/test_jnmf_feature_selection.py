@@ -6,9 +6,11 @@ from imml.ampute import Amputer
 from imml.feature_selection import JNMFFeatureSelector
 
 try:
+    from rpy2.robjects.packages import importr, PackageNotInstalledError
     rpy2_installed = True
 except ImportError:
     rpy2_installed = False
+    rpy2_module_error = "rpy2 needs to be installed to use r engine."
 
 
 @pytest.fixture
