@@ -23,11 +23,11 @@ except ImportError:
 
 @pytest.fixture
 def sample_data():
-    if torch_installed:
         X = np.random.default_rng(42).random((25, 10))
         X1, X2, X3 = X[:, :3], X[:, 3:5], X[:, 5:]
         Xs_numpy = [X1, X2, X3]
-        Xs_torch = [torch.from_numpy(X.astype(np.float32)) for X in Xs_numpy]
+        if torch_installed:
+            Xs_torch = [torch.from_numpy(X.astype(np.float32)) for X in Xs_numpy]
         return Xs_torch, Xs_numpy
 
 def test_pytorch_not_installed(sample_data):

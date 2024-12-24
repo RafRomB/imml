@@ -53,6 +53,8 @@ def test_default_params(sample_data):
 def test_param_randomstate(sample_data):
     random_state = 42
     for engine in ["matlab", "python"]:
+        if (engine == "matlab") and not oct2py_installed:
+            continue
         labels = estimator(engine=engine, random_state=random_state).fit_predict(sample_data[0])
         assert all(labels == estimator(engine=engine, random_state=random_state).fit_predict(sample_data[0]))
 

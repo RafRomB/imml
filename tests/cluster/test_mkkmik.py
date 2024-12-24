@@ -55,14 +55,15 @@ def test_default_params(sample_data):
             assert model.n_iter_ > 0
 
 def test_invalid_params(sample_data):
-    with pytest.raises(ValueError, match="Invalid engine."):
-        estimator(engine='invalid')
-    with pytest.raises(ValueError, match="Invalid n_clusters."):
-        estimator(n_clusters='invalid')
-    with pytest.raises(ValueError, match="Invalid n_clusters."):
-        estimator(n_clusters=0)
-    with pytest.raises(ValueError, match="Invalid kernel_initialization."):
-        estimator(kernel_initialization='invalid')
+    if oct2py_installed:
+        with pytest.raises(ValueError, match="Invalid engine."):
+            estimator(engine='invalid')
+        with pytest.raises(ValueError, match="Invalid n_clusters."):
+            estimator(n_clusters='invalid')
+        with pytest.raises(ValueError, match="Invalid n_clusters."):
+            estimator(n_clusters=0)
+        with pytest.raises(ValueError, match="Invalid kernel_initialization."):
+            estimator(kernel_initialization='invalid')
 
 def test_fit_predict(sample_data):
     n_clusters = 3

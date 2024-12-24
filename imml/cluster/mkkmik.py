@@ -29,8 +29,8 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    kernel : callable, default=kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
-        Specifies the kernel type to be used in the algorithm.
+    kernel : callable, default=None
+        Specifies the kernel type to be used in the algorithm. It uses dot product kernel by default.
     kernel_initialization : str, default="zeros"
         Specifies the algorithm to initialize the kernel. It should be one of ['zeros', 'mean', 'knn', 'em', 'laplacian'].
     lambda_reg : float, default=1.
@@ -82,7 +82,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
     """
 
     def __init__(self, n_clusters: int = 8, kernel_initialization: str = "zeros",
-                 kernel: callable = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel()),
+                 kernel: callable = None,
                  qnorm: float = 2., random_state: int = None, engine: str = "matlab",
                  verbose=False, clean_space: bool = True):
 
@@ -98,6 +98,9 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
         kernel_initializations = ['zeros', 'mean', 'knn', 'em', 'laplacian']
         if kernel_initialization not in kernel_initializations:
             raise ValueError(f"Invalid kernel_initialization. Expected one of: {kernel_initializations}")
+
+        if kernel is None:
+            kernel = kernels.Sum(kernels.DotProduct(), kernels.WhiteKernel())
 
         self.n_clusters = n_clusters
         self.kernel_initialization = kernel_initialization
