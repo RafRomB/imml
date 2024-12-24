@@ -33,8 +33,9 @@ def test_default_params(sample_data):
         assert len(dataset) == len(sample_data[0])
 
 def test_invalid_params():
-    with pytest.raises(ValueError, match="Invalid Xs."):
-        MRGCNDataset(Xs="invalid_input")
+    if torch_installed:
+        with pytest.raises(ValueError, match="Invalid Xs."):
+            MRGCNDataset(Xs="invalid_input")
 
 def test_getitem(sample_data):
     if torch_installed:
