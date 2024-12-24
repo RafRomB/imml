@@ -119,8 +119,12 @@ class Amputer(BaseEstimator, TransformerMixin):
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         sampled_names = copy.deepcopy(common_samples)
-        n_missing = int(len(sample_names.difference(sampled_names)) / self.n_mods)
-        for X_idx in range(self.n_mods):
+        if self.weights is None:
+            n_missings = int(len(sample_names.difference(sampled_names)) / self.n_mods)
+            n_missings = [n_missings] * self.n_mods
+        else:
+            n_missings = [int(len(sample_names.difference(sampled_names)) * w) for w in self.weights]
+        for X_idx,n_missing in enumerate(n_missings):
             x_per_mod = sample_names.difference(sampled_names)
             if X_idx != self.n_mods - 1:
                 x_per_mod = pd.Series(x_per_mod, index=x_per_mod).sample(n=n_missing,
