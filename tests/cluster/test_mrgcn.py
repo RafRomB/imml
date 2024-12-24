@@ -47,17 +47,17 @@ def test_default_params(sample_data):
         train_data = MRGCNDataset(Xs=Xs)
         train_dataloader = DataLoader(dataset=train_data, batch_size=n_samples, shuffle=True)
         trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
-        estimator = estimator(Xs=Xs, n_clusters=n_clusters)
-        trainer.fit(estimator, train_dataloader)
+        model = estimator(Xs=Xs, n_clusters=n_clusters)
+        trainer.fit(model, train_dataloader)
         train_dataloader = DataLoader(dataset=train_data, batch_size=n_samples, shuffle=False)
-        labels = trainer.predict(estimator, train_dataloader)[0]
+        labels = trainer.predict(model, train_dataloader)[0]
         assert labels is not None
         assert len(labels) == n_samples
-        assert len(np.unique(labels)) == estimator.n_clusters
+        assert len(np.unique(labels)) == model.n_clusters
         assert min(labels) == 0
-        assert max(labels) == (estimator.n_clusters - 1)
+        assert max(labels) == (model.n_clusters - 1)
         assert not np.isnan(labels).any()
-        embedding_ = estimator._embedding(batch=Xs).detach().cpu().numpy()
+        embedding_ = model._embedding(batch=Xs).detach().cpu().numpy()
         assert len(embedding_) == n_samples
 
 def test_invalid_params(sample_data):
@@ -96,17 +96,17 @@ def test_missing_values_handling(sample_data):
         train_data = MRGCNDataset(Xs=transformed_Xs)
         train_dataloader = DataLoader(dataset=train_data, batch_size=len(transformed_Xs[0]), shuffle=True)
         trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
-        estimator = estimator(Xs=transformed_Xs, n_clusters=n_clusters)
-        trainer.fit(estimator, train_dataloader)
+        model = estimator(Xs=transformed_Xs, n_clusters=n_clusters)
+        trainer.fit(model, train_dataloader)
         train_dataloader = DataLoader(dataset=train_data, batch_size=len(transformed_Xs[0]), shuffle=False)
-        labels = trainer.predict(estimator, train_dataloader)[0]
+        labels = trainer.predict(model, train_dataloader)[0]
         assert labels is not None
         assert len(labels) == n_samples
-        assert len(np.unique(labels)) == estimator.n_clusters
+        assert len(np.unique(labels)) == model.n_clusters
         assert min(labels) == 0
-        assert max(labels) == (estimator.n_clusters - 1)
+        assert max(labels) == (model.n_clusters - 1)
         assert not np.isnan(labels).any()
-        embedding_ = estimator._embedding(batch=transformed_Xs).detach().cpu().numpy()
+        embedding_ = model._embedding(batch=transformed_Xs).detach().cpu().numpy()
         assert not np.isnan(embedding_).any().any()
         assert len(embedding_) == n_samples
 
