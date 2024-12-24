@@ -24,7 +24,7 @@ def test_pytorch_not_installed(sample_data):
     if torch_installed:
         MRGCNDataset(Xs=sample_data)
     else:
-        with pytest.raises(ImportError, match="torch and lightning needs to be installed."):
+        with pytest.raises(ImportError, match="torch needs to be installed."):
             MRGCNDataset(Xs=sample_data)
 
 def test_default_params(sample_data):

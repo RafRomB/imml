@@ -10,7 +10,7 @@ try:
     torch_installed = True
 except ImportError:
     torch_installed = False
-    torch_module_error = "torch and lightning needs to be installed."
+    torch_module_error = "torch and lightning need to be installed."
     DLBaseeModule = object
 
 DLBaseeModule = pl.LightningModule if torch_installed else object

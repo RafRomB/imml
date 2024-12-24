@@ -25,7 +25,7 @@ def test_rpy2_not_installed():
     if rpy2_installed:
         JNMF(engine="r")
     else:
-        with pytest.raises(ImportError, match="rpy2 needs to be installed to use matlab engine."):
+        with pytest.raises(ImportError, match="rpy2 needs to be installed to use r engine."):
             JNMF(engine="r")
 
 def test_random_state(sample_data):
