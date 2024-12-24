@@ -16,7 +16,8 @@ except ImportError:
 def sample_data():
     X = np.random.default_rng(42).random((25, 10))
     Xs = [X[:, :3], X[:, 3:5], X[:, 5:]]
-    Xs = [torch.from_numpy(X) for X in Xs]
+    if torch_installed:
+        Xs = [torch.from_numpy(X) for X in Xs]
     return Xs
 
 def test_pytorch_not_installed(sample_data):

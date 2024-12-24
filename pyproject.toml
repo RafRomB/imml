@@ -8,10 +8,16 @@ version = "0.1.0"
 description = "A python package for multi-modal learning with incomplete data"
 readme = "README.rst"
 authors = [
-    { name = "...", email = "a@mail.com" }
+    {
+    name = "...",
+    email = "a@mail.com",
+    }
 ]
 maintainers = [
-    { name = "...", email = "a@mail.com" }
+    {
+    name = "...",
+    email = "a@mail.com",
+    }
 ]
 keywords = ["multi-modal learning", "machine learning", "incomplete data"]
 license = { file = "LICENSE" }
