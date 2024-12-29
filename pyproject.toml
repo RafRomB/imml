@@ -39,6 +39,7 @@ dependencies = [
     "h5py>=3.6",
     "snfpy>=0",
     "control>=0",
+    "sdv>=0.14.0",
 ]
 
 [project.urls]
@@ -67,6 +68,8 @@ docs = [
 tutorials = [
     "matplotlib>=3.3.4",
     "seaborn>=0.9.0",
+    "statsmodels>=0.13.0",
+    "sdv>=0.9.0",
 ]
 tests = [
     "pytest>=7.1.2",

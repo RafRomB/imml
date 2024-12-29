@@ -19,6 +19,13 @@ jobs:
         python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
     steps:
     - uses: actions/checkout@v4
+    - name: Cache Python dependencies
+      uses: actions/cache@v3
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('**/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-${{ matrix.python-version }}-
     - name: Set up Python ${{ matrix.python-version }}
       uses: actions/setup-python@v5
       with:
@@ -74,6 +81,7 @@ jobs:
         python -m pip install .[matlab]
         pytest --cov=imml
     - name: Test torch
+      if: runner.os == 'Linux' || runner.os == 'Windows'
       run: |
         python -m pip install .[torch]
         pytest --cov=imml
