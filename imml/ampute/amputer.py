@@ -103,7 +103,7 @@ class Amputer(BaseEstimator, TransformerMixin):
                 pseudo_observed_mod_indicator = self._mnar_mask(sample_names=sample_names)
 
             pseudo_observed_mod_indicator = pseudo_observed_mod_indicator.astype(bool)
-            transformed_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_mod_indicator=pseudo_observed_mod_indicator)
+            transformed_Xs = DatasetUtils.convert_to_immd(Xs=Xs, observed_mod_indicator=pseudo_observed_mod_indicator)
 
             if pandas_format:
                 transformed_Xs = [pd.DataFrame(X, index=rownames, columns=colnames[X_idx])

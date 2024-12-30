@@ -13,7 +13,7 @@ class DatasetUtils:
     """
 
     @staticmethod
-    def convert_to_imvd(Xs: list, observed_mod_indicator) -> list:
+    def convert_to_immd(Xs: list, observed_mod_indicator) -> list:
         r"""
         Generate block-wise missingness patterns in complete multi-modal datasets.
 
@@ -46,7 +46,7 @@ class DatasetUtils:
         >>> transformer = make_pipeline(Amputer(p=0.2, mechanism="mcar", random_state=42),
                                         ObservedModIndicator().set_output(transformed="pandas"))
         >>> observed_mod_indicator = transformer.fit_transform(Xs)
-        >>> DatasetUtils.convert_to_imvd(Xs = Xs, observed_mod_indicator = observed_mod_indicator)
+        >>> DatasetUtils.convert_to_immd(Xs = Xs, observed_mod_indicator = observed_mod_indicator)
         """
         Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
         transformed_Xs = []

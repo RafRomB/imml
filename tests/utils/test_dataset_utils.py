@@ -18,10 +18,10 @@ def sample_data():
     observed_mod_indicator = observed_mod_indicator.values
     return Xs_pandas, Xs_numpy, observed_mod_indicator
 
-def test_convert_to_imvd(sample_data):
+def test_convert_to_immd(sample_data):
     observed_mod_indicator = sample_data[-1]
     for Xs in sample_data[:2]:
-        transformed_Xs = DatasetUtils.convert_to_imvd(Xs, observed_mod_indicator)
+        transformed_Xs = DatasetUtils.convert_to_immd(Xs, observed_mod_indicator)
         assert len(transformed_Xs) == len(Xs)
         values_to_compare = [2,1]
         for i, X in enumerate(Xs):

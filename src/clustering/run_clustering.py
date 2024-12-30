@@ -45,7 +45,7 @@ class RunClustering:
             observed_view_indicator = pd.DataFrame.from_dict(observed_view_indicator)
             observed_view_indicator.index = observed_view_indicator.index.astype(int)
             observed_view_indicator.columns = observed_view_indicator.columns.astype(int)
-            train_Xs = DatasetUtils.convert_to_imvd(Xs=Xs, observed_view_indicator=observed_view_indicator)
+            train_Xs = DatasetUtils.convert_to_immd(Xs=Xs, observed_view_indicator=observed_view_indicator)
             train_Xs = [X.loc[observed_view_indicator.index] for X in train_Xs]
             y_train = y.loc[train_Xs[0].index]
 
