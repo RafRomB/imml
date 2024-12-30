@@ -158,11 +158,11 @@ class Model:
         transformed_Xs = pipeline.fit_transform(train_Xs)
         train_data = MRGCNDataset(Xs=transformed_Xs)
         with isolate_rng():
-            train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=True)
+            train_dataloader = DataLoader(dataset=train_data, batch_size=len(transformed_Xs[0]), shuffle=True)
             trainer = Trainer(max_epochs=100, logger=False, enable_checkpointing=False)
             model = MRGCN(Xs=transformed_Xs, n_clusters=n_clusters)
             trainer.fit(model, train_dataloader)
-        train_dataloader = DataLoader(dataset=train_data, batch_size=max(128, len(transformed_Xs[0])), shuffle=False)
+        train_dataloader = DataLoader(dataset=train_data, batch_size=len(transformed_Xs[0]), shuffle=False)
         clusters = trainer.predict(model, train_dataloader)
         clusters = np.concatenate(clusters)
         transformed_Xs = [model._embedding(batch=batch).detach().cpu().numpy() for batch in train_dataloader]
