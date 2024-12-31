@@ -19,6 +19,8 @@ class CreateResultTable:
         # change the name when there is no missing
         results.loc[(results["amputation_mechanism"] == amputation_mechanisms[0]) & (
                 results["missing_percentage"] == 0), "amputation_mechanism"] = "No"
+        results.loc[(results["amputation_mechanism"] == amputation_mechanisms[1]) & (
+                results["missing_percentage"] == 0), "amputation_mechanism"] = "Resampling"
         results = results.set_index(indexes_names)
 
         # remove experiments when there is no missing and imputation is True
@@ -26,7 +28,7 @@ class CreateResultTable:
                                  drop_level=False).xs(True, level="imputation", drop_level=False).index
         results = results.drop(idx_to_drop)
         # remove experiments when missing percentage is 0 and there is amputation
-        for amputation_mechanism in amputation_mechanisms[1:]:
+        for amputation_mechanism in amputation_mechanisms[2:]:
             idx_to_drop = results.xs(0, level="missing_percentage",
                                      drop_level=False).xs(amputation_mechanism, level="amputation_mechanism",
                                                           drop_level=False).index

@@ -4,6 +4,7 @@ import json
 import os.path
 import shutil
 import numpy as np
+from sklearn.model_selection import train_test_split
 from sklearn.utils import shuffle
 from imml.ampute import Amputer
 from imml.impute import get_observed_mod_indicator
@@ -29,6 +30,8 @@ for dataset_name in datasets:
         if prob == 0:
             if amputation_mechanism == "um":
                 amputation_mechanism = "No"
+            elif amputation_mechanism == "pm":
+                amputation_mechanism = "Resampling"
             else:
                 continue
 
@@ -45,6 +48,10 @@ for dataset_name in datasets:
             if p != 0:
                 amp = Amputer(p=round(p, 2), mechanism=amputation_mechanism, random_state=random_state)
                 train_Xs = amp.fit_transform(train_Xs)
+            else:
+                if amputation_mechanism == "Resampling":
+                    train_Xs = train_test_split(*Xs, train_size=0.8, random_state=random_state,
+                                                shuffle=True, stratify=y_train)[::2]
 
             observed_view_indicator = get_observed_mod_indicator(train_Xs)
             try:
