@@ -99,11 +99,11 @@ class ResultGenerator:
         alg_stability = results[['dataset', 'algorithm', 'missing_percentage', 'amputation_mechanism', 'imputation', 'run_n',
                                  "sorted_y_pred", 'silhouette', 'vrc', 'db', 'dbcv', 'dunn', "dhi", "ssei", 'rsi', 'bhi']]
 
-        alg_stability = alg_stability.drop(alg_stability["amputation_mechanism"] == "No")
+        alg_stability = alg_stability.loc[~(alg_stability["amputation_mechanism"] == "No")]
 
-        alg_uns_metrics = alg_stability.drop(columns=["sorted_y_pred", 'imputation', 'run_n'])
+        alg_uns_metrics = alg_stability.drop(columns=["sorted_y_pred", 'run_n'])
         alg_uns_metrics = alg_uns_metrics.groupby(
-            ["dataset", "algorithm", "missing_percentage", "amputation_mechanism"], as_index=False).mean()
+            ["dataset", "algorithm", "missing_percentage", "amputation_mechanism", "imputation"], as_index=False).mean()
 
         iterator = alg_stability["dataset"].unique()
         if progress_bar:
@@ -112,7 +112,7 @@ class ResultGenerator:
         for dataset in iterator:
             preds_dataset = alg_stability.loc[
                 (alg_stability["dataset"] == dataset), ["missing_percentage", "algorithm", 'amputation_mechanism',
-                                                        "run_n", "sorted_y_pred"]]
+                                                        "imputation", "run_n", "sorted_y_pred"]]
             for alg in preds_dataset["algorithm"].unique():
                 pred_alg = preds_dataset[preds_dataset["algorithm"] == alg]
                 for missing_percentage in pred_alg["missing_percentage"].unique():
