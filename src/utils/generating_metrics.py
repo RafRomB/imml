@@ -96,12 +96,13 @@ class ResultGenerator:
 
     @staticmethod
     def save_unsupervised_metrics(results: pd.DataFrame, filepath: str, random_state=None, progress_bar=True):
-        alg_stability = results[['dataset', 'algorithm', 'missing_percentage', 'amputation_mechanism', 'imputation', 'run_n',
-                                 "sorted_y_pred", 'silhouette', 'vrc', 'db', 'dbcv', 'dunn', "dhi", "ssei", 'rsi', 'bhi']]
+        alg_stability = results[['dataset', 'algorithm', 'missing_percentage', 'amputation_mechanism', 'imputation',
+                                 'run_n', "sorted_y_pred", "y_pred_idx",
+                                 'silhouette', 'vrc', 'db', 'dbcv', 'dunn', "dhi", "ssei", 'rsi', 'bhi']]
 
         alg_stability = alg_stability.loc[~(alg_stability["amputation_mechanism"] == "No")]
 
-        alg_uns_metrics = alg_stability.drop(columns=["sorted_y_pred", 'run_n'])
+        alg_uns_metrics = alg_stability.drop(columns=["sorted_y_pred", 'run_n', "y_pred_idx"])
         alg_uns_metrics = alg_uns_metrics.groupby(
             ["dataset", "algorithm", "missing_percentage", "amputation_mechanism", "imputation"], as_index=False).mean()
 
@@ -112,7 +113,7 @@ class ResultGenerator:
         for dataset in iterator:
             preds_dataset = alg_stability.loc[
                 (alg_stability["dataset"] == dataset), ["missing_percentage", "algorithm", 'amputation_mechanism',
-                                                        "imputation", "run_n", "sorted_y_pred"]]
+                                                        "imputation", "run_n", "sorted_y_pred", "y_pred_idx"]]
             for alg in preds_dataset["algorithm"].unique():
                 pred_alg = preds_dataset[preds_dataset["algorithm"] == alg]
                 for missing_percentage in pred_alg["missing_percentage"].unique():
@@ -126,10 +127,13 @@ class ResultGenerator:
 
                             amis, aris = [], []
                             for run_1, run_2 in set(itertools.combinations(pred_missing_ampt_impt_alg["run_n"].unique(), 2)):
-                                pred1_alg = pred_missing_ampt_impt_alg.loc[
-                                    (pred_missing_ampt_impt_alg["run_n"] == run_1), "sorted_y_pred"].to_list()[0]
-                                pred2_alg = pred_missing_ampt_impt_alg.loc[
-                                    (pred_missing_ampt_impt_alg["run_n"] == run_2), "sorted_y_pred"].to_list()[0]
+                                pred1_alg = pred_missing_ampt_impt_alg["run_n"] == run_1
+                                pred1_alg = pred_missing_ampt_impt_alg.loc[pred1_alg].iloc[0]
+                                pred2_alg = pred_missing_ampt_impt_alg["run_n"] == run_2
+                                pred2_alg = pred_missing_ampt_impt_alg.loc[pred2_alg].iloc[0]
+                                mask = [idx for idx in pred1_alg["y_pred_idx"] if idx in pred2_alg["y_pred_idx"]]
+                                pred1_alg = pd.Series(pred1_alg["sorted_y_pred"], index=pred1_alg["y_pred_idx"]).loc[mask]
+                                pred2_alg = pd.Series(pred2_alg["sorted_y_pred"], index=pred2_alg["y_pred_idx"]).loc[mask]
                                 amis.append(adjusted_mutual_info_score(pred1_alg, pred2_alg)), aris.append(
                                     adjusted_rand_score(pred1_alg, pred2_alg))
 
@@ -192,13 +196,11 @@ class ResultGenerator:
             ["y_true", "y_pred", "y_true_idx", "y_pred_idx"]].parallel_applymap(eval)
         assert results["y_true_idx"].eq(results["y_pred_idx"]).all()
 
-        sorted_labels = results.parallel_apply(
+        results[["sorted_y_pred", "sorted_y_true"]] = results[["y_true", "y_pred", "y_true_idx", "y_pred_idx"]].parallel_apply(
             lambda x: (
                 pd.Series(x["y_pred"], index=x["y_pred_idx"]).sort_index().to_list(),
                 pd.Series(x["y_true"], index=x["y_true_idx"]).sort_index().to_list()),
             axis=1, result_type="expand")
-        sorted_labels.columns = ["sorted_y_pred", "sorted_y_true"]
-        results[["sorted_y_pred", "sorted_y_true"]] = sorted_labels
 
         return results
 

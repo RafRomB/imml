@@ -1,3 +1,5 @@
+import gc
+
 import numpy as np
 import pandas as pd
 from sklearn.cluster import SpectralClustering
@@ -168,6 +170,9 @@ class Model:
         transformed_Xs = [model._embedding(batch=batch).detach().cpu().numpy() for batch in train_dataloader]
         transformed_Xs = np.vstack(transformed_Xs)
         transformed_Xs = pd.DataFrame(transformed_Xs, index=train_Xs[0].index)
+        del model
+        gc.collect()
+        torch.cuda.empty_cache()
         return clusters, transformed_Xs
 
 
