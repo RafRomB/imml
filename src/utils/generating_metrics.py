@@ -43,36 +43,39 @@ class ResultGenerator:
 
     @staticmethod
     def save_alg_comparison(results: pd.DataFrame, filepath: str, progress_bar=True):
-        comparison_columns = ["dataset", "alg1", "alg2", "run_n", "pred_alg1", "pred_alg2"]
+        comparison_columns = ["Dataset", "alg1", "alg2", "Run_N", "pred_alg1", "pred_alg2"]
         alg_comparisons = pd.DataFrame([], columns=comparison_columns)
 
         if progress_bar:
-            iterator = product(results["dataset"].unique(),
-                    sorted(results["run_n"].unique()),
-                    set(itertools.combinations(results["algorithm"].unique(), 2)))
+            iterator = product(results["Dataset"].unique(),
+                    sorted(results["Run_N"].unique()),
+                    set(itertools.combinations(results["Algorithm"].unique(), 2)))
         else:
-            iterator = itertools.product(results["dataset"].unique(),
-                    sorted(results["run_n"].unique()),
-                    set(itertools.combinations(results["algorithm"].unique(), 2)))
+            iterator = itertools.product(results["Dataset"].unique(),
+                    sorted(results["Run_N"].unique()),
+                    set(itertools.combinations(results["Algorithm"].unique(), 2)))
 
         for dataset, run_n, (alg1, alg2) in iterator:
-            pred_alg1 = results.loc[(results["dataset"] == dataset) &
-                                    (results["missing_percentage"] == 0) &
-                                    (results["amputation_mechanism"] == "Resampling") &
-                                    (results["run_n"] == run_n) &
-                                    (results["algorithm"] == alg1),
-            ["sorted_y_pred"]]
-            pred_alg2 = results.loc[(results["dataset"] == dataset) &
-                                    (results["missing_percentage"] == 0) &
-                                    (results["amputation_mechanism"] == "Resampling") &
-                                    (results["run_n"] == run_n) &
-                                    (results["algorithm"] == alg2),
-            ["sorted_y_pred"]]
+            pred_alg1 = results.loc[(results["Dataset"] == dataset) &
+                                    (results["Amputation_Mechanism"] == "Resampling") &
+                                    (results["Run_N"] == run_n) &
+                                    (results["Algorithm"] == alg1),
+            ["Sorted_Y_Pred", "Y_Pred_Idx"]]
+            pred_alg2 = results.loc[(results["Dataset"] == dataset) &
+                                    (results["Amputation_Mechanism"] == "Resampling") &
+                                    (results["Run_N"] == run_n) &
+                                    (results["Algorithm"] == alg2),
+            ["Sorted_Y_Pred", "Y_Pred_Idx"]]
+
             if pred_alg1.empty or pred_alg2.empty:
                 continue
+            pred_alg1 = pred_alg1.iloc[0]
+            pred_alg2 = pred_alg2.iloc[0]
+            mask = [idx for idx in pred_alg1["Y_Pred_Idx"] if idx in pred_alg2["Y_Pred_Idx"]]
+            pred_alg1 = pd.Series(pred_alg1["Sorted_Y_Pred"], index=pred_alg1["Y_Pred_Idx"]).loc[mask]
+            pred_alg2 = pd.Series(pred_alg2["Sorted_Y_Pred"], index=pred_alg2["Y_Pred_Idx"]).loc[mask]
 
-            alg_comparison = pd.DataFrame([[dataset, alg1, alg2, run_n,
-                                            pred_alg1["sorted_y_pred"].values[0], pred_alg2["sorted_y_pred"].values[0]]],
+            alg_comparison = pd.DataFrame([[dataset, alg1, alg2, run_n, pred_alg1, pred_alg2]],
                                           columns=comparison_columns)
             alg_comparisons = pd.concat([alg_comparisons, alg_comparison], ignore_index=True)
 
@@ -96,53 +99,53 @@ class ResultGenerator:
 
     @staticmethod
     def save_unsupervised_metrics(results: pd.DataFrame, filepath: str, random_state=None, progress_bar=True):
-        alg_stability = results[['dataset', 'algorithm', 'missing_percentage', 'amputation_mechanism', 'imputation',
-                                 'run_n', "sorted_y_pred", "y_pred_idx",
-                                 'silhouette', 'vrc', 'db', 'dbcv', 'dunn', "dhi", "ssei", 'rsi', 'bhi']]
+        alg_stability = results[['Dataset', "Algorithm", "Missing_Percentage", "Amputation_Mechanism", "Imputation",
+                                 "Run_N", "Sorted_Y_Pred", "Y_Pred_Idx",
+                                 'Silhouette', "VRC", "DB", "DBCV", "Dunn", "DHI", "SSEI", 'RSI', 'BHI']]
 
-        alg_stability = alg_stability.loc[~(alg_stability["amputation_mechanism"] == "No")]
+        alg_stability = alg_stability.loc[~(alg_stability["Amputation_Mechanism"] == "Resampling")]
 
-        alg_uns_metrics = alg_stability.drop(columns=["sorted_y_pred", 'run_n', "y_pred_idx"])
+        alg_uns_metrics = alg_stability.drop(columns=["Sorted_Y_Pred", "Run_N", "Y_Pred_Idx"])
         alg_uns_metrics = alg_uns_metrics.groupby(
-            ["dataset", "algorithm", "missing_percentage", "amputation_mechanism", "imputation"], as_index=False).mean()
+            ["Dataset", "Algorithm", "Missing_Percentage", "Amputation_Mechanism", "Imputation"], as_index=False).mean()
 
-        iterator = alg_stability["dataset"].unique()
+        iterator = alg_stability["Dataset"].unique()
         if progress_bar:
             iterator = tqdm(iterator)
 
         for dataset in iterator:
             preds_dataset = alg_stability.loc[
-                (alg_stability["dataset"] == dataset), ["missing_percentage", "algorithm", 'amputation_mechanism',
-                                                        "imputation", "run_n", "sorted_y_pred", "y_pred_idx"]]
-            for alg in preds_dataset["algorithm"].unique():
-                pred_alg = preds_dataset[preds_dataset["algorithm"] == alg]
-                for missing_percentage in pred_alg["missing_percentage"].unique():
-                    pred_missing_alg = pred_alg[pred_alg["missing_percentage"] == missing_percentage]
-                    for amputation_mechanism in pred_missing_alg["amputation_mechanism"].unique():
+                (alg_stability["Dataset"] == dataset), ["Missing_Percentage", "Algorithm", "Amputation_Mechanism",
+                                                        "Imputation", "Run_N", "Sorted_Y_Pred", "Y_Pred_Idx"]]
+            for alg in preds_dataset["Algorithm"].unique():
+                pred_alg = preds_dataset[preds_dataset["Algorithm"] == alg]
+                for missing_percentage in pred_alg["Missing_Percentage"].unique():
+                    pred_missing_alg = pred_alg[pred_alg["Missing_Percentage"] == missing_percentage]
+                    for amputation_mechanism in pred_missing_alg["Amputation_Mechanism"].unique():
                         pred_missing_ampt_alg = pred_missing_alg[
-                            pred_missing_alg["amputation_mechanism"] == amputation_mechanism]
-                        for impt in pred_missing_ampt_alg["imputation"].unique():
+                            pred_missing_alg["Amputation_Mechanism"] == amputation_mechanism]
+                        for impt in pred_missing_ampt_alg["Imputation"].unique():
                             pred_missing_ampt_impt_alg = pred_missing_ampt_alg[
-                                pred_missing_ampt_alg["imputation"] == impt]
+                                pred_missing_ampt_alg["Imputation"] == impt]
 
                             amis, aris = [], []
-                            for run_1, run_2 in set(itertools.combinations(pred_missing_ampt_impt_alg["run_n"].unique(), 2)):
-                                pred1_alg = pred_missing_ampt_impt_alg["run_n"] == run_1
+                            for run_1, run_2 in set(itertools.combinations(pred_missing_ampt_impt_alg["Run_N"].unique(), 2)):
+                                pred1_alg = pred_missing_ampt_impt_alg["Run_N"] == run_1
                                 pred1_alg = pred_missing_ampt_impt_alg.loc[pred1_alg].iloc[0]
-                                pred2_alg = pred_missing_ampt_impt_alg["run_n"] == run_2
+                                pred2_alg = pred_missing_ampt_impt_alg["Run_N"] == run_2
                                 pred2_alg = pred_missing_ampt_impt_alg.loc[pred2_alg].iloc[0]
-                                mask = [idx for idx in pred1_alg["y_pred_idx"] if idx in pred2_alg["y_pred_idx"]]
-                                pred1_alg = pd.Series(pred1_alg["sorted_y_pred"], index=pred1_alg["y_pred_idx"]).loc[mask]
-                                pred2_alg = pd.Series(pred2_alg["sorted_y_pred"], index=pred2_alg["y_pred_idx"]).loc[mask]
+                                mask = [idx for idx in pred1_alg["Y_Pred_Idx"] if idx in pred2_alg["Y_Pred_Idx"]]
+                                pred1_alg = pd.Series(pred1_alg["Sorted_Y_Pred"], index=pred1_alg["Y_Pred_Idx"]).loc[mask]
+                                pred2_alg = pd.Series(pred2_alg["Sorted_Y_Pred"], index=pred2_alg["Y_Pred_Idx"]).loc[mask]
                                 amis.append(adjusted_mutual_info_score(pred1_alg, pred2_alg)), aris.append(
                                     adjusted_rand_score(pred1_alg, pred2_alg))
 
-                            alg_uns_metrics.loc[(alg_uns_metrics["dataset"] == dataset) &
-                                                (alg_uns_metrics["missing_percentage"] == missing_percentage) &
-                                                (alg_uns_metrics["amputation_mechanism"] == amputation_mechanism) &
-                                                (alg_uns_metrics["imputation"] == impt) &
-                                                (alg_uns_metrics["algorithm"] == alg),
-                            ["AMI", "ARI"]] = [np.mean(amis), np.mean(aris)]
+                            alg_uns_metrics.loc[(alg_uns_metrics["Dataset"] == dataset) &
+                                                (alg_uns_metrics["Missing_Percentage"] == missing_percentage) &
+                                                (alg_uns_metrics["Amputation_Mechanism"] == amputation_mechanism) &
+                                                (alg_uns_metrics["Imputation"] == impt) &
+                                                (alg_uns_metrics["Algorithm"] == alg),
+                            ["AMI_Sta", "ARI_Sta"]] = [np.mean(amis), np.mean(aris)]
 
         alg_uns_metrics.to_csv(filepath, index=None)
         return alg_uns_metrics
@@ -162,7 +165,7 @@ class ResultGenerator:
             print("completed_results", results.shape)
 
         mask = results["algorithm"] == "MONET"
-
+        assert results[results["silhouette_excluding_outliers"].notnull() & (~mask)].empty
         results_missing = results[mask].copy()
         results_missing["y_pred"] = results_missing["y_pred"].str.replace("nan", "np.nan")
         results_missing["y_pred"] = results_missing["y_pred"].parallel_apply(lambda x: np.array(eval(x)))
@@ -191,6 +194,7 @@ class ResultGenerator:
         results_missing = pd.concat([results_missing, results_excluding_outliers])
         results_missing[["y_true", "y_pred", "y_true_idx", "y_pred_idx"]] = results_missing[["y_true", "y_pred", "y_true_idx", "y_pred_idx"]].parallel_applymap(str)
         results = pd.concat([results.loc[~mask], results_missing]).reset_index(drop=True)
+        results = results.drop(columns=[f"{met}_excluding_outliers" for met in metrics_col])
 
         results[["y_true", "y_pred", "y_true_idx", "y_pred_idx"]] = results[
             ["y_true", "y_pred", "y_true_idx", "y_pred_idx"]].parallel_applymap(eval)
@@ -202,51 +206,56 @@ class ResultGenerator:
                 pd.Series(x["y_true"], index=x["y_true_idx"]).sort_index().to_list()),
             axis=1, result_type="expand")
 
+        results["algorithm"] = results["algorithm"].str.upper()
+        results.columns = results.columns.str.title()
+        results = results.rename(columns={'Vrc': "VRC", 'Db': "DB", 'Dbcv': "DBCV", "Dhi": "DHI", "Ssei": "SSEI",
+                                          "Rsi":'RSI', "Bhi": 'BHI'})
+        
+        
+
         return results
 
 
     @staticmethod
     def save_supervised_metrics(results: pd.DataFrame, filepath: str, random_state=None, n_permutations: int = 1000):
-        supervised_metrics = results[["sorted_y_true", "sorted_y_pred"]].parallel_apply(
-            lambda row: GetMetrics.compute_supervised_metrics(y_true=row["sorted_y_true"], y_pred=row["sorted_y_pred"],
+        supervised_metrics = results[["Sorted_Y_True", "Sorted_Y_Pred"]].parallel_apply(
+            lambda row: GetMetrics.compute_supervised_metrics(y_true=row["Sorted_Y_True"], y_pred=row["Sorted_Y_Pred"],
                                                               random_state=random_state, n_permutations=n_permutations),
             axis=1)
         results = pd.concat([results, pd.DataFrame(supervised_metrics.to_dict()).T], axis=1)
-        indexes_names = ["dataset", "algorithm", "missing_percentage", "amputation_mechanism", "imputation"]
+        indexes_names = ["Dataset", "Algorithm", "Missing_Percentage", "Amputation_Mechanism", "Imputation"]
         results = results[results.select_dtypes(include="float").columns.to_list() + indexes_names].groupby(
             indexes_names, sort=False).agg(["mean", 'std', 'var']).reset_index()
         results.columns = results.columns.map('_'.join).str.strip('_')
-        results["padj"] = multipletests(results["MCC (p-value)_mean"], method="fdr_bh")[1]
-        results["log_padj"] = results["padj"].apply(lambda x: -np.log10(x))
         results.to_csv(filepath, index=None)
         return results
 
     @staticmethod
     def save_robustness_metrics(results: pd.DataFrame, filepath: str, random_state=None, n_permutations: int = 1000):
         labels_dict = {}
-        for dataset in results["dataset"].unique():
-            mask = (results["dataset"] == dataset) & (results["amputation_mechanism"] == "No")
+        for dataset in results["Dataset"].unique():
+            mask = (results["Dataset"] == dataset) & (results["Amputation_Mechanism"] == "No")
             labels_dict[dataset] = {
-                algorithm: results[(results["algorithm"] == algorithm) & mask]["sorted_y_pred"].to_list() for algorithm
-                in results["algorithm"].unique()}
+                algorithm: results[(results["Algorithm"] == algorithm) & mask]["Sorted_Y_Pred"].to_list() for algorithm
+                in results["Algorithm"].unique()}
 
-        mask = results["missing_percentage"] != 0
-        if results.loc[mask, "imputation"].nunique() > 1:
-            mask = mask & results["imputation"]
+        mask = results["Missing_Percentage"] != 0
+        if results.loc[mask, "Imputation"].nunique() > 1:
+            mask = mask & results["Imputation"]
         robustness_metrics = results.loc[mask].parallel_apply(
             lambda row: pd.DataFrame(
-                [GetMetrics.compute_supervised_metrics(y_true=clusters_run_n, y_pred=row["sorted_y_pred"],
+                [GetMetrics.compute_supervised_metrics(y_true=clusters_run_n, y_pred=row["Sorted_Y_Pred"],
                                                        random_state=random_state, n_permutations=n_permutations)
-                 for clusters_run_n in labels_dict[row["dataset"]][row["algorithm"]]]).mean(), axis=1)
+                 for clusters_run_n in labels_dict[row["Dataset"]][row["Algorithm"]]]).mean(), axis=1)
         results = pd.concat([results, robustness_metrics], axis=1)
         results.to_csv(filepath, index=None)
         return results
 
     # def save_stability_metrics(results: pd.DataFrame, filepath: str, random_state=None, progress_bar=True):
-    #     results = pd.merge(results, pd.DataFrame(itertools.product(results["dataset"].unique(), results["algorithm"].unique()),
-    #                                     columns=["dataset", "algorithm"]), how="right")
+    #     results = pd.merge(results, pd.DataFrame(itertools.product(results["dataset"].unique(), results["Algorithm"].unique()),
+    #                                     columns=["dataset", "Algorithm"]), how="right")
     #     res = OneHotEncoder(sparse_output=False).set_output(transform="pandas").fit_transform(
-    #         results[["dataset", "algorithm"]])
+    #         results[["dataset", "Algorithm"]])
     #     for col in ["silhouette_mean", "silhouette_std", "MCC_mean", "MCC_std", "MCC (p-value)_mean",
     #                 "MCC (p-value)_std"]:
     #         res[col] = results[col]

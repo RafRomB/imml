@@ -1,46 +1,39 @@
-# imv-ulearn: A Python package for unsupervised incomplete multi-view learning
+# iMML: A Python package for multi-modal learning with incomplete data
 
-This package is designed for Incomplete Multi-View Clustering (IMC), which is a 
-technique used to cluster data that is represented by multiple views or 
-modalities where some of the views are missing for some of the samples.
-It implements different algorithms, transformers, and datasets for 
-this task.
+iMML is a Python package that provides a robust tool-set for integrating, processing, and analyzing incomplete 
+multi-modal datasets to support a wide range of machine learning tasks. Starting with a dataset containing N samples 
+with K modalities, iMML effectively handles missing data for clustering, imputation, feature selection, feature 
+extraction and data exploration, hence enabling efficient analysis of partially observed samples.
 
-IMC is usually a hard problem because of the following reasons:
-- **Heterogeneity of views**: IMC deals with data represented by multiple views, each of which may have a different 
-representation or encoding of the same underlying information. This heterogeneity can make it challenging to compare
-and integrate the different views, especially when some of the views are missing. 
-- **Missing data**: In IMC, some views may be missing for some samples, making it challenging to determine how to 
-cluster the data. This missing data can lead to incomplete or biased representations of the underlying patterns in 
-the data. 
-- **Dimensionality**: IMC often involves high-dimensional data, which can make it difficult to extract meaningful 
-patterns and identify clusters in the data. Moreover, different views may have different dimensions, which can further
-complicate the clustering process. 
-- **Scalability**: IMC may involve large amounts of data, making it computationally expensive and challenging to scale
-to larger datasets.
+## Background
 
-Addressing these challenges requires the development of specialized algorithms and techniques that can effectively
-handle incomplete multi-view data and extract meaningful patterns and clusters from it.
+Multi-modal learning, where diverse data types are integrated and analyzed together, has emerged as a critical field
+in artificial intelligence. Multi-modal machine learning models that effectively integrate multiple data modalities
+generally outperform their uni-modal counterparts by leveraging more comprehensive and complementary information.
+However, **most algorithms in this field assume fully observed data**, an assumption that is often
+unrealistic in real-world scenarios.
+
+## Motivation
+
+Real-world multi-modal datasets are often incomplete, leading to a limited performance or failure of conventional
+multi-modal learning methods. Learning from incomplete multi-modal data has seen exponential growth since 2016.
+Despite this growth, **the community still lacks tools that can effectively handle incomplete multi-modal data**.
+
+## Key features
+
+To address this gap, we have developed iMML, a Python package designed for multi-modal learning with incomplete data.
+The key features of this package are:
+
+-   **Comprehensive toolkit**: `iMML` provides a broad set of tools for integrating, processing, and analyzing
+    incomplete multi-modal datasets implemented as a single, user-friendly interface to facilitate adoption by
+    a wide community of users.
+-   **Accessible**: `iMML` makes the tools readily available to the Python community, simplifying their usage,
+    comparison, and benchmarking, and thereby addresses the current lack of resources for handling incomplete
+    multi-modal data.
+-   **Extensible**: `iMML` provides a common framework where researchers can contribute and
+    integrate new approaches, serving as a community platform for hosting new algorithms and methods.
 
 ## Installation
-
-### Prerequisites
-
-As a prerequisite, you will need to have Octave (MATLAB) and R in your machine. In linux, you can install them using the 
-following commands:
-
-```bash
-sudo apt install octave # octave
-sudo apt install r-base r-base-dev -y # R
-```
-
-For other platforms, please refer to the official guides:
-
-https://octave.org/download;
-
-https://cran.r-project.org/doc/manuals/r-release/R-admin.html
-
-### Installation
 
 The easiest way to install this package is using pip. Simply run the following command:
 
@@ -50,26 +43,34 @@ pip install imml
 
 ## Usage
 
-This package provides a user-friendly interface to apply these algorithms to 
-user-provided data. Moreover, it is compatible with Scikit-learn and can be easily 
-integrated into Scikit-learn pipelines for data preprocessing and modeling. So same 
-than it, classes implement the fit method that creates a model by taking as input 
-the data and the missing views, and predict method, that returns the cluster labels 
-for each sample.
+This package provides a user-friendly interface to apply these algorithms to user-provided data. Moreover, it is 
+compatible with Scikit-learn and can be easily integrated into Scikit-learn pipelines for data preprocessing and 
+modeling. 
 
-We show a simple example of how it works.
+We will use `Xs` as a synthetic multi-modal dataset for this demonstration. For the examples below,
+we will generate a random dataset to simulate a multi-modal scenario:
 
 ```python
-from imml.cluster import NEMO
+import numpy as np
+Xs = [np.random.random((10,5)) for i in range(3)] # or your multi-modal dataset
+```
 
-# Load an incomplete multi-modal dataset.
-Xs = ...
+Once you have your dataset ready, you can leverage the `iMML` library for a wide range of machine learning tasks,
+such as:
 
-# Define an instance of an algorithm with 3 clusters
-estimator = NEMO(n_clusters=3)
+- Decompose a multi-modal dataset using `MOFA` to capture joint information.
 
-# Fit the model and get predictions
-labels = estimator.fit_predict(Xs)
+```python
+
+    from imml.decomposition import MOFA
+    transformed_Xs = MOFA().fit_transform(Xs)
+```
+- Cluster samples from a multi-modal dataset using `NEMO` to find hidden groups.
+
+```python
+
+        from imml.cluster import NEMO
+        labels = NEMO().fit_predict(Xs)
 ```
 
 We also provide some Jupyter notebooks in the examples/ directory to help you get 
@@ -78,21 +79,23 @@ for clustering datasets and provide step-by-step instructions for each example.
 For more details on the usage and available options for each class, please refer 
 to the documentation.
 
-## Contributing
+## Free software
 
-This package is open-source and contributions are welcome! If you find any issues or 
-have suggestions for improvement, please create an issue or pull request on the 
-Github repository.
+`iMML` is free software; you can redistribute it and/or modify it under the terms of the `GNU GPLv3`.
+
+## Contribute
+
+We welcome practitioners, researchers, and the open-source community to contribute to the `iMML` project, and in doing
+so, helping us extend and refine the library for the community. Such a community-wide effort will make `iMML` more
+versatile, sustainable, powerful, and accessible to the machine learning community across many domains.
 
 ## Citation
 
 If you use this package in your project, please consider citing the 
 following paper:
 
-[INSERT CITATION HERE]
+## Citing `iMML`
 
-In addition, we kindly request that you cite the package itself:
+If you find the package useful for your research, please cite our paper.
 
-[INSERT BIBTEX OR CITATION HERE]
-
-Thank you for acknowledging the use of this package in your research!
+BibTeX entry:

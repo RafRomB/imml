@@ -118,6 +118,12 @@ To install all possible dependencies:
 Using engine = "matlab"
 ^^^^^^^^^^^^^^^^^^^^^^^
 
+To include this dependencies, execute in the terminal:
+
+.. code:: bash
+
+    pip3 install imml[matlab]
+
 In order to use matlab as an engine, you will need to have `Octave` (`MATLAB`) in your machine. In linux, you can
 install it using the following commands:
 
@@ -135,8 +141,14 @@ dependencies, try the following commands in a terminal:
     sudo apt install octave-control
     sudo apt install octave-statistics
 
-Using engine = "matlab"
+Using engine = "r"
 ^^^^^^^^^^^^^^^^^^^^^^^
+
+To include this dependencies, execute in the terminal:
+
+.. code:: bash
+
+    pip3 install imml[r]
 
 In order to use R as an engine, you will need to have R in your machine. In linux, you can install it using the
 following commands:

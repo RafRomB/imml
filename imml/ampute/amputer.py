@@ -13,7 +13,7 @@ class Amputer(BaseEstimator, TransformerMixin):
     Parameters
     ----------
     p: float, default=0.1
-        Percentaje of incomplete samples.
+        Percentage of incomplete samples.
     mechanism: str, default="um"
         One of ["um", 'mcar', 'mnar', 'pm'], corresponding to unpaired missing, missing completely at random,
         missing not at random, and partial missing, respectively.

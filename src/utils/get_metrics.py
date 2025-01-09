@@ -13,19 +13,17 @@ class GetMetrics:
     def compute_supervised_metrics(y_true, y_pred, random_state = None, n_permutations=1000):
         random_preds = [pd.Series(y_true).value_counts().index[0]] * len(y_true)
         perm_clust_labels = kuhn_munkres_algorithm(true_lab=y_true, pred_lab=y_pred)
-        mcc, p_value = GetMetrics.compute_mcc(y_true=y_true, y_pred=perm_clust_labels, random_state=random_state,
-                                              n_permutations=n_permutations)
+
         supervised_metrics = {
-            'ACC': metrics.accuracy_score(y_true=y_true, y_pred=perm_clust_labels),
-            'MCC': mcc,
-            'MCC (p-value)': p_value,
+            'Acc': metrics.accuracy_score(y_true=y_true, y_pred=perm_clust_labels),
+            'MCC': metrics.matthews_corrcoef(y_true=y_true, y_pred=y_pred),
             'F1': metrics.f1_score(y_true=y_true, y_pred=perm_clust_labels, average='macro'),
-            'precision': metrics.precision_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0),
-            'recall': metrics.recall_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0),
-            "bal_acc": metrics.balanced_accuracy_score(y_true=y_true, y_pred=perm_clust_labels),
-            "ami": metrics.adjusted_mutual_info_score(labels_true=y_true, labels_pred=y_pred),
-            "ari": metrics.adjusted_rand_score(labels_true=y_true, labels_pred=y_pred),
-            "completeness": metrics.completeness_score(labels_true=y_true, labels_pred=perm_clust_labels),
+            'Precision': metrics.precision_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0),
+            'Recall': metrics.recall_score(y_true=y_true, y_pred=perm_clust_labels, average='macro', zero_division=0),
+            "Bal_Acc": metrics.balanced_accuracy_score(y_true=y_true, y_pred=perm_clust_labels),
+            "AMI": metrics.adjusted_mutual_info_score(labels_true=y_true, labels_pred=y_pred),
+            "ARI": metrics.adjusted_rand_score(labels_true=y_true, labels_pred=y_pred),
+            "Completeness": metrics.completeness_score(labels_true=y_true, labels_pred=perm_clust_labels),
             "random_acc": metrics.accuracy_score(y_true=y_true, y_pred=random_preds),
             "random_f1": metrics.f1_score(y_true=y_true, y_pred=random_preds, average='macro'),
         }

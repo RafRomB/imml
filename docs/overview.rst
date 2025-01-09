@@ -72,8 +72,7 @@ such as:
 Free software
 -------------
 
-`iMML` is free software; you can redistribute it and/or modify it under the terms of
-the :doc:`MIT License </license>`.
+`iMML` is free software; you can redistribute it and/or modify it under the terms of the `GNU GPLv3`.
 
 Contribute
 ------------
