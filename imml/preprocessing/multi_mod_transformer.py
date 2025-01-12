@@ -23,10 +23,11 @@ class MultiModTransformer(BaseEstimator, TransformerMixin):
 
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.preprocessing import MultiModTransformer
     >>> from sklearn.impute import SimpleImputer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="nutrimouse")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> transformer = MultiModTransformer(transformer = SimpleImputer.set_output(transform = 'pandas'))
     >>> transformer.fit_transform(Xs)
     """

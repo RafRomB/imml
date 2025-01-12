@@ -23,10 +23,11 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
         The mean value of each feature in the corresponding modality, if value='mean'
     Example
     --------
-    >>> from imml.datasets import LoadDataset
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.impute import SimpleModImputer
     >>> from imml.ampute import Amputer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> amp = Amputer(p=0.3, random_state=42)
     >>> Xs = amp.fit_transform(Xs)
     >>> transformer = SimpleModImputer(value = 'mean')

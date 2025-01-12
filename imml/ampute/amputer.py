@@ -19,13 +19,14 @@ class Amputer(BaseEstimator, TransformerMixin):
         missing not at random, and partial missing, respectively.
     weights: list, default=None
         The probabilities associated with each number of missing modalities. If not given, the sample
-        assumes a uniform distribution. Only used if mechanism = "mnar".
+        assumes a uniform distribution. Only used if mechanism = "mnar" or mechanism = "mem".
     random_state: int, default=None
         If int, random_state is the seed used by the random number generator.
 
     Example
     --------
     >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.ampute import Amputer
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> transformer = Amputer(p= 0.2, random_state=42)

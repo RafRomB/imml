@@ -259,7 +259,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         sumH = 0
         for i in range(viewNum):
             d, n = X[i].shape
-            kmeans = KMeans(n_clusters=n_clusters, n_init=20, random_state=random_state)
+            kmeans = KMeans(n_clusters=n_clusters, n_init="auto", random_state=random_state)
             ilabels = kmeans.fit_predict(X[i].T)
             C = kmeans.cluster_centers_
             U.append(C.T + (0.1 * np.ones((d, n_clusters))))

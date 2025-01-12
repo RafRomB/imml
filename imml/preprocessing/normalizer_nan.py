@@ -15,11 +15,12 @@ class NormalizerNaN(Normalizer):
 
     Example
     --------
+    >>> import numpy as np
+    >>> import pandas as pd
     >>> from imml.utils import DatasetUtils
-    >>> from imml.datasets import LoadDataset
     >>> from imml.ampute import Amputer
     >>> from imml.preprocessing import NormalizerNaN, MultiModTransformer
-    >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> amp = Amputer(p=0.3)
     >>> Xs = amp.fit_transform(Xs)
     >>> transformer = MultiModTransformer(NormalizerNaN())
