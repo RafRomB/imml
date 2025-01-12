@@ -20,7 +20,7 @@ class NormalizerNaN(Normalizer):
     >>> from imml.ampute import Amputer
     >>> from imml.preprocessing import NormalizerNaN, MultiModTransformer
     >>> Xs = LoadDataset.load_dataset(dataset_name="simulated_gm")
-    >>> amp = Amputer(p=0.3, mechanism="um")
+    >>> amp = Amputer(p=0.3)
     >>> Xs = amp.fit_transform(Xs)
     >>> transformer = MultiModTransformer(NormalizerNaN())
     >>> transformer.fit_transform(Xs)

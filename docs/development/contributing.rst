@@ -1,7 +1,7 @@
 Contributing to `iMML`
 =========================
 
-(adopted from `scikit-learn` and `mvlearn`)
+(adapted from `scikit-learn` and `mvlearn`)
 
 Submitting a bug report or a feature request
 --------------------------------------------

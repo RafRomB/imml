@@ -13,59 +13,6 @@ class DatasetUtils:
     """
 
     @staticmethod
-    def convert_to_immd(Xs: list, observed_mod_indicator) -> list:
-        r"""
-        Generate block-wise missingness patterns in complete multi-modal datasets.
-
-        Parameters
-        ----------
-        Xs : list of array-likes
-            - Xs length: n_mods
-            - Xs[i] shape: (n_samples, n_features_i)
-
-            A list of different modalities.
-        observed_mod_indicator: array-like of shape (n_samples, n_mods)
-            Boolean array-like indicating observed modalities for each sample.
-
-        Returns
-        -------
-        transformed_Xs : list of array-likes
-            - Xs length: n_mods
-            - Xs[i] shape: (n_samples, n_features_i)
-
-            A list of different modalities.
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> import pandas as pd
-        >>> from sklearn.pipeline import make_pipeline
-        >>> from imml.impute import ObservedModIndicator
-        >>> from imml.ampute import Amputer
-        >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-        >>> transformer = make_pipeline(Amputer(p=0.2, mechanism="mcar", random_state=42),
-                                        ObservedModIndicator().set_output(transformed="pandas"))
-        >>> observed_mod_indicator = transformer.fit_transform(Xs)
-        >>> DatasetUtils.convert_to_immd(Xs = Xs, observed_mod_indicator = observed_mod_indicator)
-        """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
-        transformed_Xs = []
-        if isinstance(observed_mod_indicator, pd.DataFrame):
-            observed_mod_indicator = observed_mod_indicator.values
-        for X_idx, X in enumerate(Xs):
-            idxs_to_remove = observed_mod_indicator[:,X_idx] == False
-            if isinstance(X, pd.DataFrame):
-                X = X.values
-            transformed_X = copy.deepcopy(X).astype(float)
-            transformed_X[idxs_to_remove, :] = np.nan
-            transformed_Xs.append(transformed_X)
-        if isinstance(Xs[0], pd.DataFrame):
-            transformed_Xs = [pd.DataFrame(transformed_X, columns=X.columns, index=X.index) for X, transformed_X in zip(Xs, transformed_Xs)]
-
-        return transformed_Xs
-
-
-    @staticmethod
     def get_summary(Xs: list) -> int:
         r"""
         Get a summary of an incomplete multi-modal dataset.

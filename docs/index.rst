@@ -30,8 +30,8 @@ Documentation
    :maxdepth: 1
    :caption: Links
 
-   GitHub <github>
-   PyPI <pypi>
+   GitHub <https://github.com/tobepublic>
+   PyPI <https://github.com/tobepublic>
 
 Indices and tables
 ==================

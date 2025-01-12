@@ -18,16 +18,6 @@ def sample_data():
     observed_mod_indicator = observed_mod_indicator.values
     return Xs_pandas, Xs_numpy, observed_mod_indicator
 
-def test_convert_to_immd(sample_data):
-    observed_mod_indicator = sample_data[-1]
-    for Xs in sample_data[:2]:
-        transformed_Xs = DatasetUtils.convert_to_immd(Xs, observed_mod_indicator)
-        assert len(transformed_Xs) == len(Xs)
-        values_to_compare = [2,1]
-        for i, X in enumerate(Xs):
-            assert transformed_Xs[i].shape == X.shape
-            assert np.isnan(transformed_Xs[i]).all(1).sum() == values_to_compare[i]
-
 def test_summary(sample_data):
     for Xs in sample_data[:2]:
         summary = DatasetUtils.get_summary(Xs)

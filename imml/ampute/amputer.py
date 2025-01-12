@@ -3,7 +3,7 @@ import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from ..utils import DatasetUtils
+from . import remove_mods
 
 
 class Amputer(BaseEstimator, TransformerMixin):
@@ -14,8 +14,8 @@ class Amputer(BaseEstimator, TransformerMixin):
     ----------
     p: float, default=0.1
         Percentage of incomplete samples.
-    mechanism: str, default="um"
-        One of ["um", 'mcar', 'mnar', 'pm'], corresponding to unpaired missing, missing completely at random,
+    mechanism: str, default="mem"
+        One of ["mem", 'mcar', 'mnar', 'pm'], corresponding to mutually exclusive missing, missing completely at random,
         missing not at random, and partial missing, respectively.
     weights: list, default=None
         The probabilities associated with each number of missing modalities. If not given, the sample
@@ -32,9 +32,9 @@ class Amputer(BaseEstimator, TransformerMixin):
     >>> transformer.fit_transform(Xs)
     """
 
-    def __init__(self, p: float = 0.1, mechanism: str = "um", weights: list = None, random_state: int = None):
+    def __init__(self, p: float = 0.1, mechanism: str = "mem", weights: list = None, random_state: int = None):
 
-        mechanisms_options = ["um", "mcar", "mnar", "pm"]
+        mechanisms_options = ["mem", "mcar", "mnar", "pm"]
         if mechanism not in mechanisms_options:
             raise ValueError(f"Invalid mechanism. Expected one of: {mechanisms_options}")
         if p < 0 or p > 1:
@@ -93,8 +93,8 @@ class Amputer(BaseEstimator, TransformerMixin):
                 Xs = [X.values for X in Xs]
             sample_names = pd.Index(list(range(len(Xs[0]))))
 
-            if self.mechanism == "um":
-                pseudo_observed_mod_indicator = self._um_mask(sample_names=sample_names)
+            if self.mechanism == "mem":
+                pseudo_observed_mod_indicator = self._mem_mask(sample_names=sample_names)
             elif self.mechanism == "mcar":
                 pseudo_observed_mod_indicator = self._mcar_mask(sample_names=sample_names)
             elif self.mechanism == "pm":
@@ -103,7 +103,7 @@ class Amputer(BaseEstimator, TransformerMixin):
                 pseudo_observed_mod_indicator = self._mnar_mask(sample_names=sample_names)
 
             pseudo_observed_mod_indicator = pseudo_observed_mod_indicator.astype(bool)
-            transformed_Xs = DatasetUtils.convert_to_immd(Xs=Xs, observed_mod_indicator=pseudo_observed_mod_indicator)
+            transformed_Xs = remove_mods(Xs=Xs, observed_mod_indicator=pseudo_observed_mod_indicator)
 
             if pandas_format:
                 transformed_Xs = [pd.DataFrame(X, index=rownames, columns=colnames[X_idx])
@@ -114,7 +114,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         return transformed_Xs
 
 
-    def _um_mask(self, sample_names):
+    def _mem_mask(self, sample_names):
         pseudo_observed_mod_indicator = pd.DataFrame(np.ones((len(sample_names), self.n_mods)), index=sample_names)
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index

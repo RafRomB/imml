@@ -92,11 +92,11 @@ class AddMissingMods(FunctionTransformer):
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from imml.preprocessing import AddMissingMods, MultiModTransformer
+    >>> from imml.preprocessing import AddMissingMods
     >>> from imml.utils import DatasetUtils
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> samples = DatasetUtils.get_sample_names(Xs= Xs)
-    >>> transformer = MultiModTransformer(transformer = AddMissingMods(samples= samples))
+    >>> transformer = AddMissingMods(samples= samples)
     >>> transformer.fit_transform(Xs)
 
     """
@@ -228,44 +228,44 @@ def single_mod(Xs, X_idx : int = 0):
     return transformed_X
 
 
-def add_missing_mods(X, samples):
+def add_missing_mods(Xs, samples):
     r"""
     Add missing samples in each modality, in a way that all the modalities will have the same samples.
 
     Parameters
     ----------
-    X : array-like of shape (n_samples, n_features)
-    samples : array-like  (n_samples,)
-        list with all samples
+    Xs : list of array-likes
+        - Xs length: n_mods
+        - Xs[i] shape: (n_samples, n_features_i)
+
+        A list of different mods.
 
     Returns
     -------
-    transformed_X : array-like of shape (n_samples, n_features)
+    transformed_Xs : array-like, shape (n_samples, n_features)
+        The transformed multi-modal dataset.
 
     Example
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from imml.preprocessing import add_missing_mods, MultiModTransformer
+    >>> from imml.preprocessing import add_missing_mods
     >>> from imml.utils import DatasetUtils
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> samples = DatasetUtils.get_sample_names(Xs= Xs)
-    >>> transformer = MultiModTransformer(transformer =
-                                          FunctionTransformer(lambda x: add_missing_mods(X=x, samples= samples)))
-    >>> transformer.fit_transform(Xs)
+    >>> add_missing_mods(Xs, samples= samples)
   """
-    pandas_format = isinstance(X, pd.DataFrame)
+    pandas_format = isinstance(Xs[0], pd.DataFrame)
     if pandas_format:
-        transformed_X = X.T.copy()
+        transformed_Xs = [X.T for X in Xs]
     else:
-        X = pd.DataFrame(X)
-        transformed_X = X.T.copy()
-    transformed_X[samples.difference(X.index)] = np.nan
-    transformed_X = transformed_X.T
-    transformed_X = transformed_X.loc[samples]
+        transformed_Xs = [pd.DataFrame(X).T for X in Xs]
+    for i,transformed_X in enumerate(transformed_Xs):
+        transformed_X[samples.difference(transformed_X.index)] = np.nan
+        transformed_Xs[i] = transformed_X.T.loc[samples]
     if not pandas_format:
-        transformed_X = transformed_X.values
-    return transformed_X
+        transformed_Xs = [transformed_X.values for transformed_X in transformed_Xs]
+    return transformed_Xs
 
 
 def sort_data(Xs: list):

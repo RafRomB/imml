@@ -6,6 +6,8 @@ from datetime import datetime
 import numpy as np
 import pandas as pd
 from sklearn.impute import SimpleImputer
+
+from imml.ampute import remove_mods
 from imml.preprocessing import MultiModTransformer, ConcatenateMods, select_complete_samples
 from imml.utils import DatasetUtils
 from settings import PROFILES_PATH
@@ -48,7 +50,7 @@ class RunClustering:
             observed_view_indicator.columns = observed_view_indicator.columns.astype(int)
             train_Xs = copy.deepcopy(Xs)
             if p != 0:
-                train_Xs = DatasetUtils.convert_to_immd(Xs=train_Xs, observed_mod_indicator=observed_view_indicator)
+                train_Xs = remove_mods(Xs=train_Xs, observed_mod_indicator=observed_view_indicator)
             train_Xs = [X.loc[observed_view_indicator.index] for X in train_Xs]
             y_train = y.loc[train_Xs[0].index]
 

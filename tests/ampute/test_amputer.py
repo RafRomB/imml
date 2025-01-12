@@ -1,9 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
-from string import ascii_lowercase
 from imml.ampute import Amputer
-from imml.impute import get_missing_mod_indicator
 from imml.utils import DatasetUtils
 
 
@@ -58,7 +56,7 @@ def test_extreme_p(sample_data):
 
 def test_param_mechanism(sample_data):
     p = 0.2
-    for mechanism in ["um", "mcar", "pm", "mnar"]:
+    for mechanism in ["mem", "mcar", "pm", "mnar"]:
         amputer = Amputer(p=p, mechanism=mechanism, random_state=42)
         for Xs in sample_data:
             transformed_Xs = amputer.fit_transform(Xs)

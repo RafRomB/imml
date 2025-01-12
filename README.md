@@ -5,6 +5,8 @@ multi-modal datasets to support a wide range of machine learning tasks. Starting
 with K modalities, iMML effectively handles missing data for clustering, imputation, feature selection, feature 
 extraction and data exploration, hence enabling efficient analysis of partially observed samples.
 
+![Overview of iMML for multi-modal learning with incomplete data](docs/figures/graph.png)
+
 ## Background
 
 Multi-modal learning, where diverse data types are integrated and analyzed together, has emerged as a critical field
@@ -69,8 +71,8 @@ such as:
 
 ```python
 
-        from imml.cluster import NEMO
-        labels = NEMO().fit_predict(Xs)
+    from imml.cluster import NEMO
+    labels = NEMO().fit_predict(Xs)
 ```
 
 We also provide some Jupyter notebooks in the examples/ directory to help you get 
@@ -91,11 +93,5 @@ versatile, sustainable, powerful, and accessible to the machine learning communi
 
 ## Citation
 
-If you use this package in your project, please consider citing the 
-following paper:
+If you use this package in your project, please consider citing the following paper:
 
-## Citing `iMML`
-
-If you find the package useful for your research, please cite our paper.
-
-BibTeX entry:

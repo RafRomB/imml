@@ -44,16 +44,16 @@ The key features of this package are:
 Examples
 --------
 
-We will use `Xs` as a synthetic multi-modal dataset for this demonstration. For the examples below,
-we will generate a random dataset to simulate a multi-modal scenario:
+For this demonstration, we will generate a random dataset, that we have called `Xs`, as a multi-modal dataset
+to simulate a multi-modal scenario:
 
 .. code:: python
 
     import numpy as np
     Xs = [np.random.random((10,5)) for i in range(3)] # or your multi-modal dataset
 
-Once you have your dataset ready, you can leverage the `iMML` library for a wide range of machine learning tasks,
-such as:
+You can use any other complete or incomplete multi-modal dataset. Once you have your dataset ready, you can
+leverage the `iMML` library for a wide range of machine learning tasks, such as:
 
 - Decompose a multi-modal dataset using `MOFA` to capture joint information.
 
