@@ -16,7 +16,7 @@ from ._sumo.modes.prepare.similarity import feature_to_adjacency
 
 class SUMO(BaseEstimator, ClassifierMixin):
     r"""
-    Subtyping Tool for Multi-Omic data.
+    Subtyping Tool for Multi-Omic Data.
 
     SUMO, originally designed for molecular subtyping in multi-omics datasets, utilizes a state-of-the-art
     nonnegative matrix factorization (NMF) algorithm to identify clusters of samples with similar characteristics.

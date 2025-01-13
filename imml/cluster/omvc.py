@@ -18,7 +18,7 @@ except ImportError:
 
 class OMVC(BaseEstimator, ClassifierMixin):
     r"""
-    Online multi-view clustering (OMVC).
+    Online Multi-View Clustering (OMVC).
 
     OMVC aims to learn latent feature matrices for all views while driving them towards a consensus. To enhance the
     robustness of these learned matrices, it incorporates lasso regularization. Additionally, to mitigate the impact of

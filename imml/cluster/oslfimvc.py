@@ -20,7 +20,7 @@ except ImportError:
 
 class OSLFIMVC(BaseEstimator, ClassifierMixin):
     r"""
-    One-Stage Incomplete Multi-view Clustering via Late Fusion (OS-LF-IMVC).
+    One-Stage Incomplete Multi-View Clustering via Late Fusion (OS-LF-IMVC).
 
     OS-LF-IMVC integrates the processes of imputing incomplete views and clustering into a cohesive optimization
     procedure. This approach enables the direct utilization of the learned consensus partition matrix to enhance

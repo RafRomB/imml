@@ -19,7 +19,7 @@ except ImportError:
 
 class MKKMIK(BaseEstimator, ClassifierMixin):
     r"""
-    Multiple Kernel k-Means with Incomplete Kernels (MKKM-IK).
+    Multiple Kernel K-Means with Incomplete Kernels (MKKM-IK).
 
     MKKM-IK integrates imputation and clustering into a single optimization procedure. Thus, the clustering result
     guides the missing kernel imputation, and the latter is used to conduct the subsequent clustering. Both procedures

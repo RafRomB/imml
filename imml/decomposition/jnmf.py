@@ -25,7 +25,7 @@ if rpy2_installed:
 
 class JNMF(TransformerMixin, BaseEstimator):
     r"""
-    Joint Non-negative Matrix Factorization (JNMF).
+    Joint Non-Negative Matrix Factorization (JNMF).
 
     JNMF decompose the matrices to low-dimensional factor matrices.
 

@@ -41,8 +41,12 @@ The key features of this package are:
 -   **Extensible**: `iMML` provides a common framework where researchers can contribute and
     integrate new approaches, serving as a community platform for hosting new algorithms and methods.
 
-Examples
+Usage
 --------
+
+This package provides a user-friendly interface to apply these algorithms to user-provided data. Moreover, it is
+compatible with Scikit-learn and can be easily integrated into Scikit-learn pipelines for data preprocessing and
+modeling.
 
 For this demonstration, we will generate a random dataset, that we have called `Xs`, as a multi-modal dataset
 to simulate a multi-modal scenario:
@@ -57,17 +61,24 @@ leverage the `iMML` library for a wide range of machine learning tasks, such as:
 
 - Decompose a multi-modal dataset using `MOFA` to capture joint information.
 
-    .. code:: python
+.. code:: python
 
-        from imml.decomposition import MOFA
-        transformed_Xs = MOFA().fit_transform(Xs)
+    from imml.decomposition import MOFA
+    transformed_Xs = MOFA().fit_transform(Xs)
 
 - Cluster samples from a multi-modal dataset using `NEMO` to find hidden groups.
 
-    .. code:: python
+.. code:: python
 
-        from imml.cluster import NEMO
-        labels = NEMO().fit_predict(Xs)
+    from imml.cluster import NEMO
+    labels = NEMO().fit_predict(Xs)
+
+- Simulate incomplete multi-modal datasets with block-wise missing data for evaluation and testing purposes using `Amputer`.
+
+.. code:: python
+
+    from imml.ampute import Amputer
+    transformed_Xs = Amputer(p=0.8).fit_transform(Xs)
 
 Free software
 -------------
