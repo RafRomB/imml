@@ -23,13 +23,13 @@ Motivation
 ----------
 
 Real-world multi-modal datasets are often incomplete, leading to a limited performance or failure of conventional
-multi-modal learning methods. Learning from incomplete multi-modal data has seen exponential growth since 2016.
+multi-modal learning methods. Learning from incomplete multi-modal data has seen an important growth during last years.
 Despite this growth, **the community still lacks tools that can effectively handle incomplete multi-modal data**.
 
 Key features
 ------------
 
-To address this gap, we have developed iMML, a Python package designed for multi-modal learning with incomplete data.
+To address this gap, we have developed `iMML`, a Python package designed for multi-modal learning with incomplete data.
 The key features of this package are:
 
 -   **Comprehensive toolkit**: `iMML` provides a broad set of tools for integrating, processing, and analyzing
@@ -59,21 +59,21 @@ to simulate a multi-modal scenario:
 You can use any other complete or incomplete multi-modal dataset. Once you have your dataset ready, you can
 leverage the `iMML` library for a wide range of machine learning tasks, such as:
 
-- Decompose a multi-modal dataset using `MOFA` to capture joint information.
+- Decompose a multi-modal dataset using ``MOFA`` to capture joint information.
 
 .. code:: python
 
     from imml.decomposition import MOFA
     transformed_Xs = MOFA().fit_transform(Xs)
 
-- Cluster samples from a multi-modal dataset using `NEMO` to find hidden groups.
+- Cluster samples from a multi-modal dataset using ``NEMO`` to find hidden groups.
 
 .. code:: python
 
     from imml.cluster import NEMO
     labels = NEMO().fit_predict(Xs)
 
-- Simulate incomplete multi-modal datasets with block-wise missing data for evaluation and testing purposes using `Amputer`.
+- Simulate incomplete multi-modal datasets for evaluation and testing purposes using ``Amputer``.
 
 .. code:: python
 
@@ -95,7 +95,7 @@ versatile, sustainable, powerful, and accessible to the machine learning communi
 Citing `iMML`
 ----------------
 
-If you find the package useful for your research, please cite our paper.
+If you find the package useful for your project, please cite our paper.
 
 BibTeX entry:
 

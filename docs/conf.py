@@ -25,7 +25,7 @@ sys.path.insert(0, os.path.abspath(".."))
 # -- Project information -----------------------------------------------------
 
 project = 'imml'
-copyright = '2024, '
+copyright = '2025, '
 authors = ''
 release = '0.1.0'
 
@@ -84,7 +84,7 @@ intersphinx_mapping = {
 
 # -- sphinx options ----------------------------------------------------------
 source_suffix = ".rst"
-exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints"]
+exclude_patterns = ["_build", "Thumbs.db", ".DS_Store", "**.ipynb_checkpoints", "**.ipynb"]
 master_doc = "index"
 source_encoding = "utf-8"
 
@@ -205,7 +205,7 @@ sphinx_gallery_conf = {
 
 def remove_prefix_from_rst(app, exception):
     if exception is None:
-        modules_dir = os.path.join(app.srcdir, "modules")
+        modules_dir = os.path.join(app.srcdir,"main",  "modules")
         files = os.listdir(modules_dir)
         files = [filename for filename in files if filename != f"{project}.rst"]
 

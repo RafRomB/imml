@@ -13,10 +13,10 @@ Documentation
    :maxdepth: 1
    :caption: iMML
 
-   overview
-   installation
-   tutorials
-   modules/imml
+   main/overview
+   main/installation
+   ../auto_tutorials/index
+   main/modules/imml
 
 .. toctree::
    :maxdepth: 1

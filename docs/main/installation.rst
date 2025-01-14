@@ -78,7 +78,7 @@ Dependencies
 -  snfpy>=0
 -  control>=0
 
-At present, `gemsim` does not support `Numpy`>=2 or `Scipy`>=1.13. We will update iMML dependencies once this issue
+At present, `gemsim` does not support `Numpy`>=2 or `Scipy`>=1.13. We will update ``iMML`` dependencies once this issue
 is resolved. For more information, you can follow the discussion in this
 `thread <https://github.com/piskvorky/gensim/pull/3535>`_.
 
@@ -129,7 +129,7 @@ install it using the following commands:
 
 For other platforms, please refer to the official guides: https://octave.org/download
 
-Additionally, some algorithms (such as DAIMC and OSLFIMVC) could have some extra dependencies. To install these
+Additionally, some algorithms (such as ``DAIMC`` and ``OSLFIMVC``) could have some extra dependencies. To install these
 dependencies, execute the following commands in a terminal:
 
 .. code:: bash
@@ -155,7 +155,7 @@ following commands:
 
 For other platforms, please refer to the official guides: https://cran.r-project.org/doc/manuals/r-patched/R-admin.html
 
-When using R as engine, some algorithms (such as JNMF) could have some extra dependencies. To install these
+When using R as engine, some algorithms (such as ``JNMF``) could have some extra dependencies. To install these
 dependencies, execute the following command in R:
 
 .. code:: R

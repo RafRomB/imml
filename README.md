@@ -29,7 +29,7 @@ Despite this growth, **the community still lacks tools that can effectively hand
 Key features
 ------------
 
-To address this gap, we have developed iMML, a Python package designed for multi-modal learning with incomplete data.
+To address this gap, we have developed `iMML`, a Python package designed for multi-modal learning with incomplete data.
 The key features of this package are:
 
 -   **Comprehensive toolkit**: `iMML` provides a broad set of tools for integrating, processing, and analyzing
@@ -51,34 +51,34 @@ modeling.
 For this demonstration, we will generate a random dataset, that we have called `Xs`, as a multi-modal dataset
 to simulate a multi-modal scenario:
 
-.. code:: python
-
-    import numpy as np
-    Xs = [np.random.random((10,5)) for i in range(3)] # or your multi-modal dataset
+```python
+import numpy as np
+Xs = [np.random.random((10,5)) for i in range(3)] # or your multi-modal dataset
+```
 
 You can use any other complete or incomplete multi-modal dataset. Once you have your dataset ready, you can
 leverage the `iMML` library for a wide range of machine learning tasks, such as:
 
-- Decompose a multi-modal dataset using `MOFA` to capture joint information.
+- Decompose a multi-modal dataset using ``MOFA`` to capture joint information.
 
-.. code:: python
+```python
+from imml.decomposition import MOFA
+transformed_Xs = MOFA().fit_transform(Xs)
+```
 
-    from imml.decomposition import MOFA
-    transformed_Xs = MOFA().fit_transform(Xs)
+- Cluster samples from a multi-modal dataset using ``NEMO`` to find hidden groups.
 
-- Cluster samples from a multi-modal dataset using `NEMO` to find hidden groups.
+```python
+from imml.cluster import NEMO
+labels = NEMO().fit_predict(Xs)
+```
 
-.. code:: python
+- Simulate incomplete multi-modal datasets for evaluation and testing purposes using ``Amputer``.
 
-    from imml.cluster import NEMO
-    labels = NEMO().fit_predict(Xs)
-
-- Simulate incomplete multi-modal datasets with block-wise missing data for evaluation and testing purposes using `Amputer`.
-
-.. code:: python
-
-    from imml.ampute import Amputer
-    transformed_Xs = Amputer(p=0.8).fit_transform(Xs)
+```python
+from imml.ampute import Amputer
+transformed_Xs = Amputer(p=0.8).fit_transform(Xs)
+```
 
 Free software
 -------------
@@ -95,7 +95,7 @@ versatile, sustainable, powerful, and accessible to the machine learning communi
 Citing `iMML`
 ----------------
 
-If you find the package useful for your research, please cite our paper.
+If you find the package useful for your project, please cite our paper.
 
 BibTeX entry:
 
