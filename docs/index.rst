@@ -1,9 +1,9 @@
 ..  -*- coding: utf-8 -*-
 
-Overview of `iMML`
+`iMML`
 ====================
 
-.. include:: overview.rst
+.. include:: main/overview.rst
    :start-line: 2
 
 Documentation
@@ -13,7 +13,6 @@ Documentation
    :maxdepth: 1
    :caption: iMML
 
-   main/overview
    main/installation
    ../auto_tutorials/index
    main/modules/imml

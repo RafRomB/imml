@@ -207,6 +207,9 @@ class CommonOperations:
 
         if incomplete_algorithms:
             results = results.xs(False, level="imputation", drop_level=False)
+            results = results.drop(index=results.xs("Resampling", level="amputation_mechanism", drop_level=False).index)
+        else:
+            results = results.drop(index=results.xs("No", level="amputation_mechanism", drop_level=False).index)
         results = results.sort_index(level="missing_percentage", sort_remaining=False)
         unfinished_results = results.loc[~results["finished"]]
         return indexes_names, results, unfinished_results

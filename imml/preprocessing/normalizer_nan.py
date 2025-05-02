@@ -78,6 +78,7 @@ class NormalizerNaN(Normalizer):
             norms = np.nansum(np.abs(X), axis=1)
         elif self.norm == "l2":
             norms = np.nansum(X**2, axis=1)
+            norms = np.sqrt(norms, norms)
         elif self.norm == "max":
             norms = np.nanmax(np.abs(X), axis=1)
         norms[norms == 0] = 1.

@@ -16,7 +16,7 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 def test_default_params(sample_data):
-    model = SUMO(random_state=42)
+    model = SUMO(random_state=42, n_clusters=5)
     for Xs in sample_data:
         n_samples = len(Xs[0])
         labels = model.fit_predict(Xs)

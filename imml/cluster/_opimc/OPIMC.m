@@ -17,9 +17,8 @@ function [Clu_result, V] = OPIMC(X, W, option, ind)
     k = option.k;                           
     tol = option.tol;
 
-    index = randperm(total);
+    index = 1:total;
     for i = 1:num_views
-        X{i} = X{i}(:,index);
         W{i} = ind(index,i);
     end
 
