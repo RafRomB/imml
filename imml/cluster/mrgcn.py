@@ -6,12 +6,10 @@ try:
     from torch import nn
     import lightning.pytorch as pl
     from torch.nn import functional as F
-    DLBaseeModule = pl.LightningModule
     torch_installed = True
 except ImportError:
     torch_installed = False
-    torch_module_error = "torch and lightning need to be installed."
-    DLBaseeModule = object
+    torch_module_error = "Module 'Deep' needs to be installed."
 
 DLBaseeModule = pl.LightningModule if torch_installed else object
 

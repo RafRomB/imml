@@ -7,6 +7,7 @@ except ImportError:
     torch_module_error = "torch needs to be installed."
     DLBaseDataset = object
 
+
 class MRGCNDataset(DLBaseDataset):
     r"""
     This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `MRGCN`.
