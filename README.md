@@ -6,9 +6,8 @@ multi-modal datasets to support a wide range of machine learning tasks. Starting
 with K modalities, `iMML` effectively handles missing data for clustering, imputation, feature
 selection, feature extraction and data exploration, hence enabling efficient analysis of partially observed samples.
 
-.. image:: docs/figures/graph.png
-  :width: 700
-  :alt: Overview of iMML for multi-modal learning with incomplete data.
+![Overview of iMML for multi-modal learning with incomplete data](docs/figures/graph.png)
+**Overview of iMML for multi-modal learning with incomplete data**.
 
 Background
 ----------
