@@ -7,38 +7,38 @@ from imml.load import MRGCNDataset
 
 try:
     import torch
-    torch_installed = True
+    deep_installed = True
 except ImportError:
-    torch_installed = False
+    deep_installed = False
 
 
 @pytest.fixture
 def sample_data():
     X = np.random.default_rng(42).random((25, 10))
     Xs = [X[:, :3], X[:, 3:5], X[:, 5:]]
-    if torch_installed:
+    if deep_installed:
         Xs = [torch.from_numpy(X) for X in Xs]
     return Xs
 
 def test_pytorch_not_installed(sample_data):
-    if torch_installed:
+    if deep_installed:
         MRGCNDataset(Xs=sample_data)
     else:
         with pytest.raises(ImportError, match="torch needs to be installed."):
             MRGCNDataset(Xs=sample_data)
 
 def test_default_params(sample_data):
-    if torch_installed:
+    if deep_installed:
         dataset = MRGCNDataset(sample_data)
         assert len(dataset) == len(sample_data[0])
 
 def test_invalid_params():
-    if torch_installed:
+    if deep_installed:
         with pytest.raises(ValueError, match="Invalid Xs."):
             MRGCNDataset(Xs="invalid_input")
 
 def test_getitem(sample_data):
-    if torch_installed:
+    if deep_installed:
         dataset = MRGCNDataset(sample_data)
         sample = dataset[0]
         assert isinstance(sample, tuple)

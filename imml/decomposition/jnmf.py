@@ -20,7 +20,7 @@ if rpy2_installed:
         nnTensor_installed = True
     except PackageNotInstalledError:
         nnTensor_installed = False
-        nnTensor_module_error = "nnTensor needs to be installed in R to use r engine."
+        nnTensor_module_error = "nnTensor needs to be installed in R to use R engine."
 
 
 class JNMF(TransformerMixin, BaseEstimator):

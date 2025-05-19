@@ -16,9 +16,9 @@ try:
     from torch.nn import functional as F
     from torch.utils.data import DataLoader
     from lightning import Trainer
-    torch_installed = True
+    deep_installed = True
 except ImportError:
-    torch_installed = False
+    deep_installed = False
 estimator = MRGCN
 
 
@@ -27,21 +27,21 @@ def sample_data():
     X = np.random.default_rng(42).random((25, 10))
     X1, X2, X3 = X[:, :3], X[:, 3:5], X[:, 5:]
     Xs_numpy = [X1, X2, X3]
-    if torch_installed:
+    if deep_installed:
         Xs_torch = [torch.from_numpy(X.astype(np.float32)) for X in Xs_numpy]
         return Xs_torch, Xs_numpy
     return Xs_numpy
 
 def test_pytorch_not_installed(sample_data):
-    if torch_installed:
+    if deep_installed:
         estimator(Xs=sample_data[0])
     else:
-        with pytest.raises(ImportError, match="torch and lightning need to be installed."):
+        with pytest.raises(ImportError, match="Module 'Deep' needs to be installed."):
             estimator(Xs=sample_data[0])
 
 def test_default_params(sample_data):
     n_clusters = 3
-    if torch_installed:
+    if deep_installed:
         Xs = sample_data[0]
         n_samples = len(Xs[0])
         train_data = MRGCNDataset(Xs=Xs)
@@ -61,7 +61,7 @@ def test_default_params(sample_data):
         assert len(embedding_) == n_samples
 
 def test_invalid_params(sample_data):
-    if torch_installed:
+    if deep_installed:
         with pytest.raises(ValueError, match="Invalid n_clusters."):
             estimator(n_clusters='invalid', Xs=sample_data[0])
         with pytest.raises(ValueError, match="Invalid n_clusters."):
@@ -84,7 +84,7 @@ def test_invalid_params(sample_data):
             estimator(reg3="invalid", Xs=sample_data[0])
 
 def test_missing_values_handling(sample_data):
-    if torch_installed:
+    if deep_installed:
         n_clusters = 2
         Xs = sample_data[1]
         n_samples = len(Xs[0])

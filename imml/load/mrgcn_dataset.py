@@ -1,10 +1,10 @@
 try:
     import torch
     DLBaseDataset = torch.utils.data.Dataset
-    torch_installed = True
+    deep_installed = True
 except ImportError:
-    torch_installed = False
-    torch_module_error = "torch needs to be installed."
+    deep_installed = False
+    deep_module_error = "Module 'Deep' needs to be installed."
     DLBaseDataset = object
 
 
@@ -32,8 +32,8 @@ class MRGCNDataset(DLBaseDataset):
     """
 
     def __init__(self, Xs: list, transform = None):
-        if not torch_installed:
-            raise ImportError(torch_module_error)
+        if not deep_installed:
+            raise ImportError(deep_module_error)
         if not isinstance(Xs, list):
             raise ValueError(f"Invalid Xs. It must be a list of array-likes. A {type(Xs)} was passed.")
 

@@ -13,7 +13,7 @@ from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs, DatasetUtils
 
 rpy2_installed = False
-rpy2_module_error = "rpy2 needs to be installed to use r engine."
+rpy2_module_error = "rpy2 needs to be installed to use R engine."
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
     import rpy2.robjects as robjects

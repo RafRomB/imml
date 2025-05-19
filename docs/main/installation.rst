@@ -12,7 +12,7 @@ required packages as described in the :ref:`optional_dependencies` section below
 Instructions
 -----------------------------
 
-Using pip
+Using pip (currently not available)
 ^^^^^^^^^^^^
 
 To install `iMML` using ``pip``, ensure Python 3 and ``pip`` (Python's package manager) are properly set up on
