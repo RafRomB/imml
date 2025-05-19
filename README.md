@@ -1,10 +1,11 @@
 Overview
 ====================
 
-`iMML` is a Python package that provides a robust tool-set for integrating, processing, and analyzing incomplete
-multi-modal datasets to support a wide range of machine learning tasks. Starting with a dataset containing N samples
-with K modalities, `iMML` effectively handles missing data for clustering, imputation, feature
-selection, feature extraction and data exploration, hence enabling efficient analysis of partially observed samples.
+`iMML` is a Python package that provides a **robust tool-set for integrating, processing, and analyzing incomplete
+multi-modal datasets** to support a wide range of machine learning tasks. Starting with a dataset containing N samples
+with K modalities, `iMML` effectively handles missing data for classification, clustering, data retrieval,
+imputation and amputation, feature selection, feature extraction and data exploration, hence enabling efficient
+analysis of partially observed samples.
 
 <div align="center">
 
@@ -24,9 +25,16 @@ unrealistic in real-world scenarios.
 Motivation
 ----------
 
-Real-world multi-modal datasets are often incomplete, leading to a limited performance or failure of conventional
-multi-modal learning methods. Learning from incomplete multi-modal data has seen exponential growth since 2016.
-Despite this growth, **the community still lacks tools that can effectively handle incomplete multi-modal data**.
+Learning from incomplete multi-modal data has seen an important growth last years.
+Despite this progress, several limitations still persist.
+The landscape of available methods is fragmented, largely due to the diversity of use cases and data modalities,
+which complicates both their application and benchmarking.
+Systematic use and comparison of the current methods are often hindered by practical challenges, such as
+incompatible input data formats and conflicting software dependencies.
+As a result, researchers and practitioners frequently face challenges in choosing a practical method and invest
+considerable efforts into reconciling codebases, rather than addressing the core scientific questions.
+This suggests that **the community currently lacks robust and standardized tools to effectively handle
+incomplete multi-modal data**.
 
 Key features
 ------------
@@ -34,9 +42,11 @@ Key features
 To address this gap, we have developed `iMML`, a Python package designed for multi-modal learning with incomplete data.
 The key features of this package are:
 
--   **Comprehensive toolkit**: `iMML` provides a broad set of tools for integrating, processing, and analyzing
+-   **Comprehensive toolkit**: `iMML` offers a broad set of tools for integrating, processing, and analyzing
     incomplete multi-modal datasets implemented as a single, user-friendly interface to facilitate adoption by
     a wide community of users.
+    The package includes extensive technical testing to ensure robustness, and thorough documentation enables
+    end-users to apply its functionality effectively.
 -   **Accessible**: `iMML` makes the tools readily available to the Python community, simplifying their usage,
     comparison, and benchmarking, and thereby addresses the current lack of resources for handling incomplete
     multi-modal data.
@@ -46,9 +56,12 @@ The key features of this package are:
 Usage
 --------
 
-This package provides a user-friendly interface to apply these algorithms to user-provided data. Moreover, it is
-compatible with Scikit-learn and can be easily integrated into Scikit-learn pipelines for data preprocessing and
-modeling.
+This package provides a user-friendly interface to apply these algorithms to user-provided data.
+`iMML` was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
+NumPy, Scikit-learn, and PyTorch Lightning, hence allowing researchers to apply machine learning models with
+minimal programming effort.
+Moreover, it is compatible with Scikit-learn and can be easily integrated into Scikit-learn pipelines for data
+preprocessing and modeling.
 
 For this demonstration, we will generate a random dataset, that we have called `Xs`, as a multi-modal dataset
 to simulate a multi-modal scenario:
@@ -90,9 +103,10 @@ Free software
 Contribute
 ------------
 
-We welcome practitioners, researchers, and the open-source community to contribute to the `iMML` project, and in doing
-so, helping us extend and refine the library for the community. Such a community-wide effort will make `iMML` more
-versatile, sustainable, powerful, and accessible to the machine learning community across many domains.
+**We welcome practitioners, researchers, and the open-source community** to contribute to the `iMML` project,
+and in doing so, helping us extend and refine the library for the community. Such a community-wide effort will
+make `iMML` more versatile, sustainable, powerful, and accessible to the machine learning community across
+many domains.
 
 Citing `iMML`
 ----------------
