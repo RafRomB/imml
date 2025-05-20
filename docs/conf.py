@@ -101,7 +101,7 @@ html_theme = "sphinx_rtd_theme"
 html_theme_path = [sphinx_rtd_theme.get_html_theme_path()]
 html_theme_options = {
     # 'includehidden': False,
-    "collapse_navigation": True,
+    "collapse_navigation": False,
     "navigation_depth": 5,
     "logo_only": True,
     "sticky_navigation": True,

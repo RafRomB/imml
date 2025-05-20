@@ -23,7 +23,7 @@ ViltImageProcessor = ViltImageProcessor if deepmodule_installed else object
 
 class MCR(nnModuleBase):
     r"""
-    Multi-Channel Retriever (MCR).
+    Multi-Channel Retriever (MCR). [#ragptpaper]_ [#ragptcode]_
 
     MCR is a multimodal retrieval framework that enables similarity-based matching within modalities,
     even under missing modality settings. It builds a memory bank of multimodal embeddings and supports
@@ -68,8 +68,18 @@ class MCR(nnModuleBase):
 
     Attributes
     ----------
-    memory_bank : pd.DataFrame (n_samples, 10)
-        DataFrame storing encoded modality representations for retrieval. Only if save_memory_bank is True.
+    memory_bank : pd.DataFrame (n_samples, 8)
+        DataFrame storing encoded modality representations for retrieval. Only if save_memory_bank is True. The columns
+        are:
+
+        - item_id: Unique identifier for each sample.
+        - img_path: Path to the image file.
+        - text: Textual content of the sample.
+        - q_i: Image embedding.
+        - q_t: Text embedding.
+        - label: Label of the sample.
+        - prompt_image_path: Path to the generated image prompt. Only if generate_cap is True.
+        - prompt_text_path: Path to the generated text prompt. Only if generate_cap is True.
 
     References
     ----------
@@ -135,6 +145,7 @@ class MCR(nnModuleBase):
         Xs : list of array-likes
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
+
             A list with images and texts.
         y : array-like of shape (n_samples,)
             Target vector relative to X.
@@ -180,6 +191,7 @@ class MCR(nnModuleBase):
         Xs : list of array-likes
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
+
             A list with images and texts.
         memory_bank : pd.DataFrame (n_samples, 10)
             Memory bank generated during fit. If None, the memory bank stored in the estimator is used.
@@ -241,6 +253,7 @@ class MCR(nnModuleBase):
         Xs : list of array-likes
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
+
             A list with images and texts.
         y : array-like of shape (n_samples,)
             Target vector relative to X.
@@ -270,6 +283,7 @@ class MCR(nnModuleBase):
         Xs : list of array-likes
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
+
             A list with images and texts.
         memory_bank : pd.DataFrame (n_samples, 10)
             Memory bank generated during fit. If None, the memory bank stored in the estimator is used.
@@ -316,6 +330,7 @@ class MCR(nnModuleBase):
         Xs : list of array-likes
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
+
             A list with images and texts.
         y : array-like of shape (n_samples,)
             Target vector relative to X.
@@ -325,13 +340,13 @@ class MCR(nnModuleBase):
 
         Returns
         -------
-        database : pd.DataFrame (n_samples, 10)
+        database : pd.DataFrame (n_samples, 14)
             The memory_bank with the retrieval-augmented prompts.
         """
         if self.save_memory_bank:
-            memory_bank = self.fit(Xs=Xs, y=y, save_memory_bank=save_memory_bank).memory_bank
+            memory_bank = self.fit(Xs=Xs, y=y).memory_bank
         else:
-            memory_bank = self.fit(Xs=Xs, y=y, save_memory_bank=save_memory_bank)
+            memory_bank = self.fit(Xs=Xs, y=y)
 
         database = self.transform(memory_bank=memory_bank, n_neighbors=n_neighbors)
         return database

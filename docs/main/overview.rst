@@ -3,11 +3,11 @@ Overview
 
 `iMML` is a Python package that provides a **robust tool-set for integrating, processing, and analyzing incomplete
 multi-modal datasets** to support a wide range of machine learning tasks. Starting with a dataset containing N samples
-with K modalities, `iMML` effectively handles missing data for classification, clustering, data retrieval,
-imputation and amputation, feature selection, feature extraction and data exploration, hence enabling efficient
+with K modalities, `iMML` effectively handles missing data for **classification, clustering, data retrieval,
+imputation and amputation, feature selection, feature extraction and data exploration**, hence enabling efficient
 analysis of partially observed samples.
 
-.. image:: figures/graph.png
+.. image:: /figures/graph.png
   :width: 700
   :alt: Overview of iMML for multi-modal learning with incomplete data.
 .. centered::

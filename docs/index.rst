@@ -13,8 +13,9 @@ Documentation
    :maxdepth: 1
    :caption: iMML
 
+   main/overview
    main/installation
-   ../auto_tutorials/index
+   auto_tutorials/index
    main/modules/imml
 
 .. toctree::
