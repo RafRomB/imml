@@ -15,6 +15,10 @@ except ImportError:
     deepmodule_error = "Module 'Deep' needs to be installed."
 
 nnModuleBase = nn.Module if deepmodule_installed else object
+AutoProcessor = AutoProcessor if deepmodule_installed else object
+ViltModel = ViltModel if deepmodule_installed else object
+BertTokenizer = BertTokenizer if deepmodule_installed else object
+ViltImageProcessor = ViltImageProcessor if deepmodule_installed else object
 
 
 class MCR(nnModuleBase):

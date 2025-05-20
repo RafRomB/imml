@@ -10,6 +10,7 @@ except ImportError:
     deepmodule_error = "Module 'Deep' needs to be installed."
 
 nnModuleBase = nn.Module if deepmodule_installed else object
+ViltModel = ViltModel if deepmodule_installed else object
 
 
 def init_weights(module):
