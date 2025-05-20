@@ -3,19 +3,20 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-from ..classify._ragpt.core_tools import resize_image
-from ..classify._ragpt.vilt import ViltImageProcessor
-
 try:
     import lightning.pytorch as pl
     from transformers import BertTokenizer
     import torch
+    from ..classify._ragpt.core_tools import resize_image
+    from ..classify._ragpt.vilt import ViltImageProcessor
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'Deep' needs to be installed."
 
 TorchDatasetBase = torch.utils.data.Dataset if deepmodule_installed else object
+BertTokenizer = BertTokenizer if deepmodule_installed else object
+ViltImageProcessor = ViltImageProcessor if deepmodule_installed else object
 
 
 class RAGPTDataset(TorchDatasetBase):
