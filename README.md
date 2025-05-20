@@ -7,13 +7,7 @@ with K modalities, `iMML` effectively handles missing data for **classification,
 imputation and amputation, feature selection, feature extraction and data exploration**, hence enabling efficient
 analysis of partially observed samples.
 
-![Overview of iMML for multi-modal learning with incomplete data](/docs/figures/graph.png)
-
-<div align="center">
-
-![Overview of iMML for multi-modal learning with incomplete data](/docs/figures/graph.png)
-**Overview of iMML for multi-modal learning with incomplete data**
-</div>
+![Overview of iMML for multi-modal learning with incomplete data](docs/figures/graph.png)
 
 Background
 ----------
