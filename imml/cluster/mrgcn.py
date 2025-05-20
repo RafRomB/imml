@@ -24,7 +24,7 @@ class MRGCN(DLBaseeModule):
 
     Incomplete samples should be filled with 0.
 
-    It should be used with PyTorch Lightning. The class MRGCNDataset provides a loader for this algorithm.
+    This class provides training, validation, testing, and prediction logic compatible with the Lightning Trainer.
 
     Parameters
     ----------
@@ -195,7 +195,7 @@ class MRGCN(DLBaseeModule):
         return self.training_step(batch, batch_idx)
 
 
-    def predict_step(self, batch, batch_idx, dataloader_idx: int = 0):
+    def predict_step(self, batch, batch_idx):
         r"""
         Method required for predicting using Pytorch Lightning trainer.
         """

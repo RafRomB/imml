@@ -78,10 +78,12 @@ class MCR(nnModuleBase):
     Example
     --------
     >>> from imml.retrieve import MCR
-    >>> images = ["1.png", "2.png", "3.png", "4.png"]
-    >>> texts = ["I like reading.", "I like pizza.", "I drink watter.", "I went to the cinema."]
+    >>> images = ["docs/figures/graph.png", "docs/figures/logo_imml.png",
+                  "docs/figures/graph.png", "docs/figures/logo_imml.png"]
+    >>> texts = ["This is the graphical abstract of iMML.", "This is the logo of iMML.",
+                 "This is the graphical abstract of iMML.", "This is the logo of iMML."]
     >>> Xs = [images, texts]
-    >>> y = [0, 0, 1, 1]
+    >>> y = [0, 1, 0, 1]
     >>> modalities = ["image", "text"]
     >>> estimator = MCR(modalities=modalities)
     >>> estimator.fit(Xs=Xs, y=y)
