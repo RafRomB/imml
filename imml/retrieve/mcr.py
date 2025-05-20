@@ -10,7 +10,6 @@ try:
     import torch.nn.functional as F
     from torch import nn
     from transformers import AutoModel, AutoProcessor, BertTokenizer
-
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
@@ -21,68 +20,73 @@ nnModuleBase = nn.Module if deepmodule_installed else object
 
 class MCR(nnModuleBase):
     r"""
-    NEighborhood based Multi-Omics clustering (NEMO).
+    Multi-Channel Retriever (MCR).
 
-    NEMO is a method used for clustering data from multiple modalities sources. This algorithm operates
-    through three main stages. Initially, it constructs a similarity matrix for each modality that represents the
-    similarities between different samples. Then, it merges these individual modality matrices into a unified one,
-    combining the information from all modalities. Finally, the algorithm performs the actual clustering process on this
-    integrated network, grouping similar samples together based on their multi-modal data patterns.
+    MCR is a multimodal retrieval framework that enables similarity-based matching within modalities,
+    even under missing modality settings. It builds a memory bank of multimodal embeddings and supports
+    retrieval-augmented prompt generation for tasks like classification or generation.
 
     Parameters
     ----------
-    n_clusters : int or list-of-int
-        The number of clusters to generate. If it is a list, the number of clusters will be estimated by the algorithm
-        with this range of number of clusters to choose between.
-    num_neighbors : list or int, default=None
-        The number of neighbors to use for each modality. It can either be a number, a list of numbers or None. If it is a
-        number, this is the number of neighbors used for all modalities. If this is a list, the number of neighbors are
-        taken for each modality from that list. If it is None, each modality chooses the number of neighbors to be the number
-        of samples divided by num_neighbors_ratio.
-    num_neighbors_ratio : int, default=6
-        The number of clusters to generate. If it is not provided, it will be estimated by the algorithm.
-    metric : str or list-of-str, default="sqeuclidean"
-        Distance metric to compute. Must be one of available metrics in :py:func`scipy.spatial.distance.pdist`. If
-        multiple arrays a provided an equal number of metrics may be supplied.
-    random_state : int, default=None
-        Determines the randomness. Use an int to make the randomness deterministic.
-    engine : str, default='python'
-        Engine to use for computing the model. Must be one of ["python", "r"].
-    verbose : bool, default=False
-        Verbosity mode.
+    batch_size : int, default=64
+        Batch size used for encoding inputs during memory bank creation and inference.
+    n_neighbors : int, default=20
+        Number of neighbors to retrieve per sample during prediction.
+    device : str, default="cpu"
+        Device to use for model inference, typically "cpu" or "cuda".
+    modalities : list of str, default=None
+        Names of the modalities. Options are "text" and "image".
+    pretrained_model : transformers.PreTrainedModel, default=None
+        A pretrained HuggingFace model used for encoding multimodal inputs (e.g., CLIP model).
+        If None, defaults to "openai/clip-vit-large-patch14-336".
+    processor : transformers.ProcessorMixin, default=None
+        HuggingFace processor corresponding to the pretrained model. Used to preprocess image/text inputs.
+        If None, defaults to processor for "openai/clip-vit-large-patch14-336".
+    generate_cap : bool, default=False
+        Whether to generate retrieval-based prompts.
+    prompt_path : str, default=None
+        Path to save or load the generated prompts when `generate_cap` is True.
+    pretrained_vilt : transformers.PreTrainedModel, default=None
+        Pretrained model used for vision-language prompt generation. If None, defaults to
+        ViltModel.from_pretrained('dandelin/vilt-b32-mlm').
+    tokenizer : transformers.BertTokenizer, default=None
+        Tokenizer used for text processing. If None, defaults to
+        BertTokenizer.from_pretrained('dandelin/vilt-b32-mlm', do_lower_case=True).
+    image_processor : transformers.ViltImageProcessor, default=None
+        Image processor used with the ViLT model for image preprocessing. If None, defaults to
+        ViltImageProcessor.from_pretrained('dandelin/vilt-b32-mlm').
+    max_text_len : int, default=128
+        Maximum token length for text inputs (used during prompt generation).
+    max_image_len : int, default=145
+        Maximum token length for image inputs (used during prompt generation).
+    save_memory_bank : bool, default=True
+        Whether to save the memory bank of embeddings after fitting as an attribute. If False, the memory bank is
+        returned as output during fit.
 
     Attributes
     ----------
-    labels_ : array-like of shape (n_samples,)
-        Labels of each point in training data.
-    embedding_ : array-like of shape (n_samples, n_clusters)
-        The final representation of the data to be used as input for the clustering step.
-    n_clusters_ : int
-        Final number of clusters.
-    num_neighbors_ : int
-        Final number of neighbors.
-    affinity_matrix_ : np.array (n_samples, n_samples)
-        Affinity matrix.
+    memory_bank : pd.DataFrame (n_samples, 10)
+        DataFrame storing encoded modality representations for retrieval. Only if save_memory_bank is True.
 
     References
     ----------
-    .. [#nemopaper] Rappoport Nimrod, Shamir Ron. NEMO: Cancer subtyping by integration of partial multi-omic data.
-                    Bioinformatics. 2019;35(18):3348–3356. doi: 10.1093/bioinformatics/btz058.
-    .. [#nemocode] https://github.com/Shamir-Lab/NEMO
+    .. [#ragptpaper] Lang, J., Z. Cheng, T. Zhong, and F. Zhou. “Retrieval-Augmented Dynamic Prompt Tuning for
+                     Incomplete Multimodal Learning”. Proceedings of the AAAI Conference on Artificial Intelligence,
+                     vol. 39, no. 17, Apr. 2025, pp. 18035-43, doi:10.1609/aaai.v39i17.33984.
+    .. [#ragptcode] https://github.com/Jian-Lang/RAGPT/
 
     Example
     --------
     >>> from imml.retrieve import MCR
-    >>> images = ["1.png", "2.png", "3.png", "4.png"] # image paths
-    >>> texts = ["I like reading.", "I like pizza.", "I drink watter.", "I went to the cinema."] # image paths
+    >>> images = ["1.png", "2.png", "3.png", "4.png"]
+    >>> texts = ["I like reading.", "I like pizza.", "I drink watter.", "I went to the cinema."]
     >>> Xs = [images, texts]
     >>> y = [0, 0, 1, 1]
     >>> modalities = ["image", "text"]
     >>> estimator = MCR(modalities=modalities)
     >>> estimator.fit(Xs=Xs, y=y)
+    >>> memory_bank = estimator.memory_bank
     >>> preds = estimator.predict(Xs=Xs)
-    >>> memory_bank = estimator.transform(Xs=Xs)
-    >>> estimator.generate_cap(path="", database= database)
     """
 
 
@@ -124,16 +128,15 @@ class MCR(nnModuleBase):
         Parameters
         ----------
         Xs : list of array-likes
-            - Xs length: n_mods
-            - Xs[i] shape: (n_samples, n_features_i)
-
-            A list of different modalities.
-        y : Ignored
-            Not used, present here for API consistency by convention.
+            - Xs length: 2
+            - Xs[i] shape: (n_samples_i, 1)
+            A list with images and texts.
+        y : array-like of shape (n_samples,)
+            Target vector relative to X.
 
         Returns
         -------
-        self :  Fitted estimator.
+        self :  Fitted estimator. Or memory_bank if save_memory_bank is False.
         """
 
         q_i_list, q_t_list = self._encode_img_text(Xs=Xs)
@@ -164,6 +167,25 @@ class MCR(nnModuleBase):
 
 
     def predict(self, Xs: list = None, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
+        r"""
+        Fit the transformer to the input data.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: 2
+            - Xs[i] shape: (n_samples_i, 1)
+            A list with images and texts.
+        memory_bank : pd.DataFrame (n_samples, 10)
+            Memory bank generated during fit. If None, the memory bank stored in the estimator is used.
+        n_neighbors : int, default=None
+            Number of neighbors to retrieve per sample during prediction. If None, the value stored in the estimator
+            is used,
+
+        Returns
+        -------
+        pred :  Dictionary with the ids, similarities and labels of the retrieved items for each modality.
+        """
 
         if n_neighbors is None:
             n_neighbors = self.n_neighbors
@@ -205,8 +227,27 @@ class MCR(nnModuleBase):
         return output
 
 
-    def fit_predict(self, Xs: list, y: list, save_memory_bank: bool = True, n_neighbors: int = None):
-        if save_memory_bank:
+    def fit_predict(self, Xs: list, y: list, n_neighbors: int = None):
+        r"""
+        Fit the transformer to the input data.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: 2
+            - Xs[i] shape: (n_samples_i, 1)
+            A list with images and texts.
+        y : array-like of shape (n_samples,)
+            Target vector relative to X.
+        n_neighbors : int, default=None
+            Number of neighbors to retrieve per sample during prediction. If None, the value stored in the estimator
+            is used,
+
+        Returns
+        -------
+        pred :  Dictionary with the ids, similarities and labels of the retrieved items for each modality.
+        """
+        if self.save_memory_bank:
             memory_bank = self.fit(Xs=Xs, y=y)
         else:
             memory_bank = self.fit(Xs=Xs, y=y).memory_bank
@@ -215,7 +256,27 @@ class MCR(nnModuleBase):
         return output
 
 
-    def transform(self, Xs: list, y: list, memory_bank: pd.DataFrame = None, n_neighbors: int = None, save_memory_bank: bool = True):
+    def transform(self, Xs: list, y: list, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
+        r"""
+        Generate retrieval-augmented prompts.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: 2
+            - Xs[i] shape: (n_samples_i, 1)
+            A list with images and texts.
+        memory_bank : pd.DataFrame (n_samples, 10)
+            Memory bank generated during fit. If None, the memory bank stored in the estimator is used.
+        n_neighbors : int, default=None
+            Number of neighbors to retrieve per sample during prediction. If None, the value stored in the estimator
+            is used,
+
+        Returns
+        -------
+        database : pd.DataFrame (n_samples, 10)
+            The memory_bank with the retrieval-augmented prompts.
+        """
         if memory_bank is None:
             memory_bank = self.memory_bank
         output = self.predict(Xs=Xs, memory_bank=memory_bank, n_neighbors=n_neighbors)
@@ -241,8 +302,28 @@ class MCR(nnModuleBase):
         return database
 
 
-    def fit_transform(self, Xs: list, y, save_memory_bank: bool = True, n_neighbors: int = None):
-        if save_memory_bank:
+    def fit_transform(self, Xs: list, y, n_neighbors: int = None):
+        r"""
+        Fit the transformer to the input data.
+
+        Parameters
+        ----------
+        Xs : list of array-likes
+            - Xs length: 2
+            - Xs[i] shape: (n_samples_i, 1)
+            A list with images and texts.
+        y : array-like of shape (n_samples,)
+            Target vector relative to X.
+        n_neighbors : int, default=None
+            Number of neighbors to retrieve per sample during prediction. If None, the value stored in the estimator
+            is used,
+
+        Returns
+        -------
+        database : pd.DataFrame (n_samples, 10)
+            The memory_bank with the retrieval-augmented prompts.
+        """
+        if self.save_memory_bank:
             memory_bank = self.fit(Xs=Xs, y=y, save_memory_bank=save_memory_bank).memory_bank
         else:
             memory_bank = self.fit(Xs=Xs, y=y, save_memory_bank=save_memory_bank)
@@ -261,7 +342,8 @@ class MCR(nnModuleBase):
         for param in self.embedding_layer.parameters():
             param.requires_grad = False
         if tokenizer is None:
-            tokenizer = BertTokenizer.from_pretrained('dandelin/vilt-b32-mlm', do_lower_case=True)
+            tokenizer = BertTokenizer.from_pretrained('dandelin/vilt-b32-mlm',
+                                                      do_lower_case=True)
         if image_processor is None:
             image_processor = ViltImageProcessor.from_pretrained('dandelin/vilt-b32-mlm')
 

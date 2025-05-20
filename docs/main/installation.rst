@@ -94,7 +94,7 @@ specifying extras during installation. For example:
 
 -  [matlab]: Some algorithms were originally developed in Matlab. If you want to use the original implementation, use this module.
 -  [r]: Some algorithms were originally developed in R. If you want to use the original implementation, use this module.
--  [torch]: Deep learning methods are included in this module.
+-  [deep]: Deep learning methods are included in this module.
 
 To include these dependencies, execute in the terminal:
 

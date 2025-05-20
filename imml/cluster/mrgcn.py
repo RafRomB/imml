@@ -183,21 +183,21 @@ class MRGCN(DLBaseeModule):
 
     def validation_step(self, batch, batch_idx):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for validating using Pytorch Lightning trainer.
         """
         return self.training_step(batch, batch_idx)
 
 
     def test_step(self, batch, batch_idx):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for testing using Pytorch Lightning trainer.
         """
         return self.training_step(batch, batch_idx)
 
 
     def predict_step(self, batch, batch_idx, dataloader_idx: int = 0):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for predicting using Pytorch Lightning trainer.
         """
         z = self._embedding(batch=batch)
         z = z.detach().cpu().numpy()

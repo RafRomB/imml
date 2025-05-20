@@ -1,5 +1,3 @@
-from torchmetrics import F1Score
-
 from ._ragpt import RAGPTModel
 from ._ragpt.vilt import ViltModel
 
@@ -17,6 +15,13 @@ LightningModuleBase = L.LightningModule if deepmodule_installed else object
 
 class RAGPT(LightningModuleBase):
     r"""
+
+    Retrieval-AuGmented dynamic Prompt Tuning (RAGPT) [#ragptpaper]_ [#ragptcode]_
+
+    RAGPT comprises three modules: (I) the multi-channel retriever, which identifies similar instances through a
+    within-modality retrieval strategy, (II) the missing modality generator, which recovers missing information
+    using retrieved contexts, and (III) the context-aware prompter, which captures contextual knowledge from
+    relevant instances and generates dynamic prompts to largely enhance the MMT’s robustness.
 
     Parameters
     ----------
@@ -62,12 +67,10 @@ class RAGPT(LightningModuleBase):
 
     References
     ----------
-    .. [#mappaper] Lee, Yi-Lun, et al. "Multimodal prompting with missing modalities for visual recognition."
-                   Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2023.
-    .. [#mapcode] https://github.com/YiLunLee/missing_aware_prompts
-    .. [#viltpaper] Kim, Wonjae, Bokyung Son, and Ildoo Kim. "Vilt: Vision-and-language transformer without
-                    convolution or region supervision." International conference on machine learning. PMLR, 2021.
-    .. [#viltcode] https://github.com/dandelin/ViLT
+    .. [#ragptpaper] Lang, J., Z. Cheng, T. Zhong, and F. Zhou. “Retrieval-Augmented Dynamic Prompt Tuning for
+                     Incomplete Multimodal Learning”. Proceedings of the AAAI Conference on Artificial Intelligence,
+                     vol. 39, no. 17, Apr. 2025, pp. 18035-43, doi:10.1609/aaai.v39i17.33984.
+    .. [#ragptcode] https://github.com/Jian-Lang/RAGPT/
 
     Example
     --------
@@ -107,6 +110,9 @@ class RAGPT(LightningModuleBase):
 
 
     def training_step(self, batch, batch_idx):
+        r"""
+        Method required for training using Pytorch Lightning trainer.
+        """
         labels = batch.pop('label').long()
         preds = self.model(**batch)
         loss = self.loss(preds, labels)
@@ -114,6 +120,9 @@ class RAGPT(LightningModuleBase):
 
 
     def validation_step(self, batch, batch_idx):
+        r"""
+        Method required for validating using Pytorch Lightning trainer.
+        """
         labels = batch.pop('label').long()
         preds = self.model(**batch)
         loss = self.loss(preds, labels)
@@ -121,6 +130,9 @@ class RAGPT(LightningModuleBase):
 
 
     def test_step(self, batch, batch_idx):
+        r"""
+        Method required for testing using Pytorch Lightning trainer.
+        """
         labels = batch.pop('label').long()
         preds = self.model(**batch)
         loss = self.loss(preds, labels)
@@ -128,11 +140,17 @@ class RAGPT(LightningModuleBase):
 
 
     def predict_step(self, batch, batch_idx):
+        r"""
+        Method required for predicting using Pytorch Lightning trainer.
+        """
         _ = batch.pop('label').long()
         preds = self.model(**batch)
         return preds
 
 
     def configure_optimizers(self):
+        r"""
+        Method required for training using Pytorch Lightning trainer.
+        """
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         return optimizer

@@ -15,56 +15,49 @@ LightningModuleBase = L.LightningModule if deepmodule_installed else object
 class MUSE(LightningModuleBase):
     r"""
 
+    Mutual-consistent graph contrastive learning (MUSE). [#musepaper]_ [#musecode]_
+
+    MUSE is a multimodal representation learning framework designed to handle missing modalities and partially
+    labeled data. It uses a bipartite graph between samples and modalities to support arbitrary missingness patterns
+    and a mutual-consistent contrastive loss to encourage the learning of label-discriminative, modality-consistent
+    features.
+
+    This class provides training, validation, testing, and prediction logic compatible with the Lightning Trainer.
+
     Parameters
     ----------
-    bert_config : BertConfig
-        Configuration object for the BERT model used to process the text modality.
-    classifier : nn.Sequential
-        A neural network classifier that maps the fused multimodal representation to output predictions.
-    model : str, default="vit_base_patch32_384"
-        Name of the vision model backbone (e.g., a Vision Transformer variant).
-    load_path : str, default=""
-        Path to a pretrained checkpoint to load the model weights from. You can download the pre-trained ViLT model
-        weights from https://github.com/dandelin/ViLT.
-    test_only : bool, default=False
-        Whether to run the model in evaluation-only mode without training.
-    finetune_first : bool, default=False
-        Whether to finetune only the backbone initially before training prompts.
-    prompt_type : str, default="input"
-        Type of prompt injection. One of ['input', 'attention'].
-    prompt_length : int, default=16
-        Number of prompt tokens.
-    learnt_p : bool, default=True
-        If True, the prompt embeddings are learnable parameters.
-    prompt_layers : list, default=None
-        List of layer indices. If None, prompt_layers is [0,1,2,3,4,5].
-    multi_layer_prompt : bool, default=True
-        If True, prompts are injected into multiple layers of the transformer model.
-    loss_name : str, default="accuracy"
-        Name of loss functions to be used during training. One of ["accuracy", "F1_scores", "AUROC"]
-    learning_rate : float, default=1e-2
-        Initial learning rate for the optimizer.
-    weight_decay : float, default=2e-2
-        Weight decay for the optimizer.
-    lr_mult : float, default=1
-        Multiplier applied to lr for downstream heads.
-    end_lr : float, default=0
-        Final learning rate after polynomial decay.
-    decay_power : float, default=1
-        Power for polynomial learning rate decay scheduling.
-    optim_type : str, default="adamw"
-        Optimizer type to use (e.g., 'adamw', 'sgd').
-    warmup_steps : int, default=2500
-        Number of warm-up steps for the learning rate scheduler.
+    input_dim : list of int, default=None
+        A list specifying the input dimensions for each modality.
+    hidden_dim : int, default=128
+        Hidden dimension size.
+    modalities : list of str, default=None
+        Names of the modalities. Options are "tabular", "text" and "image".
+    tokenizer : str, default=None
+        Tokenizer to use for text modality. If None, defaults to "emilyalsentzer/Bio_ClinicalBERT" tokenizer.
+    learning_rate : float, default=2e-4
+        Learning rate for the optimizer.
+    weight_decay : float, default=0
+        Weight decay used by the optimizer.
+    cls_num : int, default=2
+        Number of output classes for the classification task.
+    extractors : list of nn.Module, default=None
+        List of custom feature extractors for each modality. If None, defaults will be used.
+    gnn_layers : int, default=2
+        Number of GNN layers used to propagate sample-modality representations.
+    gnn_norm : str or None, default=None
+        Optional normalization strategy in GNN layers (e.g., 'batchnorm', 'layernorm').
+    code_pretrained_embedding : bool, default=True
+        If True, initializes pretrained embeddings for text/code features.
+    bert_type : str, default="prajjwal1/bert-tiny"
+        HuggingFace model name or path for BERT backbone used in the text encoder.
+    dropout : float, default=0.25
+        Dropout rate applied in the encoders and classifier head.
 
     References
     ----------
-    .. [#mappaper] Lee, Yi-Lun, et al. "Multimodal prompting with missing modalities for visual recognition."
-                   Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2023.
-    .. [#mapcode] https://github.com/YiLunLee/missing_aware_prompts
-    .. [#viltpaper] Kim, Wonjae, Bokyung Son, and Ildoo Kim. "Vilt: Vision-and-language transformer without
-                    convolution or region supervision." International conference on machine learning. PMLR, 2021.
-    .. [#viltcode] https://github.com/dandelin/ViLT
+    .. [#musepaper] Wu, Zhenbang, et al. "Multimodal patient representation learning with missing modalities and
+                    labels." The Twelfth International Conference on Learning Representations. 2024.
+    .. [#musecode] https://github.com/zzachw/MUSE/
 
     Example
     --------
@@ -108,28 +101,43 @@ class MUSE(LightningModuleBase):
 
 
     def training_step(self, batch, batch_idx):
+        r"""
+        Method required for training using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator, y_indicator = batch
         loss = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
     def validation_step(self, batch, batch_idx):
+        r"""
+        Method required for validating using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator, y_indicator = batch
         loss = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
     def test_step(self, batch, batch_idx):
+        r"""
+        Method required for testing using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator, y_indicator = batch
         loss = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
     def predict_step(self, batch, batch_idx):
+        r"""
+        Method required for predicting using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator, y_indicator = batch
         pred = self.model.predict(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
         return pred
 
 
     def configure_optimizers(self):
+        r"""
+        Method required for training using Pytorch Lightning trainer.
+        """
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)

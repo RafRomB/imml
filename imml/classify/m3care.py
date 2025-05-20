@@ -15,56 +15,44 @@ LightningModuleBase = L.LightningModule if deepmodule_installed else object
 class M3Care(LightningModuleBase):
     r"""
 
+    Missing Modalities in Multimodal healthcare data (M3Care). [#m3carepaper]_ [#m3carecode]_
+
+    M3Care is a multimodal classification framework that handles missing modalities by imputing latent
+    task-relevant information using similar samples, based on a modality-adaptive similarity metric.
+    It supports heterogeneous input types (e.g., tabular, text, vision).
+
+    This class provides training, validation, testing, and prediction logic compatible with the Lightning Trainer.
+
     Parameters
     ----------
-    bert_config : BertConfig
-        Configuration object for the BERT model used to process the text modality.
-    classifier : nn.Sequential
-        A neural network classifier that maps the fused multimodal representation to output predictions.
-    model : str, default="vit_base_patch32_384"
-        Name of the vision model backbone (e.g., a Vision Transformer variant).
-    load_path : str, default=""
-        Path to a pretrained checkpoint to load the model weights from. You can download the pre-trained ViLT model
-        weights from https://github.com/dandelin/ViLT.
-    test_only : bool, default=False
-        Whether to run the model in evaluation-only mode without training.
-    finetune_first : bool, default=False
-        Whether to finetune only the backbone initially before training prompts.
-    prompt_type : str, default="input"
-        Type of prompt injection. One of ['input', 'attention'].
-    prompt_length : int, default=16
-        Number of prompt tokens.
-    learnt_p : bool, default=True
-        If True, the prompt embeddings are learnable parameters.
-    prompt_layers : list, default=None
-        List of layer indices. If None, prompt_layers is [0,1,2,3,4,5].
-    multi_layer_prompt : bool, default=True
-        If True, prompts are injected into multiple layers of the transformer model.
-    loss_name : str, default="accuracy"
-        Name of loss functions to be used during training. One of ["accuracy", "F1_scores", "AUROC"]
-    learning_rate : float, default=1e-2
-        Initial learning rate for the optimizer.
-    weight_decay : float, default=2e-2
-        Weight decay for the optimizer.
-    lr_mult : float, default=1
-        Multiplier applied to lr for downstream heads.
-    end_lr : float, default=0
-        Final learning rate after polynomial decay.
-    decay_power : float, default=1
-        Power for polynomial learning rate decay scheduling.
-    optim_type : str, default="adamw"
-        Optimizer type to use (e.g., 'adamw', 'sgd').
-    warmup_steps : int, default=2500
-        Number of warm-up steps for the learning rate scheduler.
+    input_dim : list of int, default=None
+        A list specifying the input dimensions for each modality.
+    hidden_dim : int, default=128
+        Hidden dimension size.
+    embed_size : int, default=128
+        Size of the shared embedding space where modalities are projected.
+    modalities : list of str, default=None
+        Names of the modalities. Options are "tabular", "text" and "image".
+    vocab : object, default=None
+        Vocabulary object used for text modality preprocessing (if applicable).
+    learning_rate : float, default=1e-4
+        Learning rate for the optimizer.
+    weight_decay : float, default=1e-4
+        Weight decay used by the optimizer.
+    output_dim : int, default=1
+        Number of output dimensions. Typically 1 for binary classification.
+    loss_fn : callable, default=None
+        Loss function. If None, defaults to `nn.BCEWithLogitsLoss()`.
+    keep_prob : float, default=0.5
+        Dropout keep probability used in MLP layers.
+    extractors : list of nn.Module, default=None
+        List of custom feature extractors for each modality. If None, defaults will be used.
 
     References
     ----------
-    .. [#mappaper] Lee, Yi-Lun, et al. "Multimodal prompting with missing modalities for visual recognition."
-                   Proceedings of the IEEE/CVF Conference on Computer Vision and Pattern Recognition. 2023.
-    .. [#mapcode] https://github.com/YiLunLee/missing_aware_prompts
-    .. [#viltpaper] Kim, Wonjae, Bokyung Son, and Ildoo Kim. "Vilt: Vision-and-language transformer without
-                    convolution or region supervision." International conference on machine learning. PMLR, 2021.
-    .. [#viltcode] https://github.com/dandelin/ViLT
+    .. [#m3carepaper] Zhang, Chaohe, et al. "M3care: Learning with missing modalities in multimodal healthcare data."
+                      Proceedings of the 28th ACM SIGKDD conference on knowledge discovery and data mining. 2022.
+    .. [#m3carecode] https://github.com/choczhang/M3Care/
 
     Example
     --------
@@ -105,12 +93,10 @@ class M3Care(LightningModuleBase):
         self.loss_fn = loss_fn
 
 
-    def forward(self, batch):
-        Xs, y, observed_mod_indicator = batch
-        return self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
-
-
     def training_step(self, batch, batch_idx):
+        r"""
+        Method required for training using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
         loss = self.loss_fn(y_pred.squeeze(), y)
@@ -118,6 +104,9 @@ class M3Care(LightningModuleBase):
 
 
     def validation_step(self, batch, batch_idx):
+        r"""
+        Method required for validating using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
         loss = self.loss_fn(y_pred.squeeze(), y)
@@ -125,6 +114,9 @@ class M3Care(LightningModuleBase):
 
 
     def test_step(self, batch, batch_idx):
+        r"""
+        Method required for testing using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
         loss = self.loss_fn(y_pred.squeeze(), y)
@@ -132,6 +124,9 @@ class M3Care(LightningModuleBase):
 
 
     def predict_step(self, batch, batch_idx):
+        r"""
+        Method required for predicting using Pytorch Lightning trainer.
+        """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
         loss = F.sigmoid(y_pred)
@@ -139,4 +134,7 @@ class M3Care(LightningModuleBase):
 
 
     def configure_optimizers(self):
+        r"""
+        Method required for training using Pytorch Lightning trainer.
+        """
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
