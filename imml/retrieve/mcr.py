@@ -3,13 +3,12 @@ import numpy as np
 import pandas as pd
 from PIL import Image
 
-from ..classify._ragpt.vilt import ViltModel, ViltImageProcessor
-
 try:
     import torch
     import torch.nn.functional as F
     from torch import nn
     from transformers import AutoModel, AutoProcessor, BertTokenizer
+    from ..classify._ragpt.vilt import ViltModel, ViltImageProcessor
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False

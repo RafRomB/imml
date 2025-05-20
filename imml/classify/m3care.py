@@ -1,9 +1,8 @@
-from ._m3care import M3CareModel
-
 try:
     from torch import optim, nn
     import lightning as L
     import torch.nn.functional as F
+    from ._m3care import M3CareModel
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False

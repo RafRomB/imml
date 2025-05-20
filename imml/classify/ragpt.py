@@ -1,10 +1,9 @@
-from ._ragpt import RAGPTModel
-from ._ragpt.vilt import ViltModel
-
 try:
     import torch
     import torch.nn.functional as F
     import lightning as L
+    from ._ragpt import RAGPTModel
+    from ._ragpt.vilt import ViltModel
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
