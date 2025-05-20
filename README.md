@@ -8,6 +8,7 @@ imputation and amputation, feature selection, feature extraction and data explor
 analysis of partially observed samples.
 
 ![Overview of iMML for multi-modal learning with incomplete data](docs/figures/graph.png)
+**Overview of iMML for multi-modal learning with incomplete data**
 
 [//]: # (<div align="center">)
 
