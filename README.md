@@ -9,6 +9,16 @@ analysis of partially observed samples.
 
 ![Overview of iMML for multi-modal learning with incomplete data](docs/figures/graph.png)
 
+[//]: # (<div align="center">)
+
+[//]: # ()
+[//]: # (![Overview of iMML for multi-modal learning with incomplete data]&#40;/docs/figures/graph.png&#41;)
+
+[//]: # (**Overview of iMML for multi-modal learning with incomplete data**)
+
+[//]: # (</div>)
+
+
 Background
 ----------
 
