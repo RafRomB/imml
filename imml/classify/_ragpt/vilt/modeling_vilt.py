@@ -42,15 +42,16 @@ try:
     )
     from transformers.utils import add_start_docstrings, add_start_docstrings_to_model_forward, logging, \
         replace_return_docstrings
+    logger = logging.get_logger(__name__)
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'Deep' needs to be installed."
 
 nnModuleBase = nn.Module if deepmodule_installed else object
+PreTrainedModel = PreTrainedModel if deepmodule_installed else object
+ModelOutput = ModelOutput if deepmodule_installed else object
 
-
-logger = logging.get_logger(__name__)
 
 _CONFIG_FOR_DOC = "ViltConfig"
 _CHECKPOINT_FOR_DOC = "dandelin/vilt-b32-mlm"

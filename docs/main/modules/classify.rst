@@ -16,3 +16,10 @@ Mutual-consistent graph contrastive learning (MUSE)
 .. autoclass:: MUSE
    :members:
    :show-inheritance:
+
+Retrieval-AuGmented dynamic Prompt Tuning (RAGPT)
+-------------------------------------------------------------------------------
+
+.. autoclass:: RAGPT
+   :members:
+   :show-inheritance:

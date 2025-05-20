@@ -16,7 +16,7 @@ LightningModuleBase = L.LightningModule if deepmodule_installed else object
 class RAGPT(LightningModuleBase):
     r"""
 
-    Retrieval-AuGmented dynamic Prompt Tuning (RAGPT) [#ragptpaper]_ [#ragptcode]_
+    Retrieval-AuGmented dynamic Prompt Tuning (RAGPT). [#ragptpaper]_ [#ragptcode]_
 
     RAGPT is designed for incomplete vision-language learning, where one modality may be missing at
     inference or training time. It combines three core modules to address this challenge: 1) Multi-Channel Retriever,

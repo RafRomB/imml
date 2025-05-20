@@ -23,6 +23,8 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'Deep' needs to be installed."
 
+PretrainedConfig = PretrainedConfig if deepmodule_installed else object
+
 
 class ViltConfig(PretrainedConfig):
     r"""
