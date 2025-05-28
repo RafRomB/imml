@@ -10,11 +10,11 @@ from scipy.sparse.linalg import eigs
 from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
-oct2py_installed = False
-oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
+matlabmodule_installed = False
+oct2py_module_error = "Module 'matlab' needs to be installed."
 try:
     import oct2py
-    oct2py_installed = True
+    matlabmodule_installed = True
 except ImportError:
     pass
 
@@ -82,7 +82,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
         engines_options = ["matlab", "python"]
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
-        if (engine == "matlab") and (not oct2py_installed):
+        if (engine == "matlab") and (not matlabmodule_installed):
             raise ImportError(oct2py_module_error)
         if lbd <= 0:
             raise ValueError(f"Invalid lbd. It must be a positive value. {lbd} was passed.")
@@ -146,8 +146,6 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         elif self.engine == "python":
             Z, obj = self._imsc(transformed_Xs, tuple(observed_mod_indicator), self.n_clusters, self.lbd, self.gamma)
-        else:
-            raise ValueError("Only engine=='matlab' and 'python are currently supported.")
 
         model = KMeans(n_clusters= self.n_clusters, n_init="auto", random_state= self.random_state)
         self.labels_ = model.fit_predict(X= Z)

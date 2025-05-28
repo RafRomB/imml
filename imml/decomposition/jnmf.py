@@ -1,26 +1,25 @@
+from typing import List
+
 import pandas as pd
 import numpy as np
 from sklearn.base import BaseEstimator, TransformerMixin
 
-from ..utils import check_Xs, _convert_df_to_r_object
-
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
-    nnTensor = importr("nnTensor")
-    rbase = importr("base")
-    rpy2_installed = True
+    from ..utils import check_Xs, _convert_df_to_r_object
+    rmodule_installed = True
 except ImportError:
-    rpy2_installed = False
-    rpy2_module_error = "rpy2 needs to be installed to use r engine."
+    rmodule_installed = False
+    rmodule_error = "Module 'r' needs to be installed to use r engine."
 
-if rpy2_installed:
+if rmodule_installed:
     rbase = importr("base")
     try:
         nnTensor = importr("nnTensor")
         nnTensor_installed = True
     except PackageNotInstalledError:
         nnTensor_installed = False
-        nnTensor_module_error = "nnTensor needs to be installed in R to use R engine."
+        nnTensor_module_error = "nnTensor needs to be installed in R to use r engine."
 
 
 class JNMF(TransformerMixin, BaseEstimator):
@@ -119,14 +118,14 @@ class JNMF(TransformerMixin, BaseEstimator):
     def __init__(self, n_components : int = 10, init_W = None, init_V = None, init_H = None,
                  l1_W: float = 1e-10, l1_V: float = 1e-10, l1_H: float = 1e-10,
                  l2_W: float = 1e-10, l2_V: float = 1e-10, l2_H: float = 1e-10, weights = None,
-                 beta_loss : list = None, p: float = 1., tol: float = 1e-10, max_iter: int = 100,
+                 beta_loss : List = None, p: float = 1., tol: float = 1e-10, max_iter: int = 100,
                  verbose=0, random_state: int = None, engine: str = "r"):
         engines_options = ["r"]
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if engine == "r":
-            if not rpy2_installed:
-                raise ImportError(rpy2_module_error)
+            if not rmodule_installed:
+                raise ImportError(rmodule_error)
             elif not nnTensor_installed:
                 raise ImportError(nnTensor_module_error)
 

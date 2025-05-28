@@ -1,4 +1,6 @@
 import copy
+from typing import List
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import FunctionTransformer
@@ -31,7 +33,7 @@ class RemoveMods(FunctionTransformer):
         super().__init__(remove_mods, kw_args={"observed_mod_indicator": self.observed_mod_indicator})
 
 
-def remove_mods(Xs: list, observed_mod_indicator):
+def remove_mods(Xs: List, observed_mod_indicator):
     r"""
     A function that generates block-wise missingness patterns in complete multi-modal datasets.
 

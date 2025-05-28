@@ -1,4 +1,4 @@
-from typing import Union
+from typing import Union, List
 
 import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
@@ -101,8 +101,8 @@ class SUMO(BaseEstimator, ClassifierMixin):
     >>> labels = estimator.fit_predict(Xs)
     """
 
-    def __init__(self, n_clusters: int = 8, method: Union[str, list] = None, missing: list = None,
-                 neighbours: float = 0.1, alpha: float = 0.5, sparsity: list = None, repetitions: int = 60,
+    def __init__(self, n_clusters: int = 8, method: Union[str, list] = None, missing: List = None,
+                 neighbours: float = 0.1, alpha: float = 0.5, sparsity: List = None, repetitions: int = 60,
                  cluster_method: str = "max_value", max_iter: int = 500, tol: float = 1e-5, subsample: float = 0.05,
                  calc_cost: int = 20, h_init: int = None, rep: int = 5, random_state: int = None,
                  verbose: bool = False, n_jobs: int = 1):

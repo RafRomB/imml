@@ -1,3 +1,4 @@
+import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -20,9 +21,81 @@ ViltImageProcessor = ViltImageProcessor if deepmodule_installed else object
 
 
 class RAGPTDataset(TorchDatasetBase):
+    r"""
+    This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `RAGPT`. If 
+    it is used with `torch.utils.data.DataLoader`, the `collate_fn` argument of the `DataLoader` constructor should be  
+    `RAGPTCollator`.
+
+    Parameters
+    ----------
+    database : pd.DataFrame (n_samples, 14)
+        A database with the retrieval-augmented prompts created by MCR. It must contain the following columns:
+            - item_id: Unique identifier for each sample.
+            - img_path: Path to the image file.
+            - text: Textual content of the sample.
+            - label: Label of the sample.
+            - observed_image: Indicator of whether the image was observed.
+            - observed_text: Indicator of whether the text was observed.
+            - i2i_id_list: List of ids of the retrieved items for the image-to-image modality.
+            - i2i_sims_list: List of similarities of the retrieved items for the image-to-image modality.
+            - i2i_label_list: List of labels of the retrieved items for the image-to-image modality.
+            - prompt_image_path: Path to the generated image prompt. Only if generate_cap is True.
+            - t2t_id_list: List of ids of the retrieved items for the text-to-text modality.
+            - t2t_sims_list: List of similarities of the retrieved items for the text-to-text modality.
+            - t2t_label_list: List of labels of the retrieved items for the text-to-text modality.
+            - prompt_text_path: Path to the generated text prompt. Only if generate_cap is True.
+
+    max_text_len : int, default=128
+        Maximum token length for text inputs (used during prompt generation).
+
+    Returns
+    -------
+    sample : dict
+        Dictionary with the following keys for one sample:
+            - image: Image of the sample.
+            - text: Textual content of the sample.
+            - label: Label of the sample.
+            - r_t_list: List with retrieved textual content for the sample.
+            - r_i_list: List with retrieved image content for the sample.
+            - r_l_list: List with retrieved labels for the sample.
+            - observed_text: True if the text is observed, False otherwise.
+            - observed_image: True if the image is observed, False otherwise.
+
+    Example
+    --------
+    >>> from torch.utils.data import DataLoader
+    >>> from imml.load import RAGPTDataset
+    >>> from imml.retrieve import MCR
+    >>> images = ["docs/figures/graph.png", "docs/figures/logo_imml.png",
+                  "docs/figures/graph.png", "docs/figures/logo_imml.png"]
+    >>> texts = ["This is the graphical abstract of iMML.", "This is the logo of iMML.",
+                 "This is the graphical abstract of iMML.", "This is the logo of iMML."]
+    >>> Xs = [images, texts]
+    >>> y = [0, 1, 0, 1]
+    >>> modalities = ["image", "text"]
+    >>> estimator = MCR(modalities=modalities)
+    >>> database = estimator.fit_transform(Xs=Xs, y=y)
+    >>> train_data = RAGPTDataset(database=database)
+    >>> train_dataloader = DataLoader(train_data, collate_fn=RAGPTCollator())
+    """
 
 
     def __init__(self, database: pd.DataFrame, max_text_len: int = 128):
+        if not deepmodule_installed:
+            raise ImportError(deepmodule_error)
+
+        if not isinstance(database, pd.DataFrame):
+            raise ValueError(f"Invalid database. It must be a pandas DataFrame. A {type(database)} was passed.")
+        required_columns = ['img_path', 'text', 'label', 'i2i_id_list', 't2t_id_list', 
+                           'prompt_image_path', 'prompt_text_path', 'i2i_label_list', 
+                           't2t_label_list', 'observed_image', 'observed_text']
+        missing_columns = [col for col in required_columns if col not in database.columns]
+        if missing_columns:
+            raise ValueError(f"Invalid database. It is missing required columns: {missing_columns}")
+        if not isinstance(max_text_len, int):
+            raise ValueError(f"Invalid max_text_len. It must be an integer. A {type(max_text_len)} was passed.")
+        if max_text_len <= 0:
+            raise ValueError(f"Invalid max_text_len. It must be positive. {max_text_len} was passed.")
 
         super().__init__()
 
@@ -99,6 +172,17 @@ class RAGPTCollator():
 
     def __init__(self, tokenizer: BertTokenizer = None, image_processor: ViltImageProcessor = None,
                  max_text_len: int = 128):
+        if not deepmodule_installed:
+            raise ImportError(deepmodule_error)
+
+        if tokenizer is not None and not isinstance(tokenizer, BertTokenizer):
+            raise ValueError(f"Invalid tokenizer. It must be a BertTokenizer. A {type(tokenizer)} was passed.")
+        if image_processor is not None and not isinstance(image_processor, ViltImageProcessor):
+            raise ValueError(f"Invalid image_processor. It must be a ViltImageProcessor. A {type(image_processor)} was passed.")
+        if not isinstance(max_text_len, int):
+            raise ValueError(f"Invalid max_text_len. It must be an integer. A {type(max_text_len)} was passed.")
+        if max_text_len <= 0:
+            raise ValueError(f"Invalid max_text_len. It must be positive. {max_text_len} was passed.")
 
         if tokenizer is None:
             tokenizer = BertTokenizer.from_pretrained('dandelin/vilt-b32-mlm', do_lower_case=True)

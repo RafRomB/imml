@@ -1,4 +1,6 @@
-from unittest import mock
+import importlib
+import sys
+from unittest.mock import patch
 import pytest
 import numpy as np
 import pandas as pd
@@ -8,18 +10,17 @@ from imml.cluster import NEMO
 
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
-    rpy2_installed = True
+    rmodule_installed = True
 except ImportError:
-    rpy2_installed = False
+    rmodule_installed = False
 
-snftool_installed = False
-if rpy2_installed:
+if rmodule_installed:
     rbase = importr("base")
     try:
         snftool = importr("SNFtool")
         snftool_installed = True
     except PackageNotInstalledError:
-        pass
+        snftool_installed = False
 estimator = NEMO
 
 
@@ -32,31 +33,32 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 @pytest.mark.skipif(not snftool_installed, reason="snftool is not installed.")
-def test_rpy2_not_installed(monkeypatch):
-    if rpy2_installed:
+def test_rmodule_installed():
+    if rmodule_installed:
         estimator(engine="r")
-        with mock.patch("imml.cluster.nemo.rpy2_installed", False):
-            with mock.patch("imml.cluster.nemo.rpy2_module_error",
-                            "rpy2 needs to be installed to use r engine."):
-                with pytest.raises(ImportError, match="rpy2 needs to be installed to use r engine."):
-                    estimator(engine="r")
+        with patch.dict(sys.modules, {"rpy2": None}):
+            import imml.cluster.nemo as module_mock
+            importlib.reload(module_mock)
+            with pytest.raises(ImportError, match="Module 'r' needs to be installed to use r engine."):
+                estimator(engine="r")
+        importlib.reload(module_mock)
     else:
-        with pytest.raises(ImportError, match="rpy2 needs to be installed to use r engine."):
+        with pytest.raises(ImportError, match="Module 'r' needs to be installed to use r engine."):
             estimator(engine="r")
 
-@pytest.mark.skipif(not rpy2_installed, reason="rpy2 is not installed.")
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
 def test_r_dependencies_not_installed():
-    if rpy2_installed:
+    if rmodule_installed:
         if snftool_installed:
-            NEMO(engine="r")
+            estimator(engine="r")
         else:
             with pytest.raises(ImportError, match="SNFtool needs to be installed in R to use r engine."):
-                NEMO(engine="r")
+                estimator(engine="r")
 
 def test_param_randomstate(sample_data):
     random_state = 42
     for engine in ["r", "python"]:
-        if (engine == "r") and (not rpy2_installed or not snftool_installed):
+        if (engine == "r") and (not rmodule_installed or not snftool_installed):
             continue
         else:
             labels = estimator(engine=engine, random_state=random_state).fit_predict(sample_data[0])
@@ -81,7 +83,7 @@ def test_default_params(sample_data):
 
 def test_custom_parameters(sample_data):
     for engine in ["r", "python"]:
-        if (engine == "r") and (not rpy2_installed or not snftool_installed):
+        if (engine == "r") and (not rmodule_installed or not snftool_installed):
             continue
         else:
             model = estimator(n_clusters=list(range(2, 4)), num_neighbors=3, random_state=42, engine=engine)
@@ -99,16 +101,17 @@ def test_custom_parameters(sample_data):
             assert model.affinity_matrix_.shape == (n_samples, n_samples)
             assert len(model.num_neighbors_) == len(Xs)
             assert model.num_neighbors_[0] > 0
-    NEMO(n_clusters=list(range(2, 4)), num_neighbors=[3, 3, 3], random_state=42).fit_predict(Xs)
+    estimator(n_clusters=list(range(2, 4)), num_neighbors=[3, 3, 3], random_state=42).fit_predict(Xs)
+    estimator(n_clusters=None)
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid engine."):
-        NEMO(engine='invalid')
+        estimator(engine='invalid')
 
 def test_fit_predict(sample_data):
     n_clusters = 3
     for engine in ["r", "python"]:
-        if (engine == "r") and (not rpy2_installed or not snftool_installed):
+        if (engine == "r") and (not rmodule_installed or not snftool_installed):
             continue
         else:
             model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)
@@ -130,7 +133,7 @@ def test_fit_predict(sample_data):
 def test_missing_values_handling(sample_data):
     n_clusters = 3
     for engine in ["r", "python"]:
-        if (engine == "r") and (not rpy2_installed or not snftool_installed):
+        if (engine == "r") and (not rmodule_installed or not snftool_installed):
             continue
         for Xs in sample_data:
             model = estimator(n_clusters=n_clusters, engine=engine, random_state=42)

@@ -9,11 +9,11 @@ from scipy.sparse.linalg import eigs
 from ..impute import simple_mod_imputer
 from ..utils import check_Xs
 
-oct2py_installed = False
-oct2py_module_error = "Oct2Py needs to be installed to use matlab engine."
+matlabmodule_installed = False
+oct2py_module_error = "Module 'matlab' needs to be installed."
 try:
     import oct2py
-    oct2py_installed = True
+    matlabmodule_installed = True
 except ImportError:
     pass
 
@@ -87,7 +87,7 @@ class LFIMVC(BaseEstimator, ClassifierMixin):
         engines_options = ["matlab", "python"]
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
-        if (engine == "matlab") and (not oct2py_installed):
+        if (engine == "matlab") and (not matlabmodule_installed):
             raise ImportError(oct2py_module_error)
 
         self.n_clusters = n_clusters

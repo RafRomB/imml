@@ -1,5 +1,5 @@
 import copy
-from typing import Union
+from typing import Union, List
 import numpy as np
 import pandas as pd
 
@@ -13,7 +13,7 @@ class DatasetUtils:
     """
 
     @staticmethod
-    def get_summary(Xs: list) -> int:
+    def get_summary(Xs: List) -> int:
         r"""
         Get a summary of an incomplete multi-modal dataset.
 
@@ -55,7 +55,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_n_mods(Xs: list) -> int:
+    def get_n_mods(Xs: List) -> int:
         r"""
         Get the number of modalities of a multi-modal dataset.
 
@@ -86,7 +86,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_n_samples_by_mod(Xs: list) -> int:
+    def get_n_samples_by_mod(Xs: List) -> int:
         r"""
         Get the number of samples in each modality.
 
@@ -118,7 +118,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_complete_sample_names(Xs: list) -> pd.Index:
+    def get_complete_sample_names(Xs: List) -> pd.Index:
         r"""
         Get complete samples in a multi-modal dataset.
 
@@ -154,7 +154,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_incomplete_sample_names(Xs: list) -> pd.Index:
+    def get_incomplete_sample_names(Xs: List) -> pd.Index:
         r"""
         Get incomplete samples in a multi-modal dataset.
 
@@ -190,7 +190,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_sample_names(Xs: list) -> pd.Index:
+    def get_sample_names(Xs: List) -> pd.Index:
         r"""
         Get samples in a multi-modal dataset.
 
@@ -227,7 +227,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_samples_by_mod(Xs: list, return_as_list: bool = True) -> Union[list, dict]:
+    def get_samples_by_mod(Xs: List, return_as_list: bool = True) -> Union[List, dict]:
         r"""
         Get the samples for each modality in a multi-modal dataset.
 
@@ -270,7 +270,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_missing_samples_by_mod(Xs: list, return_as_list: bool = True) -> Union[list, dict]:
+    def get_missing_samples_by_mod(Xs: List, return_as_list: bool = True) -> Union[List, dict]:
         r"""
         Get the samples not present in each modality in a multi-modal dataset.
 
@@ -316,7 +316,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def get_n_complete_samples(Xs: list) -> int:
+    def get_n_complete_samples(Xs: List) -> int:
         r"""
         Get the number of complete samples in a multi-modal dataset.
 
@@ -448,7 +448,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def remove_missing_sample_from_mod(Xs: list) -> list:
+    def remove_missing_sample_from_mod(Xs: List) -> List:
         r"""
         Remove missing samples from each specific modality.
 
@@ -497,7 +497,7 @@ class DatasetUtils:
 
 
     @staticmethod
-    def convert_mmd_from_list_to_dict(Xs: list, keys: list = None) -> dict:
+    def convert_mmd_from_list_to_dict(Xs: List, keys: List = None) -> dict:
         r"""
         Convert a multi-modal dataset in list format to a dict format.
 

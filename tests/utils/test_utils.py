@@ -1,8 +1,33 @@
+import importlib
+import sys
+from unittest.mock import patch
+
 import pytest
 import numpy as np
 import pandas as pd
 
-from imml.utils import check_Xs
+from imml.utils import check_Xs, _convert_df_to_r_object
+
+try:
+    from rpy2.robjects.packages import importr
+    rmodule_installed = True
+except ImportError:
+    rmodule_installed = False
+
+
+def test_rmodule_installed():
+    df = pd.DataFrame([[1, 2], [3, 4]])
+    if rmodule_installed:
+        _convert_df_to_r_object(df)
+        with patch.dict(sys.modules, {"rpy2": None}):
+            import imml.utils.utils as module_mock
+            importlib.reload(module_mock)
+            with pytest.raises(ImportError, match="Module 'r' needs to be installed to use r engine."):
+                _convert_df_to_r_object(df)
+        importlib.reload(module_mock)
+    else:
+        with pytest.raises(ImportError, match="Module 'r' needs to be installed to use r engine."):
+            _convert_df_to_r_object(df)
 
 
 def test_valid_inputs():
@@ -39,9 +64,18 @@ def test_valid_inputs():
     X3 = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
     result = check_Xs(X3)
     assert isinstance(result, list)
-    assert len(result) == 2  # The 3D array is split into two 2D arrays
+    assert len(result) == 2
     assert result[0].shape == (2, 2)
     assert result[1].shape == (2, 2)
+
+    # Test with arrays containing NaN values
+    X1 = np.array([[1, np.nan], [3, 4]])
+    X2 = np.array([[5, 6], [np.nan, 8]])
+    result = check_Xs([X1, X2], force_all_finite='allow-nan')
+    assert isinstance(result, list)
+    assert len(result) == 2
+    assert np.isnan(result[0][0, 1])
+    assert np.isnan(result[1][1, 0])
 
 
 def test_invalid_inputs():

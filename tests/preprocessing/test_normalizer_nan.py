@@ -31,9 +31,9 @@ def test_normalizer_nan_l2(sample_data):
     transformed_X = transformer.transform(sample_data)
 
     expected_transformed_X = np.array([
-        [0.2, 0.4, np.nan],
-        [0.05194805, 0.06493506, 0.07792208],
-        [0.05384615, np.nan, 0.06923077],
+        [0.44721, 0.89443, np.nan],
+        [0.45584, 0.56980, 0.68376],
+        [0.61394, np.nan, 0.78935],
     ])
 
     assert np.allclose(transformed_X, expected_transformed_X, equal_nan=True)

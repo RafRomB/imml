@@ -12,19 +12,16 @@ from snf.compute import affinity_matrix
 from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs, DatasetUtils
 
-rpy2_installed = False
-rpy2_module_error = "rpy2 needs to be installed to use R engine."
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
     import rpy2.robjects as robjects
     from ..utils import _convert_df_to_r_object
-    rpy2_installed = True
+    rmodule_installed = True
 except ImportError:
-    pass
+    rmodule_installed = False
+    rmodule_error = "Module 'r' needs to be installed to use r engine."
 
-snftool_installed = False
-snftool_module_error = "SNFtool needs to be installed in R to use r engine."
-if rpy2_installed:
+if rmodule_installed:
     rbase = importr("base")
     r_folder = dirname(__file__)
     r_folder = os.path.join(r_folder, "_" + (os.path.basename(__file__).split(".")[0]))
@@ -33,7 +30,8 @@ if rpy2_installed:
         snftool = importr("SNFtool")
         snftool_installed = True
     except PackageNotInstalledError:
-        pass
+        snftool_installed = False
+        snftool_module_error = "SNFtool needs to be installed in R to use r engine."
 
 
 class NEMO(BaseEstimator, ClassifierMixin):
@@ -103,8 +101,8 @@ class NEMO(BaseEstimator, ClassifierMixin):
         if engine not in engines_options:
             raise ValueError(f"Invalid engine. Expected one of {engines_options}. {engine} was passed.")
         if engine == "r":
-            if not rpy2_installed:
-                raise ImportError(rpy2_module_error)
+            if not rmodule_installed:
+                raise ImportError(rmodule_error)
             elif not snftool_installed:
                 raise ImportError(snftool_module_error)
 

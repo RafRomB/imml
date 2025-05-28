@@ -1,4 +1,6 @@
 import os
+from typing import List
+
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -68,10 +70,9 @@ class MCR(nnModuleBase):
 
     Attributes
     ----------
-    memory_bank : pd.DataFrame (n_samples, 8)
+    memory_bank : pd.DataFrame (n_samples, 6)
         DataFrame storing encoded modality representations for retrieval. Only if save_memory_bank is True. The columns
         are:
-
         - item_id: Unique identifier for each sample.
         - img_path: Path to the image file.
         - text: Textual content of the sample.
@@ -106,13 +107,50 @@ class MCR(nnModuleBase):
 
 
     def __init__(self, batch_size: int = 64, n_neighbors: int = 20, device: str = "cpu",
-                 modalities: list = None, pretrained_model: AutoModel = None, processor: AutoProcessor = None,
+                 modalities: List = None, pretrained_model: AutoModel = None, processor: AutoProcessor = None,
                  generate_cap: bool = False, prompt_path: str = None, pretrained_vilt: ViltModel = None,
                  tokenizer: BertTokenizer = None, image_processor: ViltImageProcessor = None,
                  max_text_len: int = 128, max_image_len: int = 145, save_memory_bank: bool = True):
 
-        if modalities is None:
+        if not deepmodule_installed:
+            raise ImportError(deepmodule_error)
+
+        if not isinstance(modalities, list):
             raise ValueError(f"Invalid modalities. It must be a list. A {type(modalities)} was passed.")
+        if len(modalities) < 2:
+            raise ValueError(f"Invalid modalities. It must have at least 2 modalities. Got {len(modalities)} modalities")
+        modalities_options = ["image", "text"]
+        if not all(mod in modalities_options for mod in modalities):
+            raise ValueError(f"Invalid modalities. Expected options are: {modalities_options}")
+        if not isinstance(batch_size, int):
+            raise ValueError(f"Invalid batch_size. It must be a integer. A {type(batch_size)} was passed.")
+        if batch_size <= 0:
+            raise ValueError(f"Invalid batch_size. It must be positive. A {type(batch_size)} was passed.")
+        if not isinstance(n_neighbors, int):
+            raise ValueError(f"Invalid n_neighbors. It must be a integer. A {type(n_neighbors)} was passed.")
+        if n_neighbors <= 0:
+            raise ValueError(f"Invalid n_neighbors. It must be positive. A {type(n_neighbors)} was passed.")
+        if not isinstance(device, str):
+            raise ValueError(f"Invalid device. It must be a string. A {type(device)} was passed.")
+        if not isinstance(generate_cap, bool):
+            raise ValueError(f"Invalid generate_cap. It must be a boolean. A {type(generate_cap)} was passed.")
+        if generate_cap and prompt_path is None:
+            raise ValueError("Invalid prompt_path. prompt_path must be provided when generate_cap is True.")
+        if generate_cap:
+            if not isinstance(prompt_path, str):
+                raise ValueError(f"Invalid prompt_path. prompt_path must be a string. Got {type(prompt_path)}.")
+            elif not os.path.exists(prompt_path):
+                raise ValueError("Invalid prompt_path. prompt_path must exit.")
+        if not isinstance(max_text_len, int):
+            raise ValueError(f"Invalid max_text_len. It must be a integer. A {type(max_text_len)} was passed.")
+        if max_text_len <= 0:
+            raise ValueError(f"Invalid max_text_len. It must be positive. {max_text_len} was passed.")
+        if not isinstance(max_image_len, int):
+            raise ValueError(f"Invalid max_image_len. It must be a integer. A {type(max_image_len)} was passed.")
+        if max_image_len <= 0:
+            raise ValueError(f"Invalid max_image_len. It must be positive. {max_image_len} was passed.")
+        if not isinstance(save_memory_bank, bool):
+            raise ValueError(f"Invalid save_memory_bank. It must be a boolean. A {type(save_memory_bank)} was passed.")
 
         super().__init__()
 
@@ -136,7 +174,7 @@ class MCR(nnModuleBase):
             self.max_image_len = max_image_len
 
 
-    def fit(self, Xs: list, y):
+    def fit(self, Xs: List, y):
         r"""
         Fit the transformer to the input data.
 
@@ -154,6 +192,18 @@ class MCR(nnModuleBase):
         -------
         self :  Fitted estimator. Or memory_bank if save_memory_bank is False.
         """
+        if not isinstance(Xs, list):
+            raise ValueError(f"Invalid Xs. It must be a list. A {type(Xs)} was passed.")
+        if len(Xs) != len(self.modalities):
+            raise ValueError(f"Invalid Xs. It must have the same length as modalities. Got {len(Xs)} vs {len(self.modalities)}")
+        if any(len(X) == 0 for X in Xs):
+            raise ValueError("Invalid Xs. All elements must have at least one sample.")
+        if len(set(len(X) for X in Xs)) > 1:
+            raise ValueError("Invalid Xs. All elements must have the same number of samples.")
+        if y is None:
+            raise ValueError("Invalid y. It cannot be None.")
+        if len(y) != len(Xs[0]):
+            raise ValueError(f"Invalid y. It must have the same length as each element in Xs. Got {len(y)} vs {len(Xs[0])}")
 
         q_i_list, q_t_list = self._encode_img_text(Xs=Xs)
         memory_bank = pd.DataFrame({
@@ -182,7 +232,7 @@ class MCR(nnModuleBase):
         return output
 
 
-    def predict(self, Xs: list = None, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
+    def predict(self, Xs: List = None, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
         r"""
         Fit the transformer to the input data.
 
@@ -203,11 +253,35 @@ class MCR(nnModuleBase):
         -------
         pred :  Dictionary with the ids, similarities and labels of the retrieved items for each modality.
         """
-
-        if n_neighbors is None:
+        if n_neighbors is not None:
+            if not isinstance(n_neighbors, int):
+                raise ValueError(f"Invalid n_neighbors. It must be a integer. A {type(n_neighbors)} was passed.")
+            if n_neighbors <= 0:
+                raise ValueError(f"Invalid n_neighbors. It must be positive. A {type(n_neighbors)} was passed.")
+        else:
             n_neighbors = self.n_neighbors
-        if memory_bank is None:
+
+        if memory_bank is not None:
+            if not isinstance(memory_bank, pd.DataFrame):
+                raise ValueError(f"Invalid memory_bank. It must be a pandas DataFrame. A {type(memory_bank)} was passed.")
+            required_columns = ['item_id', 'q_i', 'q_t', 'label']
+            missing_columns = [col for col in required_columns if col not in memory_bank.columns]
+            if missing_columns:
+                raise ValueError(f"Invalid memory_bank. It is missing required columns: {missing_columns}")
+        else:
+            if not hasattr(self, 'memory_bank'):
+                raise ValueError("Invalid memory_bank. No memory_bank available. Either provide a memory_bank or call fit first.")
             memory_bank = self.memory_bank
+
+        if Xs is not None:
+            if not isinstance(Xs, list):
+                raise ValueError(f"Invalid Xs. It must be a list. A {type(Xs)} was passed.")
+            if len(Xs) != len(self.modalities):
+                raise ValueError(f"Invalid Xs. It must have the same length as modalities. Got {len(Xs)} vs {len(self.modalities)}")
+            if any(len(X) == 0 for X in Xs):
+                raise ValueError("Invalid Xs. All elements must have at least one sample.")
+            if len(set(len(X) for X in Xs)) > 1:
+                raise ValueError("Invalid Xs. All elements must have the same number of samples.")
         if Xs is not None:
             q_i, q_t = self._encode_img_text(Xs=Xs)
         else:
@@ -265,12 +339,18 @@ class MCR(nnModuleBase):
         -------
         pred :  Dictionary with the ids, similarities and labels of the retrieved items for each modality.
         """
-        if self.save_memory_bank:
-            memory_bank = self.fit(Xs=Xs, y=y)
-        else:
-            memory_bank = self.fit(Xs=Xs, y=y).memory_bank
+        if n_neighbors is not None:
+            if not isinstance(n_neighbors, int):
+                raise ValueError(f"Invalid n_neighbors. It must be a integer. A {type(n_neighbors)} was passed.")
+            if n_neighbors <= 0:
+                raise ValueError(f"Invalid n_neighbors. It must be positive. A {n_neighbors} was passed.")
 
-        output = self.predict(memory_bank=memory_bank, n_neighbors=n_neighbors)
+        if self.save_memory_bank:
+            memory_bank = self.fit(Xs=Xs, y=y).memory_bank
+        else:
+            memory_bank = self.fit(Xs=Xs, y=y)
+
+        output = self.predict(Xs=Xs, memory_bank=memory_bank, n_neighbors=n_neighbors)
         return output
 
 
@@ -285,19 +365,69 @@ class MCR(nnModuleBase):
             - Xs[i] shape: (n_samples_i, 1)
 
             A list with images and texts.
+        y : array-like of shape (n_samples,)
+            Target vector relative to X.
         memory_bank : pd.DataFrame (n_samples, 10)
             Memory bank generated during fit. If None, the memory bank stored in the estimator is used.
         n_neighbors : int, default=None
             Number of neighbors to retrieve per sample during prediction. If None, the value stored in the estimator
-            is used,
+            is used.
 
         Returns
         -------
-        database : pd.DataFrame (n_samples, 10)
-            The memory_bank with the retrieval-augmented prompts.
+        database : pd.DataFrame (n_samples, 14)
+            A database with the retrieval-augmented prompts. It contains the following columns:
+            - item_id: Unique identifier for each sample.
+            - img_path: Path to the image file.
+            - text: Textual content of the sample.
+            - label: Label of the sample.
+            - observed_image: Indicator of whether the image was observed.
+            - observed_text: Indicator of whether the text was observed.
+            - i2i_id_list: List of ids of the retrieved items for the image-to-image modality.
+            - i2i_sims_list: List of similarities of the retrieved items for the image-to-image modality.
+            - i2i_label_list: List of labels of the retrieved items for the image-to-image modality.
+            - prompt_image_path: Path to the generated image prompt. Only if generate_cap is True.
+            - t2t_id_list: List of ids of the retrieved items for the text-to-text modality.
+            - t2t_sims_list: List of similarities of the retrieved items for the text-to-text modality.
+            - t2t_label_list: List of labels of the retrieved items for the text-to-text modality.
+            - prompt_text_path: Path to the generated text prompt. Only if generate_cap is True.
+
         """
-        if memory_bank is None:
+        if not isinstance(Xs, list):
+            raise ValueError(f"Invalid Xs. It must be a list. A {type(Xs)} was passed.")
+        if len(Xs) != len(self.modalities):
+            raise ValueError(f"Invalid Xs. It must have the same length as modalities. Got {len(Xs)} vs {len(self.modalities)}")
+        if any(len(X) == 0 for X in Xs):
+            raise ValueError("Invalid Xs. All elements must have at least one sample.")
+        if len(set(len(X) for X in Xs)) > 1:
+            raise ValueError("Invalid Xs. All elements must have the same number of samples.")
+
+        if y is None:
+            raise ValueError("Invalid y. It cannot be None.")
+        if len(y) != len(Xs[0]):
+            raise ValueError(f"Invalid y. It must have the same length as each element in Xs. Got {len(y)} vs {len(Xs[0])}")
+
+        if n_neighbors is not None:
+            if not isinstance(n_neighbors, int):
+                raise ValueError(f"Invalid n_neighbors. It must be a integer. A {type(n_neighbors)} was passed.")
+            if n_neighbors <= 0:
+                raise ValueError(f"Invalid n_neighbors. It must be positive. A {n_neighbors} was passed.")
+
+        if memory_bank is not None:
+            if not isinstance(memory_bank, pd.DataFrame):
+                raise ValueError(f"Invalid memory_bank. It must be a pandas DataFrame. A {type(memory_bank)} was passed.")
+            required_columns = ['item_id', 'q_i', 'q_t', 'label']
+            missing_columns = [col for col in required_columns if col not in memory_bank.columns]
+            if missing_columns:
+                raise ValueError(f"Invalid memory_bank. It is missing required columns: {missing_columns}")
+        else:
+            if not hasattr(self, 'memory_bank'):
+                raise ValueError("Invalid memory_bank. No memory_bank available. Either provide a memory_bank or call fit first.")
             memory_bank = self.memory_bank
+
+        if not self.generate_cap:
+            raise ValueError("Invalid generate_cap. No prompts available. generate_cap must be True to use transform.")
+
         output = self.predict(Xs=Xs, memory_bank=memory_bank, n_neighbors=n_neighbors)
         database = pd.DataFrame({
             'item_id': list(range(len(Xs[0]))),
@@ -341,14 +471,34 @@ class MCR(nnModuleBase):
         Returns
         -------
         database : pd.DataFrame (n_samples, 14)
-            The memory_bank with the retrieval-augmented prompts.
+            A database with the retrieval-augmented prompts. It contains the following columns:
+            - item_id: Unique identifier for each sample.
+            - img_path: Path to the image file.
+            - text: Textual content of the sample.
+            - label: Label of the sample.
+            - observed_image: Indicator of whether the image was observed.
+            - observed_text: Indicator of whether the text was observed.
+            - i2i_id_list: List of ids of the retrieved items for the image-to-image modality.
+            - i2i_sims_list: List of similarities of the retrieved items for the image-to-image modality.
+            - i2i_label_list: List of labels of the retrieved items for the image-to-image modality.
+            - prompt_image_path: Path to the generated image prompt. Only if generate_cap is True.
+            - t2t_id_list: List of ids of the retrieved items for the text-to-text modality.
+            - t2t_sims_list: List of similarities of the retrieved items for the text-to-text modality.
+            - t2t_label_list: List of labels of the retrieved items for the text-to-text modality.
+            - prompt_text_path: Path to the generated text prompt. Only if generate_cap is True.
         """
+        if n_neighbors is not None:
+            if not isinstance(n_neighbors, int):
+                raise ValueError(f"n_neighbors must be an integer. Got {type(n_neighbors)}")
+            if n_neighbors <= 0:
+                raise ValueError(f"n_neighbors must be positive. Got {n_neighbors}")
+
         if self.save_memory_bank:
             memory_bank = self.fit(Xs=Xs, y=y).memory_bank
         else:
             memory_bank = self.fit(Xs=Xs, y=y)
 
-        database = self.transform(memory_bank=memory_bank, n_neighbors=n_neighbors)
+        database = self.transform(Xs=Xs, y=y, memory_bank=memory_bank, n_neighbors=n_neighbors)
         return database
 
 
@@ -372,8 +522,6 @@ class MCR(nnModuleBase):
         self.max_text_len = max_text_len
         self.max_image_len = max_image_len
 
-        if memory_bank is None:
-            memory_bank = self.memory_bank
         n_chunks = -(-len(memory_bank) // self.batch_size)
         for chunk in np.array_split(memory_bank, n_chunks):
             texts = chunk['text']
@@ -442,14 +590,9 @@ class MCR(nnModuleBase):
         q_t_list = []
         for X,mod in zip(Xs, self.modalities):
             if mod == "image":
-                if any([isinstance(file, str) for file in X]):
-                    all_images = [Image.open(img_name)
-                                  if pd.notna(img_name) else Image.new("RGBA", (256, 256), (0, 0, 0))
-                                  for img_name in X]
-                else:
-                    all_images = [img
-                                  if pd.notna(img) else Image.new("RGBA", (256, 256), (0, 0, 0))
-                                  for img in X]
+                all_images = [Image.open(img_name)
+                              if pd.notna(img_name) else Image.new("RGBA", (256, 256), (0, 0, 0))
+                              for img_name in X]
                 batch_size = self.batch_size
                 for i in range(0, len(all_images), batch_size):
                     batch_images = all_images[i: i + batch_size]
@@ -519,11 +662,6 @@ class MCR(nnModuleBase):
             image_features = self.pretrained_model.vision_model.post_layernorm(image_features)
             image_features = self.pretrained_model.visual_projection(image_features)
             return image_features[:, 0, :]
-
-
-    def _freeze(self):
-        for param in self.embedding_layer.parameters():
-            param.requires_grad = False
 
 
     def _encode(self, input_ids, pixel_values, pixel_mask, token_type_ids, attention_mask, image_token_type_idx=1):

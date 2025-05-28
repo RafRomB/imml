@@ -1,6 +1,6 @@
-from string import ascii_lowercase
-from unittest import mock
-
+import importlib
+import sys
+from unittest.mock import patch
 import pytest
 import numpy as np
 import pandas as pd
@@ -10,10 +10,11 @@ from imml.cluster import PIMVC
 
 try:
     import oct2py
-    oct2py_installed = True
+    matlabmodule_installed = True
 except ImportError:
-    oct2py_installed = False
+    matlabmodule_installed = False
 estimator = PIMVC
+
 
 @pytest.fixture
 def sample_data():
@@ -23,20 +24,21 @@ def sample_data():
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
-def test_oct2py_not_installed(monkeypatch):
-    if oct2py_installed:
+def test_matlab_not_installed():
+    if matlabmodule_installed:
         estimator(engine="matlab")
-        with mock.patch("imml.cluster.pimvc.oct2py_installed", False):
-            with mock.patch("imml.cluster.pimvc.oct2py_module_error",
-                            "Oct2Py needs to be installed to use matlab engine."):
-                with pytest.raises(ImportError, match="Oct2Py needs to be installed to use matlab engine."):
-                    estimator(engine="matlab")
+        with patch.dict(sys.modules, {"oct2py": None}):
+            import imml.cluster.pimvc as module_mock
+            importlib.reload(module_mock)
+            with pytest.raises(ImportError, match="Module 'matlab' needs to be installed."):
+                estimator(engine="matlab")
+        importlib.reload(module_mock)
     else:
-        with pytest.raises(ImportError, match="Oct2Py needs to be installed to use matlab engine."):
+        with pytest.raises(ImportError, match="Module 'matlab' needs to be installed."):
             estimator(engine="matlab")
 
 def test_default_params(sample_data):
-    if oct2py_installed:
+    if matlabmodule_installed:
         for Xs in sample_data:
             model = estimator(random_state=42)
             n_samples = len(Xs[0])
@@ -52,7 +54,7 @@ def test_default_params(sample_data):
             assert model.n_iter_ > 0
 
 def test_invalid_params(sample_data):
-    if oct2py_installed:
+    if matlabmodule_installed:
         with pytest.raises(ValueError, match="Invalid engine."):
             estimator(engine='invalid')
         with pytest.raises(ValueError, match="Invalid n_clusters."):
@@ -69,7 +71,7 @@ def test_invalid_params(sample_data):
 
 def test_fit_predict(sample_data):
     n_clusters = 3
-    if oct2py_installed:
+    if matlabmodule_installed:
         for Xs in sample_data:
             model = estimator(n_clusters=n_clusters, random_state=42)
             n_samples = len(Xs[0])
@@ -85,7 +87,7 @@ def test_fit_predict(sample_data):
 
 def test_missing_values_handling(sample_data):
     n_clusters = 2
-    if oct2py_installed:
+    if matlabmodule_installed:
         for Xs in sample_data:
             model = estimator(n_clusters=n_clusters, random_state=42)
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)

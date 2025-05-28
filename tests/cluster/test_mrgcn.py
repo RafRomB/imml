@@ -1,3 +1,6 @@
+import importlib
+import sys
+from unittest.mock import patch
 import pytest
 import numpy as np
 from sklearn.impute import SimpleImputer
@@ -16,9 +19,9 @@ try:
     from torch.nn import functional as F
     from torch.utils.data import DataLoader
     from lightning import Trainer
-    deep_installed = True
+    deepmodule_installed = True
 except ImportError:
-    deep_installed = False
+    deepmodule_installed = False
 estimator = MRGCN
 
 
@@ -27,21 +30,29 @@ def sample_data():
     X = np.random.default_rng(42).random((25, 10))
     X1, X2, X3 = X[:, :3], X[:, 3:5], X[:, 5:]
     Xs_numpy = [X1, X2, X3]
-    if deep_installed:
+    if deepmodule_installed:
         Xs_torch = [torch.from_numpy(X.astype(np.float32)) for X in Xs_numpy]
         return Xs_torch, Xs_numpy
     return Xs_numpy
 
-def test_pytorch_not_installed(sample_data):
-    if deep_installed:
+
+def test_deepmodule_not_installed(sample_data):
+    if deepmodule_installed:
         estimator(Xs=sample_data[0])
+        with patch.dict(sys.modules, {"torch": None}):
+            import imml.cluster.mrgcn as module_mock
+            importlib.reload(module_mock)
+            with pytest.raises(ImportError, match="Module 'Deep' needs to be installed."):
+                estimator(Xs=sample_data[0])
+        importlib.reload(module_mock)
     else:
         with pytest.raises(ImportError, match="Module 'Deep' needs to be installed."):
-            estimator(Xs=sample_data[0])
+            estimator()
+
 
 def test_default_params(sample_data):
     n_clusters = 3
-    if deep_installed:
+    if deepmodule_installed:
         Xs = sample_data[0]
         n_samples = len(Xs[0])
         train_data = MRGCNDataset(Xs=Xs)
@@ -61,7 +72,7 @@ def test_default_params(sample_data):
         assert len(embedding_) == n_samples
 
 def test_invalid_params(sample_data):
-    if deep_installed:
+    if deepmodule_installed:
         with pytest.raises(ValueError, match="Invalid n_clusters."):
             estimator(n_clusters='invalid', Xs=sample_data[0])
         with pytest.raises(ValueError, match="Invalid n_clusters."):
@@ -84,7 +95,7 @@ def test_invalid_params(sample_data):
             estimator(reg3="invalid", Xs=sample_data[0])
 
 def test_missing_values_handling(sample_data):
-    if deep_installed:
+    if deepmodule_installed:
         n_clusters = 2
         Xs = sample_data[1]
         n_samples = len(Xs[0])

@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 from sklearn.base import BaseEstimator, TransformerMixin
@@ -43,7 +45,7 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
         self.value = value
 
 
-    def fit(self, Xs : list, y=None):
+    def fit(self, Xs : List, y=None):
         r"""
         Fit the transformer to the input data.
 

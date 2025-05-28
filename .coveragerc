@@ -1,9 +1,20 @@
 [run]
 omit =
-    imml/decomposition/_skfusion/*
-    imml/decomposition/_deepmf/*
-    imml/decomposition/_mofa/*
+    imml/classify/_m3care/*
+    imml/classify/_muse/*
+    imml/classify/_ragpt/*
+    imml/classify/_vilt/*
+    imml/classify/map.py
 
     imml/cluster/_monet/*
     imml/cluster/_msne/*
     imml/cluster/_sumo/*
+
+    imml/decomposition/_skfusion/*
+    imml/decomposition/_deepmf/*
+    imml/decomposition/_mofa/*
+
+    imml/load/map_dataset.py
+
+    imml/prepare/*
+

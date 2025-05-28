@@ -1,3 +1,5 @@
+from typing import List
+
 import numpy as np
 import pandas as pd
 from sklearn.preprocessing import FunctionTransformer
@@ -30,7 +32,7 @@ class ObservedModIndicator(FunctionTransformer):
         super().__init__(get_observed_mod_indicator)
 
 
-def get_observed_mod_indicator(Xs : list, y = None):
+def get_observed_mod_indicator(Xs : List, y = None):
     r"""
     Return a binary indicator for observed modalities.
 

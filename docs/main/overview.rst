@@ -48,8 +48,8 @@ The key features of this package are:
     The package includes extensive technical testing to ensure robustness, and thorough documentation enables
     end-users to apply its functionality effectively.
 -   **Accessible**: `iMML` makes the tools readily available to the Python community, simplifying their usage,
-    comparison, and benchmarking, and thereby addresses the current lack of resources for handling incomplete
-    multi-modal data.
+    comparison, and benchmarking, and thereby addresses the current lack of resources and standardized methods
+    for handling incomplete multi-modal data.
 -   **Extensible**: `iMML` provides a common framework where researchers can contribute and
     integrate new approaches, serving as a community platform for hosting new algorithms and methods.
 
@@ -58,8 +58,8 @@ Usage
 
 This package provides a user-friendly interface to apply these algorithms to user-provided data.
 `iMML` was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
-NumPy, Scikit-learn, and PyTorch Lightning, hence allowing researchers to apply machine learning models with
-minimal programming effort.
+NumPy, Scikit-learn, and PyTorch Lightning, hence allowing researchers to **apply machine learning models with
+minimal programming effort**.
 Moreover, it is compatible with Scikit-learn and can be easily integrated into Scikit-learn pipelines for data
 preprocessing and modeling.
 

@@ -1,3 +1,6 @@
+import importlib
+import sys
+from unittest.mock import patch
 import pytest
 import numpy as np
 import pandas as pd
@@ -7,10 +10,20 @@ from imml.decomposition import JNMF
 
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
-    rpy2_installed = True
+    rmodule_installed = True
 except ImportError:
-    rpy2_installed = False
-    rpy2_module_error = "rpy2 needs to be installed to use r engine."
+    rmodule_installed = False
+    rmodule_error = "Module 'r' needs to be installed to use r engine."
+
+nnTensor_installed = False
+if rmodule_installed:
+    rbase = importr("base")
+    try:
+        nnTensor = importr("nnTensor")
+        nnTensor_installed = True
+    except PackageNotInstalledError:
+        pass
+estimator = JNMF
 
 
 @pytest.fixture
@@ -21,20 +34,23 @@ def sample_data():
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
-def test_rpy2_not_installed():
-    if rpy2_installed:
-        JNMF(engine="r")
-    else:
-        with pytest.raises(ImportError, match="rpy2 needs to be installed to use r engine."):
-            JNMF(engine="r")
+@pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
+def test_rmodule_installed():
+    if rmodule_installed:
+        if nnTensor_installed:
+            estimator(engine="r")
+        else:
+            with pytest.raises(ImportError, match="nnTensor needs to be installed in R to use r engine."):
+                estimator(engine="r")
+
 
 def test_random_state(sample_data):
-    if rpy2_installed:
-        JNMF()
+    if rmodule_installed:
+        estimator()
 
 def test_default_params(sample_data):
-    if rpy2_installed:
-        transformer = JNMF(random_state=42)
+    if rmodule_installed:
+        transformer = estimator(random_state=42)
         for Xs in sample_data:
             transformer.fit(Xs)
             assert hasattr(transformer, 'H_')
@@ -45,8 +61,8 @@ def test_default_params(sample_data):
 
 def test_fit(sample_data):
     n_components = 5
-    if rpy2_installed:
-        transformer = JNMF(n_components=n_components, max_iter=10, random_state=42)
+    if rmodule_installed:
+        transformer = estimator(n_components=n_components, max_iter=10, random_state=42)
         for Xs in sample_data:
             transformer.fit(Xs)
             assert hasattr(transformer, 'H_')
@@ -57,8 +73,8 @@ def test_fit(sample_data):
 
 def test_transform(sample_data):
     n_components = 5
-    if rpy2_installed:
-        transformer = JNMF(n_components=n_components, random_state=42)
+    if rmodule_installed:
+        transformer = estimator(n_components=n_components, random_state=42)
         for Xs in sample_data:
             n_samples = len(Xs[0])
             transformer.fit(Xs)
@@ -69,8 +85,8 @@ def test_transform(sample_data):
 
 def test_missing_values_handling(sample_data):
     n_components = 5
-    if rpy2_installed:
-        transformer = JNMF(n_components=n_components, random_state=42)
+    if rmodule_installed:
+        transformer = estimator(n_components=n_components, random_state=42)
         for Xs in sample_data:
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
             n_samples = len(Xs[0])
@@ -82,7 +98,7 @@ def test_missing_values_handling(sample_data):
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid engine"):
-        JNMF(engine="invalid")
+        estimator(engine="invalid")
 
 
 if __name__ == "__main__":

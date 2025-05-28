@@ -89,9 +89,9 @@ class GNNStack(nnModuleBase):
 
 
 class MML(nnModuleBase):
-    def __init__(self, num_modalities, hidden_channels, normalize_embs, num_layers, dropout, num_classes):
+    def __init__(self, num_modalities, hidden_channels, normalize_embs, num_layers, dropout, output_dim):
         super(MML, self).__init__()
-        self.num_classes = num_classes
+        self.output_dim = output_dim
         self.modality_nodes = nn.Parameter(torch.randn(num_modalities, hidden_channels))
         if normalize_embs is None:
             normalize_embs = [False] * num_layers
@@ -109,9 +109,9 @@ class MML(nnModuleBase):
             nn.Linear(hidden_channels, hidden_channels),
             nn.ReLU(),
             nn.Dropout(dropout),
-            nn.Linear(hidden_channels, num_classes),
+            nn.Linear(hidden_channels, output_dim),
         )
-        if num_classes == 1:
+        if output_dim == 1:
             self.act = nn.Sigmoid()
         else:
             self.act = nn.Softmax(dim=-1)
@@ -157,7 +157,7 @@ class MML(nnModuleBase):
         return (2 * loss_z + loss_zaz + loss_zaz_t) / 4
 
     def classification_loss(self, l, y):
-        if self.num_classes == 1:
+        if self.output_dim == 1:
             loss = F.binary_cross_entropy_with_logits(l.squeeze(-1), y)
         else:
             loss = F.cross_entropy(l, y)
@@ -230,7 +230,7 @@ class MML(nnModuleBase):
         z = z[:batch_size]
 
         logits = self.classifier(z)
-        if self.num_classes == 1:
+        if self.output_dim == 1:
             logits = logits.squeeze(-1)
         y_scores = self.act(logits)
         return y_scores, logits

@@ -1,5 +1,7 @@
 import copy
 import math
+from collections import Counter
+from itertools import chain
 from typing import Tuple, List
 
 try:
@@ -190,10 +192,17 @@ class NMT_tran(nnModuleBase):
         @param dropout_rate (float): Dropout probability, for attention
         """
         super(NMT_tran, self).__init__()
+
+        if len(vocab) == 3:
+            vocab, vocab_size, freq_cutoff = tuple(vocab)
+            vocab = Vocab(vocab, vocab_size, freq_cutoff)
+        elif len(vocab) == 1:
+            vocab = vocab[0]
+        self.vocab = vocab
+
         self.source = nn.Embedding(len(vocab.src), hidden_size, vocab.src['<pad>'])
         self.hidden_size = hidden_size
         self.dropout_rate = dropout_rate
-        self.vocab = vocab
 
         c = copy.deepcopy
         attn = MultiHeadedAttention(8, self.hidden_size)
@@ -256,3 +265,104 @@ class NMT_tran(nnModuleBase):
         """ Determine which device to place the Tensors upon, CPU or GPU.
         """
         return self.source.weight.device
+
+
+class VocabEntry(object):
+    def __init__(self, word2id=None):
+        if word2id:
+            self.word2id = word2id
+        else:
+            self.word2id = dict()
+            self.word2id['<pad>'] = 0
+            self.word2id['<s>'] = 1
+            self.word2id['</s>'] = 2
+            self.word2id['<unk>'] = 3
+
+        self.unk_id = self.word2id['<unk>']
+
+        self.id2word = {v: k for k, v in self.word2id.items()}
+
+    def __getitem__(self, word):
+        return self.word2id.get(word, self.unk_id)
+
+    def __contains__(self, word):
+        return word in self.word2id
+
+    def __setitem__(self, key, value):
+        raise ValueError('vocabulary is readonly')
+
+    def __len__(self):
+        return len(self.word2id)
+
+    def __repr__(self):
+        return 'Vocabulary[size=%d]' % len(self)
+
+    def id2word(self, wid):
+        return self.id2word[wid]
+
+    def add(self, word):
+        if word not in self:
+            wid = self.word2id[word] = len(self)
+            self.id2word[wid] = word
+            return wid
+        else:
+            return self[word]
+
+    def words2indices(self, sents):
+        if type(sents[0]) == list:
+            return [[self[w] for w in s] for s in sents]
+        else:
+            return [self[w] for w in sents]
+
+    def indices2words(self, word_ids):
+        return [self.id2word[w_id] for w_id in word_ids]
+
+    def to_input_tensor(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
+        word_ids = self.words2indices(sents)
+        sents_t = self.input_transpose(word_ids, self['<pad>'])
+
+        sents_var = torch.tensor(sents_t, dtype=torch.long, device=device)
+
+        return sents_var
+
+    @staticmethod
+    def from_corpus(corpus, size, freq_cutoff=2):
+        vocab_entry = VocabEntry()
+
+        word_freq = Counter(chain(*corpus))
+        valid_words = [w for w, v in word_freq.items() if v >= freq_cutoff]
+        print(f'number of word types: {len(word_freq)}, number of word types w/ frequency >= {freq_cutoff}: {len(valid_words)}')
+
+        top_k_words = sorted(valid_words, key=lambda w: word_freq[w], reverse=True)[:size]
+        for word in top_k_words:
+            vocab_entry.add(word)
+
+        return vocab_entry
+
+
+    @staticmethod
+    def input_transpose(sents, pad_token):
+        max_len = max(len(s) for s in sents)
+        batch_size = len(sents)
+
+        sents_t = []
+        for i in range(max_len):
+            sents_t.append([sents[k][i] if len(sents[k]) > i else pad_token for k in range(batch_size)])
+
+        return sents_t
+
+
+class Vocab(object):
+    def __init__(self, file_path, vocab_size, freq_cutoff):
+        src_sents = self.read_corpus(file_path)
+        self.src = VocabEntry.from_corpus(src_sents, vocab_size, freq_cutoff)
+
+
+    @staticmethod
+    def read_corpus(file_path):
+        data = []
+        for line in open(file_path):
+            sent = line.strip().split(' ')
+            data.append(sent)
+
+        return data

@@ -7,10 +7,10 @@ from imml.feature_selection import JNMFFeatureSelector
 
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
-    rpy2_installed = True
+    rmodule_installed = True
 except ImportError:
-    rpy2_installed = False
-    rpy2_module_error = "rpy2 needs to be installed to use r engine."
+    rmodule_installed = False
+    rmodule_error = "Module 'r' needs to be installed to use r engine."
 
 
 @pytest.fixture
@@ -22,7 +22,7 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 def test_default_params(sample_data):
-    if rpy2_installed:
+    if rmodule_installed:
         transformer = JNMFFeatureSelector(random_state=42)
         for Xs in sample_data:
             transformer.fit(Xs)
@@ -33,7 +33,7 @@ def test_default_params(sample_data):
 
 def test_fit(sample_data):
     n_components = 5
-    if rpy2_installed:
+    if rmodule_installed:
         transformer = JNMFFeatureSelector(n_components=n_components, max_iter=10, random_state=42)
         for Xs in sample_data:
             transformer.fit(Xs)
@@ -44,7 +44,7 @@ def test_fit(sample_data):
 
 def test_transform(sample_data):
     n_components = 5
-    if rpy2_installed:
+    if rmodule_installed:
         transformer = JNMFFeatureSelector(n_components=n_components, random_state=42)
         for Xs in sample_data:
             n_samples = len(Xs[0])
@@ -55,7 +55,7 @@ def test_transform(sample_data):
 
 def test_param_selectby(sample_data):
     n_components = 5
-    if rpy2_installed:
+    if rmodule_installed:
         for select_by in ["max", "component", "average"]:
             transformer = JNMFFeatureSelector(n_components=n_components, select_by=select_by,
                                               random_state=42)
@@ -71,7 +71,7 @@ def test_param_selectby(sample_data):
 
 def test_missing_values_handling(sample_data):
     n_components = 5
-    if rpy2_installed:
+    if rmodule_installed:
         transformer = JNMFFeatureSelector(n_components=n_components, random_state=42)
         for Xs in sample_data:
             Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
