@@ -5,7 +5,7 @@ from sklearn.cluster import KMeans
 
 from ._msne._aux_msne import Embedding
 from ._msne.based import similarity
-from imml.utils import check_Xs
+from ..utils import check_Xs
 
 
 class MSNE(BaseEstimator, ClassifierMixin):
@@ -110,7 +110,7 @@ class MSNE(BaseEstimator, ClassifierMixin):
             Xs = [pd.DataFrame(X) for X in Xs]
         for X in Xs:
             s = similarity(X, k=self.k)
-            S.append(nx.DiGraph(s.values))
+            S.append(nx.DiGraph(s))
         if self.verbose:
             print("construct similarity networks finished")
         model = Embedding(S, workers=self.n_jobs, verbose=self.verbose, random_state=self.random_state)

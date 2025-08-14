@@ -16,9 +16,8 @@ class RandomWalker:
         self.alias_nodes=[]
         self.nodes=nodes
         self.verbose=verbose
-        if random_state is None:
-            random_state = int(np.random.default_rng().integers(10000))
         self.random_state=random_state
+        self.rnd = np.random.default_rng(self.random_state)
 
     def walk(self, walk_length, start_node):
         Graphs = self.Graphs
@@ -29,8 +28,7 @@ class RandomWalker:
             cur_nbrs = [list(G.neighbors(cur)) if(G.has_node(cur)) else [] for G in Graphs ]
             cand=[i for i, e in enumerate(cur_nbrs) if len(e) != 0]
             if(len(cand)>0):
-                self.random_state = self.random_state + np.random.default_rng(self.random_state).integers(10000)
-                select=np.random.default_rng(self.random_state).choice(cand)
+                select=self.rnd.choice(cand)
                 walk.append(
                     cur_nbrs[select][self._alias_sample(*alias_nodes[select][cur])])
             else:
@@ -51,9 +49,8 @@ class RandomWalker:
 
     def _simulate_walks(self, nodes, num_walks, walk_length):
         walks = []
-        for _ in range(num_walks):
-            self.random_state = self.random_state + np.random.default_rng(self.random_state).integers(10000)
-            nodes = np.random.default_rng(self.random_state).permutation(nodes)
+        for i in range(num_walks):
+            nodes = self.rnd.permutation(nodes)
             for v in nodes:
                 walks.append(self.walk(
                     walk_length=walk_length, start_node=v))
