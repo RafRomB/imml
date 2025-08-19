@@ -4,14 +4,14 @@ from sklearn.cluster import KMeans
 try:
     import torch
     from torch import nn
-    import lightning.pytorch as pl
+    import lightning as L
     from torch.nn import functional as F
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'Deep' needs to be installed."
 
-DLBaseeModule = pl.LightningModule if deepmodule_installed else object
+DLBaseeModule = L.LightningModule if deepmodule_installed else object
 
 class MRGCN(DLBaseeModule):
     r"""

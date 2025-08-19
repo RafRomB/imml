@@ -56,6 +56,18 @@ ModelOutput = ModelOutput if deepmodule_installed else object
 _CONFIG_FOR_DOC = "ViltConfig"
 _CHECKPOINT_FOR_DOC = "dandelin/vilt-b32-mlm"
 
+def _dummy_decorator(**kwargs):
+    def decorator(fn):
+        fn.__doc__ = fn.__doc__ or ''  # Ensure docstring exists
+        return fn
+    return decorator
+
+
+add_start_docstrings = add_start_docstrings if deepmodule_installed else lambda x,y: (x,y)
+add_start_docstrings_to_model_forward = add_start_docstrings_to_model_forward if deepmodule_installed else lambda x: x
+replace_return_docstrings = replace_return_docstrings if deepmodule_installed else _dummy_decorator
+BaseModelOutputWithPooling = BaseModelOutputWithPooling if deepmodule_installed else object
+
 
 @dataclass
 class ViltForImagesAndTextClassificationOutput(ModelOutput):
@@ -77,10 +89,10 @@ class ViltForImagesAndTextClassificationOutput(ModelOutput):
             attention softmax, used to compute the weighted average in the self-attention heads.
     """
 
-    loss: Optional[torch.FloatTensor] = None
-    logits: torch.FloatTensor = None
-    hidden_states: Optional[List[Tuple[torch.FloatTensor]]] = None
-    attentions: Optional[List[Tuple[torch.FloatTensor]]] = None
+    loss = None
+    logits = None
+    hidden_states = None
+    attentions = None
 
 
 class ViltEmbeddings(nnModuleBase):
@@ -402,7 +414,7 @@ class ViltSelfOutput(nnModuleBase):
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def forward(self, hidden_states: torch.Tensor, input_tensor: torch.Tensor) -> torch.Tensor:
+    def forward(self, hidden_states, input_tensor):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
 
@@ -453,7 +465,7 @@ class ViltIntermediate(nnModuleBase):
         else:
             self.intermediate_act_fn = config.hidden_act
 
-    def forward(self, hidden_states: torch.Tensor) -> torch.Tensor:
+    def forward(self, hidden_states):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.intermediate_act_fn(hidden_states)
 
@@ -467,7 +479,7 @@ class ViltOutput(nnModuleBase):
         self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
         self.dropout = nn.Dropout(config.hidden_dropout_prob)
 
-    def forward(self, hidden_states: torch.Tensor, input_tensor: torch.Tensor) -> torch.Tensor:
+    def forward(self, hidden_states, input_tensor):
         hidden_states = self.dense(hidden_states)
         hidden_states = self.dropout(hidden_states)
 
@@ -753,19 +765,19 @@ class ViltModel(ViltPreTrainedModel):
     @replace_return_docstrings(output_type=BaseModelOutputWithPooling, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        token_type_ids: Optional[torch.LongTensor] = None,
-        pixel_values: Optional[torch.FloatTensor] = None,
-        pixel_mask: Optional[torch.LongTensor] = None,
-        head_mask: Optional[torch.FloatTensor] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        image_embeds: Optional[torch.FloatTensor] = None,
-        image_token_type_idx: Optional[int] = None,
-        output_attentions: Optional[bool] = None,
-        output_hidden_states: Optional[bool] = None,
-        return_dict: Optional[bool] = None,
-    ) -> Union[BaseModelOutputWithPooling, Tuple[torch.FloatTensor]]:
+        input_ids= None,
+        attention_mask = None,
+        token_type_ids = None,
+        pixel_values = None,
+        pixel_mask = None,
+        head_mask = None,
+        inputs_embeds = None,
+        image_embeds = None,
+        image_token_type_idx = None,
+        output_attentions = None,
+        output_hidden_states = None,
+        return_dict = None,
+    ):
         r"""
         Returns:
 

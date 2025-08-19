@@ -43,6 +43,9 @@ except ImportError:
     deepmodule_error = "Module 'Deep' needs to be installed."
 
 
+BaseImageProcessor = BaseImageProcessor if deepmodule_installed else object
+
+
 if is_vision_available():
     import PIL
 

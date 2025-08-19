@@ -1,6 +1,7 @@
 import numpy as np
 from sklearn.preprocessing import Normalizer
 from sklearn.utils import check_array
+from sklearn.utils.validation import validate_data
 
 
 class NormalizerNaN(Normalizer):
@@ -52,7 +53,7 @@ class NormalizerNaN(Normalizer):
         self :  returns an instance of self.
         """
 
-        self._validate_data(X, **{"force_all_finite":'allow-nan'})
+        validate_data(self, X=X, **{"force_all_finite":'allow-nan'})
         return self
 
 

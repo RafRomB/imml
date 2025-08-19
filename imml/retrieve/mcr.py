@@ -107,9 +107,9 @@ class MCR(nnModuleBase):
 
 
     def __init__(self, batch_size: int = 64, n_neighbors: int = 20, device: str = "cpu",
-                 modalities: List = None, pretrained_model: AutoModel = None, processor: AutoProcessor = None,
-                 generate_cap: bool = False, prompt_path: str = None, pretrained_vilt: ViltModel = None,
-                 tokenizer: BertTokenizer = None, image_processor: ViltImageProcessor = None,
+                 modalities: List = None, pretrained_model = None, processor = None,
+                 generate_cap: bool = False, prompt_path: str = None, pretrained_vilt = None,
+                 tokenizer = None, image_processor = None,
                  max_text_len: int = 128, max_image_len: int = 145, save_memory_bank: bool = True):
 
         if not deepmodule_installed:
@@ -318,7 +318,7 @@ class MCR(nnModuleBase):
         return output
 
 
-    def fit_predict(self, Xs: list, y: list, n_neighbors: int = None):
+    def fit_predict(self, Xs: list, y, n_neighbors: int = None):
         r"""
         Fit the transformer to the input data.
 

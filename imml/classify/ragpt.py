@@ -238,14 +238,14 @@ class RAGPTModule(nnModuleBase):
             param.requires_grad = False
 
     def forward(self,
-                input_ids: torch.Tensor,
-                pixel_values: torch.Tensor,
-                pixel_mask: torch.Tensor,
-                token_type_ids: torch.Tensor,
-                attention_mask: torch.Tensor,
-                r_t_list: torch.Tensor,
-                r_i_list: torch.Tensor,
-                r_l_list: torch.Tensor,
+                input_ids,
+                pixel_values,
+                pixel_mask,
+                token_type_ids,
+                attention_mask,
+                r_t_list,
+                r_i_list,
+                r_l_list,
                 observed_image = None,
                 observed_text = None,
                 image_token_type_idx=1):

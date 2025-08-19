@@ -7,7 +7,6 @@ import snf
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
-from snf.compute import affinity_matrix
 
 from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs, DatasetUtils

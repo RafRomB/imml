@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 import numpy as np
 import pandas as pd
@@ -170,7 +169,7 @@ class RAGPTDataset(TorchDatasetBase):
 class RAGPTCollator():
 
 
-    def __init__(self, tokenizer: BertTokenizer = None, image_processor: ViltImageProcessor = None,
+    def __init__(self, tokenizer = None, image_processor = None,
                  max_text_len: int = 128):
         if not deepmodule_installed:
             raise ImportError(deepmodule_error)

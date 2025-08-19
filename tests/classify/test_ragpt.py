@@ -7,13 +7,14 @@ import tempfile
 from unittest.mock import patch
 import pytest
 
+from imml.classify import RAGPT
+from imml.retrieve import MCR
+
 try:
     import torch
     import transformers
     from transformers import AutoModel, AutoProcessor, BertTokenizer
     from imml.classify._ragpt.vilt import ViltModel, ViltImageProcessor
-    from imml.classify import RAGPT
-    from imml.retrieve import MCR
     from imml.load import RAGPTCollator, RAGPTDataset
     import lightning as L
     from torch.utils.data import DataLoader
