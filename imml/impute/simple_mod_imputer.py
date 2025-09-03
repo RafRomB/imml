@@ -64,7 +64,7 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
         self :  returns an instance of self.
         """
 
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         if self.value == "mean":
             self.features_mod_mean_list_ = [np.nanmean(X, axis=0) for X in Xs]
         elif self.value == "zeros":
@@ -90,7 +90,7 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
             The transformed data with filled missing samples.
         """
 
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         pandas_format = isinstance(Xs[0], pd.DataFrame)
         if pandas_format:
             samples = Xs[0].index
@@ -138,7 +138,7 @@ def simple_mod_imputer(Xs : list, y = None, value : str = 'mean'):
     transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
         The transformed data with filled missing samples.
     """
-    Xs = check_Xs(Xs, force_all_finite='allow-nan')
+    Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
     pandas_format = isinstance(Xs[0], pd.DataFrame)
     if pandas_format:
         samples = Xs[0].index

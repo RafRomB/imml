@@ -131,7 +131,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
         -------
         self :  Fitted estimator.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
 
         if self.engine=="matlab":
             n_mods = len(Xs)

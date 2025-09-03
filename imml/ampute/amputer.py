@@ -47,6 +47,7 @@ class Amputer(BaseEstimator, TransformerMixin):
         self.p = p
         self.weights = weights
         self.random_state = random_state
+        self.rng = np.random.default_rng(self.random_state)
 
 
     def fit(self, Xs: List, y=None):
@@ -146,13 +147,12 @@ class Amputer(BaseEstimator, TransformerMixin):
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
         shape = pseudo_observed_mod_indicator.loc[idxs_to_remove].shape
-        mask = np.random.default_rng(self.random_state).choice(2, size=shape)
+        mask = self.rng.choice(2, size=shape)
         mask = pd.DataFrame(mask, index=idxs_to_remove)
         samples_to_fix = mask.nunique(axis=1).eq(1)
         if samples_to_fix.any():
             samples_to_fix = samples_to_fix[samples_to_fix]
-            mods_to_fix = np.random.default_rng(self.random_state).integers(low=0, high=self.n_mods,
-                                                                             size=len(samples_to_fix))
+            mods_to_fix = self.rng.integers(low=0, high=self.n_mods, size=len(samples_to_fix))
             for mod_idx in np.unique(mods_to_fix):
                 samples = mods_to_fix == mod_idx
                 samples = samples_to_fix[samples].index
@@ -167,18 +167,10 @@ class Amputer(BaseEstimator, TransformerMixin):
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        reference_var = np.random.default_rng(self.random_state).choice(range(1, self.n_mods),
-                                                                        p = self.weights,
-                                                                        size=len(idxs_to_remove))
+        reference_var = self.rng.choice(range(1, self.n_mods), p = self.weights, size=len(idxs_to_remove))
         reference_var = pd.Series(reference_var, index=idxs_to_remove)
-        if self.random_state is None:
-            random_state = np.random.choice(100000)
-        else:
-            random_state = self.random_state
-        n_mods_to_remove = {n_mods_to_remove: np.random.default_rng(random_state + i).choice(self.n_mods,
-                                                                                             size=n_mods_to_remove,
-                                                                                             replace=False)
-                            for i,n_mods_to_remove in enumerate(np.unique(reference_var))}
+        n_mods_to_remove = {n_mods_to_remove: self.rng.choice(self.n_mods, size=n_mods_to_remove, replace=False)
+                            for n_mods_to_remove in np.unique(reference_var)}
         for keys,values in n_mods_to_remove.items():
             mask.loc[reference_var[reference_var == keys].index, values] = 0
 
@@ -190,22 +182,18 @@ class Amputer(BaseEstimator, TransformerMixin):
         common_samples = pd.Series(sample_names, index=sample_names).sample(frac=1 - self.p, replace=False,
                                                                             random_state=self.random_state).index
         idxs_to_remove = sample_names.difference(common_samples)
-        n_incomplete_modalities = np.random.default_rng(self.random_state).choice(
-            np.arange(1, self.n_mods), size=1)[0]
+        n_incomplete_modalities = self.rng.choice(np.arange(1, self.n_mods), size=1)[0]
         if (self.n_mods == 2) or (n_incomplete_modalities == 1):
-            col = np.random.default_rng(self.random_state).choice(self.n_mods)
+            col = self.rng.choice(self.n_mods)
             pseudo_observed_mod_indicator.loc[idxs_to_remove, col] = 0
         else:
-            mask = np.random.default_rng(self.random_state).choice(2,
-                                                                   size=(len(idxs_to_remove), n_incomplete_modalities))
+            mask = self.rng.choice(2, size=(len(idxs_to_remove), n_incomplete_modalities))
             mask = pd.DataFrame(mask, index=idxs_to_remove,
-                                columns=np.random.default_rng(self.random_state).choice(self.n_mods,
-                                                                                        size=n_incomplete_modalities,
-                                                                                        replace=False))
+                                columns=self.rng.choice(self.n_mods, size=n_incomplete_modalities, replace=False))
             samples_to_fix = mask.nunique(axis=1).eq(1)
             if samples_to_fix.any():
                 samples_to_fix = samples_to_fix[samples_to_fix]
-                mods_to_fix = np.random.default_rng(self.random_state).choice(mask.columns, size=len(samples_to_fix))
+                mods_to_fix = self.rng.choice(mask.columns, size=len(samples_to_fix))
                 for mod_idx in np.unique(mods_to_fix):
                     samples = mods_to_fix == mod_idx
                     samples = samples_to_fix[samples].index

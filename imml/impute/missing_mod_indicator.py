@@ -59,7 +59,7 @@ def get_missing_mod_indicator(Xs : List, y = None):
     >>> Xs = Amputer(p= 0.2, random_state=42).fit_transform(Xs)
     >>> missing_mod = get_missing_mod_indicator()(Xs)
     """
-    Xs = check_Xs(Xs, force_all_finite='allow-nan')
+    Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
     transformed_X = np.vstack([np.isnan(X).all(1) for X in Xs]).T
     if isinstance(Xs[0], pd.DataFrame):
         transformed_X = pd.DataFrame(transformed_X, index=Xs[0].index)

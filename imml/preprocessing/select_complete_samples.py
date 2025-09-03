@@ -54,7 +54,7 @@ def select_complete_samples(Xs: list):
     >>> select_complete_samples(Xs)
     """
 
-    Xs = check_Xs(Xs, force_all_finite='allow-nan')
+    Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
     pandas_format = isinstance(Xs[0], pd.DataFrame)
     if not pandas_format:
         Xs = [pd.DataFrame(X) for X in Xs]

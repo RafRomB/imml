@@ -183,7 +183,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
         -------
         self :  returns an instance of self.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
 
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]

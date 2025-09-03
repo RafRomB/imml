@@ -53,7 +53,7 @@ class NormalizerNaN(Normalizer):
         self :  returns an instance of self.
         """
 
-        validate_data(self, X=X, **{"force_all_finite":'allow-nan'})
+        validate_data(self, X=X, **{"ensure_all_finite":'allow-nan'})
         return self
 
 
@@ -74,7 +74,7 @@ class NormalizerNaN(Normalizer):
             Transformed data.
         """
 
-        X = check_array(X, force_all_finite='allow-nan')
+        X = check_array(X, ensure_all_finite='allow-nan')
         if self.norm == "l1":
             norms = np.nansum(np.abs(X), axis=1)
         elif self.norm == "l2":

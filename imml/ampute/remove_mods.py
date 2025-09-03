@@ -59,7 +59,7 @@ def remove_mods(Xs: List, observed_mod_indicator):
     >>> concatenate_mods(Xs=Xs)
     """
 
-    Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+    Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
     transformed_Xs = []
     if isinstance(observed_mod_indicator, pd.DataFrame):
         observed_mod_indicator = observed_mod_indicator.values

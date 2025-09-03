@@ -128,7 +128,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
         self :  Fitted estimator.
         """
 
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
 
         if self.engine=="matlab":
             transformed_Xs, observed_mod_indicator = self._processing_xs(Xs)

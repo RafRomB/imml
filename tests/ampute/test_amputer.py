@@ -46,13 +46,14 @@ def test_tranform(sample_data):
 
 def test_extreme_p(sample_data):
     for p in [0, 0.9]:
-        amputer = Amputer(p=p, random_state=42)
-        for Xs in sample_data:
-            Xs = Xs[:2]
-            transformed_Xs = amputer.fit_transform(Xs)
-            assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p*100)
-            assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p)*100)
-            assert amputer.n_mods == len(Xs)
+        for mechanism in ["mem", "mcar", "pm", "mnar"]:
+            amputer = Amputer(p=p, random_state=42, mechanism=mechanism)
+            for Xs in sample_data:
+                Xs = Xs[:2]
+                transformed_Xs = amputer.fit_transform(Xs)
+                assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p*100)
+                assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p)*100)
+                assert amputer.n_mods == len(Xs)
 
 def test_param_mechanism(sample_data):
     p = 0.2

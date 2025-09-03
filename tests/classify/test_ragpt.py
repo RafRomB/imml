@@ -56,6 +56,7 @@ def test_deepmodule_not_installed():
             estimator()
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_default_params(sample_data):
     if deepmodule_installed:
         model = estimator()
@@ -71,6 +72,7 @@ def test_default_params(sample_data):
         assert not os.path.exists(tmp_path)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_invalid_params():
     if deepmodule_installed:
         with pytest.raises(ValueError, match="Invalid max_text_len."):
@@ -132,6 +134,7 @@ def test_invalid_params():
             estimator(weight_decay=-1)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_lightning_methods(sample_data):
     if deepmodule_installed:
         # Create model
@@ -161,6 +164,7 @@ def test_lightning_methods(sample_data):
         assert not os.path.exists(tmp_path)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_missing_values_handling(sample_data):
     if deepmodule_installed:
         # Create model

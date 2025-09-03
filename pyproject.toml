@@ -8,12 +8,12 @@ version = "0.1.0"
 description = "A python package for multi-modal learning with incomplete data"
 readme = "README.rst"
 authors = [
-    {name = "...", email = "a@mail.com" }
+    {name = "Alberto López", email = "a.l.sanchez@medisin.uio.no" }
 ]
 maintainers = [
-    {name = "...", email = "a@mail.com" }
+    {name = "Alberto López", email = "a.l.sanchez@medisin.uio.no" }
 ]
-keywords = ["multi-modal learning", "machine learning", "incomplete data"]
+keywords = ["multi-modal learning", "machine learning", "incomplete data", "missing data"]
 license = { file = "LICENSE" }
 classifiers = [
     "Intended Audience :: Science/Research",
@@ -23,17 +23,13 @@ classifiers = [
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
-    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
 ]
 dependencies = [
     "scikit-learn>=1.4.1",
-    "pandas>=1.3.3",
-    "numpy>=2.0.0",
-    "scipy>=1.13.0",
+    "pandas>=2.2.2",
     "networkx>=2.5",
     "h5py>=3.9.0",
     "snfpy>=0",
@@ -44,9 +40,9 @@ dependencies = [
 
 [project.urls]
 homepage = "..."
-source = "..."
+source = "github.com/ocbe-uio/imml"
 download = "..."
-tracker = "..."
+tracker = "https://github.com/ocbe-uio/imml/issues"
 "release notes" = "..."
 
 [project.optional-dependencies]
@@ -56,20 +52,22 @@ matlab = [
 r = [
     "rpy2>=3.5.14",
 ]
-torch = [
-    "torch>=2.3.1",
+deep = [
     "lightning>=2.2",
+    "transformers>=4.51.3",
+    "torch_geometric>=2.6.1",
+    "torchvision>=0.19.1",
 ]
 docs = [
     "sphinx>=7.0.0",
     "sphinx-gallery>=0.17.1",
     "sphinx_rtd_theme>=1.0.0",
 ]
+visualize = [
+    "matplotlib>=3.8.4",
+]
 tutorials = [
-    "matplotlib>=3.3.4",
     "seaborn>=0.9.0",
-    "statsmodels>=0.13.0",
-    "sdv>=0.9.0",
 ]
 tests = [
     "pytest>=7.1.2",

@@ -24,6 +24,7 @@ def sample_data():
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
+
 def test_matlab_not_installed():
     if matlabmodule_installed:
         estimator(engine="matlab")
@@ -37,20 +38,22 @@ def test_matlab_not_installed():
         with pytest.raises(ImportError, match="Module 'matlab' needs to be installed."):
             estimator(engine="matlab")
 
+
+@pytest.mark.skipif(not matlabmodule_installed, reason="Module 'matlab' needs to be installed.")
 def test_default_params(sample_data):
-    if matlabmodule_installed:
-        for Xs in sample_data:
-            model = estimator(random_state=42)
-            n_samples = len(Xs[0])
-            labels = model.fit_predict(Xs)
-            assert labels is not None
-            assert len(labels) == n_samples
-            assert len(np.unique(labels)) == model.n_clusters
-            assert min(labels) == 0
-            assert max(labels) == (model.n_clusters - 1)
-            assert not np.isnan(labels).any()
-            assert not np.isnan(model.embedding_).any().any()
-            assert model.embedding_.shape == (n_samples, model.n_clusters)
+    for Xs in sample_data:
+        model = estimator(random_state=42)
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == model.n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (model.n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert not np.isnan(model.embedding_).any().any()
+        assert model.embedding_.shape == (n_samples, model.n_clusters)
+
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid engine."):
@@ -60,38 +63,41 @@ def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid n_clusters."):
         estimator(n_clusters=0)
 
+
+@pytest.mark.skipif(not matlabmodule_installed, reason="Module 'matlab' needs to be installed.")
 def test_fit_predict(sample_data):
     n_clusters = 3
-    if matlabmodule_installed:
-        for Xs in sample_data:
-            model = estimator(n_clusters=n_clusters, random_state=42)
-            n_samples = len(Xs[0])
-            labels = model.fit_predict(Xs)
-            assert labels is not None
-            assert len(labels) == n_samples
-            assert len(np.unique(labels)) == n_clusters
-            assert min(labels) == 0
-            assert max(labels) == (n_clusters - 1)
-            assert not np.isnan(labels).any()
-            assert not np.isnan(model.embedding_).any().any()
-            assert model.embedding_.shape == (n_samples, n_clusters)
+    for Xs in sample_data:
+        model = estimator(n_clusters=n_clusters, random_state=42)
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert not np.isnan(model.embedding_).any().any()
+        assert model.embedding_.shape == (n_samples, n_clusters)
 
+
+@pytest.mark.skipif(not matlabmodule_installed, reason="Module 'matlab' needs to be installed.")
 def test_missing_values_handling(sample_data):
     n_clusters = 2
-    if matlabmodule_installed:
-        for Xs in sample_data:
-            model = estimator(n_clusters=n_clusters, random_state=42)
-            Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
-            n_samples = len(Xs[0])
-            labels = model.fit_predict(Xs)
-            assert labels is not None
-            assert len(labels) == n_samples
-            assert len(np.unique(labels)) == n_clusters
-            assert min(labels) == 0
-            assert max(labels) == (n_clusters - 1)
-            assert not np.isnan(labels).any()
-            assert not np.isnan(model.embedding_).any().any()
-            assert model.embedding_.shape == (n_samples, n_clusters)
+    for Xs in sample_data:
+        model = estimator(n_clusters=n_clusters, random_state=42)
+        Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
+        n_samples = len(Xs[0])
+        labels = model.fit_predict(Xs)
+        assert labels is not None
+        assert len(labels) == n_samples
+        assert len(np.unique(labels)) == n_clusters
+        assert min(labels) == 0
+        assert max(labels) == (n_clusters - 1)
+        assert not np.isnan(labels).any()
+        assert not np.isnan(model.embedding_).any().any()
+        assert model.embedding_.shape == (n_samples, n_clusters)
+
 
 if __name__ == "__main__":
     pytest.main()

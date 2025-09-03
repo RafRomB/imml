@@ -131,7 +131,7 @@ class OSLFIMVC(BaseEstimator, ClassifierMixin):
         -------
         self :  Fitted estimator.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
 
         if self.engine=="matlab":
             observed_mod_indicator = get_observed_mod_indicator(Xs)

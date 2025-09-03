@@ -49,24 +49,27 @@ except ImportError:
     deepmodule_error = "Module 'Deep' needs to be installed."
 
 nnModuleBase = nn.Module if deepmodule_installed else object
-PreTrainedModel = PreTrainedModel if deepmodule_installed else object
-ModelOutput = ModelOutput if deepmodule_installed else object
-
 
 _CONFIG_FOR_DOC = "ViltConfig"
 _CHECKPOINT_FOR_DOC = "dandelin/vilt-b32-mlm"
 
-def _dummy_decorator(**kwargs):
+def _dummy_decorator(*args, **kwargs):
     def decorator(fn):
         fn.__doc__ = fn.__doc__ or ''  # Ensure docstring exists
         return fn
     return decorator
 
 
-add_start_docstrings = add_start_docstrings if deepmodule_installed else lambda x,y: (x,y)
-add_start_docstrings_to_model_forward = add_start_docstrings_to_model_forward if deepmodule_installed else lambda x: x
-replace_return_docstrings = replace_return_docstrings if deepmodule_installed else _dummy_decorator
-BaseModelOutputWithPooling = BaseModelOutputWithPooling if deepmodule_installed else object
+if not deepmodule_installed:
+    add_start_docstrings = _dummy_decorator
+    add_start_docstrings_to_model_forward = _dummy_decorator
+    replace_return_docstrings = _dummy_decorator
+    BaseModelOutputWithPooling = object
+    PreTrainedModel = object
+    ModelOutput = object
+    MaskedLMOutput = object
+    TokenClassifierOutput = object
+    SequenceClassifierOutput = object
 
 
 @dataclass

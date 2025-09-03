@@ -141,7 +141,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
         -------
         self :  Fitted estimator.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
 
         try:
             assert self.n_clusters <= min([X.shape[1] for X in Xs])

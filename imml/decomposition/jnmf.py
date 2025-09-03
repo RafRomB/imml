@@ -173,7 +173,7 @@ class JNMF(TransformerMixin, BaseEstimator):
         -------
         self :  returns an instance of self.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             self.transform_ = "numpy"
             Xs = [pd.DataFrame(X) for X in Xs]
@@ -225,7 +225,7 @@ class JNMF(TransformerMixin, BaseEstimator):
         transformed_Xs : list of array-likes, shape (n_samples, n_components)
             The projected data.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
 
@@ -277,7 +277,7 @@ class JNMF(TransformerMixin, BaseEstimator):
         transformed_X : array-likes of shape (n_samples, n_components)
             The projected data.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             self.transform_ = "numpy"
             Xs = [pd.DataFrame(X) for X in Xs]

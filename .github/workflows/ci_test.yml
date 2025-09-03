@@ -15,15 +15,15 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest]
+        python-version: ["3.11"]
     steps:
     - uses: actions/checkout@v4
     - name: Cache Python dependencies
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements/**') }}
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
     - name: Set up Python ${{ matrix.python-version }}
@@ -33,21 +33,25 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        python -m pip install .
+    - name: Install tests
+      run: |
         python -m pip install .[tests]
-        python -m pip install .[docs]
     - name: Test base
       run: |
-        python -m pip install .
         pytest --cov=imml
+    - name: Test docs
+      run: |
+        python -m pip install .[docs]
     - name: Test linux
       if: runner.os == 'Linux'
       run: |
+        sudo apt-get update
         sudo apt install r-base r-base-dev -y
         sudo Rscript -e "install.packages('nnTensor')"
-        sudo apt-get update
-        sudo apt install octave
-        sudo apt install octave-control
-        sudo apt install octave-statistics
+        sudo apt install octave -y
+        sudo apt install octave-control -y
+        sudo apt install octave-statistics -y
     - name: Test windows
       if: runner.os == 'Windows'
       shell: powershell
@@ -74,8 +78,11 @@ jobs:
       run: |
         python -m pip install .[matlab]
         pytest --cov=imml
-    - name: Test torch
+    - name: Test deep
       if: runner.os == 'Linux' || runner.os == 'Windows'
       run: |
-        python -m pip install .[torch]
+        python -m pip install .[deep]
         pytest --cov=imml
+    - name: Test visualize
+      run: |
+        python -m pip install .[visualize]

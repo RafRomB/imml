@@ -38,7 +38,7 @@ class DatasetUtils:
         >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
         >>> DatasetUtils.get_n_mods(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         summary = {
             "Complete samples": DatasetUtils.get_n_complete_samples(Xs),
             "Incomplete samples": DatasetUtils.get_n_incomplete_samples(Xs),
@@ -80,7 +80,7 @@ class DatasetUtils:
         >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
         >>> DatasetUtils.get_n_mods(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         n_mods = len(Xs)
         return n_mods
 
@@ -111,7 +111,7 @@ class DatasetUtils:
         >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
         >>> DatasetUtils.get_n_samples_by_mod(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         n_samples_by_mod = get_observed_mod_indicator(Xs)
         n_samples_by_mod = n_samples_by_mod.sum(axis=0)
         return n_samples_by_mod
@@ -145,7 +145,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_complete_sample_names(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         samples = get_observed_mod_indicator(Xs)
         if not isinstance(samples, pd.DataFrame):
             samples = pd.DataFrame(samples)
@@ -181,7 +181,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_incomplete_sample_names(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         samples = get_observed_mod_indicator(Xs)
         if not isinstance(samples, pd.DataFrame):
             samples = pd.DataFrame(samples)
@@ -217,7 +217,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_sample_names(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
         samples = [X.index.to_list() for X in Xs]
@@ -343,7 +343,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_n_complete_samples(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         n_samples = len(DatasetUtils.get_complete_sample_names(Xs=Xs))
         return n_samples
 
@@ -376,7 +376,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_n_incomplete_samples(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         n_samples = len(DatasetUtils.get_incomplete_sample_names(Xs=Xs))
         return n_samples
 
@@ -409,7 +409,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_percentage_complete_samples(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         percentage_samples = DatasetUtils.get_n_complete_samples(Xs=Xs) / len(Xs[0]) * 100
         return percentage_samples
 
@@ -442,7 +442,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.get_percentage_incomplete_samples(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         percentage_samples = DatasetUtils.get_n_incomplete_samples(Xs=Xs) / len(Xs[0]) * 100
         return percentage_samples
 
@@ -478,7 +478,7 @@ class DatasetUtils:
         >>> Xs = Amputer(p=0.2, mechanism="mcar", random_state=42).fit_transform(Xs)
         >>> DatasetUtils.remove_missing_sample_from_mod(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         observed_mod_indicator = get_missing_mod_indicator(Xs)
         if observed_mod_indicator.any().any():
             pandas_format = isinstance(Xs[0], pd.DataFrame)
@@ -525,7 +525,7 @@ class DatasetUtils:
         >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
         >>> DatasetUtils.convert_mmd_from_list_to_dict(Xs = Xs)
         """
-        Xs = check_Xs(Xs=Xs, force_all_finite="allow-nan")
+        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
         if keys is None:
             keys = list(range(len(Xs)))
 

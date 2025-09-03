@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Image processor class for Vilt."""
-
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
-
+import PIL
 import numpy as np
 
 try:
@@ -37,20 +36,26 @@ try:
         validate_preprocess_arguments,
     )
     from transformers.utils import TensorType, is_vision_available, logging
+    logger = logging.get_logger(__name__)
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'Deep' needs to be installed."
 
+if not deepmodule_installed:
+    BaseImageProcessor = object
+    TensorType = object
+    BatchFeature = object
+    ImageInput = object
 
-BaseImageProcessor = BaseImageProcessor if deepmodule_installed else object
+    class PILImageResampling: pass
+    PILImageResampling = PILImageResampling()
+    PILImageResampling.BICUBIC = object
 
+    class ChannelDimension: pass
+    ChannelDimension = ChannelDimension()
+    ChannelDimension.FIRST = object
 
-if is_vision_available():
-    import PIL
-
-
-logger = logging.get_logger(__name__)
 
 
 def max_across_indices(values: Iterable[Any]) -> List[Any]:

@@ -34,6 +34,7 @@ def sample_data():
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
+
 @pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_rmodule_installed():
     if rmodule_installed:
