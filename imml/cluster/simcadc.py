@@ -10,7 +10,8 @@ from scipy.stats import zscore
 
 from ..impute import simple_mod_imputer
 from ..preprocessing import select_complete_samples
-from ..utils import check_Xs, DatasetUtils
+from ..utils import check_Xs
+from ..explore import get_missing_samples_by_mod
 
 matlabmodule_installed = False
 oct2py_module_error = "Module 'matlab' needs to be installed."
@@ -142,7 +143,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
             mean_mod_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
-            incomplete_samples = DatasetUtils.get_missing_samples_by_mod(Xs=Xs, return_as_list=True)
+            incomplete_samples = get_missing_samples_by_mod(Xs=Xs, return_as_list=True)
             mean_mod_profile = [pd.DataFrame(np.tile(means, len(incom))).values for means, incom in
                                   zip(mean_mod_profile, incomplete_samples)]
 
@@ -169,7 +170,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
             mean_mod_profile = [X.mean(axis=0).to_frame(X_id) for X_id, X in enumerate(select_complete_samples(Xs))]
-            incomplete_samples = DatasetUtils.get_missing_samples_by_mod(Xs=Xs, return_as_list=True)
+            incomplete_samples = get_missing_samples_by_mod(Xs=Xs, return_as_list=True)
             mean_mod_profile = [pd.DataFrame(np.tile(means, len(incom))).values for means, incom in
                                  zip(mean_mod_profile, incomplete_samples)]
 

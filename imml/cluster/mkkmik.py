@@ -6,7 +6,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
 
-from ..utils import check_Xs, DatasetUtils
+from ..utils import check_Xs
+from ..explore import get_missing_samples_by_mod
 
 matlabmodule_installed = False
 oct2py_module_error = "Module 'matlab' needs to be installed."
@@ -148,7 +149,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            s = DatasetUtils.get_missing_samples_by_mod(Xs=transformed_Xs, return_as_list=True)
+            s = get_missing_samples_by_mod(Xs=transformed_Xs, return_as_list=True)
             s = tuple([{"indx": pd.Series(i).add(1).to_list()} for i in s])
 
             transformed_Xs = [self.kernel(X) for X in transformed_Xs]

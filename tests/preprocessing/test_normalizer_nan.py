@@ -95,3 +95,7 @@ def test_nan_handling():
     ])
 
     assert np.allclose(transformed_X, expected_transformed_X, equal_nan=True)
+
+
+if __name__ == "__main__":
+    pytest.main()

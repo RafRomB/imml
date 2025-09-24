@@ -6,7 +6,8 @@ from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
 from ..impute import get_observed_mod_indicator
-from ..utils import check_Xs, DatasetUtils
+from ..utils import check_Xs
+from ..preprocessing import remove_missing_samples_by_mod
 
 matlabmodule_installed = False
 oct2py_module_error = "Module 'matlab' needs to be installed."
@@ -149,7 +150,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
             if not isinstance(Xs[0], pd.DataFrame):
                 Xs = [pd.DataFrame(X) for X in Xs]
             observed_mod_indicator = get_observed_mod_indicator(Xs=Xs)
-            transformed_Xs = DatasetUtils.remove_missing_sample_from_mod(Xs=Xs)
+            transformed_Xs = remove_missing_samples_by_mod(Xs=Xs)
             w = [pd.DataFrame(np.eye(len(X)), index=X.index, columns=X.index) for X in Xs]
             w = [eye.loc[samples,:].values for eye, (_, samples) in zip(w, observed_mod_indicator.items())]
             w = tuple(w)

@@ -9,7 +9,8 @@ from ._monet._aux_monet import _best_samples_to_add, _which_sample_to_remove, _w
     _which_view_to_remove_from_module, _score_of_split_module, _weight_of_split_and_add_view, \
     _weight_of_split_and_remove_view, _weight_of_new_module, _top_samples_to_switch, \
     _weight_of_spreading_module, _weight_of_merged_modules, _Globals, _Sample, _Module, _View, _switch_2_samples
-from ..utils import check_Xs, DatasetUtils
+from ..utils import check_Xs
+from ..preprocessing import remove_missing_samples_by_mod
 
 
 class MONET(BaseEstimator, ClassifierMixin):
@@ -150,7 +151,7 @@ class MONET(BaseEstimator, ClassifierMixin):
         for X in Xs:
             X.index = X.index.astype(str)
         samples = Xs[0].index
-        Xs = DatasetUtils.remove_missing_sample_from_mod(Xs=Xs)
+        Xs = remove_missing_samples_by_mod(Xs=Xs)
         data = {}
 
         if self.similarity_mode == "corr":

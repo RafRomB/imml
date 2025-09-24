@@ -2,8 +2,7 @@ import pytest
 import numpy as np
 import pandas as pd
 from imml.ampute import Amputer
-from imml.utils import DatasetUtils
-
+from imml.explore import get_pct_incom_samples, get_pct_com_samples
 
 @pytest.fixture
 def sample_data():
@@ -17,8 +16,8 @@ def test_default_params(sample_data):
     amputer = Amputer(random_state=42)
     for Xs in sample_data:
         transformed_Xs = amputer.fit_transform(Xs)
-        assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p * 100)
-        assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p) * 100)
+        assert get_pct_incom_samples(transformed_Xs) == round(amputer.p * 100)
+        assert get_pct_com_samples(transformed_Xs) == round((1 - amputer.p) * 100)
         assert amputer.n_mods == len(Xs)
 
 def test_invalid_params(sample_data):
@@ -40,8 +39,8 @@ def test_tranform(sample_data):
     for Xs in sample_data:
         amputer.fit(Xs)
         transformed_Xs = amputer.transform(Xs)
-        assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p * 100)
-        assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p) * 100)
+        assert get_pct_incom_samples(transformed_Xs) == round(amputer.p * 100)
+        assert get_pct_com_samples(transformed_Xs) == round((1 - amputer.p) * 100)
         assert amputer.n_mods == len(Xs)
 
 def test_extreme_p(sample_data):
@@ -51,8 +50,8 @@ def test_extreme_p(sample_data):
             for Xs in sample_data:
                 Xs = Xs[:2]
                 transformed_Xs = amputer.fit_transform(Xs)
-                assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p*100)
-                assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p)*100)
+                assert get_pct_incom_samples(transformed_Xs) == round(amputer.p*100)
+                assert get_pct_com_samples(transformed_Xs) == round((1 - amputer.p)*100)
                 assert amputer.n_mods == len(Xs)
 
 def test_param_mechanism(sample_data):
@@ -62,8 +61,8 @@ def test_param_mechanism(sample_data):
         for Xs in sample_data:
             transformed_Xs = amputer.fit_transform(Xs)
             assert len(transformed_Xs) == len(Xs)
-            assert DatasetUtils.get_percentage_incomplete_samples(transformed_Xs) == round(amputer.p*100)
-            assert DatasetUtils.get_percentage_complete_samples(transformed_Xs) == round((1 - amputer.p)*100)
+            assert get_pct_incom_samples(transformed_Xs) == round(amputer.p*100)
+            assert get_pct_com_samples(transformed_Xs) == round((1 - amputer.p)*100)
             assert sum([np.isnan(transformed_X).sum().sum() > 0
                        for transformed_X, X in zip(transformed_Xs, Xs)])
             for transformed_X, X in zip(transformed_Xs, Xs):

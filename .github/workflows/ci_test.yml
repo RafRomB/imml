@@ -15,8 +15,8 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest]
-        python-version: ["3.10"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13", "3.14"]
     steps:
     - name: Checkout (act local)
       if: env.ACT == 'true'

@@ -1,7 +1,8 @@
-import pytest
 import numpy as np
 import pandas as pd
-from imml.preprocessing import SelectCompleteSamples, select_complete_samples
+import pytest
+
+from imml.preprocessing import RemoveMissingSamplesByMod, remove_missing_samples_by_mod
 
 
 @pytest.fixture
@@ -16,21 +17,21 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 
-def test_select_complete_samples_class(sample_data):
-    for Xs in sample_data:
-        transformer = SelectCompleteSamples()
+def test_remove_missing_sample_by_mod_class(sample_data):
+    for Xs in sample_data[:2]:
+        transformer = RemoveMissingSamplesByMod()
         transformed_Xs = transformer.fit_transform(Xs)
-        expected_values = [17, 17, 17]
+        expected_values = [18, 19, 20]
         for transformed_X, expected_value in zip(transformed_Xs, expected_values):
-            np.equal(transformed_X, expected_value)
+            assert len(transformed_X) == expected_value
 
 
-def test_select_complete_samples_function(sample_data):
-    for Xs in sample_data:
-        transformed_Xs = select_complete_samples(Xs)
-        expected_values = [17, 17, 17]
+def test_remove_missing_sample_by_mod_function(sample_data):
+    for Xs in sample_data[:2]:
+        transformed_Xs = remove_missing_samples_by_mod(Xs)
+        expected_values = [18, 19, 20]
         for transformed_X, expected_value in zip(transformed_Xs, expected_values):
-            np.equal(transformed_X, expected_value)
+            assert len(transformed_X) == expected_value
 
 
 if __name__ == "__main__":

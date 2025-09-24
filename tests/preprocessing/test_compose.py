@@ -5,7 +5,7 @@ from imml.preprocessing import (
     DropMod, ConcatenateMods, SingleMod, AddMissingMods, SortData,
     concatenate_mods, drop_mod, single_mod, add_missing_mods, sort_data
 )
-from imml.utils import DatasetUtils
+from imml.explore import get_samples
 
 @pytest.fixture
 def sample_data():
@@ -39,7 +39,7 @@ def test_single_mod_transformer(sample_data):
 
 def test_add_missing_mods_transformer(sample_data):
     for Xs in sample_data:
-        samples = DatasetUtils().get_sample_names(Xs=Xs)
+        samples = get_samples(Xs=Xs)
         transformer = AddMissingMods(samples=samples)
         transformed_Xs = transformer.fit_transform(Xs)
         for transformed_X in transformed_Xs:
@@ -74,7 +74,7 @@ def test_single_mod_function(sample_data):
 
 def test_add_missing_mods_function(sample_data):
     for Xs in sample_data:
-        samples = DatasetUtils().get_sample_names(Xs=Xs)
+        samples = get_samples(Xs=Xs)
         transformed_Xs = add_missing_mods(Xs, samples=samples)
         for transformed_X in transformed_Xs:
             assert len(transformed_X) == len(samples)

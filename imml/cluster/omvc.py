@@ -5,7 +5,8 @@ import pandas as pd
 from sklearn.base import BaseEstimator, ClassifierMixin
 from sklearn.cluster import KMeans
 
-from ..utils import check_Xs, DatasetUtils
+from ..utils import check_Xs
+from ..explore import get_missing_samples_by_mod
 
 matlabmodule_installed = False
 oct2py_module_error = "Module 'matlab' needs to be installed."
@@ -144,7 +145,7 @@ class OMVC(BaseEstimator, ClassifierMixin):
                 transformed_Xs = [X.values for X in Xs]
             elif isinstance(Xs[0], np.ndarray):
                 transformed_Xs = Xs
-            missing_samples_by_mod = DatasetUtils.get_missing_samples_by_mod(Xs=transformed_Xs, return_as_list=True)
+            missing_samples_by_mod = get_missing_samples_by_mod(Xs=transformed_Xs, return_as_list=True)
             missing_samples_by_mod = tuple([np.array(missing_samples)+1 for missing_samples in missing_samples_by_mod])
             transformed_Xs = [np.nan_to_num(np.clip(X, a_min=0, a_max=None), nan=0.0) for X in transformed_Xs]
             transformed_Xs = [X/(X.sum().sum()) for X in transformed_Xs]

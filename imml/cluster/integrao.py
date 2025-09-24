@@ -8,7 +8,7 @@ from snf.compute import _find_dominate_set
 
 from ._integrao._aux_integrao import data_indexing, dist2, _stable_normalized_pd, _scaling_normalized_pd, p_preprocess, \
     _stable_normalized
-from ..utils import DatasetUtils
+from ..preprocessing import remove_missing_samples_by_mod
 
 try:
     import torch
@@ -52,7 +52,7 @@ class IntegrAO(LightningModuleBase):
         self.weight_decay = weight_decay
         self.random_state = random_state
 
-        Xs = DatasetUtils.remove_missing_sample_from_mod(Xs=Xs)
+        Xs = remove_missing_samples_by_mod(Xs=Xs)
 
         (
             self.dicts_common,

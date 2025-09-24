@@ -9,6 +9,7 @@ omit =
     imml/cluster/_monet/*
     imml/cluster/_msne/*
     imml/cluster/_sumo/*
+    imml/cluster/_integrao/*
 
     imml/decomposition/_skfusion/*
     imml/decomposition/_deepmf/*

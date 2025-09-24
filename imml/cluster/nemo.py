@@ -9,7 +9,8 @@ from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
 
 from ..impute import get_observed_mod_indicator
-from ..utils import check_Xs, DatasetUtils
+from ..utils import check_Xs
+from ..preprocessing import remove_missing_samples_by_mod
 
 try:
     from rpy2.robjects.packages import importr, PackageNotInstalledError
@@ -176,7 +177,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
 
         elif self.engine == "r":
-            transformed_Xs = DatasetUtils.remove_missing_sample_from_mod(Xs=Xs)
+            transformed_Xs = remove_missing_samples_by_mod(Xs=Xs)
             transformed_Xs = [X.T for X in transformed_Xs]
             transformed_Xs = _convert_df_to_r_object(transformed_Xs)
             num_neighbors = np.nan if self.num_neighbors is None else self.num_neighbors

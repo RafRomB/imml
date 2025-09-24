@@ -1,7 +1,6 @@
-import pandas as pd
+import numpy as np
 from sklearn.preprocessing import FunctionTransformer
 
-from ..impute import get_observed_mod_indicator, get_missing_mod_indicator
 from ..utils import check_Xs
 
 
@@ -55,14 +54,9 @@ def select_incomplete_samples(Xs: list):
     """
 
     Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
-    pandas_format = isinstance(Xs[0], pd.DataFrame)
-    if not pandas_format:
-        Xs = [pd.DataFrame(X) for X in Xs]
-    sample_mods = get_missing_mod_indicator(Xs)
-    complete_samples = sample_mods.any(axis= 1)
-    transformed_Xs = [X.loc[complete_samples] for X in Xs]
-    if not pandas_format:
-        transformed_Xs = [X.values for X in transformed_Xs]
+    mask = np.stack([np.isnan(X).any(axis=1) for X in Xs], axis=1)
+    mask = mask.any(axis=1)
+    transformed_Xs = [X[mask] for X in Xs]
     return transformed_Xs
 
 

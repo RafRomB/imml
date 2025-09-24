@@ -3,7 +3,7 @@ import pandas as pd
 from sklearn.preprocessing import FunctionTransformer
 
 from ..utils import check_Xs
-from ..utils import DatasetUtils
+from ..explore import get_samples
 
 
 class DropMod(FunctionTransformer):
@@ -93,9 +93,9 @@ class AddMissingMods(FunctionTransformer):
     >>> import numpy as np
     >>> import pandas as pd
     >>> from imml.preprocessing import AddMissingMods
-    >>> from imml.utils import DatasetUtils
+    >>> from imml.explore import get_samples
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> samples = DatasetUtils.get_sample_names(Xs= Xs)
+    >>> samples = get_samples(Xs= Xs)
     >>> transformer = AddMissingMods(samples= samples)
     >>> transformer.fit_transform(Xs)
 
@@ -252,7 +252,7 @@ def add_missing_mods(Xs, samples):
     >>> from imml.preprocessing import add_missing_mods
     >>> from imml.utils import DatasetUtils
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> samples = DatasetUtils.get_sample_names(Xs= Xs)
+    >>> samples = DatasetUtils.get_samples(Xs= Xs)
     >>> add_missing_mods(Xs, samples= samples)
   """
     pandas_format = isinstance(Xs[0], pd.DataFrame)
@@ -297,7 +297,7 @@ def sort_data(Xs: list):
     Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
     if not isinstance(Xs[0], pd.DataFrame):
         Xs = [pd.DataFrame(X) for X in Xs]
-    samples = DatasetUtils.get_sample_names(Xs=Xs)
+    samples = get_samples(Xs=Xs)
     transformed_X = [X.loc[samples.intersection(X.index)] for X in Xs]
     return transformed_X
 
