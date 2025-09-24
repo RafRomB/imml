@@ -47,7 +47,7 @@ class MOFAImputer(MOFA):
             The transformed data with filled missing samples.
         """
 
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
 

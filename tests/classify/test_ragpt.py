@@ -7,13 +7,14 @@ import tempfile
 from unittest.mock import patch
 import pytest
 
+from imml.classify import RAGPT
+from imml.retrieve import MCR
+
 try:
     import torch
     import transformers
     from transformers import AutoModel, AutoProcessor, BertTokenizer
     from imml.classify._ragpt.vilt import ViltModel, ViltImageProcessor
-    from imml.classify import RAGPT
-    from imml.retrieve import MCR
     from imml.load import RAGPTCollator, RAGPTDataset
     import lightning as L
     from torch.utils.data import DataLoader
@@ -55,6 +56,7 @@ def test_deepmodule_not_installed():
             estimator()
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_default_params(sample_data):
     if deepmodule_installed:
         model = estimator()
@@ -70,6 +72,7 @@ def test_default_params(sample_data):
         assert not os.path.exists(tmp_path)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_invalid_params():
     if deepmodule_installed:
         with pytest.raises(ValueError, match="Invalid max_text_len."):
@@ -131,6 +134,7 @@ def test_invalid_params():
             estimator(weight_decay=-1)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_lightning_methods(sample_data):
     if deepmodule_installed:
         # Create model
@@ -160,6 +164,7 @@ def test_lightning_methods(sample_data):
         assert not os.path.exists(tmp_path)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_missing_values_handling(sample_data):
     if deepmodule_installed:
         # Create model

@@ -10,11 +10,11 @@ We track bugs and feature requests using GitHub issues. If you encounter a probl
 feel free to open an issue.
 
 If you run into any trouble while using this package, we encourage you to submit an issue through our Issue
-Tracker `Bug Tracker <>`_. Suggestions for enhancements or pull requests are also welcome.
+Tracker `Bug Tracker <https://github.com/ocbe-uio/imml/issues>`_. Suggestions for enhancements or pull requests are also welcome.
 
 Before posting, ensure your submission aligns with these guidelines:
 
--  Check for duplicates: Look for similar `issues <>`_ or `pull requests <>`_ already submitted.
+-  Check for duplicates: Look for similar `issues <https://github.com/ocbe-uio/imml/issues>`_ or `pull requests <https://github.com/ocbe-uio/imml/pulls>`_ already submitted.
 -  Bug reports: Follow our tips in :ref:`filing_bugs` to provide all necessary details.
 -  Adhere to guidelines: Ensure your code complies with the general :ref:`guidelines` and matches
    the :ref:`api_of_imml_objects`.
@@ -24,7 +24,7 @@ Before posting, ensure your submission aligns with these guidelines:
 How to make a good bug report
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-When reporting an issue on GitHub `Github <>`_, please include the following details to help us assist you effectively:
+When reporting an issue on GitHub `Github <https://github.com/ocbe-uio/imml/issues>`_, please include the following details to help us assist you effectively:
 
 -  Minimal code example: Provide a concise code snippet to replicate the issue (see
    `this <https://stackoverflow.com/help/mcve>`_ for more details). If it is longer than around 50 lines,
@@ -102,7 +102,7 @@ Before submitting a pull request, ensure:
 
     .. code:: bash
 
-        pip install pytest pytest-cov
+        pip install imml[tests]
 
    then run
 
@@ -146,7 +146,7 @@ established by `scikit-learn` and `mvlearn`. Estimators inherit from ``sklearn.b
 established guidelines.
 
 To ensure compatibility, developers should align with `scikit-learn`'s standards whenever possible, including using
-validation checks like ``check_Xs`` in ``iMML.utils``, to confirm the suitability of the input data.
+validation checks like ``check_Xs`` in ``imml.utils``, to confirm the suitability of the input data.
 
 Instantiation
 ^^^^^^^^^^^^^

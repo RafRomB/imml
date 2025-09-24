@@ -15,5 +15,7 @@ The package is split up into modules.
     load
     preprocessing
     retrieve
+    statistics
     utils
+    visualize
 

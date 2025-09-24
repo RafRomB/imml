@@ -1,7 +1,9 @@
 import os
 from typing import List
-
 import numpy as np
+
+from ._m3care import NMT_tran, MM_transformer_encoder, init_weights, PositionalEncoding, clones, \
+    GraphConvolution, length_to_mask, guassian_kernel
 
 try:
     import torch
@@ -9,8 +11,6 @@ try:
     from torchvision import models as models
     import lightning as L
     import torch.nn.functional as F
-    from ._m3care import NMT_tran, MM_transformer_encoder, init_weights, PositionalEncoding, clones, \
-    GraphConvolution, length_to_mask, guassian_kernel
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False

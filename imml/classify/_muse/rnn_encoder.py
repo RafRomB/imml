@@ -66,8 +66,8 @@ class RNNEncoder(nnModuleBase):
 
     def forward(
             self,
-            x: torch.tensor,
-    ) -> Tuple[torch.tensor, torch.tensor]:
+            x,
+    ):
         """Forward propagation.
 
         Args:

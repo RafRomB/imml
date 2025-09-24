@@ -71,7 +71,7 @@ def test_valid_inputs():
     # Test with arrays containing NaN values
     X1 = np.array([[1, np.nan], [3, 4]])
     X2 = np.array([[5, 6], [np.nan, 8]])
-    result = check_Xs([X1, X2], force_all_finite='allow-nan')
+    result = check_Xs([X1, X2], ensure_all_finite='allow-nan')
     assert isinstance(result, list)
     assert len(result) == 2
     assert np.isnan(result[0][0, 1])
@@ -102,7 +102,7 @@ def test_optional_parameters():
 
     X1 = np.array([[1, np.nan], [3, 4]])
     X2 = np.array([[5, 6], [7, 8]])
-    result = check_Xs([X1, X2], force_all_finite='allow-nan')
+    result = check_Xs([X1, X2], ensure_all_finite='allow-nan')
     assert np.isnan(result[0][0, 1])
 
     X1 = np.array([[1, 2], [3, 4]])

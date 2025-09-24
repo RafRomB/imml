@@ -1,6 +1,7 @@
 import pytest
 import numpy as np
 import pandas as pd
+
 from imml.preprocessing import SelectIncompleteSamples, select_incomplete_samples
 
 
@@ -37,3 +38,7 @@ def test_invalid_input():
         select_incomplete_samples(None)
     with pytest.raises(ValueError):
         select_incomplete_samples(pd.DataFrame({'feature1': [1, 2]}))
+
+
+if __name__ == "__main__":
+    pytest.main()

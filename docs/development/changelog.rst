@@ -32,4 +32,4 @@ Change tags (adopted from `scikit-learn` and `mvlearn`):
 Version 0.1.0
 -------------
 
-We are happy to announce the first major public version of ``iMML``!
+We are happy to announce the first major public version of `iMML`!

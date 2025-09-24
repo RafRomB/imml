@@ -13,9 +13,8 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 """Image processor class for Vilt."""
-
 from typing import Any, Dict, Iterable, List, Optional, Tuple, Union
-
+import PIL
 import numpy as np
 
 try:
@@ -37,17 +36,26 @@ try:
         validate_preprocess_arguments,
     )
     from transformers.utils import TensorType, is_vision_available, logging
+    logger = logging.get_logger(__name__)
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'Deep' needs to be installed."
 
+if not deepmodule_installed:
+    BaseImageProcessor = object
+    TensorType = object
+    BatchFeature = object
+    ImageInput = object
 
-if is_vision_available():
-    import PIL
+    class PILImageResampling: pass
+    PILImageResampling = PILImageResampling()
+    PILImageResampling.BICUBIC = object
 
+    class ChannelDimension: pass
+    ChannelDimension = ChannelDimension()
+    ChannelDimension.FIRST = object
 
-logger = logging.get_logger(__name__)
 
 
 def max_across_indices(values: Iterable[Any]) -> List[Any]:
@@ -58,7 +66,7 @@ def max_across_indices(values: Iterable[Any]) -> List[Any]:
 
 
 def make_pixel_mask(
-    image: np.ndarray, output_size: Tuple[int, int], input_data_format: Optional[Union[str, ChannelDimension]] = None
+    image: np.ndarray, output_size: Tuple[int, int], input_data_format = None
 ) -> np.ndarray:
     """
     Make a pixel mask for the image, where 1 indicates a valid pixel and 0 indicates padding.
@@ -76,7 +84,7 @@ def make_pixel_mask(
 
 
 def get_max_height_width(
-    images: List[np.ndarray], input_data_format: Optional[Union[str, ChannelDimension]] = None
+    images: List[np.ndarray], input_data_format = None
 ) -> List[int]:
     """
     Get the maximum height and width across all images in a batch.
@@ -98,7 +106,7 @@ def get_resize_output_image_size(
     shorter: int = 800,
     longer: int = 1333,
     size_divisor: int = 32,
-    input_data_format: Optional[Union[str, ChannelDimension]] = None,
+    input_data_format = None,
 ) -> Tuple[int, int]:
     input_height, input_width = get_image_size(input_image, input_data_format)
     min_size, max_size = shorter, longer
@@ -232,8 +240,8 @@ class ViltImageProcessor(BaseImageProcessor):
         size: Dict[str, int],
         size_divisor: int = 32,
         resample: PILImageResampling = PILImageResampling.BICUBIC,
-        data_format: Optional[Union[str, ChannelDimension]] = None,
-        input_data_format: Optional[Union[str, ChannelDimension]] = None,
+        data_format = None,
+        input_data_format = None,
         **kwargs,
     ) -> np.ndarray:
         """
@@ -279,8 +287,8 @@ class ViltImageProcessor(BaseImageProcessor):
         image: np.ndarray,
         output_size: Tuple[int, int],
         constant_values: Union[float, Iterable[float]] = 0,
-        data_format: Optional[ChannelDimension] = None,
-        input_data_format: Optional[Union[str, ChannelDimension]] = None,
+        data_format = None,
+        input_data_format = None,
     ) -> np.ndarray:
         """
         Pad an image with zeros to the given size.
@@ -306,9 +314,9 @@ class ViltImageProcessor(BaseImageProcessor):
         images: List[np.ndarray],
         constant_values: Union[float, Iterable[float]] = 0,
         return_pixel_mask: bool = True,
-        return_tensors: Optional[Union[str, TensorType]] = None,
-        data_format: Optional[ChannelDimension] = None,
-        input_data_format: Optional[Union[str, ChannelDimension]] = None,
+        return_tensors = None,
+        data_format = None,
+        input_data_format = None,
     ) -> BatchFeature:
         """
         Pads a batch of images to the bottom and right of the image with zeros to the size of largest height and width
@@ -369,9 +377,9 @@ class ViltImageProcessor(BaseImageProcessor):
         image_mean: Optional[Union[float, List[float]]] = None,
         image_std: Optional[Union[float, List[float]]] = None,
         do_pad: Optional[bool] = None,
-        return_tensors: Optional[Union[str, TensorType]] = None,
+        return_tensors = None,
         data_format: ChannelDimension = ChannelDimension.FIRST,
-        input_data_format: Optional[Union[str, ChannelDimension]] = None,
+        input_data_format = None,
         **kwargs,
     ) -> PIL.Image.Image:
         """

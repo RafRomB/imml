@@ -61,7 +61,7 @@ def get_observed_mod_indicator(Xs : List, y = None):
     >>> Xs = Amputer(p= 0.2, random_state=42).fit_transform(Xs)
     >>> observed_mod = get_observed_mod_indicator()(Xs)
     """
-    Xs = check_Xs(Xs, force_all_finite='allow-nan')
+    Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
     transformed_X = np.vstack([np.isnan(X).all(1) for X in Xs]).T
     transformed_X = ~transformed_X
     if isinstance(Xs[0], pd.DataFrame):

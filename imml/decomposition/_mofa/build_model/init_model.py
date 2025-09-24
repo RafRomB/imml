@@ -82,7 +82,7 @@ class initModel(object):
         qE2: initial value of the second moment of the variational distribution
         Y: matrix to run PCA on (when qmean="pca")
         impute: logical value if to perform imputation before running PCA,
-            this is only applicable when qmean="pca" and missing values (np.NaN) are present in the data
+            this is only applicable when qmean="pca" and missing values (np.nan) are present in the data
         weight_views: logical whether to weight the ELBO
         """
 
@@ -116,7 +116,7 @@ class initModel(object):
 
                     if impute == True:
                         if np.any(np.isnan(Ytmp)):
-                            imp = SimpleImputer(missing_values=np.NaN, strategy="mean")
+                            imp = SimpleImputer(missing_values=np.nan, strategy="mean")
                             imp.fit(Ytmp)
                             Ytmp = imp.transform(Ytmp)
 
@@ -180,7 +180,7 @@ class initModel(object):
         qE2: initial value of the second moment of the variational distribution
         Y: matrix to run PCA on (when qmean="pca")
         impute: logical value if to perform imputation before running PCA,
-            this is only applicable when qmean="pca" and missing values (np.NaN) are present in the data
+            this is only applicable when qmean="pca" and missing values (np.nan) are present in the data
         weight_views: logical whether to weight the ELBO
         """
 
@@ -216,7 +216,7 @@ class initModel(object):
 
                     if impute == True:
                         if np.any(np.isnan(Ytmp)):
-                            imp = SimpleImputer(missing_values=np.NaN, strategy="mean")
+                            imp = SimpleImputer(missing_values=np.nan, strategy="mean")
                             imp.fit(Ytmp)
                             Ytmp = imp.transform(Ytmp)
 
@@ -287,7 +287,7 @@ class initModel(object):
          qE2: initial value of the second moment of the variational distribution
          Y: matrix to run PCA on (when qmean="pca")
          impute: logical value if to perform imputation before running PCA,
-             this is only applicable when qmean="pca" and missing values (np.NaN) are present in the data
+             this is only applicable when qmean="pca" and missing values (np.nan) are present in the data
          GP_factors: logical whether to use a Z node with GP prior or not
         """
 
@@ -367,7 +367,7 @@ class initModel(object):
 
                     if impute == True:
                         if np.any(np.isnan(Ytmp)):
-                            imp = SimpleImputer(missing_values=np.NaN, strategy="mean")
+                            imp = SimpleImputer(missing_values=np.nan, strategy="mean")
                             imp.fit(Ytmp)
                             Ytmp = imp.transform(Ytmp)
 
@@ -517,7 +517,7 @@ class initModel(object):
 
                 if impute == True:
                     if np.any(np.isnan(Ytmp)):
-                        imp = SimpleImputer(missing_values=np.NaN, strategy="mean")
+                        imp = SimpleImputer(missing_values=np.nan, strategy="mean")
                         imp.fit(Ytmp)
                         Ytmp = imp.transform(Ytmp)
 

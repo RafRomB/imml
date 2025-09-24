@@ -35,3 +35,7 @@ def test_invalid_input():
         select_complete_samples(None)
     with pytest.raises(ValueError):
         select_complete_samples(pd.DataFrame({'feature1': [1, 2]}))
+
+
+if __name__ == "__main__":
+    pytest.main()

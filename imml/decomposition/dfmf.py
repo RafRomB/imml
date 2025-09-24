@@ -127,7 +127,7 @@ class DFMF(TransformerMixin, BaseEstimator):
         -------
         self :  returns an instance of self.
         """
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             self.transform_ = "numpy"
             Xs = [pd.DataFrame(X) for X in Xs]
@@ -158,7 +158,7 @@ class DFMF(TransformerMixin, BaseEstimator):
             The projected data.
         """
 
-        Xs = check_Xs(Xs, force_all_finite='allow-nan')
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         if not isinstance(Xs[0], pd.DataFrame):
             Xs = [pd.DataFrame(X) for X in Xs]
         relations = [fusion.Relation(X.values, self.t_, t) for X,t in zip(Xs, self.ts_)]

@@ -9,7 +9,6 @@ try:
     import torch.nn.functional as F
     from torch import nn
     from torch.autograd import Variable
-
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
@@ -135,7 +134,7 @@ class SublayerConnection(nnModuleBase):
         return x + self.dropout(sublayer(self.norm(x)))
 
 
-class Encoder(nn.Module):
+class Encoder(nnModuleBase):
     "Core encoder is a stack of N layers"
 
     def __init__(self, layer, N):
@@ -219,7 +218,7 @@ class NMT_tran(nnModuleBase):
 
         self.dropout = nn.Dropout(p=dropout_rate)
 
-    def forward(self, source: List[List[str]]) -> torch.Tensor:
+    def forward(self, source: List[List[str]]):
         # Compute sentence lengths
         #         print(source)
         source_lengths = [len(s) for s in source]
@@ -233,7 +232,7 @@ class NMT_tran(nnModuleBase):
 
         return enc_hiddens, source_lengths
 
-    def encode(self, source_padded: torch.Tensor) -> Tuple[torch.Tensor, Tuple[torch.Tensor, torch.Tensor]]:
+    def encode(self, source_padded):
         """ Apply the encoder to source sentences to obtain encoder hidden states.
             Additionally, take the final states of the encoder and project them to obtain initial states for decoder.
 
@@ -261,7 +260,7 @@ class NMT_tran(nnModuleBase):
         return enc_hiddens, first_hidden
 
     @property
-    def device(self) -> torch.device:
+    def device(self):
         """ Determine which device to place the Tensors upon, CPU or GPU.
         """
         return self.source.weight.device
@@ -317,7 +316,7 @@ class VocabEntry(object):
     def indices2words(self, word_ids):
         return [self.id2word[w_id] for w_id in word_ids]
 
-    def to_input_tensor(self, sents: List[List[str]], device: torch.device) -> torch.Tensor:
+    def to_input_tensor(self, sents: List[List[str]], device):
         word_ids = self.words2indices(sents)
         sents_t = self.input_transpose(word_ids, self['<pad>'])
 

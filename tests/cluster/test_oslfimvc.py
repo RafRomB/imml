@@ -24,6 +24,7 @@ def sample_data():
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
+
 def test_matlab_not_installed():
     if matlabmodule_installed:
         estimator(engine="matlab")
@@ -37,7 +38,8 @@ def test_matlab_not_installed():
         with pytest.raises(ImportError, match="Module 'matlab' needs to be installed."):
             estimator(engine="matlab")
 
-@pytest.mark.skipif(not matlabmodule_installed, reason="Oct2py is not installed.")
+
+@pytest.mark.skipif(not matlabmodule_installed, reason="Module 'matlab' needs to be installed.")
 def test_default_params(sample_data):
     for Xs in sample_data:
         model = estimator(random_state=42)
@@ -55,6 +57,7 @@ def test_default_params(sample_data):
         assert len(model.beta_) == len(Xs)
         assert model.n_iter_ > 0
 
+
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid engine."):
         estimator(engine='invalid')
@@ -63,7 +66,8 @@ def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid n_clusters."):
         estimator(n_clusters=0)
 
-@pytest.mark.skipif(not matlabmodule_installed, reason="Oct2py is not installed.")
+
+@pytest.mark.skipif(not matlabmodule_installed, reason="Module 'matlab' needs to be installed.")
 def test_fit_predict(sample_data):
     n_clusters = 3
     for Xs in sample_data:
@@ -82,7 +86,8 @@ def test_fit_predict(sample_data):
         assert len(model.beta_) == len(Xs)
         assert model.n_iter_ > 0
 
-@pytest.mark.skipif(not matlabmodule_installed, reason="Oct2py is not installed.")
+
+@pytest.mark.skipif(not matlabmodule_installed, reason="Module 'matlab' needs to be installed.")
 def test_missing_values_handling(sample_data):
     n_clusters = 2
     for Xs in sample_data:

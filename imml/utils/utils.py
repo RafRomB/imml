@@ -13,7 +13,7 @@ except ImportError:
     rmodule_error = "Module 'r' needs to be installed to use r engine."
 
 
-def check_Xs(Xs, enforce_modalities=None, copy=False, force_all_finite="allow-nan",return_dimensions=False):
+def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-nan",return_dimensions=False):
     r"""
     Checks Xs and ensures it to be a list of 2D matrices. Adapted from `̀mvlearn` [#checkxspaper]_ [#checkxscode]_ .
 
@@ -29,7 +29,7 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, force_all_finite="allow-na
     copy : boolean, (default=False)
         If True, the returned Xs is a copy of the input Xs, and operations on the output will not affect the input.
         If False, the returned Xs is a modality of the input Xs, and operations on the output will change the input.
-    force_all_finite : bool or 'allow-nan', default='allow-nan'
+    ensure_all_finite : bool or 'allow-nan', default='allow-nan'
         Whether to raise an error on np.inf, np.nan, pd.NA in array. The possibilities are:
 
         - True: Force all values of array to be finite.
@@ -84,10 +84,10 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, force_all_finite="allow-na
 
     pandas_format = True if isinstance(Xs[0],pd.DataFrame) else False
     if pandas_format:
-        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, force_all_finite=force_all_finite),
+        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite),
                            index=X.index, columns=X.columns) for X_idx, X in enumerate(Xs)]
     else:
-        Xs = [check_array(X, allow_nd=False, copy=copy, force_all_finite=force_all_finite) for X in Xs]
+        Xs = [check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite) for X in Xs]
 
     if return_dimensions:
         n_samples = Xs[0].shape[0]

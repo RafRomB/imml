@@ -21,6 +21,9 @@ if rmodule_installed:
         snftool_installed = True
     except PackageNotInstalledError:
         snftool_installed = False
+else:
+    snftool_installed = False
+
 estimator = NEMO
 
 

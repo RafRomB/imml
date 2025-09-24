@@ -24,6 +24,7 @@ def sample_data():
     Xs_pandas, Xs_numpy = [X1, X2, X3], [X1.values, X2.values, X3.values]
     return Xs_pandas, Xs_numpy
 
+
 def test_matlab_not_installed():
     if matlabmodule_installed:
         estimator(engine="matlab")
@@ -36,6 +37,7 @@ def test_matlab_not_installed():
     else:
         with pytest.raises(ImportError, match="Module 'matlab' needs to be installed."):
             estimator(engine="matlab")
+
 
 def test_default_params(sample_data):
     model = estimator(random_state=42)
@@ -53,6 +55,7 @@ def test_default_params(sample_data):
             assert model.embedding_.shape[0] == n_samples
             assert model.n_iter_ > 0
 
+
 def test_param_randomstate(sample_data):
     random_state = 42
     for engine in ["matlab", "python"]:
@@ -60,6 +63,7 @@ def test_param_randomstate(sample_data):
             continue
         labels = estimator(engine=engine, random_state=random_state).fit_predict(sample_data[0])
         assert all(labels == estimator(engine=engine, random_state=random_state).fit_predict(sample_data[0]))
+
 
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid engine."):
@@ -72,6 +76,7 @@ def test_invalid_params(sample_data):
         estimator(lbd=-0.5)
     with pytest.raises(ValueError, match="Invalid gamma."):
         estimator(gamma=-0.5)
+
 
 def test_fit_predict(sample_data):
     n_clusters = 3
@@ -90,6 +95,7 @@ def test_fit_predict(sample_data):
             assert not np.isnan(model.embedding_).any().any()
             assert model.embedding_.shape == (n_samples, n_clusters)
             assert model.n_iter_ > 0
+
 
 def test_missing_values_handling(sample_data):
     n_clusters = 2
@@ -110,6 +116,7 @@ def test_missing_values_handling(sample_data):
             assert not np.isnan(model.embedding_).any().any()
             assert model.embedding_.shape == (n_samples, n_clusters)
             assert model.n_iter_ > 0
+
 
 if __name__ == "__main__":
     pytest.main()

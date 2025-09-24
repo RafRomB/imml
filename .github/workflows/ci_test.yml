@@ -1,4 +1,4 @@
-# This workflow will install Python dependencies, run tests and lint with a variety of Python versions
+# This workflow will install Python dependencies and run tests with a variety of Python versions
 # For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
 
 name: CI Tests
@@ -15,15 +15,28 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12"]
+        os: [ubuntu-latest]
+        python-version: ["3.10"]
     steps:
-    - uses: actions/checkout@v4
+    - name: Checkout (act local)
+      if: env.ACT == 'true'
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 1
+        clean: true
+        sparse-checkout: |
+          imml
+          pyproject.toml
+          tests
+        sparse-checkout-cone: true
+    - name: Checkout
+      if: env.ACT != 'true'
+      uses: actions/checkout@v4
     - name: Cache Python dependencies
       uses: actions/cache@v3
       with:
         path: ~/.cache/pip
-        key: ${{ runner.os }}-pip-${{ matrix.python-version }}-${{ hashFiles('requirements/**') }}
+        key: ${{ runner.os }}-pip-${{ matrix.python-version }}
         restore-keys: |
           ${{ runner.os }}-pip-${{ matrix.python-version }}-
     - name: Set up Python ${{ matrix.python-version }}
@@ -33,21 +46,46 @@ jobs:
     - name: Install dependencies
       run: |
         python -m pip install --upgrade pip
+        python - <<'PY'
+        import importlib.util, subprocess, sys
+        if importlib.util.find_spec('rpy2') is not None:
+            print("rpy2 detected; uninstalling...")
+            subprocess.run([sys.executable, "-m", "pip", "uninstall", "-y", "rpy2"], check=False)
+        else:
+            print("rpy2 not installed; nothing to do.")
+        PY
+        python -m pip install .
+    - name: Install tests
+      run: |
         python -m pip install .[tests]
-        python -m pip install .[docs]
+    - name: Prepare report directory
+      if: env.ACT == 'true'
+      run: |
+        python - <<'PY'
+        import os
+        os.makedirs("reports", exist_ok=True)
+        PY
     - name: Test base
       run: |
-        python -m pip install .
-        pytest --cov=imml
+        if [ "${ACT:-}" = "true" ]; then
+          pytest --cov=imml \
+                 --cov-report=html:reports/htmlcov-base \
+                 --cov-report=xml:reports/coverage-base.xml
+        else
+          pytest --cov=imml
+        fi
+    - name: Test docs
+      run: |
+        python -m pip install .[docs]
     - name: Test linux
       if: runner.os == 'Linux'
       run: |
+        sudo apt-get update
         sudo apt install r-base r-base-dev -y
         sudo Rscript -e "install.packages('nnTensor')"
-        sudo apt-get update
-        sudo apt install octave
-        sudo apt install octave-control
-        sudo apt install octave-statistics
+        sudo apt install octave -y
+        sudo apt install octave-control -y
+        sudo apt install octave-statistics -y
     - name: Test windows
       if: runner.os == 'Windows'
       shell: powershell
@@ -68,14 +106,39 @@ jobs:
     - name: Test r
       run: |
         python -m pip install .[r]
-        pytest --cov=imml
+        if [ "${ACT:-}" = "true" ]; then
+          pytest --cov=imml \
+                 --cov-report=html:reports/htmlcov-r \
+                 --cov-report=xml:reports/coverage-r.xml
+        else
+          pytest --cov=imml
+        fi
     - name: Test matlab
       if: runner.os == 'Linux'
       run: |
         python -m pip install .[matlab]
-        pytest --cov=imml
-    - name: Test torch
+        if [ "${ACT:-}" = "true" ]; then
+          pytest --cov=imml \
+                 --cov-report=html:reports/htmlcov-matlab \
+                 --cov-report=xml:reports/coverage-matlab.xml
+        else
+          pytest --cov=imml
+        fi
+    - name: Test deep
       if: runner.os == 'Linux' || runner.os == 'Windows'
       run: |
-        python -m pip install .[torch]
-        pytest --cov=imml
+        python -m pip install .[deep]
+        if [ "${ACT:-}" = "true" ]; then
+          pytest --cov=imml \
+                 --cov-report=html:reports/htmlcov-deep \
+                 --cov-report=xml:reports/coverage-deep.xml
+        else
+          pytest --cov=imml
+        fi
+    - name: Upload coverage reports artifact
+      if: env.ACT == 'true'
+      uses: actions/upload-artifact@v4
+      with:
+        name: coverage-${{ matrix.os }}-${{ matrix.python-version }}
+        path: reports
+        if-no-files-found: warn

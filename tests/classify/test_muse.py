@@ -45,6 +45,7 @@ def test_deepmodule_not_installed():
             estimator(modalities=["text", "text"])
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_default_params(sample_data):
     if deepmodule_installed:
         model = estimator(modalities=["tabular", "tabular", "tabular"], input_dim=[10, 10, 10])
@@ -56,6 +57,7 @@ def test_default_params(sample_data):
         assert isinstance(loss, torch.Tensor)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_invalid_params():
     if deepmodule_installed:
         with pytest.raises(ValueError, match="Invalid input_dim."):
@@ -102,6 +104,7 @@ def test_invalid_params():
             estimator(modalities=["tabular"], dropout=2.)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_lightning_methods(sample_data):
     if deepmodule_installed:
         with torch.no_grad():
@@ -118,6 +121,7 @@ def test_lightning_methods(sample_data):
             assert isinstance(optimizer, torch.optim.Optimizer)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_missing_values_handling(sample_data):
     if deepmodule_installed:
         with torch.no_grad():
