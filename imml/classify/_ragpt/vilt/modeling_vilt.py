@@ -925,19 +925,19 @@ class ViltForMaskedLM(ViltPreTrainedModel):
     @replace_return_docstrings(output_type=MaskedLMOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        token_type_ids: Optional[torch.LongTensor] = None,
-        pixel_values: Optional[torch.FloatTensor] = None,
-        pixel_mask: Optional[torch.LongTensor] = None,
-        head_mask: Optional[torch.FloatTensor] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        image_embeds: Optional[torch.FloatTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
+        input_ids= None,
+        attention_mask = None,
+        token_type_ids = None,
+        pixel_values = None,
+        pixel_mask = None,
+        head_mask = None,
+        inputs_embeds = None,
+        image_embeds = None,
+        labels = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[MaskedLMOutput, Tuple[torch.FloatTensor]]:
+    ):
         r"""
         labels (*torch.LongTensor* of shape *(batch_size, sequence_length)*, *optional*):
             Labels for computing the masked language modeling loss. Indices should be in *[-100, 0, ...,
@@ -1104,19 +1104,19 @@ class ViltForQuestionAnswering(ViltPreTrainedModel):
     @replace_return_docstrings(output_type=SequenceClassifierOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        token_type_ids: Optional[torch.LongTensor] = None,
-        pixel_values: Optional[torch.FloatTensor] = None,
-        pixel_mask: Optional[torch.LongTensor] = None,
-        head_mask: Optional[torch.FloatTensor] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        image_embeds: Optional[torch.FloatTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
+        input_ids = None,
+        attention_mask = None,
+        token_type_ids = None,
+        pixel_values = None,
+        pixel_mask = None,
+        head_mask = None,
+        inputs_embeds = None,
+        image_embeds = None,
+        labels = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[SequenceClassifierOutput, Tuple[torch.FloatTensor]]:
+    ):
         r"""
         labels (`torch.FloatTensor` of shape `(batch_size, num_labels)`, *optional*):
             Labels for computing the visual question answering loss. This tensor must be either a one-hot encoding of
@@ -1211,19 +1211,19 @@ class ViltForImageAndTextRetrieval(ViltPreTrainedModel):
     @replace_return_docstrings(output_type=SequenceClassifierOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        token_type_ids: Optional[torch.LongTensor] = None,
-        pixel_values: Optional[torch.FloatTensor] = None,
-        pixel_mask: Optional[torch.LongTensor] = None,
-        head_mask: Optional[torch.FloatTensor] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        image_embeds: Optional[torch.FloatTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
+        input_ids = None,
+        attention_mask = None,
+        token_type_ids = None,
+        pixel_values = None,
+        pixel_mask = None,
+        head_mask = None,
+        inputs_embeds = None,
+        image_embeds = None,
+        labels = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[SequenceClassifierOutput, Tuple[torch.FloatTensor]]:
+    ):
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Labels are currently not supported.
@@ -1317,19 +1317,19 @@ class ViltForImagesAndTextClassification(ViltPreTrainedModel):
     @replace_return_docstrings(output_type=ViltForImagesAndTextClassificationOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        token_type_ids: Optional[torch.LongTensor] = None,
-        pixel_values: Optional[torch.FloatTensor] = None,
-        pixel_mask: Optional[torch.LongTensor] = None,
-        head_mask: Optional[torch.FloatTensor] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        image_embeds: Optional[torch.FloatTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
+        input_ids = None,
+        attention_mask = None,
+        token_type_ids = None,
+        pixel_values = None,
+        pixel_mask = None,
+        head_mask = None,
+        inputs_embeds = None,
+        image_embeds = None,
+        labels = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[ViltForImagesAndTextClassificationOutput, Tuple[torch.FloatTensor]]:
+    ):
         r"""
         labels (`torch.LongTensor` of shape `(batch_size,)`, *optional*):
             Binary classification labels.
@@ -1453,19 +1453,19 @@ class ViltForTokenClassification(ViltPreTrainedModel):
     @replace_return_docstrings(output_type=TokenClassifierOutput, config_class=_CONFIG_FOR_DOC)
     def forward(
         self,
-        input_ids: Optional[torch.LongTensor] = None,
-        attention_mask: Optional[torch.FloatTensor] = None,
-        token_type_ids: Optional[torch.LongTensor] = None,
-        pixel_values: Optional[torch.FloatTensor] = None,
-        pixel_mask: Optional[torch.LongTensor] = None,
-        head_mask: Optional[torch.FloatTensor] = None,
-        inputs_embeds: Optional[torch.FloatTensor] = None,
-        image_embeds: Optional[torch.FloatTensor] = None,
-        labels: Optional[torch.LongTensor] = None,
+        input_ids = None,
+        attention_mask = None,
+        token_type_ids = None,
+        pixel_values = None,
+        pixel_mask = None,
+        head_mask = None,
+        inputs_embeds = None,
+        image_embeds = None,
+        labels = None,
         output_attentions: Optional[bool] = None,
         output_hidden_states: Optional[bool] = None,
         return_dict: Optional[bool] = None,
-    ) -> Union[TokenClassifierOutput, Tuple[torch.FloatTensor]]:
+    ):
         r"""
         labels (`torch.LongTensor` of shape `(batch_size, text_sequence_length)`, *optional*):
             Labels for computing the token classification loss. Indices should be in `[0, ..., config.num_labels - 1]`.

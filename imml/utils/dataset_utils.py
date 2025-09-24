@@ -13,48 +13,6 @@ class DatasetUtils:
     """
 
     @staticmethod
-    def get_summary(Xs: List) -> int:
-        r"""
-        Get a summary of an incomplete multi-modal dataset.
-
-        Parameters
-        ----------
-        Xs : list of array-likes
-            - Xs length: n_mods
-            - Xs[i] shape: (n_samples, n_features_i)
-
-            A list of different modalities.
-
-        Returns
-        -------
-        summary: dict
-            Summary of an incomplete multi-modal dataset.
-
-        Examples
-        --------
-        >>> import numpy as np
-        >>> import pandas as pd
-        >>> from imml.utils import DatasetUtils
-        >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-        >>> DatasetUtils.get_n_mods(Xs = Xs)
-        """
-        Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
-        summary = {
-            "Complete samples": DatasetUtils.get_n_complete_samples(Xs),
-            "Incomplete samples": DatasetUtils.get_n_incomplete_samples(Xs),
-            "Observed samples per modality": [len(Xs[0]) - len(X_id) for X_id in
-                                              DatasetUtils.get_missing_samples_by_mod(Xs)],
-            "Missing samples per modality": [len(X_id) for X_id in
-                                             DatasetUtils.get_missing_samples_by_mod(Xs)],
-            "% Observed samples per modality": [round((len(Xs[0]) - len(X_id)) / len(Xs[0]) * 100) for X_id in
-                                                DatasetUtils.get_missing_samples_by_mod(Xs)],
-            "% Missing samples per modality": [round(len(X_id) / len(Xs[0]) * 100) for X_id in
-                                               DatasetUtils.get_missing_samples_by_mod(Xs)],
-        }
-        return summary
-
-
-    @staticmethod
     def get_n_mods(Xs: List) -> int:
         r"""
         Get the number of modalities of a multi-modal dataset.

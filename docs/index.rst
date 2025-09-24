@@ -30,7 +30,7 @@ Documentation
    :maxdepth: 1
    :caption: Links
 
-   GitHub <https://github.com/tobepublic>
+   GitHub <https://github.com/ocbe-uio/imml>
    PyPI <https://github.com/tobepublic>
 
 Indices and tables

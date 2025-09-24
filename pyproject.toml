@@ -23,10 +23,13 @@ classifiers = [
     "Topic :: Software Development",
     "Topic :: Scientific/Engineering",
     "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
     "Programming Language :: Python :: 3.13",
 ]
+
+requires-python = ">=3.10"
 dependencies = [
     "scikit-learn>=1.4.1",
     "pandas>=2.2.2",
@@ -62,9 +65,6 @@ docs = [
     "sphinx>=7.0.0",
     "sphinx-gallery>=0.17.1",
     "sphinx_rtd_theme>=1.0.0",
-]
-visualize = [
-    "matplotlib>=3.8.4",
 ]
 tutorials = [
     "seaborn>=0.9.0",

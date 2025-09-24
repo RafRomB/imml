@@ -1,10 +1,10 @@
 from typing import List
+from ._muse import FFNEncoder, RNNEncoder, TextEncoder, MML
 
 try:
     from torch import optim, nn
     import lightning as L
     import torch.nn.functional as F
-    from ._muse import FFNEncoder, RNNEncoder, TextEncoder, MML
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False

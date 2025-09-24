@@ -8,8 +8,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'Deep' needs to be installed."
 
+nnModuleBase = nn.Module if deepmodule_installed else object
 
-class RelTemporalEncoding(nn.Module):
+
+class RelTemporalEncoding(nnModuleBase):
     def __init__(self, embedding_size, max_len=5000):
         super(RelTemporalEncoding, self).__init__()
         position = torch.arange(0., max_len).unsqueeze(1)
@@ -20,12 +22,12 @@ class RelTemporalEncoding(nn.Module):
         embedding.requires_grad = False
         self.embedding = embedding
 
-    def forward(self, timestamps: torch.tensor):
+    def forward(self, timestamps):
         timestamps_emb = self.embedding(timestamps)
         return timestamps_emb
 
 
-class Attention(nn.Module):
+class Attention(nnModuleBase):
     def forward(self, query, key, value, mask, dropout=None):
         scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(query.size(-1))
         if mask is not None:
@@ -37,7 +39,7 @@ class Attention(nn.Module):
         return torch.matmul(p_attn, value), p_attn
 
 
-class MultiHeadedAttention(nn.Module):
+class MultiHeadedAttention(nnModuleBase):
     def __init__(self, h, d_model, dropout=0.1):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % h == 0
@@ -74,7 +76,7 @@ class MultiHeadedAttention(nn.Module):
         return self.output_linear(x)
 
 
-class PositionwiseFeedForward(nn.Module):
+class PositionwiseFeedForward(nnModuleBase):
     def __init__(self, d_model, d_ff, dropout=0.1):
         super(PositionwiseFeedForward, self).__init__()
         self.w_1 = nn.Linear(d_model, d_ff)
@@ -89,7 +91,7 @@ class PositionwiseFeedForward(nn.Module):
         return x
 
 
-class SublayerConnection(nn.Module):
+class SublayerConnection(nnModuleBase):
     """
     A residual connection followed by a layer norm.
     Note for code simplicity the norm is first as opposed to last.
@@ -105,7 +107,7 @@ class SublayerConnection(nn.Module):
         return x + self.dropout(sublayer(self.norm(x)))
 
 
-class TransformerBlock(nn.Module):
+class TransformerBlock(nnModuleBase):
     """
     Transformer Block = MultiHead Attention + Feed Forward with sublayer connection
     """
@@ -136,7 +138,7 @@ class TransformerBlock(nn.Module):
         return x
 
 
-class CodeEncoder(nn.Module):
+class CodeEncoder(nnModuleBase):
     def __init__(
             self,
             tokenizer,

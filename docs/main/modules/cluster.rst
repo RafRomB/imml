@@ -59,13 +59,6 @@ Multi-Reconstruction Graph Convolutional Network (MRGCN)
    :members:
    :show-inheritance:
 
-Multiple Similarity Network Embedding (MSNE)
----------------------------------------------
-
-.. autoclass:: MSNE
-   :members:
-   :show-inheritance:
-
 NEighborhood based Multi-Omics clustering (NEMO)
 ------------------------------------------------
 

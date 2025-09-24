@@ -1,12 +1,13 @@
 import math
 
-from statistics import pid
+from ..statistics import pid
 
 try:
     from matplotlib.patches import Rectangle, Circle
     from matplotlib import pyplot as plt
 except ImportError:
     pass
+
 
 def _overlap_area(r1, r2, d):
     if d >= r1 + r2:
@@ -41,14 +42,14 @@ def _solve_distance_for_overlap(r1, r2, target_overlap, tol=1e-6, max_iter=100):
 
 
 def plot_pid(rus = None, Xs = None, y = None,
-             labels=["Modality A", "Modality B"], colors=["#780000", "#669BBC", "#FDF0D5"],
-             abb=True, figsize=None, **kwargs):
+             modalities: list = ["Modality A", "Modality B"], colors: list = ["#780000", "#669BBC", "#FDF0D5"],
+             abb: bool = True, figsize : tuple = None, **kwargs):
     r"""
     Plot PID statistics (redundancy, uniqueness and synergy) of a multi-modal dataset as a Venn diagram.
 
     Parameters
     ----------
-    rus : list, default=None
+    rus : list or dict, default=None
         The output of the `̀`̀pid̀̀̀̀`̀`̀ function.
     Xs : list of array-likes, default=None
         - Xs length: n_mods
@@ -57,7 +58,7 @@ def plot_pid(rus = None, Xs = None, y = None,
         A list of different modalities. If rus is provided, it will not be used.
     y : array-like of shape (n_samples,), default=None
         Target vector relative to Xs. If rus is provided, it will not be used.
-    labels : list, default=["Modality A", "Modality B"]
+    modalities : list, default=["Modality A", "Modality B"]
         Name of each modality.
     colors : list, default=["#780000", "#669BBC", "#FDF0D5"]
         Colors used for the regions.
@@ -75,9 +76,21 @@ def plot_pid(rus = None, Xs = None, y = None,
         Figure object.
     ax : `matplotlib.axes.Axes`
         Axes object.
+
+    Examples
+    --------
+    >>> import numpy as np
+    >>> import pandas as pd
+    >>> from imml.utils import DatasetUtils
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> y = pd.Series(np.random.default_rng(42).uniform(low=0, high=2, size=len(Xs[0])))
+    >>> plot_pid(Xs = Xs, y=y, **{"random_state":42})
     """
     if Xs is not None:
         rus = pid(Xs=Xs, y=y, **kwargs)
+    if any(key not in rus.keys() for key in ["Redundancy", "Uniqueness1", "Uniqueness2", "Synergy"]) or (len(rus) != 4):
+        raise ValueError(f"Invalid rus. It should have the keys 'Redundancy', 'Uniqueness1', 'Uniqueness2' and 'Synergy'."
+                         f" {rus} was provided.")
     a_only = round(float(rus.get("Uniqueness1", 0)), 2)
     b_only = round(float(rus.get("Uniqueness2", 0)), 2)
     inter  = round(float(rus.get("Redundancy", 0)), 2)
@@ -107,8 +120,8 @@ def plot_pid(rus = None, Xs = None, y = None,
     ax.text(max_r -d/2, 0, f"{r}\n{inter}", ha='center', va='center')
     ax.text(max_r -d/2, max_r*1.2, f"{s} {outside}", ha='center', va='bottom')
 
-    ax.text(0, -(max_r*1.1), labels[0], ha='center', va='top')
-    ax.text(d, -(max_r*1.1), labels[1], ha='center', va='top')
+    ax.text(0, -(max_r*1.1), modalities[0], ha='center', va='top')
+    ax.text(d, -(max_r*1.1), modalities[1], ha='center', va='top')
 
     padding = max_r * 1.3 + d*0.1
     ax.set_xlim(-padding, d + padding)

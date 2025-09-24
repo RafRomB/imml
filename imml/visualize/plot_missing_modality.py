@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 
 from ..impute import get_observed_mod_indicator
 
@@ -8,7 +9,7 @@ except ImportError:
     pass
 
 
-def plot_modality_missing(Xs, figsize=None):
+def plot_missing_modality(Xs, figsize=None, sort: bool = True):
     r"""
     Plot modality missing.
 
@@ -21,6 +22,8 @@ def plot_modality_missing(Xs, figsize=None):
         A list of different modalities. If rus is provided, it will not be used.
     figsize : tuple, default=None
         Figure size (tuple) in inches.
+    sort : bool, default=True
+        If True, samples will be sort based on their available modalities.
 
     Returns
     -------
@@ -38,10 +41,12 @@ def plot_modality_missing(Xs, figsize=None):
 
     fig, ax = plt.subplots(1, 1, figsize=figsize)
     xlabel, ylabel = "Modality", "Samples"
-    observed_view_indicator = get_observed_mod_indicator(Xs).sort_values(list(range(len(Xs))))
+    observed_view_indicator = get_observed_mod_indicator(Xs)
+    observed_view_indicator = pd.DataFrame(observed_view_indicator)
+    if sort:
+        observed_view_indicator = observed_view_indicator.sort_values(list(range(len(Xs))))
     observed_view_indicator.columns = observed_view_indicator.columns + 1
     ax.pcolor(observed_view_indicator, cmap="binary", edgecolors="black", vmin=0., vmax=2.)
     ax.set_xticks(np.arange(0.5, len(observed_view_indicator.columns), 1), observed_view_indicator.columns)
-    ax.set_yticks(np.arange(1.5, len(observed_view_indicator), 2), np.arange(2, len(observed_view_indicator) + 2, 2))
     _ = ax.set_xlabel(xlabel), ax.set_ylabel(ylabel)
     return fig, ax

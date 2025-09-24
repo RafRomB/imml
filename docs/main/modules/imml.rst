@@ -17,4 +17,5 @@ The package is split up into modules.
     retrieve
     statistics
     utils
+    visualize
 

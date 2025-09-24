@@ -20,7 +20,6 @@ def sample_data():
 
 def test_summary(sample_data):
     for Xs in sample_data[:2]:
-        summary = DatasetUtils.get_summary(Xs)
         assert isinstance(summary, dict)
         assert len(summary.keys()) == 6
         assert isinstance(summary["Complete samples"], int)

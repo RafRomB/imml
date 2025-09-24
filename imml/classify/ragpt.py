@@ -1,11 +1,11 @@
+from ._ragpt import MMG, CAP
+from ._ragpt.vilt import ViltModel
 
 try:
     from torch import nn
     import torch
     import torch.nn.functional as F
     import lightning as L
-    from ._ragpt import MMG, CAP
-    from ._ragpt.vilt import ViltModel
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
