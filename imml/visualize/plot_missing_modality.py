@@ -11,7 +11,7 @@ except ImportError:
 
 def plot_missing_modality(Xs, figsize=None, sort: bool = True):
     r"""
-    Plot modality missing.
+    Plot modality missing. Missing modalities appear as white, while black indicates available modalities.
 
     Parameters
     ----------

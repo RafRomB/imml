@@ -26,7 +26,7 @@ sys.path.insert(0, os.path.abspath(".."))
 
 project = 'imml'
 copyright = '2025, '
-authors = ''
+authors = 'Alberto López'
 release = '0.1.0'
 
 # The short X.Y version

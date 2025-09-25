@@ -4,13 +4,14 @@
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ocbe-uio/imml/ci_test.yml)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
-![Codecov](https://img.shields.io/codecov/c/github/ocbe-uio/imml)
+[![Coverage](https://ocbe-uio.github.io/imml/badges/coverage.svg)](https://github.com/ocbe-uio/imml/actions)
 ![PyPI - Version](https://img.shields.io/pypi/v/imml)
 ![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/ocbe-uio/imml/imml)
+[![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](http://makeapullrequest.com)
+![GitHub repo size](https://img.shields.io/github/repo-size/ocbe-uio/imml)
 ![GitHub License](https://img.shields.io/github/license/ocbe-uio/imml)
-![OS Linux](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white)
-![OS MACOS](https://img.shields.io/badge/macOS-000000?style=flat&logo=apple&logoColor=white)
-![OS Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&logoSize=small)
+[![DOI]()
+[![Paper]()]()
 
 Overview
 ====================
