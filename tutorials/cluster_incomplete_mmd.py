@@ -9,7 +9,7 @@ allowing users to perform clustering without requiring complete data across all 
 
 """
 
-# sphinx_gallery_thumbnail_number = 2
+# sphinx_gallery_thumbnail_number = 1
 
 # License: GNU GPLv3
 
