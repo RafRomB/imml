@@ -1,5 +1,5 @@
 <p align="center">
-  <img width=175 src="docs/figures/logo_imml.png" />
+  <img width=200 src="docs/figures/logo_imml.png" />
 </p>
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ocbe-uio/imml/ci_test.yml)
@@ -20,9 +20,9 @@
 Overview
 ====================
 
-`iMML` is a Python package that provides a **robust tool-set for integrating, processing, and analyzing incomplete
+*iMML* is a Python package that provides a **robust tool-set for integrating, processing, and analyzing incomplete
 multi-modal datasets** to support a wide range of machine learning tasks. Starting with a dataset containing N samples
-with K modalities, `iMML` effectively handles missing data for **classification, clustering, data retrieval,
+with K modalities, *iMML* effectively handles missing data for **classification, clustering, data retrieval,
 imputation and amputation, feature selection, feature extraction and data exploration**, hence enabling efficient
 analysis of partially observed samples.
 
@@ -65,31 +65,31 @@ incomplete multi-modal data**.
 Key features
 ------------
 
-To address this gap, we have developed `iMML`, a Python package designed for multi-modal learning with incomplete data.
+To address this gap, we have developed *iMML*, a Python package designed for multi-modal learning with incomplete data.
 The key features of this package are:
 
--   **Comprehensive toolkit**: `iMML` offers a broad set of tools for integrating, processing, and analyzing
+-   **Comprehensive toolkit**: *iMML* offers a broad set of tools for integrating, processing, and analyzing
     incomplete multi-modal datasets implemented as a single, user-friendly interface to facilitate adoption by
     a wide community of users.
     The package includes extensive technical testing to ensure robustness, and thorough documentation enables
     end-users to apply its functionality effectively.
--   **Accessible**: `iMML` makes the tools readily available to the Python community, simplifying their usage,
+-   **Accessible**: *iMML* makes the tools readily available to the Python community, simplifying their usage,
     comparison, and benchmarking, and thereby addresses the current lack of resources and standardized methods 
     for handling incomplete multi-modal data.
--   **Extensible**: `iMML` provides a common framework where researchers can contribute and
+-   **Extensible**: *iMML* provides a common framework where researchers can contribute and
     integrate new approaches, serving as a community platform for hosting new algorithms and methods.
 
 Usage
 --------
 
 This package provides a user-friendly interface to apply these algorithms to user-provided data.
-`iMML` was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
+*iMML* was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
 NumPy, Scikit-learn, and PyTorch Lightning, hence allowing researchers to **apply machine learning models with
 minimal programming effort**.
 Moreover, it is compatible with Scikit-learn and can be easily integrated into Scikit-learn pipelines for data
 preprocessing and modeling.
 
-For this demonstration, we will generate a random dataset, that we have called `Xs`, as a multi-modal dataset
+For this demonstration, we will generate a random dataset, that we have called ``Xs``, as a multi-modal dataset
 to simulate a multi-modal scenario:
 
 ```python
@@ -98,7 +98,7 @@ Xs = [np.random.random((10,5)) for i in range(3)] # or your multi-modal dataset
 ```
 
 You can use any other complete or incomplete multi-modal dataset. Once you have your dataset ready, you can
-leverage the `iMML` library for a wide range of machine learning tasks, such as:
+leverage the *iMML* library for a wide range of machine learning tasks, such as:
 
 - Decompose a multi-modal dataset using ``MOFA`` to capture joint information.
 
@@ -124,17 +124,17 @@ transformed_Xs = Amputer(p=0.8).fit_transform(Xs)
 Free software
 -------------
 
-`iMML` is free software; you can redistribute it and/or modify it under the terms of the `GNU GPLv3`.
+*iMML* is free software; you can redistribute it and/or modify it under the terms of the `GNU GPLv3`.
 
 Contribute
 ------------
 
-**We welcome practitioners, researchers, and the open-source community** to contribute to the `iMML` project,
+**We welcome practitioners, researchers, and the open-source community** to contribute to the *iMML* project,
 and in doing so, helping us extend and refine the library for the community. Such a community-wide effort will
-make `iMML` more versatile, sustainable, powerful, and accessible to the machine learning community across
+make *iMML* more versatile, sustainable, powerful, and accessible to the machine learning community across
 many domains.
 
-Citing `iMML`
+Citing *iMML*
 ----------------
 
 If you find the package useful for your project, please cite our paper.

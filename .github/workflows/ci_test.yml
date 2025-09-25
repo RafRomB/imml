@@ -43,14 +43,11 @@ jobs:
     - name: Test base
       run: |
         pytest --cov=imml
-    - name: Test docs
-      run: |
-        python -m pip install .[docs]
     - name: Test linux
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt install libfl-dev
+        sudo apt install libtirpc-dev
         sudo apt install r-base r-base-dev -y
         sudo Rscript -e "install.packages('nnTensor')"
         sudo apt install octave -y
@@ -87,6 +84,9 @@ jobs:
       run: |
         python -m pip install .[deep]
         pytest --cov=imml --cov-report=ter --cov-report=json
+    - name: Test docs
+      run: |
+        python -m pip install .[docs]
     - name: Update Coverage Badge
       if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
       uses: we-cli/coverage-badge-action@main
@@ -149,9 +149,6 @@ jobs:
         pytest --cov=imml \
                --cov-report=html:reports/htmlcov-base \
                --cov-report=xml:reports/coverage-base.xml
-    - name: Test docs
-      run: |
-        python -m pip install .[docs]
     - name: Test linux
       if: runner.os == 'Linux'
       run: |
@@ -198,6 +195,9 @@ jobs:
         pytest --cov=imml \
                --cov-report=html:reports/htmlcov-deep \
                --cov-report=xml:reports/coverage-deep.xml
+    - name: Test docs
+      run: |
+        python -m pip install .[docs]
     - name: Upload coverage reports artifact
       if: env.ACT == 'true'
       uses: actions/upload-artifact@v4
