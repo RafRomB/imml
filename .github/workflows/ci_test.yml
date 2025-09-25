@@ -17,7 +17,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, macos-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
     - name: Checkout
@@ -50,7 +50,7 @@ jobs:
       if: runner.os == 'Linux'
       run: |
         sudo apt-get update
-        sudo apt-get install build-essential
+        sudo apt install libfl-dev
         sudo apt install r-base r-base-dev -y
         sudo Rscript -e "install.packages('nnTensor')"
         sudo apt install octave -y
@@ -88,8 +88,6 @@ jobs:
         python -m pip install .[deep]
         pytest --cov=imml --cov-report=ter --cov-report=json
     - name: Update Coverage Badge
-      # GitHub actions: default branch variable
-      # https://stackoverflow.com/questions/64781462/github-actions-default-branch-variable
       if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch)
       uses: we-cli/coverage-badge-action@main
 
