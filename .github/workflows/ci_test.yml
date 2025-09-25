@@ -52,6 +52,7 @@ jobs:
         sudo apt install octave -y
         sudo apt install octave-control -y
         sudo apt install octave-statistics -y
+        sudo apt install gcc -y
     - name: Test windows
       if: runner.os == 'Windows'
       shell: powershell

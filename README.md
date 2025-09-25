@@ -1,3 +1,17 @@
+<p align="center">
+  <img width=175 src="docs/figures/logo_imml.png" />
+</p>
+
+![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ocbe-uio/imml/ci_test.yml)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
+![Codecov](https://img.shields.io/codecov/c/github/ocbe-uio/imml)
+![PyPI - Version](https://img.shields.io/pypi/v/imml)
+![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/ocbe-uio/imml/imml)
+![GitHub License](https://img.shields.io/github/license/ocbe-uio/imml)
+![OS Linux](https://img.shields.io/badge/Ubuntu-E95420?style=flat&logo=ubuntu&logoColor=white)
+![OS MACOS](https://img.shields.io/badge/macOS-000000?style=flat&logo=apple&logoColor=white)
+![OS Windows](https://img.shields.io/badge/Windows-0078D6?style=for-the-badge&logo=windows&logoColor=white&logoSize=small)
+
 Overview
 ====================
 
