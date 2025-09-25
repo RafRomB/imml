@@ -10,6 +10,9 @@ on:
     branches: [ "main" ]
   pull_request:
 
+env:
+  ACT: ${{ env.ACT }}
+
 jobs:
   build:
     runs-on: ${{matrix.os}}
