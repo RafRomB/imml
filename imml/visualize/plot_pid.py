@@ -1,12 +1,8 @@
 import math
+from matplotlib.patches import Rectangle, Circle
+from matplotlib import pyplot as plt
 
 from ..statistics import pid
-
-try:
-    from matplotlib.patches import Rectangle, Circle
-    from matplotlib import pyplot as plt
-except ImportError:
-    pass
 
 
 def _overlap_area(r1, r2, d):
@@ -81,7 +77,6 @@ def plot_pid(rus = None, Xs = None, y = None,
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from imml.utils import DatasetUtils
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> y = pd.Series(np.random.default_rng(42).uniform(low=0, high=2, size=len(Xs[0])))
     >>> plot_pid(Xs = Xs, y=y, **{"random_state":42})

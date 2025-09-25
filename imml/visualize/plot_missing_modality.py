@@ -1,15 +1,12 @@
+import matplotlib
 import numpy as np
 import pandas as pd
+from matplotlib import pyplot as plt
 
 from ..impute import get_observed_mod_indicator
 
-try:
-    from matplotlib import pyplot as plt
-except ImportError:
-    pass
 
-
-def plot_missing_modality(Xs, figsize=None, sort: bool = True):
+def plot_missing_modality(Xs, ax: matplotlib.axes.Axes = None, figsize: tuple = None, sort: bool = True):
     r"""
     Plot modality missing. Missing modalities appear as white, while black indicates available modalities.
 
@@ -20,6 +17,8 @@ def plot_missing_modality(Xs, figsize=None, sort: bool = True):
         - Xs[i] shape: (n_samples, n_features_i)
 
         A list of different modalities. If rus is provided, it will not be used.
+    ax : matplotlib.axes.Axes, default=None
+        Axes where to draw the figure.
     figsize : tuple, default=None
         Figure size (tuple) in inches.
     sort : bool, default=True
@@ -38,8 +37,17 @@ def plot_missing_modality(Xs, figsize=None, sort: bool = True):
         raise ValueError("Invalid Xs. All elements must have at least one sample.")
     if len(set(len(X) for X in Xs)) > 1:
         raise ValueError("Invalid Xs. All elements must have the same number of samples.")
+    if (ax is not None) and (not isinstance(ax, matplotlib.axes.Axes)):
+        raise ValueError(f"Invalid ax. It must be a matplotlib.axes.Axes. A {type(ax)} was passed.")
+    if (figsize is not None) and (not isinstance(figsize, tuple)):
+        raise ValueError(f"Invalid figsize. It must be a tuple. A {type(figsize)} was passed.")
+    if not isinstance(sort, bool):
+        raise ValueError(f"Invalid sort. It must be a bool. A {type(sort)} was passed.")
 
-    fig, ax = plt.subplots(1, 1, figsize=figsize)
+    if ax is None:
+        fig, ax = plt.subplots(1, 1, figsize=figsize)
+    else:
+        fig = None
     xlabel, ylabel = "Modality", "Samples"
     observed_view_indicator = get_observed_mod_indicator(Xs)
     observed_view_indicator = pd.DataFrame(observed_view_indicator)

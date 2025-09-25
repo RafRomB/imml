@@ -432,7 +432,8 @@ def convert_dataset_format(Xs: list, to_list: bool = False, to_dict: bool = True
     return transformed_Xs
 
 
-def get_summary(Xs: list, modalities: list = None, one_row: bool = False, compute_pct: bool = True) -> dict:
+def get_summary(Xs: list, modalities: list = None, one_row: bool = False, compute_pct: bool = True,
+                return_df: bool = False) -> Union[dict, pd.DataFrame]:
     r"""
     Get a summary of an incomplete multi-modal dataset.
 
@@ -449,10 +450,12 @@ def get_summary(Xs: list, modalities: list = None, one_row: bool = False, comput
         If True, return a one-row summary of the dataset. If False, each row will correspond to a modality.
     compute_pct : bool, default=True
         If True, compute percent of each value.
+    return_df : bool, default=False
+        If True, it will return a pd.DataFrame. It returns a dict otherwise.
 
     Returns
     -------
-    summary: dict
+    summary: dict or pd.DataFrame
         Summary of an incomplete multi-modal dataset.
 
     Examples
@@ -486,7 +489,8 @@ def get_summary(Xs: list, modalities: list = None, one_row: bool = False, comput
                 "% Missing samples per modality": [round(len(X_id) / n_samples * 100) for X_id in
                                                    get_missing_samples_by_mod(Xs)],
             }
-
+        if return_df:
+            summary = pd.DataFrame.from_dict(summary, orient="index").T
 
     else:
         if modalities is None:
@@ -514,4 +518,6 @@ def get_summary(Xs: list, modalities: list = None, one_row: bool = False, comput
             for mod in summary.keys():
                 for k in list(summary[mod].keys()):
                     summary[mod][f"% {k}"] = summary[mod][k] / n_samples * 100
+        if return_df:
+            summary = pd.DataFrame.from_dict(summary, orient="index")
     return summary

@@ -7,7 +7,8 @@ Clustering involves grouping samples into distinct groups. In this tutorial, we 
 perform clustering on a multi-modal dataset. We also demonstrate how to work with incomplete multi-modal data,
 where some samples are missing one or more modalities, and how to benchmark the impact of missingness.
 
-What you will learn
+What you will learn:
+
 - How to represent a dataset with multiple modalities (Xs: list of data matrices).
 - How to build an `iMML` pipeline with preprocessing and clustering.
 - How to evaluate clustering quality with Adjusted Mutual Information (AMI).
@@ -53,7 +54,8 @@ from imml.visualize import plot_missing_modality
 # modalities (Xs[0], Xs[1]).
 # Optional: set a random_state for reproducibility (we do below).
 #
-# Using your own data
+# Using your own data:
+#
 # - Represent your dataset as a Python list Xs, one entry per modality.
 # - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
 # - All modalities must refer to the same samples and be aligned by row order or index.

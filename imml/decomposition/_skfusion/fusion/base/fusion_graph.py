@@ -4,7 +4,7 @@
 from collections import defaultdict, OrderedDict
 from uuid import uuid1 as uuid
 from numbers import Number
-
+from matplotlib.figure import Figure
 import numpy as np
 
 from .base import DataFusionError
@@ -66,7 +66,6 @@ class FusionGraph(object):
         import networkx as nx
 
         if filename and not ax:
-            from matplotlib.figure import Figure
             ax = Figure().add_subplot(111)
 
         G = nx.MultiDiGraph()

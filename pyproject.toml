@@ -48,7 +48,7 @@ download = "..."
 tracker = "https://github.com/ocbe-uio/imml/issues"
 "release notes" = "..."
 
-[project.optional-dependencies]
+[tool.my-deps]
 matlab = [
     "oct2py>=5.8.0",
 ]
@@ -74,6 +74,8 @@ tests = [
     "pytest>=7.1.2",
     "pytest-cov>=2.9.0",
 ]
+[project.optional-dependencies]
+docs = { include = ["tool.my-deps.deep", "tool.my-deps.docs"] }
 
 [tool.setuptools.packages.find]
 where = ["imml"]
