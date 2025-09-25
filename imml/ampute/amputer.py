@@ -113,7 +113,7 @@ class Amputer(BaseEstimator, TransformerMixin):
                 transformed_Xs = [pd.DataFrame(X, index=rownames, columns=colnames[X_idx])
                                   for X_idx, X in enumerate(transformed_Xs)]
         else:
-            transformed_Xs = copy.deepcopy(Xs)
+            transformed_Xs = Xs
 
         return transformed_Xs
 

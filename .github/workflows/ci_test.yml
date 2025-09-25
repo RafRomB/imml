@@ -94,7 +94,7 @@ jobs:
       uses: we-cli/coverage-badge-action@main
 
   build-local:
-    if: ${{ env.ACT == 'true' }}
+    if: ${{ github.actor == 'nektos/act' }}
     runs-on: ${{matrix.os}}
     continue-on-error: true
     strategy:

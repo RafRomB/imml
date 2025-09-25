@@ -3,10 +3,19 @@
 Clustering (in)complete multi-modal data
 ========================================
 
-Clustering involves grouping samples into distinct groups. In this tutorial, we will explore how to use `iMML` to
-perform clustering on an multi-modal dataset. `iMML` also supports clustering of incomplete multi-modal data,
-allowing users to perform clustering without requiring complete data across all modalities.
+Clustering involves grouping samples into distinct groups. In this tutorial, we show how to use `iMML` to
+perform clustering on a multi-modal dataset. We also demonstrate how to work with incomplete multi-modal data,
+where some samples are missing one or more modalities, and how to benchmark the impact of missingness.
 
+What you will learn
+- How to represent a dataset with multiple modalities (Xs: list of data matrices).
+- How to build an `iMML` pipeline with preprocessing and clustering.
+- How to evaluate clustering quality with Adjusted Mutual Information (AMI).
+- How to simulate missing modalities (amputation) and visualize missingness.
+- How to benchmark robustness against increasing missing-data rates.
+
+This tutorial is fully reproducible and uses a small synthetic dataset. You can easily
+replace the data-loading section with your own data following the same structure.
 """
 
 # sphinx_gallery_thumbnail_number = 1
@@ -16,8 +25,8 @@ allowing users to perform clustering without requiring complete data across all 
 ###################################
 # Step 0: Prerequisites
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To make the figures you will need the tutorials module installed. For this, use this command in the
-# terminal: pip install imml[tutorials].
+# To run this tutorial and generate the figures, install the extra dependencies:
+#   pip install imml[tutorials]
 
 
 ###################################
@@ -30,7 +39,6 @@ from sklearn.pipeline import make_pipeline
 from sklearn.metrics import ConfusionMatrixDisplay, adjusted_mutual_info_score
 import numpy as np
 import pandas as pd
-from sklearn.preprocessing import StandardScaler
 
 from imml.preprocessing import MultiModTransformer, NormalizerNaN
 from imml.ampute import Amputer
@@ -41,11 +49,17 @@ from imml.visualize import plot_missing_modality
 ##########################
 # Step 2: Load the dataset
 # ^^^^^^^^^^^^^^^^^^^^^^^^
-# For reproducibility, we generate a small synthetic classification dataset, and split the features into two
-# modalities (Xs[0], Xs[1]). You can replace this section with your own data loading.
+# For reproducibility, we generate a small synthetic classification dataset and split the features into two
+# modalities (Xs[0], Xs[1]).
+# Optional: set a random_state for reproducibility (we do below).
+#
+# Using your own data
+# - Represent your dataset as a Python list Xs, one entry per modality.
+# - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
+# - All modalities must refer to the same samples and be aligned by row order or index.
 
 random_state = 42
-X, y = make_classification(n_samples=100, random_state=random_state, n_clusters_per_class=1, n_classes=3)
+X, y = make_classification(n_samples=50, random_state=random_state, n_clusters_per_class=1, n_classes=3)
 X, y = pd.DataFrame(X), pd.Series(y)
 # Two modalities: first 10 features and last 10 features
 Xs = [X.iloc[:, :10], X.iloc[:, 10:]]
@@ -85,16 +99,16 @@ pd.Series(labels).value_counts()
 p = 0.2
 amputed_Xs = Amputer(p= p, mechanism="mcar", random_state=42).fit_transform(Xs)
 
-###############################################################################
-# You can visualize which modalities are missing using a binary color map (white for missing modalities, while black
-# indicates available modality).
-plot_missing_modality(Xs=amputed_Xs)
+###################################
+# You can visualize which modalities are missing using a binary color map (white for missing modalities, black
+# for available modalities). Each row is a sample; each column is a modality.
+plot_missing_modality(Xs=amputed_Xs, sort=False)
 
 
 ########################################################
-# Step 4: Clustering
+# Step 5: Clustering with missing data
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Now, we repeat the clustering analysis, but this time, with the missing data.
+# Now, we repeat the clustering analysis, but this time with the amputed (incomplete) data.
 
 pipeline = make_pipeline(
     MultiModTransformer(NormalizerNaN()),
@@ -108,15 +122,15 @@ pd.Series(labels).value_counts()
 
 
 ########################################################
-# Step 5: Benchmarking
+# Step 6: Benchmarking
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We can now compare the performance of the clustering with and without missing data. We can also compare it with a
-# simple baseline, where missing data is previously imputed with the average value per feature. We repeat the
-# experiments 5 times across increasing missing data, to get more robust results.
+# We now compare performance with and without missing data. We also include a simple baseline where
+# missing values are first imputed with the feature-wise mean. We repeat the experiments 5 times
+# across increasing missingness to obtain more robust estimates.
 
 ps = np.arange(0., 1., 0.2)
-n_times = 10
-methods = ["No previous imputing", "Baseline imputting"]
+n_times = 5
+methods = ["No prior imputation", "Baseline imputation"]
 all_metrics = []
 
 ##############################################################################
@@ -127,7 +141,7 @@ for method in methods:
             pipeline = make_pipeline(
                 MultiModTransformer(NormalizerNaN().set_output(transform="pandas")),
                 EEIMVC(n_clusters=n_clusters, random_state=i))
-            if method == "Baseline imputting":
+            if method == "Baseline imputation":
                 pipeline = make_pipeline(
                     MultiModTransformer(SimpleImputer().set_output(transform="pandas")),
                     *pipeline)
@@ -143,7 +157,7 @@ for method in methods:
             all_metrics.append(result)
 
 df = pd.DataFrame(all_metrics)
-df = df.sort_values(["Method", "Incomplete samples (%)", "Iteration"], ascending=[False, True, True])
+df = df.sort_values(["Method", "Incomplete samples (%)", "Iteration"], ascending=[True, True, True])
 df.head()
 
 ###################################################################
@@ -154,24 +168,23 @@ sem_wide  = stats.pivot(index="Incomplete samples (%)", columns="Method", values
 ax = mean_wide.plot(yerr=sem_wide, marker="o", capsize=3, ylabel="Adjusted mutual information")
 
 ###############################################################################
-# The adjusted mutual information score indicates how well the clustering aligns with the ground truth. An AMI
-# score closer to 1 indicates a strong match. The clustering solutions by ``IMSR`` and ``PIMVC``, as well as
-# their respective baselines (where missing values were replaced with the feature-wise mean), are compared to
-# ground truth topics across various missing rates (from 0% to 80%) for different data missing mechanisms.
-# The mean of 50 repetitions with 95% confidence intervals are shown.
+# The adjusted mutual information (AMI) indicates how well the clustering aligns with the ground truth.
+# AMI is 1 when partitions are identical; random partitions have an expected AMI around 0 on average and
+# can be negative. Here we compare ``EEIMVC`` with a simple baseline (feature-wise mean imputation)
+# across missingness rates from 0% to 80%. We report the mean over 5 repetitions with a
+# standard-error-of-the-mean (SEM) interval.
 
 ###################################
 # Summary of results
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Both ``IMSR`` and ``PIMVC`` consistently outperformed their baselines across all missing rates and patterns.
-# As expected, the clustering performance decreased when more incomplete samples were included. However, even with
-# a high percentage of incomplete samples (>60%), ``IMSR`` and ``PIMVC`` produced meaningful clustering results in
-# most cases, highlighting their robustness in handling incomplete multi-modal datasetes. Notably, ``IMSR``
-# outperformed all other methods across every tested condition.
+# When the missing rate is low, both methods perform similarly. As the proportion of incomplete samples grows
+# (>50%), ``EEIMVC`` often maintains meaningful clustering performance, highlighting its robustness for
+# incomplete multi-modal datasets.
 
 ###################################
 # Conclusion
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# This case examples shows how `iMML` effectively supports clustering with incomplete multi-modal datasets,
-# demonstrating the robustness and flexibility of `iMML` for clustering tasks in real-world multi-modal scenarios.
+# This example shows how `iMML` supports clustering of multi-modal datasets, including scenarios with missing
+# modalities. The pipeline-based design (preprocessing + clustering) and the ability to simulate and visualize
+# missingness make it straightforward to prototype, evaluate, and benchmark real-world multi-modal workflows.
 

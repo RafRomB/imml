@@ -1,4 +1,5 @@
 import os
+from contextlib import contextmanager
 from os.path import dirname
 import numpy as np
 import pandas as pd
@@ -7,7 +8,6 @@ from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
 from scipy.sparse.linalg import eigs
 from numpy.linalg import svd
-
 
 from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
@@ -19,6 +19,16 @@ try:
     matlabmodule_installed = True
 except ImportError:
     pass
+
+
+@contextmanager
+def fixed_seed(seed):
+    state = np.random.get_state()
+    np.random.seed(seed)
+    try:
+        yield
+    finally:
+        np.random.set_state(state)
 
 
 class EEIMVC(BaseEstimator, ClassifierMixin):
@@ -266,7 +276,12 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
             obs_index = np.setdiff1d(ar1=[i for i in range(num)], ar2=[i-1 for i in S[p]['indx'].T])
             KAp = KH_tmp[np.ix_(obs_index, obs_index)]
             KAp = (KAp + KAp.T) / 2 + 1e-8 * np.eye(len(obs_index))
-            _, Hp = eigs(KAp, n_clusters, which='LR')
+            if self.random_state is not None:
+                v0 = np.random.default_rng(self.random_state).uniform(size=min(KAp.shape))
+                with fixed_seed(self.random_state):
+                    _, Hp = eigs(KAp, n_clusters, which='LR', v0=v0)
+            else:
+                _, Hp = eigs(KAp, n_clusters, which='LR')
 
             HP_tmp[np.ix_(obs_index), :] = Hp
             HP[:, :, p] = HP_tmp
@@ -342,7 +357,12 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
         H_normalized: 2-D array of shape (n_samples, n_clusters)
         """
         K = (K + K.T) / 2
-        _, H = eigs(K, n_clusters, which='LR')
+        if self.random_state is not None:
+            v0 = np.random.default_rng(self.random_state).uniform(size=min(K.shape))
+            with fixed_seed(self.random_state):
+                _, H = eigs(K, n_clusters, which='LR', v0=v0)
+        else:
+            _, H = eigs(K, n_clusters, which='LR')
         obj = np.trace(np.matmul(H.T, np.matmul(K, H))) - np.trace(K)
         H_normalized = H
         return H_normalized
