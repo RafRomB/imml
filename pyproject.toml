@@ -48,7 +48,7 @@ download = "..."
 tracker = "https://github.com/ocbe-uio/imml/issues"
 "release notes" = "..."
 
-[tool.my-deps]
+[project.optional-dependencies]
 matlab = [
     "oct2py>=5.8.0",
 ]
@@ -62,10 +62,13 @@ deep = [
     "torchvision>=0.19.1",
 ]
 docs = [
+    "lightning>=2.2",
+    "transformers>=4.51.3",
+    "torch_geometric>=2.6.1",
+    "torchvision>=0.19.1",
     "sphinx>=7.0.0",
     "sphinx-gallery>=0.17.1",
     "sphinx_rtd_theme>=1.0.0",
-    { include = "deep" }
 ]
 tutorials = [
     "seaborn>=0.9.0",
@@ -74,8 +77,6 @@ tests = [
     "pytest>=7.1.2",
     "pytest-cov>=2.9.0",
 ]
-[project.optional-dependencies]
-docs = { include = ["tool.my-deps.deep", "tool.my-deps.docs"] }
 
 [tool.setuptools.packages.find]
 where = ["imml"]
