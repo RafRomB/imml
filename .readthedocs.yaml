@@ -11,6 +11,7 @@ build:
   jobs:
     pre_build:
       - |
+        export R_LIBS="/usr/lib/R/library"
         /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
         /usr/bin/Rscript -e ".libPaths()"
 python:
