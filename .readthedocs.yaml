@@ -8,13 +8,12 @@ build:
     - libtirpc-dev
     - r-base
     - r-base-dev
-  # 👈 NEW: Set environment variable for R library paths
   jobs:
     pre_build:
       - |
         mkdir -p R-packages
-        export R_LIBS="R-packages" && /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv('R_LIBS'))"
-
+        export R_LIBS="R-packages"
+        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=\"R-packages\")"
 python:
   install:
     - method: pip
