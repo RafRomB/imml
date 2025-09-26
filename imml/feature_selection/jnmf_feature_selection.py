@@ -100,10 +100,10 @@ class JNMFFeatureSelector(JNMF):
         """
         super().fit(Xs)
         hs = self.H_
-        if self.transform_ == "pandas":
+        if isinstance(Xs[0], pd.DataFrame):
             hs = [pd.DataFrame(h, index=X.columns) for h,X in zip(hs,Xs)]
             hs = pd.concat(hs, axis=0)
-        elif self.transform_ == "numpy":
+        elif isinstance(Xs[0], np.ndarray):
             hs = [pd.DataFrame(h) for h in hs]
             hs = pd.concat(hs, axis=0)
             hs.columns = range(hs.columns.size)
@@ -154,9 +154,9 @@ class JNMFFeatureSelector(JNMF):
         transformed_Xs : list of array-likes, shape (n_samples, n_components)
             The projected data.
         """
-        if self.transform_ == "pandas":
+        if isinstance(Xs[0], pd.DataFrame):
             transformed_Xs = [X.iloc[:, X.columns.isin(self.selected_features_)] for X in Xs]
-        elif self.transform_ == "numpy":
+        elif isinstance(Xs[0], np.ndarray):
             selected_features = np.array(self.selected_features_)
             dims = [X.shape[1] for X in Xs]
             dims = np.cumsum(dims)

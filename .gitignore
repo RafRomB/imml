@@ -139,3 +139,4 @@ datasets/data/
 
 !/imml/cluster/*/reader.mat
 !/imml/cluster/*/writer.mat
+!/imml/*octave*

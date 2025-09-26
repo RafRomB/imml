@@ -138,7 +138,6 @@ all_metrics = []
 ##############################################################################
 for method in methods:
     for p in ps:
-        missing_percentage = int(p*100)
         for i in range(n_times):
             pipeline = make_pipeline(
                 MultiModTransformer(NormalizerNaN().set_output(transform="pandas")),
@@ -152,7 +151,7 @@ for method in methods:
             metric = adjusted_mutual_info_score(labels_true=y, labels_pred=clusters)
             result = {
                 "Method": method,
-                "Incomplete samples (%)": p,
+                "Incomplete samples (%)": int(p*100),
                 "Iteration": i,
                 "AMI": metric,
             }

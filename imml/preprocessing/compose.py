@@ -152,7 +152,6 @@ def concatenate_mods(Xs: list):
     >>> concatenate_mods(Xs=Xs)
     """
 
-    Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
     if isinstance(Xs[0], pd.DataFrame):
         transformed_X = pd.concat(Xs, axis= 1)
     elif isinstance(Xs[0], np.ndarray):
