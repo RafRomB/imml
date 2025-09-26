@@ -179,8 +179,11 @@ ax = mean_wide.plot(yerr=sem_wide, marker="o", capsize=3, ylabel="Adjusted mutua
 ###################################
 # Summary of results
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# When the missing rate is low, both methods perform similarly. As the proportion of incomplete samples grows
-# (>50%), ``EEIMVC`` often maintains meaningful clustering performance, highlighting its robustness for
+# Overall, both approaches yield comparable performance at very low and very high missing rates.
+# When missingness is low, imputations affect only a small fraction of the data, limiting their negative impact.
+# Conversely, at extremely high missingness, the signal-to-noise ratio deteriorates to the point where both approaches
+# are similarly constrained by data quality.
+# With intermediate rates, ``EEIMVC`` tends to reach a better clustering performance, highlighting its robustness for
 # incomplete multi-modal datasets.
 
 ###################################
