@@ -10,8 +10,7 @@ build:
     - r-base-dev
   jobs:
     pre_build:
-      # Use a dedicated job step, again with the explicit path for safety
-      - /usr/bin/Rscript -e "install.packages('nnTensor', repos='https://cloud.r-project.org')"
+      - /usr/bin/Rscript -e "install.packages('nnTensor')"
 python:
   install:
     - method: pip
