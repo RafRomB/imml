@@ -11,11 +11,11 @@ build:
   jobs:
     pre_build:
       - |
-        mkdir -p R-packages
-        export R_LIBS="R-packages"
-        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
+        R_LIBS_ABS="$READTHEDOCS_PROJECT_DIR/R-packages"
+        mkdir -p $R_LIBS_ABS
+        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=\"$R_LIBS_ABS\")"
+        export R_LIBS="$R_LIBS_ABS"
         /usr/bin/Rscript -e ".libPaths()"
-
 python:
   install:
     - method: pip
