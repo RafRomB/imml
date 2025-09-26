@@ -29,6 +29,10 @@ jobs:
     - uses: actions/checkout@v2
     - name: Test docs
       run: |
+        sudo apt-get update
+        sudo apt install libtirpc-dev #needed for rpy2
+        sudo apt install r-base r-base-dev -y
+        sudo Rscript -e "install.packages('nnTensor')"
         uv pip install ".[docs]"
     - name: Create docs
       run: |
