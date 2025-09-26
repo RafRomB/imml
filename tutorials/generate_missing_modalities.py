@@ -1,6 +1,6 @@
 """
 ==================================================
-Block-wise missing data simulation (Amputation)
+Modality-wise missing data simulation (Amputation)
 ==================================================
 
 Evaluation and benchmarking of new algorithms under diverse conditions is essential to ensure their robustness,
@@ -74,7 +74,7 @@ transformed_Xs = Amputer(mechanism=mechanism, p=0.8, random_state=random_state).
 ###################################
 # We can visualize which modalities are missing using a binary color map (black = observed, white = missing).
 # Each row is a sample; each column is a modality.
-plot_missing_modality(Xs=transformed_Xs, figsize= (3.18,2.2))
+_ = plot_missing_modality(Xs=transformed_Xs, figsize= (3.18,2.2))
 
 
 ###################################
@@ -98,7 +98,6 @@ for idx, (ax, mechanism) in enumerate(zip(axs, list(mechanism_dict.keys()))):
     if idx != 0:
         ax.get_yaxis().set_visible(False)
     samples_dict[mechanism_dict[mechanism]] = get_summary(Xs=transformed_Xs, one_row=True)
-
 plt.tight_layout()
 
 

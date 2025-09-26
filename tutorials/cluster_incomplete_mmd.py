@@ -24,13 +24,6 @@ replace the data-loading section with your own data following the same structure
 # License: GNU GPLv3
 
 ###################################
-# Step 0: Prerequisites
-# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To run this tutorial and generate the figures, install the extra dependencies:
-#   pip install imml[tutorials]
-
-
-###################################
 # Step 1: Import required libraries
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 

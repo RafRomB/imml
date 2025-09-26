@@ -191,7 +191,7 @@ ax.bar_label(ax.containers[0], labels=selected_features["Feature"], padding = 3)
 ########################################################
 # Step 6: Analyzing an incomplete multi-modal dataset
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We can analyze an incomplete multi-modal dataset. To provide comparative benchmarks, we included baselines using
+# We simulated block- and feature-wise missing data. To provide comparative benchmarks, we included baselines using
 # randomly selected features and all available features. The outputs from these methods were then used as inputs for a
 # support vector machine to predict the ground-truth labels. As the feature selection process does not replace missing
 # values, an imputation step was applied prior the classification. We repeat the analysis 5 times with different

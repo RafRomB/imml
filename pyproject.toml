@@ -62,11 +62,16 @@ deep = [
     "torchvision>=0.19.1",
 ]
 docs = [
+#    deep
     "lightning>=2.2",
     "transformers>=4.51.3",
     "torch_geometric>=2.6.1",
     "torchvision>=0.19.1",
+#    tutorials
     "ipython>=8.20.0",
+#    r
+    "rpy2>=3.5.14",
+#    docs
     "sphinx>=7.0.0",
     "sphinx-gallery>=0.17.1",
     "sphinx_rtd_theme>=1.0.0",
