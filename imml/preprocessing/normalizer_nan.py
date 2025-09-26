@@ -18,7 +18,6 @@ class NormalizerNaN(Normalizer):
     --------
     >>> import numpy as np
     >>> import pandas as pd
-    >>> from imml.utils import DatasetUtils
     >>> from imml.ampute import Amputer
     >>> from imml.preprocessing import NormalizerNaN, MultiModTransformer
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]

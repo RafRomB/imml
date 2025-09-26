@@ -13,7 +13,8 @@ build:
       - |
         mkdir -p R-packages
         export R_LIBS="R-packages"
-        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=\"R-packages\")"
+        echo "Setting R_LIBS to: $R_LIBS"
+        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
 python:
   install:
     - method: pip

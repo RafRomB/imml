@@ -249,9 +249,9 @@ def add_missing_mods(Xs, samples):
     >>> import numpy as np
     >>> import pandas as pd
     >>> from imml.preprocessing import add_missing_mods
-    >>> from imml.utils import DatasetUtils
+    >>> from imml.explore import get_samples
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> samples = DatasetUtils.get_samples(Xs= Xs)
+    >>> samples = get_samples(Xs= Xs)
     >>> add_missing_mods(Xs, samples= samples)
   """
     pandas_format = isinstance(Xs[0], pd.DataFrame)
