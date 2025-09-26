@@ -14,6 +14,7 @@ build:
         mkdir -p R-packages
         /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
         /usr/bin/Rscript -e ".libPaths()"
+
 python:
   install:
     - method: pip
