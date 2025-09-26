@@ -12,6 +12,7 @@ build:
     # Use a multi-line scalar and explicitly call Rscript
     - |
       Rscript -e "install.packages('nnTensor', repos='https://cloud.r-project.org')"python:
+python:
   install:
     - method: pip
       path: .
