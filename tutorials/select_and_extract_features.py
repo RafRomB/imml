@@ -34,6 +34,8 @@ What you will learn:
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 import os
+print(os.environ.get("test_alb"))
+os.environ["R_LIBS"] = os.environ.get("R_LIBS")
 
 from sklearn.datasets import make_classification
 from sklearn.impute import SimpleImputer
