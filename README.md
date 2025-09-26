@@ -10,7 +10,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/ocbe-uio/imml)
 
 ![GitHub License](https://img.shields.io/github/license/ocbe-uio/imml)
-[![DOI]()
+[![DOI()]()
 [![Paper]()]()
 
 <p align="center">

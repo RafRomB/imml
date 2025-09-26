@@ -5,8 +5,8 @@ Thank you for your interest in contributing to *iMML*! We welcome contributions 
 requests, code, documentation, examples, tutorials, issue triage, and review. This page is a concise, practical
 guide to get you started quickly. For the full contributing guide, please see:
 
-- In-repo: docs/development/contributing.rst
-- Online: https://imml.readthedocs.io/en/latest/development/contributing.html
+- In-repo: https://github.com/ocbe-uio/imml/blob/main/docs/development/contributing.rst
+- Documentation: https://imml.readthedocs.io/en/latest/development/contributing.html
 
 If you are new to open source, don't worry—small, focused contributions are highly valued.
 
