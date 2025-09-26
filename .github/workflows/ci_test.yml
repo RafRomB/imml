@@ -30,7 +30,7 @@ jobs:
         enable-cache: true
     - name: Install dependencies
       run: |
-        uv -m pip install .
+        uv pip install .
     - name: Install tests
       run: |
         uv pip install ".[tests]"
