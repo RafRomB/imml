@@ -11,7 +11,8 @@ build:
   commands:
     - sudo apt update
     - sudo apt install -y r-base r-base-dev libtirpc-dev
-    - Rscript -e "install.packages('nnTensor', repos='https://cloud.r-project.org')"python:
+    - Rscript -e "install.packages('nnTensor', repos='https://cloud.r-project.org')"
+python:
   install:
     - method: pip
       path: .
