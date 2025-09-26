@@ -4,6 +4,7 @@ build:
   os: ubuntu-lts-latest
   tools:
     python: "3.13"
+  image: "ghcr.io/ocbe-uio/rtd-r:latest"
 
 python:
   install:

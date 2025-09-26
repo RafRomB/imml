@@ -27,13 +27,19 @@ def test_plot_missing_modality(sample_data):
         assert len(xticks) == len(Xs)
 
 
-def test_invalid_params():
+def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid Xs."):
         plot_missing_modality(np.array([[1, 2], [3, 4]]))
     with pytest.raises(ValueError, match="Invalid Xs."):
         plot_missing_modality([pd.DataFrame([]), pd.DataFrame([[1]])])
     with pytest.raises(ValueError, match="Invalid Xs."):
         plot_missing_modality([pd.DataFrame(np.ones((3, 2))), pd.DataFrame(np.ones((4, 1)))])
+    with pytest.raises(ValueError, match="Invalid ax."):
+        plot_missing_modality(sample_data[0], ax="")
+    with pytest.raises(ValueError, match="Invalid figsize."):
+        plot_missing_modality(sample_data[0], figsize=2)
+    with pytest.raises(ValueError, match="Invalid figsize."):
+        plot_missing_modality(sample_data[0], sort=2)
 
 
 if __name__ == "__main__":
