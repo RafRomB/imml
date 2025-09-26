@@ -10,7 +10,14 @@ build:
     - r-base-dev
   jobs:
     pre_build:
-      - /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\")"
+      - |
+        # 1. Create a writable directory for R packages
+        mkdir -p R-packages
+        
+        # 2. Install the package into the writable 'R-packages' directory.
+        #    We escape the quotes for the R strings (") and specify the 'lib' path.
+        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=\"R-packages\")"
+
 python:
   install:
     - method: pip
