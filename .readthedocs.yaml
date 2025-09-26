@@ -8,10 +8,10 @@ build:
     - libtirpc-dev
     - r-base
     - r-base-dev
-  commands:
-    - apt update
-    - apt install -y r-base r-base-dev libtirpc-dev
-    - Rscript -e "install.packages('nnTensor', repos='https://cloud.r-project.org')"
+  jobs:
+    pre_build:
+      # Use a dedicated job step, again with the explicit path for safety
+      - /usr/bin/Rscript -e "install.packages('nnTensor', repos='https://cloud.r-project.org')"
 python:
   install:
     - method: pip
