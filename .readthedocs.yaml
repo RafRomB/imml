@@ -4,8 +4,12 @@ build:
   os: ubuntu-lts-latest
   tools:
     python: "3.13"
-  image: "ghcr.io/ocbe-uio/rtd-r:latest"
-
+  apt_packages:
+    - libtirpc-dev
+    - r-base
+    - r-base-dev
+  commands:
+    - /usr/bin/Rscript -e "install.packages('nnTensor', repos='https://cloud.r-project.org')"
 python:
   install:
     - method: pip
