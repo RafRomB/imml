@@ -1,6 +1,6 @@
 """
 ========================================
-Clustering (in)complete multi-modal data
+Clustering a multi-modal dataset
 ========================================
 
 Clustering involves grouping samples into distinct groups. In this tutorial, we show how to use `iMML` to
@@ -38,7 +38,6 @@ from imml.preprocessing import MultiModTransformer, NormalizerNaN
 from imml.ampute import Amputer
 from imml.cluster import EEIMVC
 from imml.visualize import plot_missing_modality
-
 
 ##########################
 # Step 2: Load the dataset

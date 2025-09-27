@@ -29,16 +29,17 @@ What you will learn:
 
 # License: GNU GPLv3
 
+
+###################################
+# Step 0: Prerequisites
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# To run this tutorial, install the extra dependencies:
+#   pip install imml[r]
+
+
 ###################################
 # Step 1: Import required libraries
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-import os
-print("HERE IS")
-print(os.environ.get("test_alb"))
-print("HERE IS")
-os.environ["R_LIBS"] = os.environ.get("R_LIBS")
-print("HERE IS")
 
 from sklearn.datasets import make_classification
 from sklearn.impute import SimpleImputer

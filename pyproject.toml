@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "imml"
-version = "0.1.0"
+dynamic = ["version"]
 description = "A python package for multi-modal learning with incomplete data"
 readme = "README.rst"
 authors = [
@@ -42,11 +42,11 @@ dependencies = [
 ]
 
 [project.urls]
-homepage = "..."
-source = "github.com/ocbe-uio/imml"
-download = "..."
-tracker = "https://github.com/ocbe-uio/imml/issues"
-"release notes" = "..."
+Documentation = "https://imml.readthedocs.io/en/latest/index.html"
+Source = "github.com/ocbe-uio/imml"
+Download = "https://github.com/ocbe-uio/imml/archive/refs/heads/main.zip"
+Tracker = "https://github.com/ocbe-uio/imml/issues"
+"Release notes" = "https://imml.readthedocs.io/en/latest/development/changelog.html"
 
 [project.optional-dependencies]
 matlab = [
@@ -69,6 +69,7 @@ docs = [
     "torchvision>=0.19.1",
 #    tutorials
     "ipython>=8.20.0",
+    "datasets==3.6.0",
 #    r
     "rpy2>=3.5.14",
 #    docs

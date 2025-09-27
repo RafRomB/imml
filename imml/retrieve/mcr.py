@@ -1,6 +1,4 @@
 import os
-from typing import List
-
 import numpy as np
 import pandas as pd
 from PIL import Image
@@ -70,7 +68,7 @@ class MCR(nnModuleBase):
 
     Attributes
     ----------
-    memory_bank : pd.DataFrame (n_samples, 6)
+    memory_bank_ : pd.DataFrame (n_samples, 6)
         DataFrame storing encoded modality representations for retrieval. Only if save_memory_bank is True. The columns
         are:
         - item_id: Unique identifier for each sample.
@@ -101,13 +99,13 @@ class MCR(nnModuleBase):
     >>> modalities = ["image", "text"]
     >>> estimator = MCR(modalities=modalities)
     >>> estimator.fit(Xs=Xs, y=y)
-    >>> memory_bank = estimator.memory_bank
+    >>> memory_bank = estimator.memory_bank_
     >>> preds = estimator.predict(Xs=Xs)
     """
 
 
     def __init__(self, batch_size: int = 64, n_neighbors: int = 20, device: str = "cpu",
-                 modalities: List = None, pretrained_model = None, processor = None,
+                 modalities: list = None, pretrained_model = None, processor = None,
                  generate_cap: bool = False, prompt_path: str = None, pretrained_vilt = None,
                  tokenizer = None, image_processor = None,
                  max_text_len: int = 128, max_image_len: int = 145, save_memory_bank: bool = True):
@@ -159,6 +157,7 @@ class MCR(nnModuleBase):
         self.n_neighbors = n_neighbors
         self.device = device
         self.save_memory_bank = save_memory_bank
+        self.memory_bank_ = None
         if pretrained_model is None:
             self.pretrained_model = AutoModel.from_pretrained("openai/clip-vit-large-patch14-336").to(self.device)
         if processor is None:
@@ -174,7 +173,7 @@ class MCR(nnModuleBase):
             self.max_image_len = max_image_len
 
 
-    def fit(self, Xs: List, y):
+    def fit(self, Xs: list, y):
         r"""
         Fit the transformer to the input data.
 
@@ -190,7 +189,7 @@ class MCR(nnModuleBase):
 
         Returns
         -------
-        self :  Fitted estimator. Or memory_bank if save_memory_bank is False.
+        self :  Fitted estimator. Or memory_bank_ if save_memory_bank is False.
         """
         if not isinstance(Xs, list):
             raise ValueError(f"Invalid Xs. It must be a list. A {type(Xs)} was passed.")
@@ -224,7 +223,7 @@ class MCR(nnModuleBase):
             memory_bank["item_id"] = y.index
             memory_bank.index = y.index
         if self.save_memory_bank:
-            self.memory_bank = memory_bank
+            self.memory_bank_ = memory_bank
             output = self
         else:
             output = memory_bank
@@ -232,9 +231,9 @@ class MCR(nnModuleBase):
         return output
 
 
-    def predict(self, Xs: List = None, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
+    def predict(self, Xs: list = None, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
         r"""
-        Fit the transformer to the input data.
+        Retrieve the most similar instances.
 
         Parameters
         ----------
@@ -263,15 +262,15 @@ class MCR(nnModuleBase):
 
         if memory_bank is not None:
             if not isinstance(memory_bank, pd.DataFrame):
-                raise ValueError(f"Invalid memory_bank. It must be a pandas DataFrame. A {type(memory_bank)} was passed.")
+                raise ValueError(f"Invalid memory_bank_. It must be a pandas DataFrame. A {type(memory_bank)} was passed.")
             required_columns = ['item_id', 'q_i', 'q_t', 'label']
             missing_columns = [col for col in required_columns if col not in memory_bank.columns]
             if missing_columns:
-                raise ValueError(f"Invalid memory_bank. It is missing required columns: {missing_columns}")
+                raise ValueError(f"Invalid memory_bank_. It is missing required columns: {missing_columns}")
         else:
-            if not hasattr(self, 'memory_bank'):
-                raise ValueError("Invalid memory_bank. No memory_bank available. Either provide a memory_bank or call fit first.")
-            memory_bank = self.memory_bank
+            if not hasattr(self, 'memory_bank_'):
+                raise ValueError("Invalid memory_bank_. No memory_bank_ available. Either provide a memory_bank_ or call fit first.")
+            memory_bank = self.memory_bank_
 
         if Xs is not None:
             if not isinstance(Xs, list):
@@ -320,7 +319,7 @@ class MCR(nnModuleBase):
 
     def fit_predict(self, Xs: list, y, n_neighbors: int = None):
         r"""
-        Fit the transformer to the input data.
+        Fit the transformer to the input data and retrieve the most similar instances.
 
         Parameters
         ----------
@@ -346,7 +345,7 @@ class MCR(nnModuleBase):
                 raise ValueError(f"Invalid n_neighbors. It must be positive. A {n_neighbors} was passed.")
 
         if self.save_memory_bank:
-            memory_bank = self.fit(Xs=Xs, y=y).memory_bank
+            memory_bank = self.fit(Xs=Xs, y=y).memory_bank_
         else:
             memory_bank = self.fit(Xs=Xs, y=y)
 
@@ -354,7 +353,7 @@ class MCR(nnModuleBase):
         return output
 
 
-    def transform(self, Xs: list, y: list, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
+    def transform(self, Xs: list, y, memory_bank: pd.DataFrame = None, n_neighbors: int = None):
         r"""
         Generate retrieval-augmented prompts.
 
@@ -415,15 +414,15 @@ class MCR(nnModuleBase):
 
         if memory_bank is not None:
             if not isinstance(memory_bank, pd.DataFrame):
-                raise ValueError(f"Invalid memory_bank. It must be a pandas DataFrame. A {type(memory_bank)} was passed.")
+                raise ValueError(f"Invalid memory_bank_. It must be a pandas DataFrame. A {type(memory_bank)} was passed.")
             required_columns = ['item_id', 'q_i', 'q_t', 'label']
             missing_columns = [col for col in required_columns if col not in memory_bank.columns]
             if missing_columns:
-                raise ValueError(f"Invalid memory_bank. It is missing required columns: {missing_columns}")
+                raise ValueError(f"Invalid memory_bank_. It is missing required columns: {missing_columns}")
         else:
-            if not hasattr(self, 'memory_bank'):
-                raise ValueError("Invalid memory_bank. No memory_bank available. Either provide a memory_bank or call fit first.")
-            memory_bank = self.memory_bank
+            if not hasattr(self, 'memory_bank_'):
+                raise ValueError("Invalid memory_bank_. No memory_bank_ available. Either provide a memory_bank_ or call fit first.")
+            memory_bank = self.memory_bank_
 
         if not self.generate_cap:
             raise ValueError("Invalid generate_cap. No prompts available. generate_cap must be True to use transform.")
@@ -435,7 +434,10 @@ class MCR(nnModuleBase):
             'text': Xs[self.modalities.index("text")],
             'label': y,
         })
-        if isinstance(y, pd.Series):
+        if isinstance(Xs[0], pd.DataFrame):
+            database["item_id"] = Xs[0].index
+            database.index = Xs[0].index
+        elif isinstance(y, pd.Series):
             database["item_id"] = y.index
             database.index = y.index
         observed_mod_indicator = pd.DataFrame({f"observed_{mod}": pd.notna(X).tolist()
@@ -453,7 +455,7 @@ class MCR(nnModuleBase):
 
     def fit_transform(self, Xs: list, y, n_neighbors: int = None):
         r"""
-        Fit the transformer to the input data.
+        Fit the transformer to the input data and generate retrieval-augmented prompts.
 
         Parameters
         ----------
@@ -494,7 +496,7 @@ class MCR(nnModuleBase):
                 raise ValueError(f"n_neighbors must be positive. Got {n_neighbors}")
 
         if self.save_memory_bank:
-            memory_bank = self.fit(Xs=Xs, y=y).memory_bank
+            memory_bank = self.fit(Xs=Xs, y=y).memory_bank_
         else:
             memory_bank = self.fit(Xs=Xs, y=y)
 

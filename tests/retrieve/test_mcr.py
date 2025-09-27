@@ -48,9 +48,9 @@ def test_default_params(sample_data):
         Xs, y = sample_data
         model = estimator(modalities=["image", "text"], n_neighbors=1)
         model.fit(Xs, y)
-        assert hasattr(model, 'memory_bank')
-        assert isinstance(model.memory_bank, pd.DataFrame)
-        assert len(model.memory_bank) == len(y)
+        assert hasattr(model, 'memory_bank_')
+        assert isinstance(model.memory_bank_, pd.DataFrame)
+        assert len(model.memory_bank_) == len(y)
         predictions = model.predict(Xs)
         assert isinstance(predictions, dict)
         assert "image" in predictions
@@ -117,9 +117,9 @@ def test_fit_methods(sample_data, tmp_path):
         model = estimator(modalities=["image", "text"], n_neighbors=1)
         result = model.fit(Xs, y)
         assert result is model
-        assert hasattr(model, 'memory_bank')
-        assert isinstance(model.memory_bank, pd.DataFrame)
-        assert len(model.memory_bank) == len(y)
+        assert hasattr(model, 'memory_bank_')
+        assert isinstance(model.memory_bank_, pd.DataFrame)
+        assert len(model.memory_bank_) == len(y)
         model = estimator(modalities=["image", "text"], save_memory_bank=False)
         result = model.fit(Xs, y)
         assert isinstance(result, pd.DataFrame)
@@ -146,9 +146,9 @@ def test_missing_values_handling(sample_data, tmp_path):
         Xs, y = sample_data
         model = estimator(modalities=["image", "text"], n_neighbors=1, generate_cap=True, prompt_path=str(tmp_path))
         model.fit(Xs, y)
-        assert hasattr(model, 'memory_bank')
-        assert isinstance(model.memory_bank, pd.DataFrame)
-        assert len(model.memory_bank) == len(y)
+        assert hasattr(model, 'memory_bank_')
+        assert isinstance(model.memory_bank_, pd.DataFrame)
+        assert len(model.memory_bank_) == len(y)
 
         # Test with one missing value
         Xs_with_missing = [Xs[0].copy(), Xs[1].copy()]

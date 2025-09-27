@@ -1,10 +1,10 @@
+![PyPI - Version](https://img.shields.io/pypi/v/imml)
+![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
+[![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io/en/latest/)
+
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ocbe-uio/imml/ci_test.yml)
 [![Coverage](https://ocbe-uio.github.io/imml/badges/coverage.svg)](https://github.com/ocbe-uio/imml/actions)
 ![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/ocbe-uio/imml/imml)
-[![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io/en/latest/)
-
-![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
-![PyPI - Version](https://img.shields.io/pypi/v/imml)
 
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/ocbe-uio/imml/pulls)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ocbe-uio/imml)
