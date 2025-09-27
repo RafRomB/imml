@@ -189,7 +189,7 @@ class MCR(nnModuleBase):
 
         Returns
         -------
-        self :  Fitted estimator. Or memory_bank_ if save_memory_bank is False.
+        self :  Fitted estimator. Or memory_bank if save_memory_bank is False.
         """
         if not isinstance(Xs, list):
             raise ValueError(f"Invalid Xs. It must be a list. A {type(Xs)} was passed.")

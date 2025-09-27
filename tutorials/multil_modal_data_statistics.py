@@ -112,6 +112,7 @@ fig, ax = plot_pid(rus=rus, modalities=["Modality A", "Modality B"], abb=False)
 # - Redundancy: Information about the target available in both modalities. High values suggest overlap.
 # - Uniqueness1/2: Modality‑specific information about the target. High values suggest complementarity.
 # - Synergy: Information that emerges only when modalities are combined. High synergy often indicates interactions.
+#
 # If redundancy is high while uniqueness and synergy are low, this may suggest that the dataset could be more
 # appropriately analyzed using classical unimodal modeling.
 

@@ -14,11 +14,11 @@ build:
         mkdir -p R-packages
         export R_LIBS="R-packages"
         /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
-python:
-  install:
-    - method: pip
-      path: .
-      extra_requirements:
-        - docs
+      - |
+        curl -LsSf https://astral.sh/uv/install.sh | sh
+        export PATH="$HOME/.local/bin:$PATH"
+        uv venv --python 3.13
+        . .venv/bin/activate
+        uv pip install -e ".[docs]"
 sphinx:
   configuration: docs/conf.py

@@ -60,7 +60,6 @@ def test_default_params(sample_data):
 
 @pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_invalid_params(sample_data):
-if deepmodule_installed:
     with pytest.raises(ValueError, match="Invalid modalities."):
         estimator(modalities=None)
     with pytest.raises(ValueError, match="Invalid modalities."):
