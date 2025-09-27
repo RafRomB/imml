@@ -1,6 +1,6 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/imml)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
-[![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io/en/latest/)
+[![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io)
 
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ocbe-uio/imml/ci_test.yml)
 [![Coverage](https://ocbe-uio.github.io/imml/badges/coverage.svg)](https://github.com/ocbe-uio/imml/actions)

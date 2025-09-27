@@ -42,7 +42,7 @@ dependencies = [
 ]
 
 [project.urls]
-Documentation = "https://imml.readthedocs.io/en/latest/index.html"
+Documentation = "https://imml.readthedocs.io"
 Source = "github.com/ocbe-uio/imml"
 Download = "https://github.com/ocbe-uio/imml/archive/refs/heads/main.zip"
 Tracker = "https://github.com/ocbe-uio/imml/issues"
