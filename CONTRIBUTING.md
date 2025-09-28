@@ -12,6 +12,7 @@ If you are new to open source, don't worry—small, focused contributions are hi
 
 Ways to contribute
 ------------------
+- Read our project roadmap: .
 - Report bugs or propose enhancements by opening an issue: https://github.com/ocbe-uio/imml/issues
 - Improve documentation, examples, and tutorials.
 - Triage issues (reproduce, label, suggest minimal examples).
@@ -21,6 +22,7 @@ Ways to contribute
 Quick links
 -----------
 
+* [Project roadmap](https://imml.readthedocs.io/en/latest/development/contributing.html#submitting-a-bug-report-or-a-feature-request)
 * [Submitting a bug report or feature request](https://imml.readthedocs.io/en/latest/development/contributing.html#submitting-a-bug-report-or-a-feature-request)
 * [Contributing code](https://imml.readthedocs.io/en/latest/development/contributing.html#contributing-code)
 * [Coding guidelines](https://imml.readthedocs.io/en/latest/development/contributing.html#guidelines)
@@ -33,7 +35,8 @@ If you're unsure where to start or need guidance, feel free to open a discussion
 Future directions
 -----------------
 We aim to establish *iMML* as the leading library for multi-modal learning. If you work in this field, whether as a
-researcher, practitioner, or user, please reach out and contribute. Your feedback and participation are invaluable.
+researcher, practitioner, or user, please reach out and contribute. Your feedback, contribution and participation 
+are invaluable.
 
 Code of Conduct
 ---------------

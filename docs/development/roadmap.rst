@@ -11,9 +11,10 @@ Guiding principles
 ------------------
 - Practical first: prioritize features that unlock common multi‑modal workflows.
 - Consistent API: keep estimators, transformers, and pipelines aligned with the ``scikit‑learn`` and
-  ``Lightning`` (for deep learning) interfaces.
+  `Lightning <https://lightning.ai/>`__ (for deep learning) interfaces.
 - Reproducible and well‑tested: maintain strong test coverage, deterministic options, and reproducible examples.
-- Interoperable by design: accept standard array‑likes (NumPy, pandas), and offer bridges to popular ecosystems.
+- Interoperable by design: accept standard array‑likes (`Numpy <https://numpy.org/>`__,
+  `Pandas <https://pandas.pydata.org/>`__), and offer bridges to popular ecosystems.
 
 Thematic tracks
 ---------------

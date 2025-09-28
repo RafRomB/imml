@@ -77,8 +77,7 @@ This package provides a user-friendly interface to apply these algorithms to use
 *iMML* was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
 NumPy, Scikit-learn, and PyTorch Lightning, hence allowing researchers to **apply machine learning models with
 minimal programming effort**.
-Moreover, it is compatible with Scikit-learn and can be easily integrated into Scikit-learn pipelines for data
-preprocessing and modeling.
+Moreover, it can be easily integrated into Scikit-learn pipelines for data preprocessing and modeling.
 
 For this demonstration, we will generate a random dataset, that we have called ``Xs``, as a multi-modal dataset
 to simulate a multi-modal scenario:

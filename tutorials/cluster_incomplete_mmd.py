@@ -19,7 +19,7 @@ This tutorial is fully reproducible and uses a small synthetic dataset. You can 
 replace the data-loading section with your own data following the same structure.
 """
 
-# sphinx_gallery_thumbnail_number = 1
+# sphinx_gallery_thumbnail_number = 4
 
 # License: BSD 3-Clause License
 

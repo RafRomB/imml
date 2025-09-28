@@ -14,7 +14,7 @@ Changelog
 .. |Fix| replace:: :raw-html:`<font color="red">[Fix]</font>`
 .. |API| replace:: :raw-html:`<font color="DarkOrange">[API]</font>`
 
-Change tags (adopted from `scikit-learn
+Change tags (adopted from `Scikit-learn
 <https://scikit-learn.org/stable/>`__ and `mvlearn
 <https://mvlearn.github.io/>`__):
 

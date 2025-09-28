@@ -1,7 +1,7 @@
 Contributing to `iMML`
 =========================
 
-(adapted from `scikit-learn
+(adapted from `Scikit-learn
 <https://scikit-learn.org/stable/>`__ and `mvlearn
 <https://mvlearn.github.io/>`__)
 
@@ -144,12 +144,12 @@ Estimators
 ~~~~~~~~~~
 
 The core components of `iMML` are the estimators, designed to train on datasets. These objects follow the conventions
-established by `scikit-learn
+established by `Scikit-learn
 <https://scikit-learn.org/stable/>`__ and `mvlearn
 <https://mvlearn.github.io/>`__. Estimators inherit from ``sklearn.base.BaseEstimator`` and adhere to its
 established guidelines.
 
-To ensure compatibility, developers should align with `scikit-learn
+To ensure compatibility, developers should align with `Scikit-learn
 <https://scikit-learn.org/stable/>`__'s standards whenever possible, including using
 validation checks like ``check_Xs`` in ``imml.utils``, to confirm the suitability of the input data.
 

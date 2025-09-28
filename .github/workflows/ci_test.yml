@@ -81,7 +81,6 @@ jobs:
         uv pip install ".[matlab]"
         uv run pytest --cov=imml
     - name: Test deep
-#      if: runner.os == 'Linux' || runner.os == 'Windows'
       run: |
         uv pip install ".[deep]"
         uv run pytest --cov=imml --cov-report=term --cov-report json
@@ -189,7 +188,6 @@ jobs:
                --cov-report=html:reports/htmlcov-matlab \
                --cov-report=xml:reports/coverage-matlab.xml
     - name: Test deep
-#      if: runner.os == 'Linux' || runner.os == 'Windows'
       run: |
         uv pip install ".[deep]"
         uv run pytest --cov=imml \

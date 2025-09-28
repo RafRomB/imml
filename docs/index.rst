@@ -23,6 +23,7 @@ Documentation
    :caption: Development
 
    development/contributing
+   development/roadmap
    development/changelog
    development/license
 

@@ -1,6 +1,6 @@
 """
 ==========================================================================
-Retrieval on a vision–language dataset (flickr8k)
+Retrieval on a vision–language dataset (flickr30k)
 ==========================================================================
 
 This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using iMML.
@@ -28,7 +28,7 @@ parallel lists: image paths and texts for each sample.
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # To run this tutorial, install the extras for deep learning and tutorials:
 #   pip install imml[deep]
-# Additionally, we will use the Hugging Face Datasets library to load Flickr8k:
+# Additionally, we will use the Hugging Face Datasets library to load Flickr30k:
 #   pip install datasets
 
 
@@ -72,14 +72,14 @@ rows = []
 for i in range(n_total):
     ex = ds[i]
     img = ex.get("image", None)
-    caption = ex.get("caption", ex.get("text", ""))[0]
+    caption = ex.get("caption", None)[0]
     img_path = os.path.join(folder_images, f"{i:06d}.jpg")
     img.save(img_path)
     rows.append({"img": img_path, "text": caption})
 
 df = pd.DataFrame(rows)
 
-# Split into train and test sets
+# Split into 40% train and 20% test sets
 train_df = df.sample(int(n_total*0.8), random_state=random_state)
 test_df = df.drop(index=train_df.index)
 print("train_df", train_df.shape)
@@ -95,8 +95,10 @@ train_df.head()
 p = 0.7
 missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
 test_df.loc[missing_mask, "img"] = np.nan
-test_df = test_df.drop(labels=missing_mask)
-missing_mask = test_df.sample(n=len(missing_mask), random_state=random_state).index
+missing_mask = test_df. \
+    drop(labels=missing_mask). \
+    sample(n=len(missing_mask), random_state=random_state). \
+    index
 test_df.loc[missing_mask, "text"] = np.nan
 
 
@@ -105,8 +107,7 @@ test_df.loc[missing_mask, "text"] = np.nan
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 modalities = ["image", "text"]
-batch_size = 64
-estimator = MCR(batch_size=batch_size, modalities=modalities,
+estimator = MCR(batch_size=64, modalities=modalities,
                 save_memory_bank=True, generate_cap=True,
                 prompt_path=data_folder)
 
