@@ -10,7 +10,8 @@ scalability, strengthen interoperability, and grow a healthy contributor communi
 Guiding principles
 ------------------
 - Practical first: prioritize features that unlock common multi‑modal workflows.
-- Consistent API: keep estimators, transformers, and pipelines aligned with the ``scikit‑learn`` and
+- Consistent API: keep estimators, transformers, and pipelines aligned with the `Scikit-learn
+  <https://scikit-learn.org/stable/>`__ and
   `Lightning <https://lightning.ai/>`__ (for deep learning) interfaces.
 - Reproducible and well‑tested: maintain strong test coverage, deterministic options, and reproducible examples.
 - Interoperable by design: accept standard array‑likes (`Numpy <https://numpy.org/>`__,
@@ -39,7 +40,7 @@ Performance and scalability
 
 Interoperability and compatibility
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-- Provide support for `polars` for users who prefer that backend.
+- Provide support for `Polars <https://pola.rs/>`__ for users who prefer that backend.
 - Maintain backward compatibility and versioned APIs to minimize user disruption.
 
 Documentation, tutorials, and examples
