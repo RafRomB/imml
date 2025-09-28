@@ -10,7 +10,7 @@
 ![GitHub repo size](https://img.shields.io/github/repo-size/ocbe-uio/imml)
 
 [![GitHub License](https://img.shields.io/github/license/ocbe-uio/imml)](https://github.com/ocbe-uio/imml/blob/main/LICENSE)
-[![DOI()]()
+[![DOI]()]()
 [![Paper]()]()
 
 <p align="center">
@@ -115,7 +115,7 @@ transformed_Xs = Amputer(p=0.8).fit_transform(Xs)
 Free software
 -------------
 
-*iMML* is free software; you can redistribute it and/or modify it under the terms of the `GNU GPLv3`.
+*iMML* is free software; you can redistribute it and/or modify it under the terms of the `BSD 3-Clause License`.
 
 Contribute
 ------------
@@ -124,12 +124,4 @@ Contribute
 and in doing so, helping us extend and refine the library for the community. Such a community-wide effort will
 make *iMML* more versatile, sustainable, powerful, and accessible to the machine learning community across
 many domains.
-
-Citing *iMML*
-----------------
-
-If you find the package useful for your project, please cite our paper.
-
-BibTeX entry:
-
 

@@ -1,19 +1,17 @@
 Installation
 ============
 
-`iMML` can be installed using `pip` or directly from its source on GitHub. Follow the instructions below to
-install `iMML` on your system.
-
-Some features of `iMML` rely on optional dependencies. To enable these additional features, ensure you install the
-required packages as described in the :ref:`optional_dependencies` section below.
+Follow the instructions below to install `iMML` on your system. Some features of `iMML` rely on optional dependencies.
+To enable these additional features, ensure you install the required packages as described in the
+:ref:`optional_dependencies` section below.
 
 .. _pipAnchor:
 
 Instructions
 -----------------------------
 
-Using pip (currently not available)
-^^^^^^^^^^^^
+Using pip
+^^^^^^^^^
 
 To install `iMML` using ``pip``, ensure Python 3 and ``pip`` (Python's package manager) are properly set up on
 your system. If ``pip`` is not already installed or needs an update, refer to the official documentation at
@@ -68,21 +66,16 @@ Dependencies
 
 `iMML` requires the following packages:
 
--  scikit-learn>=1.2.0
--  pandas>=1.3.3
--  numpy>=1.21.3,<2
--  scipy>=1,<1.13
+-  scikit-learn>=1.4.1
+-  pandas>=2.2.2
 -  networkx>=2.5
--  gensim>=4.2
--  h5py>=3.6
+-  h5py>=3.9.0
 -  snfpy>=0
--  control>=0
+-  control>=0.10.2
+-  cvxpy>=1.7.1
+-  numba>=0.58.0
 
-At present, `gemsim` does not support `Numpy`>=2 or `Scipy`>=1.13. We will update ``iMML`` dependencies once this issue
-is resolved. For more information, you can follow the discussion in this
-`thread <https://github.com/piskvorky/gensim/pull/3535>`_.
-
-`iMML` is supported for Python 3.8 and above.
+`iMML` is supported for Python 3.10 and above.
 
 .. _optional_dependencies:
 
@@ -92,9 +85,10 @@ Optional dependencies
 `iMML` supports additional features that require optional dependencies. You can install these dependencies by
 specifying extras during installation. For example:
 
--  [matlab]: Some algorithms were originally developed in Matlab. If you want to use the original implementation, use this module.
--  [r]: Some algorithms were originally developed in R. If you want to use the original implementation, use this module.
--  [deep]: Deep learning methods are included in this module.
+- [matlab]: Some algorithms were originally developed in Matlab. If you want to use the original implementation,
+  use this module.
+- [r]: Some algorithms were originally developed in R. If you want to use the original implementation, use this module.
+- [deep]: Deep learning methods are included in this module.
 
 To include these dependencies, execute in the terminal:
 

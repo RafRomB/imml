@@ -27,7 +27,7 @@ What you will learn:
 
 """
 
-# License: GNU GPLv3
+# License: BSD 3-Clause License
 
 
 ###################################

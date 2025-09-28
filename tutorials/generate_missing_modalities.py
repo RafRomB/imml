@@ -29,7 +29,7 @@ replace the data-loading section with your own data following the same structure
 
 # sphinx_gallery_thumbnail_number = 1
 
-# License: GNU GPLv3
+# License: BSD 3-Clause License
 
 ###################################
 # Step 1: Import required libraries

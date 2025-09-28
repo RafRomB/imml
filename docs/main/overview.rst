@@ -98,7 +98,7 @@ leverage the `iMML` library for a wide range of machine learning tasks, such as:
 Free software
 -------------
 
-`iMML` is free software; you can redistribute it and/or modify it under the terms of the `GNU GPLv3`.
+`iMML` is free software; you can redistribute it and/or modify it under the terms of the `BSD 3-Clause License`.
 
 Contribute
 ------------
@@ -107,12 +107,5 @@ Contribute
 and in doing so, helping us extend and refine the library for the community. Such a community-wide effort will
 make `iMML` more versatile, sustainable, powerful, and accessible to the machine learning community across
 many domains.
-
-Citing `iMML`
-----------------
-
-If you find the package useful for your project, please cite our paper.
-
-BibTeX entry:
 
 

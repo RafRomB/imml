@@ -18,11 +18,10 @@ What you will learn:
 This tutorial is fully reproducible. You can swap the loading section with your own data by constructing two
 parallel lists: image paths and texts for each sample.
 """
-import shutil
 
 # sphinx_gallery_thumbnail_number = 1
 
-# License: GNU GPLv3
+# License: BSD 3-Clause License
 
 ###################################
 # Step 0: Prerequisites
@@ -44,6 +43,7 @@ import numpy as np
 from PIL import Image
 import matplotlib.pyplot as plt
 from datasets import load_dataset
+import shutil
 
 from imml.retrieve import MCR
 
@@ -65,7 +65,8 @@ os.makedirs(folder_images, exist_ok=True)
 # Load the dataset
 ds = load_dataset("nlphuji/flickr30k", split="test[:50]")
 
-# Build a DataFrame with image paths and captions. We persist images to disk because the retriever expects paths.
+# Build a DataFrame with image paths and captions. We persist images to disk because
+# the retriever expects paths.
 n_total = len(ds)
 rows = []
 for i in range(n_total):
@@ -94,7 +95,8 @@ train_df.head()
 p = 0.7
 missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
 test_df.loc[missing_mask, "img"] = np.nan
-missing_mask = test_df.drop(labels=missing_mask).sample(n=len(missing_mask), random_state=random_state).index
+test_df = test_df.drop(labels=missing_mask)
+missing_mask = test_df.sample(n=len(missing_mask), random_state=random_state).index
 test_df.loc[missing_mask, "text"] = np.nan
 
 
@@ -104,7 +106,8 @@ test_df.loc[missing_mask, "text"] = np.nan
 
 modalities = ["image", "text"]
 batch_size = 64
-estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True, generate_cap=True,
+estimator = MCR(batch_size=batch_size, modalities=modalities,
+                save_memory_bank=True, generate_cap=True,
                 prompt_path=data_folder)
 
 Xs_train = [
@@ -140,7 +143,10 @@ memory_bank = estimator.memory_bank_
 #
 # Let's begin by visualizing the top-2 retrieved instances for a target sample that is missing its text modality.
 idx = 0
-ex = test_db[test_db["observed_image"].astype(bool) & (~test_db["observed_text"].astype(bool))].iloc[idx]
+ex = test_db[
+    test_db["observed_image"].astype(bool) &
+    (~test_db["observed_text"].astype(bool))
+].iloc[idx]
 images_to_show = []
 image_to_show = ex["img_path"]
 images_to_show.append(image_to_show)
@@ -166,7 +172,10 @@ for i, image_to_show in enumerate(images_to_show):
 # Now, let’s consider a target instance that is missing its image modality.
 
 idx = 0
-ex = test_db[test_db["observed_text"].astype(bool) & (~test_db["observed_image"].astype(bool))].iloc[idx]
+ex = test_db[
+    test_db["observed_text"].astype(bool) &
+    (~test_db["observed_image"].astype(bool))
+].iloc[idx]
 images_to_show = []
 image_to_show = df.loc[ex.name, "img"]
 images_to_show.append(image_to_show)
@@ -192,12 +201,11 @@ shutil.rmtree(data_folder, ignore_errors=True)
 ###################################
 # Summary of results
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We used the ``MCR`` retriever from the `iMML` to identify the most relevant instances from a
-# memory bank. As shown in the examples, the retriever was able to retrieve highly similar instances to the target,
-# even when one of the modalities (image or text) was missing.
+# We used the ``MCR`` retriever from `iMML` to identify the most relevant instances from a
+# memory bank, even when one of the modalities (image or text) was missing.
 #
-# Beyond the images themselves, the retrieved captions provide additional context to judge semantic similarity.
-# Even when one modality is missing, MCR retrieves items whose other modality (image or text) remains informative.
+# This example is intentionally simplified, using only 50 instances for demonstration.
+# For stronger performance and more reliable results, the full dataset should be used.
 
 ###################################
 # Conclusion
