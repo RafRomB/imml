@@ -142,6 +142,7 @@ def test_fit_methods(sample_data, tmp_path):
     assert not os.path.exists(tmp_path)
 
 
+@pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_missing_values_handling(sample_data, tmp_path):
     Xs, y = sample_data
     model = estimator(modalities=["image", "text"], n_neighbors=1, generate_cap=True, prompt_path=str(tmp_path))
