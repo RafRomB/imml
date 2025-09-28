@@ -10,6 +10,7 @@ The package is split up into modules.
     classify
     cluster
     decomposition
+    explore
     feature_selection
     impute
     load

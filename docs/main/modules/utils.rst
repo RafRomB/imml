@@ -4,10 +4,10 @@ Utils
 .. currentmodule:: imml.utils
 
 
-Dataset utils
---------------------------------
+Convert dataset format
+-----------------------
 
-.. autoclass:: DatasetUtils
+.. autoclass:: convert_dataset_format
    :members:
    :show-inheritance:
 

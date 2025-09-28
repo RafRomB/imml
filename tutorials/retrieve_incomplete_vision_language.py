@@ -3,8 +3,8 @@
 Retrieval on a vision–language dataset (flickr30k)
 ==========================================================================
 
-This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using iMML.
-We will use the MCR retriever to find similar items across modalities (image/text) even when one modality
+This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using `iMML`.
+We will use the ``MCR`` retriever to find similar items across modalities (image/text) even when one modality
 is missing. The example uses the public nlphuji/flickr8k dataset from Hugging Face Datasets, so you don't
 need to prepare files manually.
 
@@ -148,54 +148,71 @@ ex = test_db[
     test_db["observed_image"].astype(bool) &
     (~test_db["observed_text"].astype(bool))
 ].iloc[idx]
-images_to_show = []
+nrows, ncols = 1,3
+fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
+ax = axes[0]
+ax.axis("off")
 image_to_show = ex["img_path"]
-images_to_show.append(image_to_show)
-print("Target image:", image_to_show)
-print("Target caption (missing):", df.loc[ex.name, "text"])  # original text for reference
+image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
+ax.imshow(image_to_show)
+ax.set_title("Target instance")
+
 retrieved_instances = memory_bank.loc[ex["i2i_id_list"]]
 for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
+    ax = axes[i+1%ncols]
+    ax.axis("off")
     image_to_show = retrieved_instance["img_path"]
-    images_to_show.append(image_to_show)
-    print(f"Top-{i+1} retrieved instance:", image_to_show)
-    print("Retrieved caption:", retrieved_instance["text"])
-
-print()
-images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-                  for image_to_show in images_to_show]
-
-fig, ax = plt.subplots(1,3, figsize=(6, 2), constrained_layout=True)
-for i, image_to_show in enumerate(images_to_show):
-    ax[i].axis("off")
-    ax[i].imshow(image_to_show)
+    image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
+    try:
+        ax.imshow(image_to_show)
+    except TypeError:
+        pass
+    ax.set_title(f"Top-{i+1}")
+    caption = retrieved_instance["text"]
+    caption = caption.split(" ")
+    if len(caption) >= 6:
+        caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4*2] + \
+                  ["\n"] + caption[len(caption) // 4*2:len(caption) // 4*3] + ["\n"] + caption[len(caption) // 4*3:]
+        caption = " ".join(caption)
+    ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
 
 #################################
 # Now, let’s consider a target instance that is missing its image modality.
-
-idx = 0
 ex = test_db[
     test_db["observed_text"].astype(bool) &
     (~test_db["observed_image"].astype(bool))
 ].iloc[idx]
-images_to_show = []
-image_to_show = df.loc[ex.name, "img"]
-images_to_show.append(image_to_show)
-print("Target (missing image) caption:", ex["text"])
+nrows, ncols = 1,3
+fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
+ax = axes[0]
+ax.axis("off")
+ax.set_title("Target instance")
+caption = ex["text"]
+caption = caption.split(" ")
+if len(caption) >= 6:
+    caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4 * 2] + \
+              ["\n"] + caption[len(caption) // 4 * 2:len(caption) // 4 * 3] + ["\n"] + caption[len(caption) // 4 * 3:]
+    caption = " ".join(caption)
+ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+
 retrieved_instances = memory_bank.loc[ex["t2t_id_list"]]
 for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
+    ax = axes[i+1%ncols]
+    ax.axis("off")
     image_to_show = retrieved_instance["img_path"]
-    images_to_show.append(image_to_show)
-    print(f"Top-{i+1} retrieved instance:", image_to_show)
-    print("Retrieved caption:", retrieved_instance["text"])
-
-print()
-images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-                  for image_to_show in images_to_show]
-
-fig, ax = plt.subplots(1,3, figsize=(6, 2), constrained_layout=True)
-for i, image_to_show in enumerate(images_to_show):
-    ax[i].axis("off")
-    ax[i].imshow(image_to_show)
+    image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
+    try:
+        ax.imshow(image_to_show)
+    except TypeError:
+        pass
+    ax.set_title(f"Top-{i+1}")
+    caption = retrieved_instance["text"]
+    caption = caption.split(" ")
+    if len(caption) >= 6:
+        caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4*2] + \
+                  ["\n"] + caption[len(caption) // 4*2:len(caption) // 4*3] + ["\n"] + caption[len(caption) // 4*3:]
+        caption = " ".join(caption)
+    ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
 
 shutil.rmtree(data_folder, ignore_errors=True)
 
@@ -205,7 +222,7 @@ shutil.rmtree(data_folder, ignore_errors=True)
 # We used the ``MCR`` retriever from `iMML` to identify the most relevant instances from a
 # memory bank, even when one of the modalities (image or text) was missing.
 #
-# This example is intentionally simplified, using only 50 instances for demonstration.
+# This example is intentionally simplified, using only 30 instances for demonstration.
 # For stronger performance and more reliable results, the full dataset should be used.
 
 ###################################

@@ -386,52 +386,6 @@ def get_pct_incom_samples(Xs: list) -> float:
     return percentage_samples
 
 
-def convert_dataset_format(Xs: list, to_list: bool = False, to_dict: bool = True,
-                           keys: list = None) -> Union[list, dict]:
-    r"""
-    Convert the format of a multi-modal dataset.
-
-    Parameters
-    ----------
-    Xs : list of array-likes
-        - Xs length: n_mods
-        - Xs[i] shape: (n_samples, n_features_i)
-
-        A list of different modalities.
-    to_list : bool, default=False
-        Convert from dict to list.
-    to_dict : bool, default=False
-        Convert from list to dict.
-    keys : list, default=None
-        keys for the dict. If None, it will use numbers starting from 0. Only used when to_dict is True.
-
-    Returns
-    -------
-    transformed_Xs: dict of array-likes.
-        - Xs length: n_mods
-        - Xs[key] shape: (n_samples, n_features_i)
-
-    Examples
-    --------
-    >>> import numpy as np
-    >>> import pandas as pd
-    >>> from imml.explore import convert_dataset_format
-    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> convert_dataset_format(Xs = Xs)
-    """
-    Xs = check_Xs(Xs=Xs, ensure_all_finite="allow-nan")
-    if to_list:
-        transformed_Xs = list(Xs.values())
-    elif to_dict:
-        if keys is None:
-            keys = list(range(len(Xs)))
-        transformed_Xs = {key:X for key,X in zip(keys, Xs)}
-    else:
-        transformed_Xs = Xs
-
-    return transformed_Xs
-
-
 def get_summary(Xs: list, modalities: list = None, one_row: bool = False, compute_pct: bool = True,
                 return_df: bool = False) -> Union[dict, pd.DataFrame]:
     r"""

@@ -5,7 +5,7 @@ import pandas as pd
 from imml.explore import get_n_mods, get_n_samples_by_mod, get_com_samples, \
     get_incom_samples, get_samples, get_samples_by_mod, get_missing_samples_by_mod, \
     get_n_com_samples, get_n_incom_samples, get_pct_com_samples, get_pct_incom_samples, \
-    convert_dataset_format, get_summary
+    get_summary
 
 
 @pytest.fixture
@@ -172,14 +172,6 @@ def test_get_pct_incom_samples(sample_data):
     for Xs in sample_data[:2]:
         percentage_incomplete = get_pct_incom_samples(Xs)
         assert percentage_incomplete == (3 / 5) * 100
-
-
-def test_convert_mvd_from_list_to_dict(sample_data):
-    for Xs in sample_data[:2]:
-        Xs_dict = convert_dataset_format(Xs)
-        assert isinstance(Xs_dict, dict)
-        assert len(Xs_dict) == len(Xs)
-        assert all(isinstance(k, int) for k in Xs_dict.keys())
 
 
 if __name__ == "__main__":
