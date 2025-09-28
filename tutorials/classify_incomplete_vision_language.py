@@ -36,8 +36,10 @@ What you will learn:
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 import shutil
+from PIL import Image
 from lightning import Trainer
 import lightning as L
+from matplotlib import pyplot as plt
 from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 import torch
@@ -78,8 +80,8 @@ rows = []
 for i in range(n_total):
     ex = ds[i]
     img = ex.get("image", None)
-    caption = ex.get("caption_enriched", None)[0]
-    label = ex.get("label_cat_dog", None)[0]
+    caption = ex.get("caption_enriched", None)
+    label = ex.get("label_cat_dog", None)
     img_path = os.path.join(folder_images, f"{i:06d}.jpg")
     try:
         img.save(img_path)
@@ -212,12 +214,37 @@ estimator.on_validation_epoch_end = agg_metric
 trainer.fit(estimator, train_dataloader, test_dataloader)
 
 #######################################################
-# After training, we can evaluate predictions.
+# After training, we can evaluate predictions and visualize the results.
 preds = trainer.predict(estimator, test_dataloader)
 preds = [batch.softmax(dim=1) for batch in preds]
 preds = [pred for batch in preds for pred in batch]
 preds = torch.stack(preds).argmax(1).cpu()
 losses = [i.item() for i in estimator.agg_loss_list]
+
+images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
+                  if isinstance(image_to_show, str) else image_to_show
+                  for image_to_show in test_df["img"].to_list()]
+
+nrows, ncols = 2,3
+fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
+for i, (image_to_show, caption, pred, real_class) in enumerate(zip(
+        images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
+    ax = axes[i//ncols, i%ncols]
+    ax.axis("off")
+    try:
+        ax.imshow(image_to_show)
+    except TypeError:
+        pass
+    pred_class = le.classes_[pred]
+    c = "green" if pred_class == real_class else "red"
+    ax.set_title(f"Pred:{pred_class}; Real:{real_class}", **{"color":c})
+    if isinstance(caption, str):
+        caption = caption.split(" ")
+        if len(caption) >=6:
+            caption = caption[:len(caption)//2] + ["\n"] + caption[len(caption)//2:]
+            caption = " ".join(caption)
+        ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+
 shutil.rmtree(data_folder, ignore_errors=True)
 
 #######################################################

@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**01:57.361** total execution time for 7 files **from all galleries**:
+**00:06.314** total execution time for 7 files **from all galleries**:
 
 .. container::
 
@@ -32,10 +32,10 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_tutorials_classify_incomplete_vision_language.py` (``../tutorials/classify_incomplete_vision_language.py``)
-     - 01:57.361
-     - 0.0
    * - :ref:`sphx_glr_auto_tutorials_cluster_incomplete_mmd.py` (``../tutorials/cluster_incomplete_mmd.py``)
+     - 00:06.314
+     - 0.0
+   * - :ref:`sphx_glr_auto_tutorials_classify_incomplete_vision_language.py` (``../tutorials/classify_incomplete_vision_language.py``)
      - 00:00.000
      - 0.0
    * - :ref:`sphx_glr_auto_tutorials_generate_missing_modalities.py` (``../tutorials/generate_missing_modalities.py``)
