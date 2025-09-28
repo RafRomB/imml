@@ -63,7 +63,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("nlphuji/flickr30k", split="test[:50]")
+ds = load_dataset("nlphuji/flickr30k", split="test[:30]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -80,7 +80,7 @@ for i in range(n_total):
 df = pd.DataFrame(rows)
 
 # Split into 40% train and 20% test sets
-train_df = df.sample(int(n_total*0.8), random_state=random_state)
+train_df = df.sample(frac=0.8, random_state=random_state)
 test_df = df.drop(index=train_df.index)
 print("train_df", train_df.shape)
 train_df.head()

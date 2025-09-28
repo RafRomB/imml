@@ -66,8 +66,6 @@ docs = [
 #    deep
     "lightning>=2.2",
     "transformers>=4.51.3",
-    "torch_geometric>=2.6.1",
-    "torchvision>=0.19.1",
 #    tutorials
     "ipython>=8.20.0",
     "datasets==3.6.0",

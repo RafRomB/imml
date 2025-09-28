@@ -38,6 +38,7 @@ What you will learn:
 import shutil
 from lightning import Trainer
 import lightning as L
+from sklearn.model_selection import train_test_split
 from torch.utils.data import DataLoader
 import torch
 import os
@@ -68,7 +69,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:50]")
+ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:30]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -93,10 +94,11 @@ df["class"].value_counts()
 
 ###################################
 # Split into 40% bank memory, 40% train and 20% test sets
-bank_df = df.sample(int(n_total*0.4), random_state=random_state)
-train_df = df.drop(index=bank_df.index).sample(n=len(bank_df), random_state=random_state)
-test_df = df.drop(index=bank_df.index).drop(index=train_df.index)
+train_df, test_df = train_test_split(df, test_size=0.2, shuffle=True, stratify=df["class"])
+train_df, bank_df = train_test_split(train_df, test_size=0.5, shuffle=True, stratify=train_df["class"])
 print("train_df", train_df.shape)
+print("test_df", test_df.shape)
+print("bank_df", bank_df.shape)
 train_df.head()
 
 
@@ -132,7 +134,7 @@ test_df.loc[missing_mask, "text"] = np.nan
 modalities = ["image", "text"]
 batch_size = 64
 estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True,
-                prompt_path=data_folder, n_neighbors=5, generate_cap=True)
+                prompt_path=data_folder, n_neighbors=2, generate_cap=True)
 
 Xs_bank = [
     bank_df["img"].to_list(),
@@ -226,7 +228,7 @@ print("Testing metric:", matthews_corrcoef(y_true=y_test, y_pred=preds))
 ###################################
 # Summary of results
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We first built a memory bank with 20 independent vision-language samples using the `iMML` ``retrieve`` module to
+# We first built a memory bank with 40% independent vision-language samples using the `iMML` ``retrieve`` module to
 # generate retrieval-augmented prompts with a multi-channel retriever (``MCR``). Subsequently, we trained a model
 # using the ``RAGPT`` algorithm available in `iMML` under 30% randomly missing text and image modalities. The model
 # demonstrated strong robustness on the test set.
