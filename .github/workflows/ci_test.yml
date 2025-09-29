@@ -12,7 +12,7 @@ env:
   UV_SYSTEM_PYTHON: 1
 
 jobs:
-  build-gh:
+  build:
     if: ${{ github.actor != 'nektos/act' }}
     runs-on: ${{matrix.os}}
     continue-on-error: true
@@ -62,10 +62,11 @@ jobs:
         choco install octave
         choco install r.project
         Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
-        $octaveBin = Get-ChildItem "C:\Program Files\Octave" -Recurse | Where-Object { $_.Name -eq "octave-cli.exe" } | Select-Object -First 1 -ExpandProperty DirectoryName
+        $octaveBin = Get-ChildItem "C:\Program Files\Octave" -Directory | ForEach-Object { Join-Path $_.FullName "bin" }
+        $octaveBin = $octaveBin | Where-Object { Test-Path $_ }
         if (-not $octaveBin) { throw "Octave bin directory not found!" }
-        $env:PATH += ";$octaveBin"
-        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
+        $env:PATH = "$($octaveBin[0]);$env:PATH"        
+        octave-cli.exe --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
