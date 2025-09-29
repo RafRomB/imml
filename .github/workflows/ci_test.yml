@@ -57,15 +57,32 @@ jobs:
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         choco install octave r.project
-        $octaveBin = "C:\Program Files\GNU Octave\Octave-10.2.0\bin"
+        $octaveInstallRoot = "C:\Program Files\GNU Octave"
+        if (-not (Test-Path $octaveInstallRoot)) {
+          throw "Octave install root not found!"
+        }
+        # Find the latest version folder (highest lexicographic order)
+        $versionFolder = Get-ChildItem -Path $octaveInstallRoot -Directory | Sort-Object Name -Descending | Select-Object -First 1
+        if (-not $versionFolder) {
+          throw "No Octave version folder found in $octaveInstallRoot"
+        }
+        $octaveBin = Join-Path $versionFolder.FullName "bin"
         if (-not (Test-Path $octaveBin)) {
           throw "Octave bin directory not found at $octaveBin"
         }
         $env:PATH = "$octaveBin;$env:PATH"
+    
+        # Confirm the binary is present
+        if (-not (Test-Path (Join-Path $octaveBin "octave-cli.exe"))) {
+          throw "octave-cli.exe not found in $octaveBin"
+        }
+    
+        # Run Octave command
         octave-cli.exe --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
+        brew update
         brew install gcc
         brew install octave
         brew install r
