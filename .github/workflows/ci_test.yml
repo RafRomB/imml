@@ -20,7 +20,7 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest, macos-latest]
         python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
     - name: Checkout
@@ -64,6 +64,7 @@ jobs:
         choco install octave
         choco install r.project
         Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
@@ -71,12 +72,12 @@ jobs:
         brew install octave
         brew install r
         Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test r
       run: |
         uv pip install ".[r]"
         uv run pytest --cov=imml
     - name: Test matlab
-      if: runner.os == 'Linux'
       run: |
         uv pip install ".[matlab]"
         uv run pytest --cov=imml
@@ -167,6 +168,7 @@ jobs:
         choco install octave
         choco install r.project
         Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
@@ -174,6 +176,7 @@ jobs:
         brew install octave
         brew install r
         Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test r
       run: |
         uv pip install ".[r]"
@@ -181,7 +184,6 @@ jobs:
                --cov-report=html:reports/htmlcov-r \
                --cov-report=xml:reports/coverage-r.xml
     - name: Test matlab
-      if: runner.os == 'Linux'
       run: |
         uv pip install ".[matlab]"
         uv run pytest --cov=imml \

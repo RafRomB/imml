@@ -63,7 +63,6 @@ from imml.retrieve import MCR
 
 random_state = 42
 L.seed_everything(random_state)
-rng = np.random.default_rng(random_state)
 
 # Local working directory (images will be saved here so ``MCR`` can read paths)
 data_folder = "oxford_iiit_pet"
