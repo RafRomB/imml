@@ -58,15 +58,38 @@ jobs:
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         choco install octave r.project
         Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
-        $octaveRoot = "C:\ProgramData\chocolatey\lib\Octave"
-        $octaveBin = Get-ChildItem -Path $octaveRoot -Recurse -Directory | Where-Object { $_.Name -eq "bin" } | Select-Object -First 1 -ExpandProperty FullName
-        if (-not $octaveBin) { throw "Octave bin directory not found!" }
-        $env:PATH = "$octaveBin;$env:PATH"
+        $octaveRoot = "C:\ProgramData\chocolatey\lib\octave"
+        if (-not (Test-Path $octaveRoot)) {
+          throw "Octave root directory not found at $octaveRoot"
+        }
+    
+        # Look for bin folder inside tools or any subdirectory
+        $octaveBin = Get-ChildItem -Path $octaveRoot -Recurse -Directory -ErrorAction SilentlyContinue | Where-Object { $_.Name -eq "bin" } | Select-Object -First 1 -ExpandProperty FullName
+    
+        # Fallback: try known default path
+        if (-not $octaveBin) {
+          $octaveBin = "C:\ProgramData\chocolatey\lib\octave\tools\Octave-*\bin"
+          $octaveBin = Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\octave\tools" -Directory -ErrorAction SilentlyContinue | ForEach-Object { Join-Path $_.FullName "bin" } | Where-Object { Test-Path $_ } | Select-Object -First 1
+        }
+    
+        # Fallback: check if octave-cli.exe is already on PATH
+        if (-not $octaveBin) {
+          $octExe = where.exe octave-cli.exe 2>$null
+          if ($octExe) {
+            Write-Host "octave-cli.exe is already on PATH: $octExe"
+          } else {
+            throw "Octave bin directory not found and octave-cli.exe not on PATH!"
+          }
+        } else {
+          Write-Host "Adding $octaveBin to PATH"
+          $env:PATH = "$octaveBin;$env:PATH"
+        }
         octave-cli.exe --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
-        brew install gcc octave r
+        brew install gcc
+        brew install octave r
         Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
         octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test r
