@@ -25,16 +25,95 @@ nnModuleBase = nn.Module if deepmodule_installed else object
 
 
 class IntegrAO(LightningModuleBase):
+    r"""
+    Integrate Any Omics (IntegrAO). [#integraopaper]_ [#integraocode]_
+
+    IntegrAO first combines partially overlapping sample graphs from diverse sources and utilizes graph neural
+    networks to produce unified sample embeddings.
+
+    This class provides training, validation, testing, and prediction logic compatible with the
+    `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
+
+    Parameters
+    ----------
+    Xs : list of array-likes objects
+        - Xs length: n_mods
+        - Xs[i] shape: (n_samples, n_features_i)
+
+        A list of different modalities. It will be used to create the neural network architecture.
+    model : nn.Module, default=None
+        Deep learning model. If None, it will select IntegrAOModule.
+    n_clusters : int, default=8
+        The number of clusters to generate.
+    neighbor_size : int, default=None
+        Number of neighbors to use. If None, it will use N/6).
+    hidden_channels : int, default=128
+        Hidden dimension size.
+    embedding_dims : int, default=50
+        Size of the shared embedding space where modalities are projected.
+    fusing_iteration : int, default=20
+        Number of iterations for fusing.
+    mu : float, default=0.5
+        Normalization factor to scale similarity kernel.
+    learning_rate : float, default=1e-3
+        Learning rate for the optimizer.
+    weight_decay : float, default=2e-2
+        Weight decay used by the optimizer.
+    random_state : int, default=None
+        Determines the randomness. Use an int to make the randomness deterministic.
+
+    Attributes
+    ----------
+    embedding_ : array-like of shape (n_samples, n_clusters)
+        Commont latent feature matrix.
+    cluster_model_ : SpectralClustering
+        Scikit-learn SpectralClustering object.
+    fused_networks_ : list of array-like of shape (n_samples_i, n_samples_i)
+        Modal-specific graphs.
+
+    References
+    ----------
+    .. [#integraopaper] Ma, Shihao, et al. "Moving towards genome-wide data integration for patient stratification with Integrate Any Omics." Nature Machine Intelligence 7.1 (2025): 29-42.
+    .. [#integraocode] https://github.com/bowang-lab/IntegrAO
+
+    Example
+    --------
+    >>> import numpy as np
+    >>> import torch
+    >>> from imml.cluster import IntegrAO
+    >>> from lightning import Trainer
+    >>> from torch.utils.data import DataLoader
+    >>> from imml.load import IntegrAODataset
+    >>> Xs = [torch.from_numpy(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> estimator = IntegrAO(Xs=Xs, random_state=42)
+    >>> train_data = IntegrAODataset(Xs=Xs, neighbor_size=estimator.neighbor_size, networks=estimator.fused_networks_)
+    >>> train_dataloader = DataLoader(dataset=train_data)
+    >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
+    >>> trainer.fit(estimator, train_dataloader)
+    >>> labels = trainer.predict(estimator, train_dataloader)[0]
+    """
 
     def __init__(self, Xs, model : nnModuleBase = None, n_clusters: int = 8, neighbor_size : int = None,
                  hidden_channels : int = 128, embedding_dims: int = 50, fusing_iteration: int = 20,
-                 normalization_factor : float = 1.0, alighment_epochs : int = 1000, beta : float = 1.0,
                  mu : float = 0.5, learning_rate : float = 1e-3, weight_decay : float = 1e-4, random_state : int = None):
 
         if not deepmodule_installed:
             raise ImportError(deepmodule_error)
 
         super().__init__()
+        if not isinstance(n_clusters, int):
+            raise ValueError(f"Invalid n_clusters. It must be an int. A {type(n_clusters)} was passed.")
+        if n_clusters < 2:
+            raise ValueError(f"Invalid n_clusters. It must be an greater than 1. {n_clusters} was passed.")
+        if not isinstance(Xs, list):
+            raise ValueError(f"Invalid Xs. It must be a list of array-likes objects objects. A {type(Xs)} was passed.")
+        if not isinstance(learning_rate, float):
+            raise ValueError(f"Invalid learning_rate. It must be a float. A {type(learning_rate)} was passed.")
+        if learning_rate <= 0:
+            raise ValueError(f"Invalid learning_rate. It must be a positive number. {learning_rate} was passed.")
+
+        if not isinstance(Xs[0], pd.DataFrame):
+            Xs = [pd.DataFrame(X) for X in Xs]
 
         if neighbor_size is None:
             neighbor_size = int(Xs[0].shape[0]/6)
@@ -42,9 +121,6 @@ class IntegrAO(LightningModuleBase):
         self.n_clusters = n_clusters
         self.embedding_dims = embedding_dims
         self.fusing_iteration = fusing_iteration
-        self.normalization_factor = normalization_factor
-        self.alighment_epochs = alighment_epochs
-        self.beta = beta
         self.mu = mu
         self.hidden_channels = hidden_channels
         self.loss_mse = nn.MSELoss()
@@ -70,7 +146,7 @@ class IntegrAO(LightningModuleBase):
         self.model = model
 
         ps = []
-        for network in self.fused_networks:
+        for network in self.fused_networks_:
             p = p_preprocess(network)
             p = torch.from_numpy(p).float()
             ps.append(p)
@@ -83,7 +159,7 @@ class IntegrAO(LightningModuleBase):
 
     def training_step(self, batch, batch_idx=None):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
 
         embeddings = self(Xs=batch, average=False)
@@ -98,10 +174,10 @@ class IntegrAO(LightningModuleBase):
 
     def validation_step(self, batch, batch_idx=None):
         r"""
-        Method required for validating using Pytorch Lightning trainer.
+        Method required for validating using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         embeddings = self(Xs=batch, average=False)
-        kl_loss = sum([self._tsne_loss(self.p[i], X_embedding) for i,X_embedding in enumerate(embeddings)])
+        kl_loss = sum([self._tsne_loss(self.ps[i], X_embedding) for i,X_embedding in enumerate(embeddings)])
         alignment_loss = sum([self.loss_mse(
             embeddings[i][self.dicts_commonIndex[(i, j)]], embeddings[j][self.dicts_commonIndex[(j, i)]])
             for i in range(len(embeddings) - 1) for j in range(i + 1, len(embeddings))
@@ -112,10 +188,10 @@ class IntegrAO(LightningModuleBase):
 
     def test_step(self, batch, batch_idx=None):
         r"""
-        Method required for testing using Pytorch Lightning trainer.
+        Method required for testing using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         embeddings = self(Xs=batch, average=False)
-        kl_loss = sum([self._tsne_loss(self.p[i], X_embedding) for i,X_embedding in enumerate(embeddings)])
+        kl_loss = sum([self._tsne_loss(self.ps[i], X_embedding) for i,X_embedding in enumerate(embeddings)])
         alignment_loss = sum([self.loss_mse(
             embeddings[i][self.dicts_commonIndex[(i, j)]], embeddings[j][self.dicts_commonIndex[(j, i)]])
             for i in range(len(embeddings) - 1) for j in range(i + 1, len(embeddings))
@@ -126,7 +202,7 @@ class IntegrAO(LightningModuleBase):
 
     def predict_step(self, batch, batch_idx=None):
         r"""
-        Method required for predicting using Pytorch Lightning trainer.
+        Method required for predicting using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         embeddings = self(Xs=batch)
         embeddings = pd.DataFrame(data=embeddings, index=self.dict_sampleToIndexs.keys()).sort_index().values
@@ -134,10 +210,10 @@ class IntegrAO(LightningModuleBase):
         Wall_final = snf.compute.affinity_matrix(dist_final, K=self.neighbor_size, mu=self.mu)
         Wall_final = _stable_normalized(Wall_final)
         if getattr(self, "cluster_model_", None) is None:
-            self.cluster_model_ = SpectralClustering(n_clusters=self.n_clusters_, random_state=self.random_state,
+            self.cluster_model_ = SpectralClustering(n_clusters=self.n_clusters, random_state=self.random_state,
                                                      affinity="precomputed")
         labels = self.cluster_model_.fit_predict(X=Wall_final)
-        self.embedding_ = spectral_embedding(Wall_final.affinity_matrix_, n_components=self.n_clusters,
+        self.embedding_ = spectral_embedding(self.cluster_model_.affinity_matrix_, n_components=self.n_clusters,
                                              eigen_solver=self.cluster_model_.eigen_solver,
                                              random_state=self.random_state,
                                              eigen_tol=self.cluster_model_.eigen_tol, drop_first=False)
@@ -146,7 +222,7 @@ class IntegrAO(LightningModuleBase):
 
     def configure_optimizers(self):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
@@ -159,7 +235,7 @@ class IntegrAO(LightningModuleBase):
             S_df = pd.DataFrame(data=S_mat, index=self.original_order[X_idx], columns=self.original_order[X_idx])
             S_dfs.append(S_df)
 
-        self.fused_networks = self._integrao_fuse(aff=S_dfs.copy(), dicts_common=self.dicts_common,
+        self.fused_networks_ = self._integrao_fuse(aff=S_dfs.copy(), dicts_common=self.dicts_common,
                                                   dicts_unique=self.dicts_unique, original_order=self.original_order,
                                                   neighbor_size=self.neighbor_size,
                                                   fusing_iteration=self.fusing_iteration)

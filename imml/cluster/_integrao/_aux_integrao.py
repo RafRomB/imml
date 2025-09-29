@@ -25,8 +25,6 @@ def data_indexing(matrices):
         print("Input nothing, return nothing")
         return None
 
-    print("Start indexing input expression matrices!")
-
     original_order = [0] * (len(matrices))
     dict_original_order = {}
     dict_commonSample = {}
@@ -45,7 +43,6 @@ def data_indexing(matrices):
     for i in range(0, len(original_order)):
         for j in range(i + 1, len(original_order)):
             commonList = list(set(original_order[i]).intersection(original_order[j]))
-            print("Common sample between view{} and view{}: {}".format(i, j, len(commonList)))
             dict_commonSample.update(
                 dict_commonSample.fromkeys([(i, j), (j, i)], commonList)
             )

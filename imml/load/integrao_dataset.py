@@ -1,5 +1,6 @@
 import networkx as nx
 import numpy as np
+import pandas as pd
 from sklearn.utils import check_symmetric
 from snf.compute import _find_dominate_set
 
@@ -15,43 +16,48 @@ TorchDatasetBase = torch.utils.data.Dataset if deepmodule_installed else object
 
 class IntegrAODataset(TorchDatasetBase):
     r"""
-    This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `M3Care`.
+    This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `IntegrAO`.
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
+        - Xs[i] shape: (n_samples, n_features_i)
 
         A list of different modalities.
-    y : array-like of shape (n_samples,)
-        Target vector relative to X.
-    observed_mod_indicator: array-like of shape (n_samples, n_mods)
-        Boolean array-like indicating observed modalities for each sample.
+    neighbor_size : int, default=None
+        Number of neighbors to use. If None, it will use N/6).
+    networks : list of array-like of shape (n_samples_i, n_samples_i)
+        Modal-specific graphs.
 
     Returns
     -------
-    Xs_idx: list of array-likes
+    Xs_idx : list of array-likes objects
         - Xs length: n_mods
+        - Xs[i] shape: (1, n_features_i)
 
         A list of different modalities for one sample.
-    y_idx: array-like of shape (n_samples,)
-        Target vector relative to the sample.
-    observed_mod_indicator: array-like of shape (1, n_mods)
-        Boolean array-like indicating observed modalities for the sample.
+    edge_index : list of array-likes objects
+        List with edges.
+    indexes :
+        All indexes.
+    idx : int
+        Index.
 
     Example
     --------
     >>> import numpy as np
-    >>> import pandas as pd
-    >>> from imml.load import M3CareDataset
-    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> Xs = [torch.from_numpy(X.values).float() for X in Xs]
-    >>> observed_mod_indicator = torch.from_numpy(get_observed_mod_indicator(Xs).values)
-    >>> y = torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float()
-    >>> train_data = M3CareDataset(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y)
+    >>> import torch
+    >>> from imml.cluster import IntegrAO
+    >>> from lightning import Trainer
+    >>> from torch.utils.data import DataLoader
+    >>> from imml.load import IntegrAODataset
+    >>> Xs = [torch.from_numpy(np.random.default_rng(42).random((20, 10))) for i in range(3)]
+    >>> estimator = IntegrAO(Xs=Xs, random_state=42)
+    >>> train_data = IntegrAODataset(Xs=Xs, neighbor_size=estimator.neighbor_size, networks=estimator.fused_networks_)
     """
 
-    def __init__(self, Xs, neighbor_size : int, networks : list):
+    def __init__(self, Xs, networks : list, neighbor_size : int = None):
         if not deepmodule_installed:
             raise ImportError(deepmodule_error)
 
@@ -63,6 +69,15 @@ class IntegrAODataset(TorchDatasetBase):
             raise ValueError("Invalid Xs. All elements must have at least one sample.")
         if len(set(len(X) for X in Xs)) > 1:
             raise ValueError("Invalid Xs. All elements must have the same number of samples.")
+        if not isinstance(neighbor_size, int):
+            raise ValueError(f"Invalid neighbor_size. It must be an int. A {type(neighbor_size)} was passed.")
+        if neighbor_size < 1:
+            raise ValueError(f"Invalid neighbor_size. It must be a positive number. {neighbor_size} was passed.")
+        if not isinstance(networks, list):
+            raise ValueError(f"Invalid networks. It must be a list of array-likes objects objects. A {type(networks)} was passed.")
+
+        if not isinstance(Xs[0], pd.DataFrame):
+            Xs = [pd.DataFrame(X) for X in Xs]
 
         self.Xs = []
         self.edge_index = []
@@ -73,9 +88,9 @@ class IntegrAODataset(TorchDatasetBase):
             X = torch.from_numpy(X.values).type(torch.float32)
             self.Xs.append(X)
             self.indexes.append(idxs)
-            neighbor_size = min(int(neighbor_size), network.shape[0])
+            k = min(int(neighbor_size), network.shape[0])
 
-            network = _find_dominate_set(network, K=neighbor_size)
+            network = _find_dominate_set(network, K=k)
             network = check_symmetric(network, raise_warning=False)
             network[network > 0.0] = 1.0
             G = nx.from_numpy_array(network)
