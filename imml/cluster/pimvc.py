@@ -18,7 +18,7 @@ except ImportError:
 
 class PIMVC(BaseEstimator, ClassifierMixin):
     r"""
-    Projective Incomplete Multi-View Clustering (PIMVC).
+    Projective Incomplete Multi-View Clustering (PIMVC). [#pimvcpaper]_ [#pimvccode]_
 
     The objective of PIMVC is to simultaneously discover the projection matrix for each modality and establish a unified
     feature representation shared across incomplete multiple views, facilitating clustering. Essentially, PIMVC
@@ -129,7 +129,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -182,7 +182,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -203,7 +203,7 @@ class PIMVC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 

@@ -39,7 +39,7 @@ def remove_mods(Xs: List, observed_mod_indicator):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 

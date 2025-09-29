@@ -16,7 +16,7 @@ from ._sumo.modes.prepare.similarity import feature_to_adjacency
 
 class SUMO(BaseEstimator, ClassifierMixin):
     r"""
-    Subtyping Tool for Multi-Omic Data (SUMO).
+    Subtyping Tool for Multi-Omic Data (SUMO). [#sumopaper1]_ [#sumocode]_
 
     SUMO, originally designed for molecular subtyping in multi-omics datasets, utilizes a state-of-the-art
     nonnegative matrix factorization (NMF) algorithm to identify clusters of samples with similar characteristics.
@@ -171,7 +171,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -270,7 +270,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -278,7 +278,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        labels : list of array-likes, shape (n_samples,)
+        labels : list of array-likes objects, shape (n_samples,)
             The predicted data.
         """
         labels = self.labels_
@@ -292,7 +292,7 @@ class SUMO(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 

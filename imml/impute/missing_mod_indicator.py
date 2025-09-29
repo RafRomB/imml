@@ -36,7 +36,7 @@ def get_missing_mod_indicator(Xs : List, y = None):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features)
 
@@ -46,7 +46,7 @@ def get_missing_mod_indicator(Xs : List, y = None):
 
     Returns
     -------
-    transformed_X : array-likes, shape (n_samples, n_mods)
+    transformed_X : array-likes objects, shape (n_samples, n_mods)
         Binary indicator for missing modalities.
 
     Example

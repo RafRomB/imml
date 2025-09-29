@@ -12,7 +12,7 @@ def plot_missing_modality(Xs, ax: matplotlib.axes.Axes = None, figsize: tuple = 
 
     Parameters
     ----------
-    Xs : list of array-likes, default=None
+    Xs : list of array-likes objects, default=None
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 

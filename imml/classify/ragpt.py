@@ -28,7 +28,8 @@ class RAGPT(LightningModuleBase):
     Prompter, which generates dynamic prompts based on context to improve downstream classification in
     multimodal transformers.
 
-    This class provides training, validation, testing, and prediction logic compatible with the Lightning Trainer.
+    This class provides training, validation, testing, and prediction logic compatible with the
+    `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
 
     Parameters
     ----------
@@ -149,7 +150,7 @@ class RAGPT(LightningModuleBase):
 
     def training_step(self, batch, batch_idx=None):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         labels = batch.pop('label').long()
         preds = self.model(**batch)
@@ -159,7 +160,7 @@ class RAGPT(LightningModuleBase):
 
     def validation_step(self, batch, batch_idx=None):
         r"""
-        Method required for validating using Pytorch Lightning trainer.
+        Method required for validating using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         labels = batch.pop('label').long()
         preds = self.model(**batch)
@@ -169,7 +170,7 @@ class RAGPT(LightningModuleBase):
 
     def test_step(self, batch, batch_idx=None):
         r"""
-        Method required for testing using Pytorch Lightning trainer.
+        Method required for testing using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         labels = batch.pop('label').long()
         preds = self.model(**batch)
@@ -179,7 +180,7 @@ class RAGPT(LightningModuleBase):
 
     def predict_step(self, batch, batch_idx=None):
         r"""
-        Method required for predicting using Pytorch Lightning trainer.
+        Method required for predicting using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         _ = batch.pop('label').long()
         preds = self.model(**batch)
@@ -188,7 +189,7 @@ class RAGPT(LightningModuleBase):
 
     def configure_optimizers(self):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         optimizer = torch.optim.AdamW(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
         return optimizer

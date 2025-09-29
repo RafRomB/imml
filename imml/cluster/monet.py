@@ -15,7 +15,7 @@ from ..preprocessing import remove_missing_samples_by_mod
 
 class MONET(BaseEstimator, ClassifierMixin):
     r"""
-    Multi Omic Clustering by Non-Exhaustive Types (MONET).
+    Multi Omic Clustering by Non-Exhaustive Types (MONET). [#monetpaper]_ [#monetcode]_
 
     MONET operates in two distinct phases to extract meaningful information from multi-omics datasets. In the first
     phase, it constructs an edge-weighted graph for each omic, where the nodes represent individual samples, and the
@@ -133,7 +133,7 @@ class MONET(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
 
@@ -189,7 +189,7 @@ class MONET(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
 
@@ -197,7 +197,7 @@ class MONET(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        labels : list of array-likes, shape (n_samples,)
+        labels : list of array-likes objects, shape (n_samples,)
             The predicted data.
         """
         labels = self.labels_
@@ -211,7 +211,7 @@ class MONET(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
 

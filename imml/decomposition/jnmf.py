@@ -25,6 +25,7 @@ if rmodule_installed:
 class JNMF(TransformerMixin, BaseEstimator):
     r"""
     Joint Non-Negative Matrix Factorization (JNMF).
+    [#jnmfpaper1]_ [#jnmfpaper2]_ [#jnmfpaper3]_ [#jnmfpaper4]_ [#jnmfpaper5]_ [#jnmfpaper6]_ [#jnmfcode1]_ [#jnmfcode2]_
 
     JNMF decompose the matrices to low-dimensional factor matrices.
 
@@ -74,9 +75,9 @@ class JNMF(TransformerMixin, BaseEstimator):
 
     Attributes
     ----------
-    H_ : list of n_mods array-likes of shape (n_features_i, n_components)
+    H_ : list of n_mods array-likes objects of shape (n_features_i, n_components)
         List of specific factorization matrix.
-    V_ : list of n_mods array-likes of shape (n_samples, n_components)
+    V_ : list of n_mods array-likes objects of shape (n_samples, n_components)
         List of specific factorization matrix.
     reconstruction_err_ : list of float
         Beta-divergence between the training data X and the reconstructed data WH from the fitted model.
@@ -161,7 +162,7 @@ class JNMF(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -214,7 +215,7 @@ class JNMF(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -222,7 +223,7 @@ class JNMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_components)
+        transformed_Xs : list of array-likes objects, shape (n_samples, n_components)
             The projected data.
         """
         Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
@@ -263,7 +264,7 @@ class JNMF(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different modalities.
@@ -274,7 +275,7 @@ class JNMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        transformed_X : array-likes of shape (n_samples, n_components)
+        transformed_X : array-likes objects of shape (n_samples, n_components)
             The projected data.
         """
         Xs = check_Xs(Xs, ensure_all_finite='allow-nan')

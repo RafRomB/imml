@@ -31,6 +31,13 @@ Self-representation Subspace Clustering for Incomplete Multi-view Data (IMSR)
    :members:
    :show-inheritance:
 
+Integrate Any Omics (IntegrAO)
+-------------------------------------------------------------------------------
+
+.. autoclass:: IntegrAO
+   :members:
+   :show-inheritance:
+
 Late Fusion Incomplete Multi-View Clustering (LF-IMVC)
 ---------------------------------------------------------
 

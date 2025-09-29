@@ -20,7 +20,7 @@ except ImportError:
 
 class MKKMIK(BaseEstimator, ClassifierMixin):
     r"""
-    Multiple Kernel K-Means with Incomplete Kernels (MKKM-IK).
+    Multiple Kernel K-Means with Incomplete Kernels (MKKM-IK). [#mkkmikpaper]_ [#mkkmikcode]_
 
     MKKM-IK integrates imputation and clustering into a single optimization procedure. Thus, the clustering result
     guides the missing kernel imputation, and the latter is used to conduct the subsequent clustering. Both procedures
@@ -130,7 +130,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -179,7 +179,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -199,7 +199,7 @@ class MKKMIK(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 

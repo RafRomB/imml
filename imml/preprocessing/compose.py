@@ -132,7 +132,7 @@ def concatenate_mods(Xs: list):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -165,7 +165,7 @@ def drop_mod(Xs, X_idx : int = 0):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -199,7 +199,7 @@ def single_mod(Xs, X_idx : int = 0):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -233,7 +233,7 @@ def add_missing_mods(Xs, samples):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -273,7 +273,7 @@ def sort_data(Xs: list):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -281,7 +281,7 @@ def sort_data(Xs: list):
 
     Returns
     -------
-    transformed_X : list of array-likes (n_samples, n_features_i)
+    transformed_X : list of array-likes objects (n_samples, n_features_i)
         The transformed multi-modal dataset.
 
     Example

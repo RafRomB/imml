@@ -115,7 +115,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -167,7 +167,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -188,7 +188,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -219,7 +219,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - X length: viewNum
             - X[i] shape: (n_samples, n_features_i)
             A list of different mods.
@@ -289,7 +289,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - X length: n_mods
             - X[i] shape: (n_samples, n_features_i)
             A list of different views.
@@ -373,7 +373,7 @@ class DAIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - X length: n_mods
             - X[i] shape: (n_samples, n_features_i)
             A list of different views.

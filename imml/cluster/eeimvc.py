@@ -33,7 +33,7 @@ def fixed_seed(seed):
 
 class EEIMVC(BaseEstimator, ClassifierMixin):
     r"""
-    Efficient and Effective Incomplete Multi-view Clustering (EE-IMVC).
+    Efficient and Effective Incomplete Multi-view Clustering (EE-IMVC). [#eeimvcpaper]_ [#eeimvccode]_
 
     EE-IMVC impute missing views with a consensus clustering matrix that is regularized with prior knowledge.
 
@@ -77,7 +77,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
     References
     ----------
-    .. [#eeimvcpaper1] X. Liu et al., "Efficient and Effective Regularized Incomplete Multi-View Clustering," in
+    .. [#eeimvcpaper] X. Liu et al., "Efficient and Effective Regularized Incomplete Multi-View Clustering," in
                         IEEE Transactions on Pattern Analysis and Machine Intelligence, vol. 43, no. 8, pp. 2634-2646,
                         1 Aug. 2021, doi: 10.1109/TPAMI.2020.2974828.
     .. [#eeimvccode] https://github.com/xinwangliu/TPAMI_EEIMVC
@@ -134,7 +134,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -202,7 +202,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -223,7 +223,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -474,7 +474,7 @@ class EEIMVC(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        H_normalized: list of array-likes of shape (n_samples, n_clusters)
+        H_normalized: list of array-likes objects of shape (n_samples, n_clusters)
         WP: 3-D array of shape (n_clusters, n_clusters, n_views)
         HP: 3-D array of shape (n_samples, n_clusters, n_views)
         beta: list of float (len=n_views)

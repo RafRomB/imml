@@ -18,7 +18,7 @@ except ImportError:
 
 class OPIMC(BaseEstimator, ClassifierMixin):
     r"""
-    One-Pass Incomplete Multi-View Clustering (OPIMC).
+    One-Pass Incomplete Multi-View Clustering (OPIMC). [#opimcpaper1]_ [#opimcpaper2]_ [#opimccode]_
 
     OPIMC deals with large scale incomplete multi-view clustering problem by considering the instance missing
     information with the help of regularized matrix factorization and weighted matrix factorization.
@@ -112,7 +112,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -158,7 +158,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -179,7 +179,7 @@ class OPIMC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 

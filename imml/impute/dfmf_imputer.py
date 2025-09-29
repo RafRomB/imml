@@ -6,12 +6,19 @@ from ..utils import check_Xs
 
 class DFMFImputer(DFMF):
     r"""
-    Impute missing data in a dataset using the `DFMF` method.
+    Impute missing data in a dataset using the `DFMF` method. [#dfmfpaper]_ [#dfmfcode]_
 
     This class extends the `DFMF` class to provide functionality for filling in incomplete samples by
     addressing both block-wise and feature-wise missing data. As a subclass of DFMF, `DFMFImputer` inherits all
     input parameters and attributes from `DFMF`. Consequently, it uses the same `fit` method as DFMF for
     training the model.
+
+    References
+    ----------
+    .. [#dfmfpaper] M. Žitnik and B. Zupan, "Data Fusion by Matrix Factorization," in IEEE Transactions on Pattern
+                    Analysis and Machine Intelligence, vol. 37, no. 1, pp. 41-53, 1 Jan. 2015,
+                    doi: 10.1109/TPAMI.2014.2343973.
+    .. [#dfmfcode] https://github.com/mims-harvard/scikit-fusion/tree/master
 
     Example
     --------
@@ -34,7 +41,7 @@ class DFMFImputer(DFMF):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
 
@@ -46,7 +53,7 @@ class DFMFImputer(DFMF):
 
         Returns
         -------
-        transformed_X : array-likes of shape (n_samples, n_components)
+        transformed_X : array-likes objects of shape (n_samples, n_components)
             The transformed data with filled missing samples.
         """
 

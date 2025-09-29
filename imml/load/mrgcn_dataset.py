@@ -16,7 +16,7 @@ class MRGCNDataset(DLBaseDataset):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -37,7 +37,7 @@ class MRGCNDataset(DLBaseDataset):
         if not deepmodule_installed:
             raise ImportError(deepmodule_error)
         if not isinstance(Xs, list):
-            raise ValueError(f"Invalid Xs. It must be a list of array-likes. A {type(Xs)} was passed.")
+            raise ValueError(f"Invalid Xs. It must be a list of array-likes objects. A {type(Xs)} was passed.")
         if len(Xs) < 2:
             raise ValueError(f"Invalid Xs. It must have at least two modalities. Got {len(Xs)} modalities.")
         if any(len(X) == 0 for X in Xs):

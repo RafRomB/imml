@@ -36,7 +36,7 @@ if rmodule_installed:
 
 class NEMO(BaseEstimator, ClassifierMixin):
     r"""
-    NEighborhood based Multi-Omics clustering (NEMO).
+    NEighborhood based Multi-Omics clustering (NEMO). [#nemopaper]_ [#nemocode]_
 
     NEMO is a method used for clustering data from multiple modalities sources. This algorithm operates
     through three main stages. Initially, it constructs a similarity matrix for each modality that represents the
@@ -123,7 +123,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -206,7 +206,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -227,7 +227,7 @@ class NEMO(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 

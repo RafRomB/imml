@@ -15,7 +15,7 @@ DLBaseeModule = L.LightningModule if deepmodule_installed else object
 
 class MRGCN(DLBaseeModule):
     r"""
-    Multi-Reconstruction Graph Convolutional Network (MRGCN).
+    Multi-Reconstruction Graph Convolutional Network (MRGCN). [#mrgcnpaper]_ [#mrgcncode]_
 
     MRGCN encodes and reconstructs data and similarity relationships from multiple sources simultaneously,
     consolidating them into a shared latent embedding space. Additionally, MRGCN utilizes an indicator matrix to
@@ -24,13 +24,14 @@ class MRGCN(DLBaseeModule):
 
     Incomplete samples should be filled with 0.
 
-    This class provides training, validation, testing, and prediction logic compatible with the Lightning Trainer.
+    This class provides training, validation, testing, and prediction logic compatible with the
+    `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
 
     Parameters
     ----------
     n_clusters : int, default=8
         The number of clusters to generate.
-    Xs : list of array-likes, default=None
+    Xs : list of array-likes objects, default=None
         Multi-modal dataset. It will be used to create the neural network architecture.
     k_num : int, default=10
         Number of neighbors to use.
@@ -81,7 +82,7 @@ class MRGCN(DLBaseeModule):
         if n_clusters < 2:
             raise ValueError(f"Invalid n_clusters. It must be an greater than 1. {n_clusters} was passed.")
         if not isinstance(Xs, list):
-            raise ValueError(f"Invalid Xs. It must be a list of array-likes. A {type(Xs)} was passed.")
+            raise ValueError(f"Invalid Xs. It must be a list of array-likes objects. A {type(Xs)} was passed.")
         if not isinstance(k_num, int):
             raise ValueError(f"Invalid k_num. It must be an int. A {type(k_num)} was passed.")
         if k_num < 1:
@@ -144,14 +145,14 @@ class MRGCN(DLBaseeModule):
 
     def configure_optimizers(self):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         return torch.optim.Adam(filter(lambda p: p.requires_grad, self.parameters()), lr=self.learning_rate)
 
 
     def training_step(self, batch, batch_idx=None):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         z = self._embedding(batch=batch)
         loss_x = 0
@@ -183,21 +184,21 @@ class MRGCN(DLBaseeModule):
 
     def validation_step(self, batch, batch_idx=None):
         r"""
-        Method required for validating using Pytorch Lightning trainer.
+        Method required for validating using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         return self.training_step(batch, batch_idx=None)
 
 
     def test_step(self, batch, batch_idx=None):
         r"""
-        Method required for testing using Pytorch Lightning trainer.
+        Method required for testing using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         return self.training_step(batch, batch_idx=None)
 
 
     def predict_step(self, batch, batch_idx=None):
         r"""
-        Method required for predicting using Pytorch Lightning trainer.
+        Method required for predicting using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         z = self._embedding(batch=batch)
         z = z.detach().cpu().numpy()
@@ -207,7 +208,7 @@ class MRGCN(DLBaseeModule):
 
     def on_fit_end(self):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         z = self._embedding(batch=self.data)
         z = z.detach().cpu().numpy()

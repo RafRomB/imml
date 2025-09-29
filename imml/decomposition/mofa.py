@@ -54,7 +54,7 @@ class MOFA(TransformerMixin, BaseEstimator):
         Entry point as the original library. This can be used for data analysis and explainability.
     factors_: array-like of shape (n_samples, n_components)
         Factors computed by the model.
-    weights_: list of n_mods array-likes of shape (n_features_i, n_components)
+    weights_: list of n_mods array-likes objects of shape (n_features_i, n_components)
         Weights of the MOFA model.
 
     References
@@ -127,7 +127,7 @@ class MOFA(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
             A list of different modalities.
@@ -166,14 +166,14 @@ class MOFA(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different mods.
 
         Returns
         -------
-        transformed_Xs : list of n_mods array-likes of shape (n_samples, n_components)
+        transformed_Xs : list of n_mods array-likes objects of shape (n_samples, n_components)
             The projected data.
         """
         Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
@@ -195,7 +195,7 @@ class MOFA(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
             A list of different mods.
@@ -206,7 +206,7 @@ class MOFA(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        transformed_X : array-likes of shape (n_samples, n_components)
+        transformed_X : array-likes objects of shape (n_samples, n_components)
             The projected data.
         """
         transformed_X = self.fit(Xs).factors_

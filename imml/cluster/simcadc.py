@@ -24,7 +24,7 @@ except ImportError:
 
 class SIMCADC(BaseEstimator, ClassifierMixin):
     r"""
-    Scalable Incomplete Multiview Clustering with Adaptive Data Completion (SIMC-ADC).
+    Scalable Incomplete Multiview Clustering with Adaptive Data Completion (SIMC-ADC). [#simcadcpaper]_ [#simcadccode]_
 
     The SIMC-ADC algorithm captures the complementary information from different views by building a view-specific
     anchor graph. The anchor graph construction and a structure alignment are jointly optimized to enhance
@@ -125,7 +125,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -206,7 +206,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -227,7 +227,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -301,7 +301,7 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Y: list of array-likes of length (n_mods)
+        Y: list of array-likes objects of length (n_mods)
             - Y[i] shape: (n_samples, n_features_i)
         num_sample: int
             Number of samples
@@ -322,12 +322,12 @@ class SIMCADC(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        UU: list of array-likes of shape (n_samples, n_clusters)
-        V: list of array-likes of shape (n_clusters, n_clusters)
-        A: list of array-likes of shape (n_clusters, n_anchors)
-        W: list of array-likes of length (n_view)
+        UU: list of array-likes objects of shape (n_samples, n_clusters)
+        V: list of array-likes objects of shape (n_clusters, n_clusters)
+        A: list of array-likes objects of shape (n_clusters, n_anchors)
+        W: list of array-likes objects of length (n_view)
             - W[i] shape: (n_features_i, n_clusters)
-        Z_final: list of array-likes of shape (n_anchors, n_samples)
+        Z_final: list of array-likes objects of shape (n_anchors, n_samples)
         iter: int
             Number of iterations.
         obj: List of floats of length (iter)

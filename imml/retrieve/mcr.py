@@ -179,7 +179,7 @@ class MCR(nnModuleBase):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
 
@@ -237,7 +237,7 @@ class MCR(nnModuleBase):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
 
@@ -323,7 +323,7 @@ class MCR(nnModuleBase):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
 
@@ -359,7 +359,7 @@ class MCR(nnModuleBase):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
 
@@ -459,7 +459,7 @@ class MCR(nnModuleBase):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: 2
             - Xs[i] shape: (n_samples_i, 1)
 
@@ -575,7 +575,7 @@ class MCR(nnModuleBase):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 

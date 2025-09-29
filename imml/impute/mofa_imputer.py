@@ -7,12 +7,22 @@ from ..utils import check_Xs
 
 class MOFAImputer(MOFA):
     r"""
-    Impute missing data in a dataset using the `MOFA` method.
+    Impute missing data in a dataset using the `MOFA` method. [#mofapaper1]_ [#mofapaper2]_ [#mofacode]_
 
     This class extends the `MOFA` class to provide functionality for filling in incomplete samples by
     addressing both block-wise and feature-wise missing data. As a subclass of MOFA, `MOFAImputer` inherits all
     input parameters and attributes from `MOFA`. Consequently, it uses the same `fit` method as MOFA for
     training the model.
+
+    References
+    ----------
+    .. [#mofapaper1] Argelaguet R, Velten B, Arnol D, Dietrich S, Zenz T, Marioni JC, Buettner F, Huber W, Stegle O
+                    (2018). “Multi‐Omics Factor Analysis—a framework for unsupervised integration of multi‐omics data
+                    sets.” Molecular Systems Biology, 14. doi:10.15252/msb.20178124.
+    .. [#mofapaper2] Argelaguet R, Arnol D, Bredikhin D, Deloro Y, Velten B, Marioni JC, Stegle O (2020). “MOFA+: a
+                     statistical framework for comprehensive integration of multi-modal single-cell data.” Genome
+                     Biology, 21. doi:10.1186/s13059-020-02015-1.
+    .. [#mofacode] https://biofam.github.io/MOFA2/index.html
 
     Example
     --------
@@ -31,7 +41,7 @@ class MOFAImputer(MOFA):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples_i, n_features_i)
 
@@ -43,7 +53,7 @@ class MOFAImputer(MOFA):
 
         Returns
         -------
-        transformed_X : array-likes of shape (n_samples, n_components)
+        transformed_X : array-likes objects of shape (n_samples, n_components)
             The transformed data with filled missing samples.
         """
 

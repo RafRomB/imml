@@ -9,7 +9,7 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-n
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 

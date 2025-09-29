@@ -21,7 +21,7 @@ except ImportError:
 
 class IMSR(BaseEstimator, ClassifierMixin):
     r"""
-    Self-representation Subspace Clustering for Incomplete Multi-view Data (IMSR).
+    Self-representation Subspace Clustering for Incomplete Multi-view Data (IMSR). [#imsrpaper]_ [#imscaglcode]_
 
     IMSR performs feature extraction, imputation and self-representation learning to obtain a low-rank regularized
     consensus coefficient matrix.
@@ -56,7 +56,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
     References
     ----------
-    .. [#imsrpaper1] Jiyuan Liu, Xinwang Liu, Yi Zhang, Pei Zhang, Wenxuan Tu, Siwei Wang, Sihang Zhou, Weixuan Liang,
+    .. [#imsrpaper] Jiyuan Liu, Xinwang Liu, Yi Zhang, Pei Zhang, Wenxuan Tu, Siwei Wang, Sihang Zhou, Weixuan Liang,
                      Siqi Wang, and Yuexiang Yang. 2021. Self-Representation Subspace Clustering for Incomplete
                      Multi-view Data. In Proceedings of the 29th ACM International Conference on Multimedia (MM '21).
                      Association for Computing Machinery, New York, NY, USA, 2726–2734.
@@ -114,7 +114,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -161,7 +161,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -182,7 +182,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -212,7 +212,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
         Im : array of shape (n_mods, columns_with_missing_values)
@@ -225,7 +225,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        Utmp : list of array-likes of shape (n_samples, n_clusters)
+        Utmp : list of array-likes objects of shape (n_samples, n_clusters)
         obj : float
         """
         V = len(X)
@@ -264,7 +264,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - X length: n_mods
             - X[i] shape: (n_samples, n_features_i)
         beta : list of n_mods values
@@ -273,7 +273,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        Z : list of array-likes of shape (n_samples, n_samples)
+        Z : list of array-likes objects of shape (n_samples, n_samples)
         """
         V = len(X)
         n = X[0].shape[1]
@@ -297,13 +297,13 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Z : list of array-likes of shape (n_samples, n_samples)
+        Z : list of array-likes objects of shape (n_samples, n_samples)
         n_cluters : int
             The number of clusters.
 
         Returns
         -------
-        F : list of array-likes of shape (n_clusters, n_samples)
+        F : list of array-likes objects of shape (n_clusters, n_samples)
         """
         _, Ftmp = eigs(A=(Z + Z.T), k=n_cluters, which='LR')
         F = Ftmp.T
@@ -317,10 +317,10 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-        F : list of array-likes of shape (n_clusters, n_samples)
+        F : list of array-likes objects of shape (n_clusters, n_samples)
         beta : list of n_mods values
         lbd : float, default=1
             Positive trade-off parameter used for the optimization function. It is recommended to set from 0 to 1.
@@ -329,7 +329,7 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Returns
         -------
-        Z : list of array-likes of shape (n_samples, n_samples)
+        Z : list of array-likes objects of shape (n_samples, n_samples)
         """
         V = len(X)
         n = X[0].shape[1]
@@ -366,15 +366,15 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
         Im : array of shape (n_mods, columns_with_missing_values)
-        Z : list of array-likes of shape (n_samples, n_samples)
+        Z : list of array-likes objects of shape (n_samples, n_samples)
 
         Returns
         -------
-        X : list of array-likes
+        X : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
         """
@@ -398,10 +398,10 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        X : list of array-likes
+        X : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
-        Z : list of array-likes of shape (n_samples, n_samples)
+        Z : list of array-likes objects of shape (n_samples, n_samples)
         F
         beta : list of n_views values
         lbd : float, default=1
@@ -437,13 +437,13 @@ class IMSR(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        K : list of array-likes of shape (n_samples, n_samples)
+        K : list of array-likes objects of shape (n_samples, n_samples)
         n_clusters: int
             The number of clusters.
 
         Returns
         -------
-        U : list of array-likes of shape (n_samples, n_clusters)
+        U : list of array-likes objects of shape (n_samples, n_clusters)
         """
         D = np.diag(np.sum(K, axis=1) + np.finfo(float).eps)
         inv_sqrt_D = np.sqrt(np.linalg.inv(np.abs(D)))

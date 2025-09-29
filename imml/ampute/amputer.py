@@ -56,7 +56,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -78,7 +78,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -86,7 +86,7 @@ class Amputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features), length n_mods
+        transformed_Xs : list of array-likes objects, shape (n_samples, n_features), length n_mods
             The amputed multi-modal dataset.
         """
         if self.p > 0:

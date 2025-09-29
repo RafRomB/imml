@@ -12,7 +12,7 @@ def get_n_mods(Xs: list) -> int:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -42,7 +42,7 @@ def get_n_samples_by_mod(Xs: list) -> int:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -75,7 +75,7 @@ def get_com_samples(Xs: list) -> pd.Index:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -110,7 +110,7 @@ def get_incom_samples(Xs: list) -> pd.Index:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -145,7 +145,7 @@ def get_samples(Xs: list) -> pd.Index:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples_i, n_features_i)
 
@@ -181,7 +181,7 @@ def get_samples_by_mod(Xs: list, return_as_list: bool = True) -> Union[list, dic
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -221,7 +221,7 @@ def get_missing_samples_by_mod(Xs: list, return_as_list: bool = True) -> Union[l
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -264,7 +264,7 @@ def get_n_com_samples(Xs: list) -> int:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -296,7 +296,7 @@ def get_n_incom_samples(Xs: list) -> int:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -328,7 +328,7 @@ def get_pct_com_samples(Xs: list) -> float:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -360,7 +360,7 @@ def get_pct_incom_samples(Xs: list) -> float:
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 
@@ -393,7 +393,7 @@ def get_summary(Xs: list, modalities: list = None, one_row: bool = False, comput
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 

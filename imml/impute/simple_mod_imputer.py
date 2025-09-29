@@ -51,7 +51,7 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -78,7 +78,7 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -86,7 +86,7 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
+        transformed_Xs : list of array-likes objects, shape (n_samples, n_features_i)
             The transformed data with filled missing samples.
         """
 
@@ -122,7 +122,7 @@ def simple_mod_imputer(Xs : list, y = None, value : str = 'mean'):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features)
         A list of different modalities.
@@ -135,7 +135,7 @@ def simple_mod_imputer(Xs : list, y = None, value : str = 'mean'):
 
     Returns
     -------
-    transformed_Xs : list of array-likes, shape (n_samples, n_features_i)
+    transformed_Xs : list of array-likes objects, shape (n_samples, n_features_i)
         The transformed data with filled missing samples.
     """
     Xs = check_Xs(Xs, ensure_all_finite='allow-nan')

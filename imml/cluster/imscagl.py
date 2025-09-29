@@ -20,7 +20,7 @@ except ImportError:
 
 class IMSCAGL(BaseEstimator, ClassifierMixin):
     r"""
-    Incomplete Multiview Spectral Clustering With Adaptive Graph Learning (IMSCAGL).
+    Incomplete Multiview Spectral Clustering With Adaptive Graph Learning (IMSCAGL). [#imscaglpaper1]_ [#imscaglpaper2]_ [#imscaglcode1]_ [#imscaglcode2]_
 
     IMSCAGL utilizes graph learning and spectral clustering techniques to derive a unified representation for
     incomplete multiview clustering.
@@ -132,7 +132,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -179,7 +179,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -200,7 +200,7 @@ class IMSCAGL(BaseEstimator, ClassifierMixin):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 

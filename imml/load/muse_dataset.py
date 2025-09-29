@@ -15,7 +15,7 @@ class MUSEDataset(TorchDatasetBase):
 
     Parameters
     ----------
-    Xs : list of array-likes
+    Xs : list of array-likes objects
         - Xs length: n_mods
 
         A list of different modalities.
@@ -28,7 +28,7 @@ class MUSEDataset(TorchDatasetBase):
 
     Returns
     -------
-    Xs_idx: list of array-likes
+    Xs_idx: list of array-likes objects
         - Xs length: n_mods
 
         A list of different modalities for one sample.

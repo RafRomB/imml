@@ -47,7 +47,7 @@ def plot_pid(rus = None, Xs = None, y = None,
     ----------
     rus : list or dict, default=None
         The output of the `̀`̀pid̀̀̀̀`̀`̀ function.
-    Xs : list of array-likes, default=None
+    Xs : list of array-likes objects, default=None
         - Xs length: n_mods
         - Xs[i] shape: (n_samples, n_features_i)
 

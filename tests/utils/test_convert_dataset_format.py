@@ -20,13 +20,25 @@ def sample_data():
     observed_mod_indicator = observed_mod_indicator.values
     return Xs_pandas, Xs_numpy, observed_mod_indicator
 
+def test_invalid_params():
+    with pytest.raises(ValueError, match="Invalid Xs."):
+        convert_dataset_format(Xs="invalid_input")
 
-def test_convert_dataset_format(sample_data):
+
+def test_convert_dataset_format_dict(sample_data):
     for Xs in sample_data[:2]:
         Xs_dict = convert_dataset_format(Xs)
         assert isinstance(Xs_dict, dict)
         assert len(Xs_dict) == len(Xs)
         assert all(isinstance(k, int) for k in Xs_dict.keys())
+
+
+def test_convert_dataset_format_list(sample_data):
+    for Xs in sample_data[:2]:
+        Xs = {i:X for i,X in enumerate(Xs)}
+        Xs_list = convert_dataset_format(Xs)
+        assert isinstance(Xs_list, list)
+        assert len(Xs_list) == len(Xs)
 
 
 if __name__ == "__main__":

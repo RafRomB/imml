@@ -23,13 +23,14 @@ nnModuleBase = nn.Module if deepmodule_installed else object
 class M3Care(LightningModuleBase):
     r"""
 
-    Missing Modalities in Multimodal healthcare data (M3Care). [#m3carepaper]_ [#m3carecode]_
+    Missing Modalities in Multimodal healthcare data (M3Care). [#m3carepaper]_ [#m3carecode]_ [#m3carecode2]_
 
     M3Care is a multimodal classification framework that handles missing modalities by imputing latent
     task-relevant information using similar samples, based on a modality-adaptive similarity metric.
     It supports heterogeneous input types (e.g., tabular, text, vision).
 
-    This class provides training, validation, testing, and prediction logic compatible with the Lightning Trainer.
+    This class provides training, validation, testing, and prediction logic compatible with the
+    `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
 
     Parameters
     ----------
@@ -148,7 +149,7 @@ class M3Care(LightningModuleBase):
 
     def training_step(self, batch, batch_idx=None):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -158,7 +159,7 @@ class M3Care(LightningModuleBase):
 
     def validation_step(self, batch, batch_idx=None):
         r"""
-        Method required for validating using Pytorch Lightning trainer.
+        Method required for validating using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -168,7 +169,7 @@ class M3Care(LightningModuleBase):
 
     def test_step(self, batch, batch_idx=None):
         r"""
-        Method required for testing using Pytorch Lightning trainer.
+        Method required for testing using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -178,7 +179,7 @@ class M3Care(LightningModuleBase):
 
     def predict_step(self, batch, batch_idx=None):
         r"""
-        Method required for predicting using Pytorch Lightning trainer.
+        Method required for predicting using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -188,7 +189,7 @@ class M3Care(LightningModuleBase):
 
     def configure_optimizers(self):
         r"""
-        Method required for training using Pytorch Lightning trainer.
+        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 

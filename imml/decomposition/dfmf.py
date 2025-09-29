@@ -9,7 +9,7 @@ from ._skfusion import fusion
 
 class DFMF(TransformerMixin, BaseEstimator):
     r"""
-    Data Fusion by Matrix Factorization (DFMF).
+    Data Fusion by Matrix Factorization (DFMF). [#dfmfpaper]_ [#dfmfcode]_
 
     DMFM is a data fusion approach with penalized matrix tri-factorization (DFMF) that simultaneously factorizes
     data matrices to reveal hidden associations.
@@ -115,7 +115,7 @@ class DFMF(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -146,7 +146,7 @@ class DFMF(TransformerMixin, BaseEstimator):
 
         Parameters
         ----------
-        Xs : list of array-likes
+        Xs : list of array-likes objects
             - Xs length: n_mods
             - Xs[i] shape: (n_samples, n_features_i)
 
@@ -154,7 +154,7 @@ class DFMF(TransformerMixin, BaseEstimator):
 
         Returns
         -------
-        transformed_Xs : list of array-likes, shape (n_samples, n_components)
+        transformed_Xs : list of array-likes objects, shape (n_samples, n_components)
             The projected data.
         """
 
