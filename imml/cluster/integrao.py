@@ -402,7 +402,7 @@ class IntegrAOModule(nnModuleBase):
         xs = Xs[0]
         edge_indices = Xs[1]
         idxs = Xs[2]
-        ids = Xs[3].numpy()
+        ids = Xs[3].cpu().numpy()
         for X_idx, (X,edge_index,idx) in enumerate(zip(xs, edge_indices, idxs)):
             X = pd.DataFrame(X.numpy(), index=ids).loc[idx[0].numpy()]
             X = torch.from_numpy(X.values).type(torch.float32)
