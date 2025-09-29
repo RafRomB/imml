@@ -35,6 +35,7 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
 @pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_rmodule_installed():
     if rmodule_installed:
@@ -45,58 +46,70 @@ def test_rmodule_installed():
                 estimator(engine="r")
 
 
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
+@pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_random_state(sample_data):
-    if rmodule_installed:
-        estimator()
+    estimator()
 
+
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
+@pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_default_params(sample_data):
-    if rmodule_installed:
-        transformer = estimator(random_state=42)
-        for Xs in sample_data:
-            transformer.fit(Xs)
-            assert hasattr(transformer, 'H_')
-            assert hasattr(transformer, 'reconstruction_err_')
-            assert hasattr(transformer, 'observed_reconstruction_err_')
-            assert hasattr(transformer, 'missing_reconstruction_err_')
-            assert hasattr(transformer, 'relchange_')
+    transformer = estimator(random_state=42)
+    for Xs in sample_data:
+        transformer.fit(Xs)
+        assert hasattr(transformer, 'H_')
+        assert hasattr(transformer, 'reconstruction_err_')
+        assert hasattr(transformer, 'observed_reconstruction_err_')
+        assert hasattr(transformer, 'missing_reconstruction_err_')
+        assert hasattr(transformer, 'relchange_')
 
+
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
+@pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_fit(sample_data):
     n_components = 5
-    if rmodule_installed:
-        transformer = estimator(n_components=n_components, max_iter=10, random_state=42)
-        for Xs in sample_data:
-            transformer.fit(Xs)
-            assert hasattr(transformer, 'H_')
-            assert hasattr(transformer, 'reconstruction_err_')
-            assert hasattr(transformer, 'observed_reconstruction_err_')
-            assert hasattr(transformer, 'missing_reconstruction_err_')
-            assert hasattr(transformer, 'relchange_')
+    transformer = estimator(n_components=n_components, max_iter=10, random_state=42)
+    for Xs in sample_data:
+        transformer.fit(Xs)
+        assert hasattr(transformer, 'H_')
+        assert hasattr(transformer, 'reconstruction_err_')
+        assert hasattr(transformer, 'observed_reconstruction_err_')
+        assert hasattr(transformer, 'missing_reconstruction_err_')
+        assert hasattr(transformer, 'relchange_')
 
+
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
+@pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_transform(sample_data):
     n_components = 5
-    if rmodule_installed:
-        transformer = estimator(n_components=n_components, random_state=42)
-        for Xs in sample_data:
-            n_samples = len(Xs[0])
-            transformer.fit(Xs)
-            transformed_X = transformer.transform(Xs)
-            assert transformed_X.shape == (n_samples, n_components)
-            assert len(transformer.H_) == len(Xs)
-            assert transformer.H_[0].shape == (Xs[0].shape[1], n_components)
+    transformer = estimator(n_components=n_components, random_state=42)
+    for Xs in sample_data:
+        n_samples = len(Xs[0])
+        transformer.fit(Xs)
+        transformed_X = transformer.transform(Xs)
+        assert transformed_X.shape == (n_samples, n_components)
+        assert len(transformer.H_) == len(Xs)
+        assert transformer.H_[0].shape == (Xs[0].shape[1], n_components)
 
+
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
+@pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_missing_values_handling(sample_data):
     n_components = 5
-    if rmodule_installed:
-        transformer = estimator(n_components=n_components, random_state=42)
-        for Xs in sample_data:
-            Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
-            n_samples = len(Xs[0])
-            transformed_X = transformer.fit_transform(Xs)
-            assert not np.isnan(transformed_X).any().any()
-            assert transformed_X.shape == (n_samples, n_components)
-            assert len(transformer.H_) == len(Xs)
-            assert transformer.H_[0].shape == (Xs[0].shape[1], n_components)
+    transformer = estimator(n_components=n_components, random_state=42)
+    for Xs in sample_data:
+        Xs = Amputer(p= 0.3, random_state=42).fit_transform(Xs)
+        n_samples = len(Xs[0])
+        transformed_X = transformer.fit_transform(Xs)
+        assert not np.isnan(transformed_X).any().any()
+        assert transformed_X.shape == (n_samples, n_components)
+        assert len(transformer.H_) == len(Xs)
+        assert transformer.H_[0].shape == (Xs[0].shape[1], n_components)
 
+
+@pytest.mark.skipif(not rmodule_installed, reason="Module 'r' needs to be installed to use r engine.")
+@pytest.mark.skipif(not nnTensor_installed, reason="nnTensor is not installed.")
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid engine"):
         estimator(engine="invalid")
