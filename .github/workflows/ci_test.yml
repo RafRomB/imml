@@ -50,7 +50,7 @@ jobs:
         sudo apt-get update
         sudo apt install libtirpc-dev #needed for rpy2
         sudo apt install r-base r-base-dev -y
-        sudo Rscript -e "install.packages('nnTensor')"
+        sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
         sudo apt install octave -y
         sudo apt install octave-control -y
         sudo apt install octave-statistics -y
@@ -63,15 +63,16 @@ jobs:
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         choco install octave
         choco install r.project
-        Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
         octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
         brew update
+        brew install gcc
         brew install octave
         brew install r
-        Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
         octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test r
       run: |
@@ -116,11 +117,8 @@ jobs:
       with:
         python-version: ${{ matrix.python-version }}
     - name: Install uv
-      uses: astral-sh/setup-uv@v6
-      with:
-        version: "0.8.22"
-        python-version: ${{ matrix.python-version }}
-        enable-cache: true
+      run: |
+        pip install uv
     - name: Remove rpy2
       run: |
         python - <<'PY'
@@ -154,7 +152,7 @@ jobs:
         sudo apt-get update
         sudo apt install libtirpc-dev #needed for rpy2
         sudo apt install r-base r-base-dev -y
-        sudo Rscript -e "install.packages('nnTensor')"
+        sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
         sudo apt install octave -y
         sudo apt install octave-control -y
         sudo apt install octave-statistics -y
@@ -167,15 +165,16 @@ jobs:
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         choco install octave
         choco install r.project
-        Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
         octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
         brew update
+        brew install gcc
         brew install octave
         brew install r
-        Rscript -e "install.packages('nnTensor', repos='http://cran.r-project.org')"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
         octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test r
       run: |
@@ -193,13 +192,13 @@ jobs:
       run: |
         uv pip install ".[deep]"
         uv run pytest --cov=imml \
+               --cov-report=term \
                --cov-report=html:reports/htmlcov-deep \
                --cov-report=xml:reports/coverage-deep.xml
     - name: Test docs
       run: |
         uv pip install ".[docs]"
     - name: Upload coverage reports artifact
-      if: env.ACT == 'true'
       uses: actions/upload-artifact@v4
       with:
         name: coverage-${{ matrix.os }}-${{ matrix.python-version }}
