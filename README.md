@@ -1,17 +1,14 @@
 ![PyPI - Version](https://img.shields.io/pypi/v/imml)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
 [![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io)
-
 ![GitHub Actions Workflow Status](https://img.shields.io/github/actions/workflow/status/ocbe-uio/imml/ci_test.yml)
-[![Coverage](https://ocbe-uio.github.io/imml/badges/coverage.svg)](https://github.com/ocbe-uio/imml/actions)
-![GitHub Pipenv locked dependency version](https://img.shields.io/github/pipenv/locked/dependency-version/ocbe-uio/imml/imml)
-
+![Codecov](https://codecov.io/github/ocbe-uio/imml/graph/bundle/badge.svg)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/ocbe-uio/imml/pulls)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ocbe-uio/imml)
-
 [![GitHub License](https://img.shields.io/github/license/ocbe-uio/imml)](https://github.com/ocbe-uio/imml/blob/main/LICENSE)
-[![DOI]()]()
-[![Paper]()]()
+
+[//]: # ([![DOI]&#40;&#41;]&#40;&#41;)
+[//]: # ([![Paper]&#40;&#41;]&#40;&#41;)
 
 <p align="center">
   <img width=200 src="docs/figures/logo_imml.png" />

@@ -12,7 +12,7 @@ If you are new to open source, don't worry—small, focused contributions are hi
 
 Ways to contribute
 ------------------
-- Read our project roadmap: .
+- Read our project roadmap: https://imml.readthedocs.io/en/latest/development/roadmap.html.
 - Report bugs or propose enhancements by opening an issue: https://github.com/ocbe-uio/imml/issues
 - Improve documentation, examples, and tutorials.
 - Triage issues (reproduce, label, suggest minimal examples).
@@ -22,7 +22,7 @@ Ways to contribute
 Quick links
 -----------
 
-* [Project roadmap](https://imml.readthedocs.io/en/latest/development/contributing.html#submitting-a-bug-report-or-a-feature-request)
+* [Project roadmap](https://imml.readthedocs.io/en/latest/development/roadmap.html)
 * [Submitting a bug report or feature request](https://imml.readthedocs.io/en/latest/development/contributing.html#submitting-a-bug-report-or-a-feature-request)
 * [Contributing code](https://imml.readthedocs.io/en/latest/development/contributing.html#contributing-code)
 * [Coding guidelines](https://imml.readthedocs.io/en/latest/development/contributing.html#guidelines)
