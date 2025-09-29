@@ -47,11 +47,8 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt install libtirpc-dev #needed for rpy2
-        sudo apt install r-base r-base-dev -y
+        sudo apt install r-base r-base-dev octave octave-control octave-statistics -y
         sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
-        sudo apt install octave -y
-        sudo apt install octave-control -y
-        sudo apt install octave-statistics -y
     - name: Test windows
       if: runner.os == 'Windows'
       shell: powershell
@@ -59,20 +56,17 @@ jobs:
         Set-ExecutionPolicy Bypass -Scope Process -Force; `
         [System.Net.ServicePointManager]::SecurityProtocol = [System.Net.ServicePointManager]::SecurityProtocol -bor 3072; `
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
-        choco install octave
-        choco install r.project
+        choco install octave r.project
         Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
-        Write-Host "Searching for Octave executables..."
-        where.exe octave-cli.exe
-        where.exe octave.exe
-        Get-ChildItem "C:\" -Recurse -ErrorAction SilentlyContinue | Where-Object { $_.Name -like "*octave*" }
+        $octaveRoot = "C:\ProgramData\chocolatey\lib\Octave"
+        $octaveBin = Get-ChildItem -Path $octaveRoot -Recurse -Directory | Where-Object { $_.Name -eq "bin" } | Select-Object -First 1 -ExpandProperty FullName
+        if (-not $octaveBin) { throw "Octave bin directory not found!" }
+        $env:PATH = "$octaveBin;$env:PATH"
+        octave-cli.exe --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
-        brew update
-        brew install gcc
-        brew install octave
-        brew install r
+        brew install gcc octave r
         Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
         octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test r
