@@ -58,6 +58,15 @@ jobs:
         iex ((New-Object System.Net.WebClient).DownloadString('https://chocolatey.org/install.ps1'))
         choco install octave r.project
         $env:PATH = "C:\Program Files\GNU Octave\Octave-10.2.0\mingw64\bin\"
+        
+        $tarPath = (Get-ChildItem -Path "C:\ProgramData\chocolatey\lib\gnuwin32-tar" -Recurse -Filter "tar.exe" | Select-Object -First 1).FullName
+        if ($tarPath) {
+          $tarBin = Split-Path $tarPath
+          $env:PATH = "$tarBin;$env:PATH"
+        } else {
+          Write-Host "tar.exe not found, pkg install may fail!"
+        }
+        
         octave.exe --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
     - name: Test mac
       if: runner.os == 'macOS'
