@@ -35,6 +35,19 @@ If you do not have permission, install `iMML` in your user directory by adding t
 
     pip install --user imml
 
+Using uv
+^^^^^^^^^
+
+To install `iMML` using ``uv``, ensure Python 3 and ``uv`` (Python's package manager) are properly set up on
+your system. If ``pip`` is not already installed or needs an update, refer to the official documentation at
+https://docs.astral.sh/uv/.
+
+Run the following command to install the most recent release of `iMML`:
+
+.. code:: bash
+
+    uv pip install imml
+
 Manually
 ^^^^^^^^^^^^
 

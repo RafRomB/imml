@@ -67,6 +67,26 @@ The key features of this package are:
 -   **Extensible**: *iMML* provides a common framework where researchers can contribute and
     integrate new approaches, serving as a community platform for hosting new algorithms and methods.
 
+
+Installation
+--------
+
+Run the following command to install the most recent release of *iMML* using *pip*:
+
+```bash
+pip install imml
+```
+
+Or if you prefer *uv*, use:
+
+```bash
+uv pip install imml
+```
+
+Some features of *iMML* rely on optional dependencies. To enable these additional features, ensure you install 
+the required packages as described in our documentation: https://imml.readthedocs.io/en/latest/main/installation.html.
+
+
 Usage
 --------
 

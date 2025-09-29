@@ -73,7 +73,8 @@ class IntegrAO(LightningModuleBase):
 
     References
     ----------
-    .. [#integraopaper] Ma, Shihao, et al. "Moving towards genome-wide data integration for patient stratification with Integrate Any Omics." Nature Machine Intelligence 7.1 (2025): 29-42.
+    .. [#integraopaper] Ma, Shihao, et al. "Moving towards genome-wide data integration for patient stratification
+                        with Integrate Any Omics." Nature Machine Intelligence 7.1 (2025): 29-42.
     .. [#integraocode] https://github.com/bowang-lab/IntegrAO
 
     Example
