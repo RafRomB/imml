@@ -1,8 +1,8 @@
+import sys
 import pytest
 import numpy as np
 import pandas as pd
 
-plt = pytest.importorskip("matplotlib.pyplot")
 from imml.visualize import plot_missing_modality
 
 
@@ -17,6 +17,7 @@ def sample_data():
     return Xs_pandas, Xs_numpy
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Plot tests never ends on Windows")
 def test_plot_missing_modality(sample_data):
     for Xs in sample_data:
         fig, ax = plot_missing_modality(Xs)
@@ -27,6 +28,7 @@ def test_plot_missing_modality(sample_data):
         assert len(xticks) == len(Xs)
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Plot tests never ends on Windows")
 def test_invalid_params(sample_data):
     with pytest.raises(ValueError, match="Invalid Xs."):
         plot_missing_modality(np.array([[1, 2], [3, 4]]))

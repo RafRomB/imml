@@ -1,7 +1,7 @@
+import sys
 import numpy as np
 import pandas as pd
 import pytest
-plt = pytest.importorskip("matplotlib.pyplot")
 
 from imml.visualize import plot_pid
 
@@ -17,6 +17,7 @@ def sample_data():
     return (Xs_pandas, y_pandas), (Xs_numpy, y_numpy)
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Plot tests never ends on Windows")
 def test_plot_pid_with_rus_abbreviations():
     rus = {"Uniqueness1": 1.2, "Uniqueness2": 0.8, "Redundancy": 0.5, "Synergy": 0.3}
     fig, ax = plot_pid(rus=rus, abb=True)
@@ -31,12 +32,14 @@ def test_plot_pid_with_rus_abbreviations():
     assert any("0.3" in t for t in texts)
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Plot tests never ends on Windows")
 def test_invalid_params():
     with pytest.raises(ValueError, match="Invalid rus."):
         rus = {"Redundancy": 0.2, "Synergy": 0.1}
         plot_pid(rus=rus, abb=False)
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Plot tests never ends on Windows")
 def test_plot_pid_with_Xs(sample_data):
     for Xs,y in sample_data:
         fig, ax = plot_pid(Xs=Xs, y=y, modalities=["Mod1", "Mod2"], abb=False)
