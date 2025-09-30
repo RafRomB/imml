@@ -15,6 +15,6 @@ build:
         uv pip install .[docs]
         mkdir -p R-packages
         export R_LIBS="R-packages"
-        /usr/bin/Rscript -e "options(repos = c(CRAN = \"https://packagemanager.posit.co/cran/__linux__/jammy/latest\")); install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"), Ncpus=2\")"
+        /usr/bin/Rscript -e "options(repos = c(CRAN = \"https://packagemanager.posit.co/cran/__linux__/jammy/latest\")); install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"), Ncpus=2)"
 sphinx:
   configuration: docs/conf.py
