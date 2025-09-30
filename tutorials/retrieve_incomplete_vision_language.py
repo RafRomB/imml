@@ -62,7 +62,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("nlphuji/flickr30k", split="test[:30]")
+ds = load_dataset("nlphuji/flickr30k", split="test[:20]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -221,7 +221,7 @@ shutil.rmtree(data_folder, ignore_errors=True)
 # We used the ``MCR`` retriever from `iMML` to identify the most relevant instances from a
 # memory bank, even when one of the modalities (image or text) was missing.
 #
-# This example is intentionally simplified, using only 30 instances for demonstration.
+# This example is intentionally simplified, using only 20 instances for demonstration.
 # For stronger performance and more reliable results, the full dataset should be used.
 
 ###################################
