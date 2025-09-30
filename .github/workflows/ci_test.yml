@@ -39,9 +39,6 @@ jobs:
     - name: Install tests
       run: |
         uv pip install ".[tests]"
-#    - name: Test base
-#      run: |
-#        uv run pytest --cov=imml
     - name: Test linux
       if: runner.os == 'Linux'
       run: |
@@ -49,19 +46,46 @@ jobs:
         sudo apt install libtirpc-dev #needed for rpy2
         sudo apt install r-base r-base-dev octave octave-control octave-statistics -y
         sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
-    - name: Install Octave and Configure Environment
+    - name: ⚙️ Install Octave and Configure Environment
       if: runner.os == 'Windows'
       shell: powershell
       run: |
-        choco install octave -y
+        # 1. Install Octave via Chocolatey
+        Write-Host "Installing Octave via Chocolatey..."
+        choco install octave -y | Out-Null
+        
+        # 2. Find Octave's executable directory (often needed when choco doesn't update PATH immediately)
+        $octavePath = Join-Path -Path (Get-Command octave.exe).Source -ChildPath ".."
+        Write-Host "Found Octave Path: $octavePath"
+    
+        # 3. Define the reliable 'tar.exe' path from Git (Fixes the archive unpack error)
         $gitBinPath = "C:\Program Files\Git\usr\bin"
-        "PATH=$gitBinPath;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
-    - name: Install and Verify Octave Packages
+        
+        # 4. CRITICAL FIX: Write the updated PATH to the $GITHUB_ENV file
+        # Ensure both the Octave bin directory and the Git bin directory are prepended.
+        # $env:PATH ensures all existing paths are kept.
+        # The output format MUST be `NAME=value` on a new line.
+        
+        # Construct the full new PATH string
+        $newPath = "$octavePath;$gitBinPath;$env:PATH"
+        
+        # Write the PATH to the $GITHUB_ENV file
+        "PATH=$newPath" | Out-File -FilePath $env:GITHUB_ENV -Encoding UTF8 -Append
+
+    # ------------------------------------------------------------------
+    # This step runs in a NEW shell instance with the fully corrected PATH
+    # ------------------------------------------------------------------
+    - name: 📦 Install and Verify Octave Packages
       if: runner.os == 'Windows'
-      shell: cmd
+      shell: cmd # Use cmd for cleaner 'octave' command execution
       run: |
+        REM Verify Octave is now recognized
         where octave
+        
+        REM Install packages (control and statistics)
         octave --eval "pkg install -forge control; pkg install -forge statistics; disp('Packages installed successfully.')"
+        
+        REM Load and verify
         octave --eval "pkg load control; pkg load statistics; pkg list; ver"
     - name: Test mac
       if: runner.os == 'macOS'
