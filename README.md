@@ -92,7 +92,7 @@ Usage
 
 This package provides a user-friendly interface to apply these algorithms to user-provided data.
 *iMML* was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
-NumPy, Scikit-learn, and PyTorch Lightning, hence allowing researchers to **apply machine learning models with
+NumPy, Scikit-learn, and Lightning, hence allowing researchers to **apply machine learning models with
 minimal programming effort**.
 Moreover, it can be easily integrated into Scikit-learn pipelines for data preprocessing and modeling.
 
@@ -141,3 +141,9 @@ and in doing so, helping us extend and refine the library for the community. Suc
 make *iMML* more versatile, sustainable, powerful, and accessible to the machine learning community across
 many domains.
 
+Project roadmap
+------------
+
+Our vision is to establish *iMML* as a leading and reliable library for multi-modal learning across research and 
+applied settings. Therefore, our priorities include to broaden algorithmic coverage, improve performance and 
+scalability, strengthen interoperability, and grow a healthy contributor community.
