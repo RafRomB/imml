@@ -27,7 +27,7 @@ sys.path.insert(0, os.path.abspath(".."))
 project = 'imml'
 copyright = '2025, '
 authors = 'Alberto López'
-release = '0.1.0'
+release = "alpha"
 
 # The short X.Y version
 # Find imml version.
@@ -35,9 +35,6 @@ PROJECT_PATH = os.path.dirname(os.path.abspath(__file__))
 for line in open(os.path.join(PROJECT_PATH, "..", project, "__init__.py")):
     if line.startswith("__version__ = "):
         version = line.strip().split()[2][1:-1]
-
-# The full version, including alpha/beta/rc tags
-release = "alpha"
 
 # -- Extension configuration -------------------------------------------------
 extensions = [
@@ -113,7 +110,7 @@ html_context = {
     "display_github": True,
     # Set the following variables to generate the resulting github URL for each page.
     # Format Template: https://{{ github_host|default("github.com") }}/{{ github_user }}/{{ github_repo }}/blob/{{ github_version }}{{ conf_py_path }}{{ pagename }}{{ suffix }}
-    "github_user": project,
+    "github_user": "ocbe-uio",
     "github_repo": project,
     "github_version": "main/docs/",
 }
