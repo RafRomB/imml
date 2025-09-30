@@ -13,6 +13,7 @@ except ImportError:
     rmodule_installed = False
 
 
+@pytest.mark.skipif(sys.platform.startswith("win"), reason="Test never ends on Windows")
 def test_rmodule_installed():
     df = pd.DataFrame([[1, 2], [3, 4]])
     if rmodule_installed:

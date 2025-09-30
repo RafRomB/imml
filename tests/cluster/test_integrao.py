@@ -48,6 +48,7 @@ def test_deepmodule_not_installed(sample_data):
             estimator(Xs=sample_data[0])
 
 
+@pytest.mark.skipif(sys.platform.startswith("mac"), reason="Error with torch_geometric and MPS")
 @pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_default_params(sample_data):
     n_clusters = 3
@@ -86,6 +87,7 @@ def test_invalid_params(sample_data):
         estimator(learning_rate=-1, Xs=sample_data[0])
 
 
+@pytest.mark.skipif(sys.platform.startswith("mac"), reason="Error with torch_geometric and MPS")
 @pytest.mark.skipif(not deepmodule_installed, reason="Module 'Deep' needs to be installed.")
 def test_missing_values_handling(sample_data):
     n_clusters = 2
