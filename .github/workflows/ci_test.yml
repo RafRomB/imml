@@ -51,15 +51,15 @@ jobs:
         sudo apt install libtirpc-dev #needed for rpy2
         sudo apt install r-base r-base-dev octave octave-control octave-statistics -y
         sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
-    - name: Test windows0
+    - name: Setup Octave Windows
       if: runner.os == 'Windows'
-      run: winget install GNU.Octave --disable-interactivity --accept-source-agreements --accept-package-agreements
-    - name: Test windows1
+      uses: t-mak/setup-octave@v1
+    - name: Test windows
       if: runner.os == 'Windows'
-      run: where octave.exe
-    - name: Test windows2
-      if: runner.os == 'Windows'
-      run: octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
+      shell: powershell
+      run: |
+        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
