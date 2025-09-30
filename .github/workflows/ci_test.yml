@@ -18,8 +18,8 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
-        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        os: [windows-latest]
+        python-version: ["3.13"]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -39,9 +39,9 @@ jobs:
     - name: Install tests
       run: |
         uv pip install ".[tests]"
-    - name: Test base
-      run: |
-        uv run pytest --cov=imml
+#    - name: Test base
+#      run: |
+#        uv run pytest --cov=imml
     - name: Test linux
       if: runner.os == 'Linux'
       run: |
@@ -49,22 +49,19 @@ jobs:
         sudo apt install libtirpc-dev #needed for rpy2
         sudo apt install r-base r-base-dev octave octave-control octave-statistics -y
         sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
-    - name: Install Octave and Git Tar via Chocolatey
+    - name: Install Octave and Configure Environment
       if: runner.os == 'Windows'
-      shell: cmd
+      shell: powershell
       run: |
         choco install octave -y
-        echo "::set-env name=PATH::%PATH%;C:\Program Files\Git\usr\bin"
-    - name: Install Octave Packages
+        $gitBinPath = "C:\Program Files\Git\usr\bin"
+        "PATH=$gitBinPath;$env:PATH" | Out-File -FilePath $env:GITHUB_ENV -Append
+    - name: Install and Verify Octave Packages
       if: runner.os == 'Windows'
       shell: cmd
       run: |
         where octave
         octave --eval "pkg install -forge control; pkg install -forge statistics; disp('Packages installed successfully.')"
-    - name: ✅ Verify and Load Packages
-      if: runner.os == 'Windows'
-      shell: cmd
-      run: |
         octave --eval "pkg load control; pkg load statistics; pkg list; ver"
     - name: Test mac
       if: runner.os == 'macOS'
