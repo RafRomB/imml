@@ -53,14 +53,12 @@ jobs:
         sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
     - name: Test windows
       if: runner.os == 'Windows'
-      shell: powershell
+      shell: cmd
       run: |
-        choco install octave
-        $env:PATH = "${env:PATH};C:\Program Files\Git\usr\bin\tar.exe"
-        $env:PATH = "C:\Program Files\GNU Octave\Octave-10.2.0\mingw64\bin\" + ";" + $env:PATH
-    - name: Test windows2
-      if: runner.os == 'Windows'
-      run: octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
+        choco install octave -y
+        set "PATH=%PATH%;C:\Program Files\Git\usr\bin"
+        octave --eval "pkg install -forge control; pkg install -forge statistics; disp('Packages installed successfully.')"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
