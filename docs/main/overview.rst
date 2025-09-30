@@ -54,7 +54,7 @@ The key features of this package are:
     integrate new approaches, serving as a community platform for hosting new algorithms and methods.
 
 Installation
---------
+-------------
 
 Run the following command to install the most recent release of `iMML` using ``pip``:
 
@@ -126,5 +126,12 @@ Contribute
 and in doing so, helping us extend and refine the library for the community. Such a community-wide effort will
 make `iMML` more versatile, sustainable, powerful, and accessible to the machine learning community across
 many domains.
+
+Project roadmap
+------------
+
+Our vision is to establish `iMML` as a leading and reliable library for multi-modal learning across research and
+applied settings. Therefore, our priorities include to broaden algorithmic coverage, improve performance and
+scalability, strengthen interoperability, and grow a healthy contributor community.
 
 

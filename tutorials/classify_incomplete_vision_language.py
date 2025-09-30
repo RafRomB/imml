@@ -1,7 +1,7 @@
 """
-=========================================================================
+===========================================================================================================
 Classify an incomplete vision–language dataset (Oxford‑IIIT Pets) with deep learning
-=========================================================================
+===========================================================================================================
 
 This tutorial demonstrates how to classify samples from an incomplete vision–language dataset using the `iMML`
 library. `iMML` supports robust classification even when some modalities (e.g., text or image) are missing, making it
