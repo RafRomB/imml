@@ -405,7 +405,7 @@ class IntegrAOModule(nnModuleBase):
         idxs = Xs[2]
         ids = Xs[3].cpu().numpy()
         for X_idx, (X,edge_index,idx) in enumerate(zip(xs, edge_indices, idxs)):
-            X = pd.DataFrame(X.numpy(), index=ids).loc[idx[0].numpy()]
+            X = pd.DataFrame(X.cpu().numpy(), index=ids).loc[idx[0].cpu().numpy()]
             X = torch.from_numpy(X.values).type(torch.float32)
             z = self.feature[X_idx](X, edge_index[0])
             z = self.feature_show(z)
