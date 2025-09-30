@@ -1,77 +1,77 @@
-# """
-# ===========================================================================================================
-# Classify an incomplete vision–language dataset (Oxford‑IIIT Pets) with deep learning
-# ===========================================================================================================
-#
-# This tutorial demonstrates how to classify samples from an incomplete vision–language dataset using the `iMML`
-# library. `iMML` supports robust classification even when some modalities (e.g., text or image) are missing, making it
-# suitable for real‑world multi‑modal data where missingness is common.
-#
-# We will use the ``RAGPT`` algorithm from the `iMML` classify module on the Oxford‑IIIT Pets dataset and evaluate performance.
-#
-# What you will learn:
-#
-# - How to load a public vision–language dataset (Oxford‑IIIT Pets via Hugging Face Datasets).
-# - How to adapt this workflow to your own vision–language data.
-# - How to build a retrieval‑augmented memory bank and prompts with ``MCR``.
-# - How to train the ``RAGPT`` classifier when image or text may be missing.
-# - How to track metrics during training and evaluate with MCC and a confusion matrix.
-# """
-#
-# # sphinx_gallery_thumbnail_number = 1
-#
-# # License: BSD 3-Clause License
-#
-# ###################################
-# # Step 0: Prerequisites
-# # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# # To run this tutorial, install the extras for deep learning and tutorials:
-# #   pip install imml[deep]
-# # We also use the Hugging Face Datasets library to load Oxford‑IIIT Pets:
-# #   pip install datasets
-#
-#
-# ###################################
-# # Step 1: Import required libraries
-# # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#
-# import shutil
-# from PIL import Image
-# from lightning import Trainer
-# import lightning as L
-# from matplotlib import pyplot as plt
-# from sklearn.model_selection import train_test_split
-# from torch.utils.data import DataLoader
-# import torch
-# import os
-# import pandas as pd
-# from sklearn.metrics import matthews_corrcoef, ConfusionMatrixDisplay
-# import numpy as np
-# from sklearn.preprocessing import LabelEncoder
-# from datasets import load_dataset
-#
-# from imml.classify import RAGPT
-# from imml.load import RAGPTDataset, RAGPTCollator
-# from imml.retrieve import MCR
-#
-# ################################
-# # Step 2: Prepare the dataset
-# # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# # We use the oxford-iiit-pet-vl-enriched dataset, a public vision–language dataset with images and captions
-# # available on Hugging Face Datasets as visual-layer/oxford-iiit-pet-vl-enriched. For retrieval, we will use
-# # the ``MCR`` class from the retrieve module.
-#
-# random_state = 42
-# L.seed_everything(random_state)
-#
-# # Local working directory (images will be saved here so ``MCR`` can read paths)
-# data_folder = "oxford_iiit_pet"
-# folder_images = os.path.join(data_folder, "imgs")
-# os.makedirs(folder_images, exist_ok=True)
-#
-# # Load the dataset
-# ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:25]")
-#
+"""
+===========================================================================================================
+Classify an incomplete vision–language dataset (Oxford‑IIIT Pets) with deep learning
+===========================================================================================================
+
+This tutorial demonstrates how to classify samples from an incomplete vision–language dataset using the `iMML`
+library. `iMML` supports robust classification even when some modalities (e.g., text or image) are missing, making it
+suitable for real‑world multi‑modal data where missingness is common.
+
+We will use the ``RAGPT`` algorithm from the `iMML` classify module on the Oxford‑IIIT Pets dataset and evaluate performance.
+
+What you will learn:
+
+- How to load a public vision–language dataset (Oxford‑IIIT Pets via Hugging Face Datasets).
+- How to adapt this workflow to your own vision–language data.
+- How to build a retrieval‑augmented memory bank and prompts with ``MCR``.
+- How to train the ``RAGPT`` classifier when image or text may be missing.
+- How to track metrics during training and evaluate with MCC and a confusion matrix.
+"""
+
+# sphinx_gallery_thumbnail_number = 1
+
+# License: BSD 3-Clause License
+
+###################################
+# Step 0: Prerequisites
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# To run this tutorial, install the extras for deep learning and tutorials:
+#   pip install imml[deep]
+# We also use the Hugging Face Datasets library to load Oxford‑IIIT Pets:
+#   pip install datasets
+
+
+###################################
+# Step 1: Import required libraries
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+import shutil
+from PIL import Image
+from lightning import Trainer
+import lightning as L
+from matplotlib import pyplot as plt
+from sklearn.model_selection import train_test_split
+from torch.utils.data import DataLoader
+import torch
+import os
+import pandas as pd
+from sklearn.metrics import matthews_corrcoef, ConfusionMatrixDisplay
+import numpy as np
+from sklearn.preprocessing import LabelEncoder
+from datasets import load_dataset
+
+from imml.classify import RAGPT
+from imml.load import RAGPTDataset, RAGPTCollator
+from imml.retrieve import MCR
+
+################################
+# Step 2: Prepare the dataset
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# We use the oxford-iiit-pet-vl-enriched dataset, a public vision–language dataset with images and captions
+# available on Hugging Face Datasets as visual-layer/oxford-iiit-pet-vl-enriched. For retrieval, we will use
+# the ``MCR`` class from the retrieve module.
+
+random_state = 42
+L.seed_everything(random_state)
+
+# Local working directory (images will be saved here so ``MCR`` can read paths)
+data_folder = "oxford_iiit_pet"
+folder_images = os.path.join(data_folder, "imgs")
+os.makedirs(folder_images, exist_ok=True)
+
+# Load the dataset
+ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:25]")
+
 # # Build a DataFrame with image paths and captions. We persist images to disk because
 # # the retriever expects paths.
 # n_total = len(ds)
@@ -250,21 +250,21 @@
 #
 # ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=preds)
 # print("Testing metric:", matthews_corrcoef(y_true=y_test, y_pred=preds))
+
+###################################
+# Summary of results
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# We first built a memory bank with 40% independent vision-language samples using the `iMML` ``retrieve`` module to
+# generate retrieval-augmented prompts with a multi-channel retriever (``MCR``). Subsequently, we trained a model
+# using the ``RAGPT`` algorithm available in `iMML` under 25% randomly missing text and image modalities. The model
+# demonstrated strong robustness on the test set.
 #
-# ###################################
-# # Summary of results
-# # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# # We first built a memory bank with 40% independent vision-language samples using the `iMML` ``retrieve`` module to
-# # generate retrieval-augmented prompts with a multi-channel retriever (``MCR``). Subsequently, we trained a model
-# # using the ``RAGPT`` algorithm available in `iMML` under 25% randomly missing text and image modalities. The model
-# # demonstrated strong robustness on the test set.
-# #
-# # This example is intentionally simplified, using only 50 instances for demonstration.
-# # For stronger performance and more reliable results, the full dataset and longer training should be used.
-#
-# ###################################
-# # Conclusion
-# # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# # This example illustrates how `iMML` enables state-of-the-art performance in classification, even in the presence
-# # of significant modality incompleteness in vision-language datasets.
-#
+# This example is intentionally simplified, using only 50 instances for demonstration.
+# For stronger performance and more reliable results, the full dataset and longer training should be used.
+
+###################################
+# Conclusion
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# This example illustrates how `iMML` enables state-of-the-art performance in classification, even in the presence
+# of significant modality incompleteness in vision-language datasets.
+
