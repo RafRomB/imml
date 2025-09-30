@@ -70,7 +70,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:20]")
+ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:30]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -106,7 +106,7 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data. In this case, 20% of training and test samples
+# To reflect realistic scenarios, we randomly introduce missing data. In this case, 30% of training and test samples
 # will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
 p = 0.3
@@ -256,7 +256,7 @@ print("Testing metric:", matthews_corrcoef(y_true=y_test, y_pred=preds))
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We first built a memory bank with 40% independent vision-language samples using the `iMML` ``retrieve`` module to
 # generate retrieval-augmented prompts with a multi-channel retriever (``MCR``). Subsequently, we trained a model
-# using the ``RAGPT`` algorithm available in `iMML` under 20% randomly missing text and image modalities. The model
+# using the ``RAGPT`` algorithm available in `iMML` under 30% randomly missing text and image modalities. The model
 # demonstrated strong robustness on the test set.
 #
 # This example is intentionally simplified, using only 50 instances for demonstration.
