@@ -84,7 +84,7 @@ uv pip install imml
 ```
 
 Some features of *iMML* rely on optional dependencies. To enable these additional features, ensure you install 
-the required packages as described in our documentation: https://imml.readthedocs.io/en/latest/main/installation.html.
+the required packages as described in our documentation: https://imml.readthedocs.io/stable/main/installation.html.
 
 
 Usage

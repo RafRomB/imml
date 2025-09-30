@@ -57,7 +57,7 @@ Community and governance
 How to get involved
 -------------------
 - Browse open issues and help wanted labels: https://github.com/ocbe-uio/imml/issues
-- Read the contributing guide: https://imml.readthedocs.io/en/latest/development/contributing.html
+- Read the contributing guide: https://imml.readthedocs.io/stable/development/contributing.html
 - Open an issue to propose features.
 - Improve tutorials and documentation.
 
