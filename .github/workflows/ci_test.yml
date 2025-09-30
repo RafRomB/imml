@@ -18,10 +18,8 @@ jobs:
     continue-on-error: true
     strategy:
       matrix:
-        os: [windows-latest]
-        python-version: ["3.13"]
-#        os: [ubuntu-latest, windows-latest, macos-latest]
-#        python-version: ["3.10", "3.11", "3.12", "3.13"]
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
     steps:
     - name: Checkout
       uses: actions/checkout@v4
@@ -41,9 +39,9 @@ jobs:
     - name: Install tests
       run: |
         uv pip install ".[tests]"
-#    - name: Test base
-#      run: |
-#        uv run pytest --cov=imml
+    - name: Test base
+      run: |
+        uv run pytest --cov=imml
     - name: Test linux
       if: runner.os == 'Linux'
       run: |
@@ -51,22 +49,31 @@ jobs:
         sudo apt install libtirpc-dev #needed for rpy2
         sudo apt install r-base r-base-dev octave octave-control octave-statistics -y
         sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
-    - name: Test windows
+    - name: Install Octave and Git Tar via Chocolatey
       if: runner.os == 'Windows'
       shell: cmd
       run: |
         choco install octave -y
-        set "PATH=%PATH%;C:\Program Files\Git\usr\bin"
+        echo "::set-env name=PATH::%PATH%;C:\Program Files\Git\usr\bin"
+    - name: Install Octave Packages
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        where octave
         octave --eval "pkg install -forge control; pkg install -forge statistics; disp('Packages installed successfully.')"
-        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
+    - name: ✅ Verify and Load Packages
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        octave --eval "pkg load control; pkg load statistics; pkg list; ver"
     - name: Test mac
       if: runner.os == 'macOS'
       run: |
         brew update
         brew install gcc
         brew install octave r
-        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
         octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
     - name: Test r
       run: |
         uv pip install ".[r]"
