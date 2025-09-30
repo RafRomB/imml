@@ -28,7 +28,7 @@ Expanding the multi-modal learning field
 Algorithm diversity
 ~~~~~~~~~~~~~~~~~~~
 - Extend the set of supervised learners that operate on incomplete data natively.
-- Add modules for new tasks: regression, time‑series forecasting/classification, etc.
+- Add modules for new tasks: regression, time‑series forecasting/classification, survival analysis, etc.
 - Support additional modality types, such as audio, video and graphs, with new algorithms, utility helpers
   and examples.
 

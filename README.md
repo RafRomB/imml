@@ -11,7 +11,7 @@
 [//]: # ([![Paper]&#40;&#41;]&#40;&#41;)
 
 <p align="center">
-  <img width=200 src="docs/figures/logo_imml.png" />
+  <img alt="iMML Logo" src="https://raw.githubusercontent.com/ocbe-uio/imml/refs/heads/main/docs/figures/logo_imml.png">
 </p>
 
 Overview
@@ -23,7 +23,7 @@ with K modalities, *iMML* effectively handles missing data for **classification,
 imputation and amputation, feature selection, feature extraction and data exploration**, hence enabling efficient
 analysis of partially observed samples.
 
-![Overview of iMML for multi-modal learning with incomplete data](docs/figures/graph.png)
+![Overview of iMML for multi-modal learning with incomplete data](https://raw.githubusercontent.com/ocbe-uio/imml/refs/heads/main/docs/figures/graph.png)
 <p align="center"><strong>Overview of iMML for multi-modal learning with incomplete data.</strong></p>
 
 
