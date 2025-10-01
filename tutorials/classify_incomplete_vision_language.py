@@ -62,15 +62,15 @@ from imml.retrieve import MCR
 # the ``MCR`` class from the retrieve module.
 
 random_state = 42
-L.seed_everything(random_state)
-
-# Local working directory (images will be saved here so ``MCR`` can read paths)
-data_folder = "oxford_iiit_pet"
-folder_images = os.path.join(data_folder, "imgs")
-os.makedirs(folder_images, exist_ok=True)
-
-# Load the dataset
-ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:25]")
+# L.seed_everything(random_state)
+#
+# # Local working directory (images will be saved here so ``MCR`` can read paths)
+# data_folder = "oxford_iiit_pet"
+# folder_images = os.path.join(data_folder, "imgs")
+# os.makedirs(folder_images, exist_ok=True)
+#
+# # Load the dataset
+# ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:25]")
 
 # # Build a DataFrame with image paths and captions. We persist images to disk because
 # # the retriever expects paths.
