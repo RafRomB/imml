@@ -3,17 +3,16 @@ version: 2
 build:
   os: ubuntu-lts-latest
   tools:
-    python: "3.10"
+    python: "3.13"
   apt_packages:
     - libtirpc-dev
     - r-base
-    - r-base-dev
   jobs:
     pre_build:
       - |
         mkdir -p R-packages
         export R_LIBS="R-packages"
-        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
+        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", repos=\'https://packagemanager.rstudio.com/all/__linux__/focal/latest\', lib=Sys.getenv(\"R_LIBS\"))"
 python:
   install:
     - method: pip
