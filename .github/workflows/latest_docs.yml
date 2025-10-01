@@ -1,0 +1,59 @@
+# .github/workflows/latest_docs.yml
+
+name: Documentation Build
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.py'
+      - '**.rst'
+      - 'docs/**'
+      - 'pyproject.toml'
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  build_docs:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout Repository
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.13'
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: "0.8.22"
+        python-version: "3.13"
+        enable-cache: true
+    - name: Install R and dependencies
+      uses: r-lib/actions/setup-r@v2
+      with:
+        r-version: '4.3'
+
+    - name: Install R dependencies
+      run: |
+        Rscript -e "install.packages(c('nnTensor'))"
+        
+    - name: Install Python dependencies
+      run: |
+        uv pip install .[docs]
+
+    - name: Build Sphinx Documentation
+      run: |
+        sphinx-build -b html docs _build/html
+
+    - name: Deploy documentation to Read the Docs
+      uses: readthedocs/actions/upload-external-build@v2
+      with:
+        project_slug: imml
+        version_slug: latest
+        path: _build/html
+        token: ${{ secrets.RTD_TOKEN }}
