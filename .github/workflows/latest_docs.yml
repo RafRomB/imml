@@ -4,13 +4,7 @@ name: Documentation Build
 
 on:
   push:
-    branches:
-      - main
-    paths:
-      - '**.py'
-      - '**.rst'
-      - 'docs/**'
-      - 'pyproject.toml'
+    branches: [ "main" ]
   pull_request:
     branches:
       - main
