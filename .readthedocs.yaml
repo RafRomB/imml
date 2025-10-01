@@ -16,7 +16,7 @@ build:
         /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
 python:
   install:
-    - method: uv
+    - method: pip
       path: .
       extra_requirements:
         - docs
