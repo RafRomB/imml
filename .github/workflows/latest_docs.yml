@@ -6,8 +6,6 @@ on:
   push:
     branches: [ "main" ]
   pull_request:
-    branches:
-      - main
 env:
   UV_SYSTEM_PYTHON: 1
 
@@ -46,3 +44,11 @@ jobs:
     - name: Build Sphinx Documentation
       run: |
         sphinx-build -b html docs _build/html
+
+    - name: Deploy documentation to Read the Docs
+      uses: readthedocs/actions/upload-external-build@v2
+      with:
+        project_slug: imml
+        version_slug: latest
+        path: _build/html
+        token: ${{ secrets.RTD_TOKEN }}
