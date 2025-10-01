@@ -46,7 +46,7 @@ jobs:
         sphinx-build -b html docs _build/html
 
     - name: Deploy documentation to Read the Docs
-      uses: readthedocs/actions/upload-external-build@main
+      uses: readthedocs/actions/preview@v1
       with:
         project_slug: imml
         version_slug: latest
