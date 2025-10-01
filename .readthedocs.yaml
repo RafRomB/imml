@@ -1,19 +1,11 @@
 version: 2
 
 build:
-  os: ubuntu-lts-latest
+  os: ubuntu-22.04
   tools:
-    python: "3.11"
-  apt_packages:
-    - libtirpc-dev
-    - r-base
-    - r-base-dev
-  jobs:
-    pre_build:
-      - |
-        mkdir -p R-packages
-        export R_LIBS="R-packages"
-        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
+    python: "3.13"
+  docker:
+    image: albertolzs/rtd-custom:latest
 python:
   install:
     - method: pip
