@@ -3,7 +3,7 @@ version: 2
 build:
   os: ubuntu-lts-latest
   tools:
-    python: "3.13"
+    python: "3.11"
   apt_packages:
     - libtirpc-dev
     - r-base
@@ -11,10 +11,14 @@ build:
   jobs:
     pre_build:
       - |
-        pip install uv
-        uv pip install .[docs]
         mkdir -p R-packages
         export R_LIBS="R-packages"
-        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"), Ncpus=2, INSTALL_opts=\"--no-docs --no-html --no-help\")"
+        /usr/bin/Rscript -e "install.packages(\"nnTensor\", repos=\"https://cloud.r-project.org\", lib=Sys.getenv(\"R_LIBS\"))"
+python:
+  install:
+    - method: uv
+      path: .
+      extra_requirements:
+        - docs
 sphinx:
   configuration: docs/conf.py

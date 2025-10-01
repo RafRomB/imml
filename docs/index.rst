@@ -32,7 +32,7 @@ Documentation
    :caption: Links
 
    GitHub <https://github.com/ocbe-uio/imml>
-   PyPI <https://github.com/tobepublic>
+   PyPI <https://pypi.org/project/imml/>
 
 Indices and tables
 ==================
