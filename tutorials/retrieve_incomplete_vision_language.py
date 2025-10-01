@@ -62,7 +62,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("nlphuji/flickr30k", split="test[:10]")
+ds = load_dataset("nlphuji/flickr30k", split="test[:4]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
