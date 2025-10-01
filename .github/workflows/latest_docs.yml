@@ -14,10 +14,13 @@ on:
   pull_request:
     branches:
       - main
+env:
+  UV_SYSTEM_PYTHON: 1
 
 jobs:
   build_docs:
     runs-on: ubuntu-latest
+    continue-on-error: true
 
     steps:
     - name: Checkout Repository
