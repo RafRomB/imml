@@ -62,7 +62,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("nlphuji/flickr30k", split="test[:20]")
+ds = load_dataset("nlphuji/flickr30k", split="test[:6]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -78,8 +78,8 @@ for i in range(n_total):
 
 df = pd.DataFrame(rows)
 
-# Split into 40% train and 20% test sets
-train_df = df.sample(frac=0.8, random_state=random_state)
+# Split into 70% train and 30% test sets
+train_df = df.sample(frac=0.7, random_state=random_state)
 test_df = df.drop(index=train_df.index)
 print("train_df", train_df.shape)
 train_df.head()
@@ -91,14 +91,8 @@ train_df.head()
 # To reflect realistic scenarios, we randomly introduce missing data. In this case, 70% of test samples
 # will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
-p = 0.7
-missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
-test_df.loc[missing_mask, "img"] = np.nan
-missing_mask = test_df. \
-    drop(labels=missing_mask). \
-    sample(n=len(missing_mask), random_state=random_state). \
-    index
-test_df.loc[missing_mask, "text"] = np.nan
+test_df.loc[test_df.index[0], "img"] = np.nan
+test_df.loc[test_df.index[1], "text"] = np.nan
 
 
 ########################################################
@@ -118,6 +112,7 @@ Xs_train = [
 y_train = pd.Series(np.zeros(len(train_df)), index=train_df.index)
 
 estimator.fit(Xs=Xs_train, y=y_train)
+memory_bank = estimator.memory_bank_
 
 
 ########################################################
@@ -130,22 +125,8 @@ Xs_test = [
 ]
 # Use dummy labels for API compatibility
 y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
-# As the transformation takes some time, we will save the results in this tutorial. Uncomment this line.
-if not os.path.exists("retrieve_test_db.csv"):
-    test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
-    test_db.to_csv("retrieve_test_db.csv")
-test_db = pd.read_csv("retrieve_test_db.csv", index_col=0, converters={
-    "i2i_id_list": eval,
-    "i2i_sims_list": eval,
-    "i2i_label_list": eval,
-    "prompt_image_path": eval,
-    "t2t_id_list": eval,
-    "t2t_sims_list": eval,
-    "t2t_label_list": eval,
-    "prompt_text_path": eval,
-})
-memory_bank = estimator.memory_bank_
 
+test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
 
 ########################################################
 # Step 6: Visualize the retrieved instances

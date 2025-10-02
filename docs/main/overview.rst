@@ -128,7 +128,7 @@ make `iMML` more versatile, sustainable, powerful, and accessible to the machine
 many domains.
 
 Project roadmap
-------------
+---------------
 
 Our vision is to establish `iMML` as a leading and reliable library for multi-modal learning across research and
 applied settings. Therefore, our priorities include to broaden algorithmic coverage, improve performance and

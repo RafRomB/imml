@@ -20,7 +20,7 @@ Guiding principles
 Thematic tracks
 ---------------
 Expanding the multi-modal learning field
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 - Although `iMML` originated with a focus on incomplete multi-modal data, most methods can also be applied to fully
   observed datasets. To broaden adoption and diversity, we will encourage contributions of new multi-modal
   algorithms, even if they do not explicitly handle missing data.

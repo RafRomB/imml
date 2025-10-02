@@ -50,7 +50,7 @@ from imml.visualize import plot_pid
 # - All modalities must refer to the same samples and be aligned by row order or index.
 
 random_state = 42
-X, y = make_classification(n_samples=50, random_state=random_state)
+X, y = make_classification(n_samples=20, random_state=random_state)
 # Two modalities: first 10 features and last 10 features
 Xs = [X[:, :10], X[:, 10:]]
 print("Samples:", len(Xs[0]), "\t", "Modalities:", len(Xs), "\t", "Features:", [X.shape[1] for X in Xs])
@@ -65,10 +65,10 @@ print("Samples:", len(Xs[0]), "\t", "Modalities:", len(Xs), "\t", "Features:", [
 
 inc_Xs = copy.deepcopy(Xs)
 # Introduce block-wise missingness in a few regions for illustration
-inc_Xs[0][:20, :] = np.nan
-inc_Xs[0][25, 1] = np.nan
-inc_Xs[1][18:22, :] = np.nan
-inc_Xs[1][-15:, 3] = np.nan
+inc_Xs[0][:10, :] = np.nan
+inc_Xs[0][12, 1] = np.nan
+inc_Xs[1][11:13, :] = np.nan
+inc_Xs[1][15:, 3] = np.nan
 
 summary = get_summary(Xs=inc_Xs, one_row=True, compute_pct=True, return_df=True)
 summary

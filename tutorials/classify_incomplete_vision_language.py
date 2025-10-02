@@ -69,8 +69,8 @@ data_folder = "oxford_iiit_pet"
 folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
-# Load the dataset
-ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:30]")
+# Load the dataset. For this case, we will make sure that enough instances of each class are downloaded.
+ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[-15:-3]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -157,6 +157,7 @@ Xs_train = [
     train_df["text"].to_list()
 ]
 y_train = train_df["class"]
+
 train_db = estimator.transform(Xs=Xs_train, y=y_train)
 print("train_db", train_db.shape)
 train_db.head()
@@ -166,19 +167,7 @@ Xs_test = [
     test_df["text"].to_list()
 ]
 y_test = test_df["class"]
-if not os.path.exists("classify_test_db.csv"):
-    test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
-    test_db.to_csv("classify_test_db.csv")
-test_db = pd.read_csv("classify_test_db.csv", index_col=0, converters={
-    "i2i_id_list": eval,
-    "i2i_sims_list": eval,
-    "i2i_label_list": eval,
-    "prompt_image_path": eval,
-    "t2t_id_list": eval,
-    "t2t_sims_list": eval,
-    "t2t_label_list": eval,
-    "prompt_text_path": eval,
-})
+test_db = estimator.transform(Xs=Xs_test, y=y_test)
 print("test_db", test_db.shape)
 
 
@@ -238,7 +227,7 @@ images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.
                   if isinstance(image_to_show, str) else image_to_show
                   for image_to_show in test_df["img"].to_list()]
 
-nrows, ncols = 2,3
+nrows, ncols = 1,3
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
 for i, (image_to_show, caption, pred, real_class) in enumerate(zip(
         images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):

@@ -194,9 +194,9 @@ sphinx_gallery_conf = {
     'reference_url': {
         project: None,
     },
-   'ignore_pattern': r'noinclude\.py',
-   'filename_pattern': r'\.py',
-   'capture_repr': ('_repr_html_', '__repr__'),
+    'ignore_pattern': r'noinclude\.py',
+    'filename_pattern': r'\.py',
+    'capture_repr': ('_repr_html_', '__repr__'),
 }
 
 
