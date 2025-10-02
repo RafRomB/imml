@@ -62,7 +62,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("nlphuji/flickr30k", split="test[:6]")
+ds = load_dataset("nlphuji/flickr30k", split="test[:5]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -78,8 +78,8 @@ for i in range(n_total):
 
 df = pd.DataFrame(rows)
 
-# Split into 70% train and 30% test sets
-train_df = df.sample(frac=0.7, random_state=random_state)
+# Split into 60% train and 40% test sets
+train_df = df.sample(frac=0.6, random_state=random_state)
 test_df = df.drop(index=train_df.index)
 print("train_df", train_df.shape)
 train_df.head()
@@ -90,9 +90,10 @@ train_df.head()
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # To reflect realistic scenarios, we randomly introduce missing data. In this case, 70% of test samples
 # will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
-
-test_df.loc[test_df.index[0], "img"] = np.nan
-test_df.loc[test_df.index[1], "text"] = np.nan
+missing_img_id = 0
+missing_text_id = 1
+test_df.loc[test_df.index[missing_img_id], "img"] = np.nan
+test_df.loc[test_df.index[missing_text_id], "text"] = np.nan
 
 
 ########################################################
@@ -100,9 +101,7 @@ test_df.loc[test_df.index[1], "text"] = np.nan
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 modalities = ["image", "text"]
-estimator = MCR(batch_size=64, modalities=modalities,
-                save_memory_bank=True, generate_cap=True,
-                prompt_path=data_folder)
+estimator = MCR(batch_size=64, modalities=modalities, save_memory_bank=True)
 
 Xs_train = [
     train_df["img"].to_list(),
@@ -126,7 +125,7 @@ Xs_test = [
 # Use dummy labels for API compatibility
 y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
 
-test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
+preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
 
 ########################################################
 # Step 6: Visualize the retrieved instances
@@ -136,21 +135,17 @@ test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
 # of the retrieved items to assess whether they are semantically similar to the target.
 #
 # Let's begin by visualizing the top-2 retrieved instances for a target sample that is missing its text modality.
-idx = 0
-ex = test_db[
-    test_db["observed_image"].astype(bool) &
-    (~test_db["observed_text"].astype(bool))
-].iloc[idx]
 nrows, ncols = 1,3
 fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
 ax = axes[0]
 ax.axis("off")
-image_to_show = ex["img_path"]
+image_to_show = Xs_test[0][missing_text_id]
 image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
 ax.imshow(image_to_show)
 ax.set_title("Target instance")
 
-retrieved_instances = memory_bank.loc[ex["i2i_id_list"]]
+retrieved_instances = preds["image"]["id"][missing_text_id]
+retrieved_instances = memory_bank.loc[retrieved_instances]
 for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
     ax = axes[i+1%ncols]
     ax.axis("off")
@@ -171,16 +166,12 @@ for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows(
 
 #################################
 # Now, let’s consider a target instance that is missing its image modality.
-ex = test_db[
-    test_db["observed_text"].astype(bool) &
-    (~test_db["observed_image"].astype(bool))
-].iloc[idx]
 nrows, ncols = 1,3
 fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
 ax = axes[0]
 ax.axis("off")
 ax.set_title("Target instance")
-caption = ex["text"]
+caption = Xs_test[1][missing_img_id]
 caption = caption.split(" ")
 if len(caption) >= 6:
     caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4 * 2] + \
@@ -188,7 +179,8 @@ if len(caption) >= 6:
     caption = " ".join(caption)
 ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
 
-retrieved_instances = memory_bank.loc[ex["t2t_id_list"]]
+retrieved_instances = preds["text"]["id"][missing_img_id]
+retrieved_instances = memory_bank.loc[retrieved_instances]
 for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
     ax = axes[i+1%ncols]
     ax.axis("off")

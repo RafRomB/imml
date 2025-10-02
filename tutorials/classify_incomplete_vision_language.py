@@ -70,7 +70,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset. For this case, we will make sure that enough instances of each class are downloaded.
-ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[-15:-3]")
+ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[-14:-3]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -135,7 +135,7 @@ test_df.loc[missing_mask, "text"] = np.nan
 modalities = ["image", "text"]
 batch_size = 64
 estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True,
-                prompt_path=data_folder, n_neighbors=2, generate_cap=True)
+                prompt_path=data_folder, n_neighbors=1, generate_cap=True)
 
 Xs_bank = [
     bank_df["img"].to_list(),
@@ -184,44 +184,21 @@ test_dataloader = DataLoader(dataset=test_data, batch_size=batch_size,
                              collate_fn=RAGPTCollator(), shuffle=False)
 
 ########################################################
-# Train the ``RAGPT`` model using the generated prompts. For speed in this demo we train for 2 epochs using
+# Train the ``RAGPT`` model using the generated prompts. For speed in this demo we train for only 2 epochs using
 # Lightning.
 trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
 estimator = RAGPT(cls_num=len(le.classes_))
 trainer.fit(estimator, train_dataloader)
 
 ########################################################
-# Step 6: Advanced Usage: Track Metrics During Training
+# Step 6: Evaluation
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We can modify the internal functions. For instance, we can track loss and compute evaluation metrics during
-# training.
-
-trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
-estimator = RAGPT(cls_num=len(le.classes_))
-estimator.loss_list = []
-estimator.agg_loss_list = []
-validation_step = estimator.validation_step
-
-def compute_metric(*args):
-    loss = validation_step(*args)
-    estimator.loss_list.append(loss)
-    return loss
-estimator.validation_step = compute_metric
-
-def agg_metric(*args):
-    estimator.agg_loss_list.append(torch.stack(estimator.loss_list).mean())
-    estimator.loss_list = []
-estimator.on_validation_epoch_end = agg_metric
-
-trainer.fit(estimator, train_dataloader, test_dataloader)
-
 #######################################################
 # After training, we can evaluate predictions and visualize the results.
 preds = trainer.predict(estimator, test_dataloader)
 preds = [batch.softmax(dim=1) for batch in preds]
 preds = [pred for batch in preds for pred in batch]
 preds = torch.stack(preds).argmax(1).cpu()
-losses = [i.item() for i in estimator.agg_loss_list]
 
 images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
                   if isinstance(image_to_show, str) else image_to_show
