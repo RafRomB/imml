@@ -229,9 +229,8 @@ images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.
 
 nrows, ncols = 1,3
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
-for i, (image_to_show, caption, pred, real_class) in enumerate(zip(
-        images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
-    ax = axes[i//ncols, i%ncols]
+for i, (ax, image_to_show, caption, pred, real_class) in enumerate(zip(
+        axes, images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
     ax.axis("off")
     try:
         ax.imshow(image_to_show)
