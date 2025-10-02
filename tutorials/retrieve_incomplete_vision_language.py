@@ -131,19 +131,19 @@ Xs_test = [
 # Use dummy labels for API compatibility
 y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
 # As the transformation takes some time, we will save the results in this tutorial. Uncomment this line.
-test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
-test_db.to_csv("test_db.csv")
-test_db = pd.read_csv("test_db.csv", index_col=0, converters={
-    "i2i_id_list": list,
-    "i2i_sims_list": list,
-    "i2i_label_list": list,
-    "prompt_image_path": list,
-    "t2t_id_list": list,
-    "t2t_sims_list": list,
-    "t2t_label_list": list,
-    "prompt_text_path": list,
+if not os.path.exists("retrieve_test_db.csv"):
+    test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
+    test_db.to_csv("retrieve_test_db.csv")
+test_db = pd.read_csv("retrieve_test_db.csv", index_col=0, converters={
+    "i2i_id_list": eval,
+    "i2i_sims_list": eval,
+    "i2i_label_list": eval,
+    "prompt_image_path": eval,
+    "t2t_id_list": eval,
+    "t2t_sims_list": eval,
+    "t2t_label_list": eval,
+    "prompt_text_path": eval,
 })
-test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
 memory_bank = estimator.memory_bank_
 
 
