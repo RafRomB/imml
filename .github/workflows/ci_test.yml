@@ -1,92 +1,92 @@
-## This workflow will install Python dependencies and run tests with a variety of Python versions
-## For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
-#
-#name: CI Tests
-#
-#on:
-#  push:
-#    branches: [ "main" ]
-#  pull_request:
-#
-#env:
-#  UV_SYSTEM_PYTHON: 1
-#
-#jobs:
-#  build:
-#    if: ${{ github.actor != 'nektos/act' }}
-#    runs-on: ${{matrix.os}}
-#    continue-on-error: true
-#    strategy:
-#      matrix:
-#        os: [ubuntu-latest, windows-latest, macos-latest]
-#        python-version: ["3.10", "3.11", "3.12", "3.13"]
-#    steps:
-#    - name: Checkout
-#      uses: actions/checkout@v4
-#    - name: Set up Python ${{ matrix.python-version }}
-#      uses: actions/setup-python@v5
-#      with:
-#        python-version: ${{ matrix.python-version }}
-#    - name: Install uv
-#      uses: astral-sh/setup-uv@v6
-#      with:
-#        version: "0.8.22"
-#        python-version: ${{ matrix.python-version }}
-#        enable-cache: true
-#    - name: Install dependencies
-#      run: |
-#        uv pip install .
-#    - name: Install tests
-#      run: |
-#        uv pip install ".[tests]"
-#    - name: Test base
-#      run: |
-#        uv run pytest --cov=imml
-#    - name: Test linux
-#      if: runner.os == 'Linux'
-#      run: |
-#        sudo apt-get update
-#        sudo apt install libtirpc-dev #needed for rpy2
-#        sudo apt install r-base r-base-dev -y
-#        sudo apt install octave -y
-#        sudo apt install octave-control octave-statistics -y
-#        sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
-#    - name: Test windows
-#      if: runner.os == 'Windows'
-#      shell: cmd
-#      run: |
-#        choco install octave -y
-#        set "PATH=%PATH%;C:\Program Files\Git\usr\bin"
-#        octave --eval "pkg install -forge control; pkg install -forge statistics; disp('Packages installed successfully.')"
-#        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
-#    - name: Test mac
-#      if: runner.os == 'macOS'
-#      run: |
-#        brew update
-#        brew install gcc
-#        brew install octave r
-#        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
-#        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
-#    - name: Test r
-#      run: |
-#        uv pip install ".[r]"
-#        uv run pytest --cov=imml
-#    - name: Test matlab
-#      if: runner.os != 'Windows'
-#      run: |
-#        uv pip install ".[matlab]"
-#        uv run pytest --cov=imml
-#    - name: Test deep
-#      if: runner.os != 'Windows'
-#      run: |
-#        uv pip install ".[deep]"
-#        uv run pytest --cov=imml --cov-report=term --cov-report json
-#    - name: Test docs
-#      run: |
-#        uv pip install ".[docs]"
-#    - name: Upload coverage reports to Codecov
-#      if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
-#      uses: codecov/codecov-action@v5
-#      with:
-#        token: ${{ secrets.CODECOV_TOKEN }}
-#        slug: ocbe-uio/imml
+# This workflow will install Python dependencies and run tests with a variety of Python versions
+# For more information see: https://docs.github.com/en/actions/automating-builds-and-tests/building-and-testing-python
+
+name: CI Tests
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+
+env:
+  UV_SYSTEM_PYTHON: 1
+
+jobs:
+  build:
+    if: ${{ github.actor != 'nektos/act' }}
+    runs-on: ${{matrix.os}}
+    continue-on-error: true
+    strategy:
+      matrix:
+        os: [ubuntu-latest, windows-latest, macos-latest]
+        python-version: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+    - name: Checkout
+      uses: actions/checkout@v4
+    - name: Set up Python ${{ matrix.python-version }}
+      uses: actions/setup-python@v5
+      with:
+        python-version: ${{ matrix.python-version }}
+    - name: Install uv
+      uses: astral-sh/setup-uv@v6
+      with:
+        version: "0.8.22"
+        python-version: ${{ matrix.python-version }}
+        enable-cache: true
+    - name: Install dependencies
+      run: |
+        uv pip install .
+    - name: Install tests
+      run: |
+        uv pip install ".[tests]"
+    - name: Test base
+      run: |
+        uv run pytest --cov=imml
+    - name: Test linux
+      if: runner.os == 'Linux'
+      run: |
+        sudo apt-get update
+        sudo apt install libtirpc-dev #needed for rpy2
+        sudo apt install r-base r-base-dev -y
+        sudo apt install octave -y
+        sudo apt install octave-control octave-statistics -y
+        sudo Rscript -e "install.packages(c('nnTensor', 'SNFtool'))"
+    - name: Test windows
+      if: runner.os == 'Windows'
+      shell: cmd
+      run: |
+        choco install octave -y
+        set "PATH=%PATH%;C:\Program Files\Git\usr\bin"
+        octave --eval "pkg install -forge control; pkg install -forge statistics; disp('Packages installed successfully.')"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
+    - name: Test mac
+      if: runner.os == 'macOS'
+      run: |
+        brew update
+        brew install gcc
+        brew install octave r
+        octave --eval "pkg install -forge control; pkg install -forge statistics; pkg load control; pkg load statistics; ver"
+        Rscript -e "install.packages(c('nnTensor', 'SNFtool'), repos='http://cran.r-project.org')"
+    - name: Test r
+      run: |
+        uv pip install ".[r]"
+        uv run pytest --cov=imml
+    - name: Test matlab
+      if: runner.os != 'Windows'
+      run: |
+        uv pip install ".[matlab]"
+        uv run pytest --cov=imml
+    - name: Test deep
+      if: runner.os != 'Windows'
+      run: |
+        uv pip install ".[deep]"
+        uv run pytest --cov=imml --cov-report=term --cov-report json
+    - name: Test docs
+      run: |
+        uv pip install ".[docs]"
+    - name: Upload coverage reports to Codecov
+      if: github.ref == format('refs/heads/{0}', github.event.repository.default_branch) && matrix.os == 'ubuntu-latest' && matrix.python-version == '3.13'
+      uses: codecov/codecov-action@v5
+      with:
+        token: ${{ secrets.CODECOV_TOKEN }}
+        slug: ocbe-uio/imml

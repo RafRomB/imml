@@ -62,7 +62,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("nlphuji/flickr30k", split="test[:4]")
+ds = load_dataset("nlphuji/flickr30k", split="test[:20]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -130,6 +130,19 @@ Xs_test = [
 ]
 # Use dummy labels for API compatibility
 y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
+# As the transformation takes some time, we will save the results in this tutorial. Uncomment this line.
+test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
+test_db.to_csv("test_db.csv")
+test_db = pd.read_csv("test_db.csv", index_col=0, converters={
+    "i2i_id_list": list,
+    "i2i_sims_list": list,
+    "i2i_label_list": list,
+    "prompt_image_path": list,
+    "t2t_id_list": list,
+    "t2t_sims_list": list,
+    "t2t_label_list": list,
+    "prompt_text_path": list,
+})
 test_db = estimator.transform(Xs=Xs_test, y=y_test, n_neighbors=2)
 memory_bank = estimator.memory_bank_
 
