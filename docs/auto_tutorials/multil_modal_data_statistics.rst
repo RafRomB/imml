@@ -99,7 +99,7 @@ Using your own data:
 
 
     random_state = 42
-    X, y = make_classification(n_samples=20, random_state=random_state)
+    X, y = make_classification(n_samples=50, random_state=random_state)
     # Two modalities: first 10 features and last 10 features
     Xs = [X[:, :10], X[:, 10:]]
     print("Samples:", len(Xs[0]), "\t", "Modalities:", len(Xs), "\t", "Features:", [X.shape[1] for X in Xs])
@@ -113,7 +113,7 @@ Using your own data:
 
  .. code-block:: none
 
-    Samples: 20      Modalities: 2   Features: [10, 10]
+    Samples: 50      Modalities: 2   Features: [10, 10]
 
 
 
@@ -133,10 +133,10 @@ make the dataset a bit more complex by introducing some incomplete samples, then
 
     inc_Xs = copy.deepcopy(Xs)
     # Introduce block-wise missingness in a few regions for illustration
-    inc_Xs[0][:10, :] = np.nan
-    inc_Xs[0][12, 1] = np.nan
-    inc_Xs[1][11:13, :] = np.nan
-    inc_Xs[1][15:, 3] = np.nan
+    inc_Xs[0][:20, :] = np.nan
+    inc_Xs[0][25, 1] = np.nan
+    inc_Xs[1][18:22, :] = np.nan
+    inc_Xs[1][-15:, 3] = np.nan
 
     summary = get_summary(Xs=inc_Xs, one_row=True, compute_pct=True, return_df=True)
     summary
@@ -178,12 +178,12 @@ make the dataset a bit more complex by introducing some incomplete samples, then
       <tbody>
         <tr>
           <th>0</th>
-          <td>8</td>
-          <td>12</td>
-          <td>[10, 18]</td>
-          <td>[10, 2]</td>
-          <td>[50, 90]</td>
-          <td>[50, 10]</td>
+          <td>28</td>
+          <td>22</td>
+          <td>[30, 46]</td>
+          <td>[20, 4]</td>
+          <td>[60, 92]</td>
+          <td>[40, 8]</td>
         </tr>
       </tbody>
     </table>
@@ -240,30 +240,30 @@ Per‑modality view:
       <tbody>
         <tr>
           <th>Modality A</th>
-          <td>9</td>
-          <td>10</td>
-          <td>11</td>
-          <td>45.0</td>
-          <td>50.0</td>
-          <td>55.0</td>
+          <td>29</td>
+          <td>20</td>
+          <td>21</td>
+          <td>58.0</td>
+          <td>40.0</td>
+          <td>42.0</td>
         </tr>
         <tr>
           <th>Modality B</th>
-          <td>13</td>
-          <td>2</td>
-          <td>7</td>
-          <td>65.0</td>
-          <td>10.0</td>
-          <td>35.0</td>
+          <td>31</td>
+          <td>4</td>
+          <td>19</td>
+          <td>62.0</td>
+          <td>8.0</td>
+          <td>38.0</td>
         </tr>
         <tr>
           <th>Total</th>
-          <td>3</td>
           <td>12</td>
-          <td>17</td>
-          <td>15.0</td>
-          <td>60.0</td>
-          <td>85.0</td>
+          <td>22</td>
+          <td>38</td>
+          <td>24.0</td>
+          <td>44.0</td>
+          <td>76.0</td>
         </tr>
       </tbody>
     </table>
@@ -324,7 +324,7 @@ With two input modalities, pid returns a dictionary with keys: "Redundancy", "Un
  .. code-block:: none
 
 
-    {'Redundancy': np.float64(0.9989831184204245), 'Uniqueness1': np.float64(-2.803578279148753e-17), 'Uniqueness2': np.float64(-2.4529962183078916e-16), 'Synergy': np.float64(0.0010168815795758136)}
+    {'Redundancy': np.float64(0.2165211867463263), 'Uniqueness1': np.float64(0.7743673072618481), 'Uniqueness2': np.float64(0.0009259835942955852), 'Synergy': np.float64(0.008185522397530105)}
 
 
 
@@ -390,7 +390,7 @@ dictionaries (one per pair). For example, adding a third modality yields three p
  .. code-block:: none
 
 
-    [{'Redundancy': np.float64(0.9989831184204245), 'Uniqueness1': np.float64(-2.803578279148753e-17), 'Uniqueness2': np.float64(-2.4529962183078916e-16), 'Synergy': np.float64(0.0010168815795758136)}, {'Redundancy': np.float64(0.9989831184433112), 'Uniqueness1': np.float64(4.1050067855098473e-17), 'Uniqueness2': np.float64(-1.402578336849826e-17), 'Synergy': np.float64(0.001016881556688773)}, {'Redundancy': np.float64(0.9989831183754172), 'Uniqueness1': np.float64(2.102606271973467e-17), 'Uniqueness2': np.float64(4.0053414423886814e-17), 'Synergy': np.float64(0.0010168816245828352)}]
+    [{'Redundancy': np.float64(0.2165211867463263), 'Uniqueness1': np.float64(0.7743673072618481), 'Uniqueness2': np.float64(0.0009259835942955852), 'Synergy': np.float64(0.008185522397530105)}, {'Redundancy': np.float64(0.9967118426445922), 'Uniqueness1': np.float64(8.484563903507687e-05), 'Uniqueness2': np.float64(8.484563906632952e-05), 'Synergy': np.float64(0.003118466077306442)}, {'Redundancy': np.float64(0.2165211867513762), 'Uniqueness1': np.float64(0.0009259835942656313), 'Uniqueness2': np.float64(0.7743673072590187), 'Synergy': np.float64(0.008185522395339602)}]
 
 
 
@@ -410,7 +410,7 @@ feature engineering for downstream multi‑modal learning.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 10.017 seconds)
+   **Total running time of the script:** (0 minutes 10.225 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_multil_modal_data_statistics.py:

@@ -1200,7 +1200,7 @@ seeds to have robust results.
 
 
     ps = np.arange(0., 1., 0.2)
-    n_times = 3
+    n_times = 5
     methods = ["No prior imputation", "Baseline imputation"]
     algorithms = ["Feature extraction", "Feature selection", "Randomly selected features", "All features"]
     all_metrics = []
@@ -1274,7 +1274,7 @@ seeds to have robust results.
 
  .. code-block:: none
 
-    (60, 4)
+    (100, 4)
 
 
 .. raw:: html
@@ -1329,15 +1329,15 @@ seeds to have robust results.
         <tr>
           <th>3</th>
           <td>Feature extraction</td>
-          <td>20</td>
           <td>0</td>
-          <td>0.80</td>
+          <td>3</td>
+          <td>0.84</td>
         </tr>
         <tr>
           <th>4</th>
           <td>Feature extraction</td>
-          <td>20</td>
-          <td>1</td>
+          <td>0</td>
+          <td>4</td>
           <td>0.78</td>
         </tr>
       </tbody>
@@ -1404,7 +1404,7 @@ for your application.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 8.701 seconds)
+   **Total running time of the script:** (0 minutes 17.919 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_select_and_extract_features.py:

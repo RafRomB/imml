@@ -8,7 +8,7 @@ guide to get you started quickly. For the full contributing guide, please see:
 - In-repo: https://github.com/ocbe-uio/imml/blob/main/docs/development/contributing.rst
 - Documentation: https://imml.readthedocs.io/stable/development/contributing.html
 
-If you are new to open source, don't worry—small, focused contributions are highly valued.
+If you are new to open source, don't worry. Small, focused contributions are highly valued.
 
 Ways to contribute
 ------------------

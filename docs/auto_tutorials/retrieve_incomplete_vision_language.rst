@@ -111,7 +111,7 @@ Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR m
     os.makedirs(folder_images, exist_ok=True)
 
     # Load the dataset
-    ds = load_dataset("nlphuji/flickr30k", split="test[:5]")
+    ds = load_dataset("nlphuji/flickr30k", split="test[:100]")
 
     # Build a DataFrame with image paths and captions. We persist images to disk because
     # the retriever expects paths.
@@ -127,8 +127,8 @@ Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR m
 
     df = pd.DataFrame(rows)
 
-    # Split into 60% train and 40% test sets
-    train_df = df.sample(frac=0.6, random_state=random_state)
+    # Split into 80% train and 20% test sets
+    train_df = df.sample(frac=0.8, random_state=random_state)
     test_df = df.drop(index=train_df.index)
     print("train_df", train_df.shape)
     train_df.head()
@@ -142,7 +142,8 @@ Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR m
 
  .. code-block:: none
 
-    train_df (3, 2)
+    Seed set to 42
+    train_df (80, 2)
 
 
 .. raw:: html
@@ -172,19 +173,29 @@ Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR m
       </thead>
       <tbody>
         <tr>
-          <th>1</th>
-          <td>flickr30k/imgs/000001.jpg</td>
-          <td>Several men in hard hats are operating a giant...</td>
+          <th>83</th>
+          <td>flickr30k/imgs/000083.jpg</td>
+          <td>A man is drilling through the frozen ice of a ...</td>
         </tr>
         <tr>
-          <th>4</th>
-          <td>flickr30k/imgs/000004.jpg</td>
-          <td>Two men, one in a gray shirt, one in a black s...</td>
+          <th>53</th>
+          <td>flickr30k/imgs/000053.jpg</td>
+          <td>People on two balconies and a man climbing up ...</td>
         </tr>
         <tr>
-          <th>2</th>
-          <td>flickr30k/imgs/000002.jpg</td>
-          <td>A child in a pink dress is climbing up a set o...</td>
+          <th>70</th>
+          <td>flickr30k/imgs/000070.jpg</td>
+          <td>Large brown dog running away from the sprinkle...</td>
+        </tr>
+        <tr>
+          <th>45</th>
+          <td>flickr30k/imgs/000045.jpg</td>
+          <td>Bride and groom walking side by side out of fo...</td>
+        </tr>
+        <tr>
+          <th>44</th>
+          <td>flickr30k/imgs/000044.jpg</td>
+          <td>A man in black approaches a strange silver obj...</td>
         </tr>
       </tbody>
     </table>
@@ -200,14 +211,19 @@ Step 3: Simulate missing modalities
 To reflect realistic scenarios, we randomly introduce missing data. In this case, 70% of test samples
 will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-99
+.. GENERATED FROM PYTHON SOURCE LINES 93-104
 
 .. code-block:: Python
 
-    missing_img_id = 0
-    missing_text_id = 1
-    test_df.loc[test_df.index[missing_img_id], "img"] = np.nan
-    test_df.loc[test_df.index[missing_text_id], "text"] = np.nan
+
+    p = 0.7
+    missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
+    test_df.loc[missing_mask, "img"] = np.nan
+    missing_mask = test_df. \
+        drop(labels=missing_mask). \
+        sample(n=len(missing_mask), random_state=random_state). \
+        index
+    test_df.loc[missing_mask, "text"] = np.nan
 
 
 
@@ -217,12 +233,12 @@ will have either text or image missing. You can change this parameter for more o
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 100-102
+.. GENERATED FROM PYTHON SOURCE LINES 105-107
 
 Step 4: Generate the memory bank
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. GENERATED FROM PYTHON SOURCE LINES 102-117
+.. GENERATED FROM PYTHON SOURCE LINES 107-122
 
 .. code-block:: Python
 
@@ -245,15 +261,21 @@ Step 4: Generate the memory bank
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 118-120
+
+.. GENERATED FROM PYTHON SOURCE LINES 123-125
 
 Step 5: Retrieve
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-130
+.. GENERATED FROM PYTHON SOURCE LINES 125-136
 
 .. code-block:: Python
 
@@ -266,15 +288,22 @@ Step 5: Retrieve
     y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
 
     preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
+    preds.keys()
 
 
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    dict_keys(['image', 'text'])
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-138
+.. GENERATED FROM PYTHON SOURCE LINES 137-144
 
 Step 6: Visualize the retrieved instances
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -284,44 +313,51 @@ of the retrieved items to assess whether they are semantically similar to the ta
 
 Let's begin by visualizing the top-2 retrieved instances for a target sample that is missing its text modality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-167
+.. GENERATED FROM PYTHON SOURCE LINES 144-180
 
 .. code-block:: Python
 
-    nrows, ncols = 1,3
-    fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
-    ax = axes[0]
-    ax.axis("off")
-    image_to_show = Xs_test[0][missing_text_id]
-    image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-    ax.imshow(image_to_show)
-    ax.set_title("Target instance")
 
-    retrieved_instances = preds["image"]["id"][missing_text_id]
-    retrieved_instances = memory_bank.loc[retrieved_instances]
-    for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
-        ax = axes[i+1%ncols]
+    nrows, ncols = 3,3
+    fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
+    for i in range(nrows*ncols):
+        row, col = i//ncols, i%ncols
+        ax = axes[i//ncols, col]
         ax.axis("off")
-        image_to_show = retrieved_instance["img_path"]
-        image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-        try:
+        if col == 0:
+            image_to_show = Xs_test[0][row]
+            caption = Xs_test[1][row]
+            ax.set_title("Target instance")
+        else:
+            col -= 1
+            try:
+                retrieved_instance = preds["image"]["id"][row][col]
+            except IndexError:
+                retrieved_instance = preds["text"]["id"][row][col]
+            retrieved_instance = memory_bank.loc[retrieved_instance]
+            image_to_show = retrieved_instance["img_path"]
+            caption = retrieved_instance["text"]
+            ax.set_title(f"Top-{col}")
+
+        if isinstance(image_to_show, str):
+            image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
             ax.imshow(image_to_show)
-        except TypeError:
-            pass
-        ax.set_title(f"Top-{i+1}")
-        caption = retrieved_instance["text"]
-        caption = caption.split(" ")
-        if len(caption) >= 6:
-            caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4*2] + \
-                      ["\n"] + caption[len(caption) // 4*2:len(caption) // 4*3] + ["\n"] + caption[len(caption) // 4*3:]
-            caption = " ".join(caption)
-        ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+        if isinstance(caption, str):
+            caption = caption.split(" ")
+            if len(caption) >= 6:
+                caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4 * 2] + \
+                          ["\n"] + caption[len(caption) // 4 * 2:len(caption) // 4 * 3] + ["\n"] + caption[
+                              len(caption) // 4 * 3:]
+                caption = " ".join(caption)
+            ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+
+    shutil.rmtree(data_folder, ignore_errors=True)
 
 
 
 
 .. image-sg:: /auto_tutorials/images/sphx_glr_retrieve_incomplete_vision_language_001.png
-   :alt: Target instance, Top-1, Top-2
+   :alt: Target instance, Top-0, Top-1, Target instance, Top-0, Top-1, Target instance, Top-0, Top-1
    :srcset: /auto_tutorials/images/sphx_glr_retrieve_incomplete_vision_language_001.png
    :class: sphx-glr-single-img
 
@@ -329,62 +365,7 @@ Let's begin by visualizing the top-2 retrieved instances for a target sample tha
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-169
-
-Now, let’s consider a target instance that is missing its image modality.
-
-.. GENERATED FROM PYTHON SOURCE LINES 169-204
-
-.. code-block:: Python
-
-    nrows, ncols = 1,3
-    fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
-    ax = axes[0]
-    ax.axis("off")
-    ax.set_title("Target instance")
-    caption = Xs_test[1][missing_img_id]
-    caption = caption.split(" ")
-    if len(caption) >= 6:
-        caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4 * 2] + \
-                  ["\n"] + caption[len(caption) // 4 * 2:len(caption) // 4 * 3] + ["\n"] + caption[len(caption) // 4 * 3:]
-        caption = " ".join(caption)
-    ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
-
-    retrieved_instances = preds["text"]["id"][missing_img_id]
-    retrieved_instances = memory_bank.loc[retrieved_instances]
-    for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
-        ax = axes[i+1%ncols]
-        ax.axis("off")
-        image_to_show = retrieved_instance["img_path"]
-        image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-        try:
-            ax.imshow(image_to_show)
-        except TypeError:
-            pass
-        ax.set_title(f"Top-{i+1}")
-        caption = retrieved_instance["text"]
-        caption = caption.split(" ")
-        if len(caption) >= 6:
-            caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4*2] + \
-                      ["\n"] + caption[len(caption) // 4*2:len(caption) // 4*3] + ["\n"] + caption[len(caption) // 4*3:]
-            caption = " ".join(caption)
-        ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
-
-    shutil.rmtree(data_folder, ignore_errors=True)
-
-
-
-
-.. image-sg:: /auto_tutorials/images/sphx_glr_retrieve_incomplete_vision_language_002.png
-   :alt: Target instance, Top-1, Top-2
-   :srcset: /auto_tutorials/images/sphx_glr_retrieve_incomplete_vision_language_002.png
-   :class: sphx-glr-single-img
-
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 205-212
+.. GENERATED FROM PYTHON SOURCE LINES 181-188
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -394,7 +375,7 @@ memory bank, even when one of the modalities (image or text) was missing.
 This example is intentionally simplified, using only a few instances for demonstration.
 For stronger performance and more reliable results, the full dataset should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 214-217
+.. GENERATED FROM PYTHON SOURCE LINES 190-193
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -404,7 +385,7 @@ even in the presence of missing modalities.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (2 minutes 1.204 seconds)
+   **Total running time of the script:** (15 minutes 29.107 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_retrieve_incomplete_vision_language.py:

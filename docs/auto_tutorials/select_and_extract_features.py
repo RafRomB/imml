@@ -204,7 +204,7 @@ ax.bar_label(ax.containers[0], labels=selected_features["Feature"], padding = 3)
 # seeds to have robust results.
 
 ps = np.arange(0., 1., 0.2)
-n_times = 3
+n_times = 5
 methods = ["No prior imputation", "Baseline imputation"]
 algorithms = ["Feature extraction", "Feature selection", "Randomly selected features", "All features"]
 all_metrics = []

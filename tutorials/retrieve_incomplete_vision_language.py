@@ -62,7 +62,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("nlphuji/flickr30k", split="test[:5]")
+ds = load_dataset("nlphuji/flickr30k", split="test[:100]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -78,8 +78,8 @@ for i in range(n_total):
 
 df = pd.DataFrame(rows)
 
-# Split into 60% train and 40% test sets
-train_df = df.sample(frac=0.6, random_state=random_state)
+# Split into 80% train and 20% test sets
+train_df = df.sample(frac=0.8, random_state=random_state)
 test_df = df.drop(index=train_df.index)
 print("train_df", train_df.shape)
 train_df.head()
@@ -90,10 +90,15 @@ train_df.head()
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # To reflect realistic scenarios, we randomly introduce missing data. In this case, 70% of test samples
 # will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
-missing_img_id = 0
-missing_text_id = 1
-test_df.loc[test_df.index[missing_img_id], "img"] = np.nan
-test_df.loc[test_df.index[missing_text_id], "text"] = np.nan
+
+p = 0.7
+missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
+test_df.loc[missing_mask, "img"] = np.nan
+missing_mask = test_df. \
+    drop(labels=missing_mask). \
+    sample(n=len(missing_mask), random_state=random_state). \
+    index
+test_df.loc[missing_mask, "text"] = np.nan
 
 
 ########################################################
@@ -126,6 +131,7 @@ Xs_test = [
 y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
 
 preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
+preds.keys()
 
 ########################################################
 # Step 6: Visualize the retrieved instances
@@ -135,69 +141,39 @@ preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
 # of the retrieved items to assess whether they are semantically similar to the target.
 #
 # Let's begin by visualizing the top-2 retrieved instances for a target sample that is missing its text modality.
-nrows, ncols = 1,3
-fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
-ax = axes[0]
-ax.axis("off")
-image_to_show = Xs_test[0][missing_text_id]
-image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-ax.imshow(image_to_show)
-ax.set_title("Target instance")
 
-retrieved_instances = preds["image"]["id"][missing_text_id]
-retrieved_instances = memory_bank.loc[retrieved_instances]
-for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
-    ax = axes[i+1%ncols]
+nrows, ncols = 3,3
+fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
+for i in range(nrows*ncols):
+    row, col = i//ncols, i%ncols
+    ax = axes[i//ncols, col]
     ax.axis("off")
-    image_to_show = retrieved_instance["img_path"]
-    image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-    try:
-        ax.imshow(image_to_show)
-    except TypeError:
-        pass
-    ax.set_title(f"Top-{i+1}")
-    caption = retrieved_instance["text"]
-    caption = caption.split(" ")
-    if len(caption) >= 6:
-        caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4*2] + \
-                  ["\n"] + caption[len(caption) // 4*2:len(caption) // 4*3] + ["\n"] + caption[len(caption) // 4*3:]
-        caption = " ".join(caption)
-    ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+    if col == 0:
+        image_to_show = Xs_test[0][row]
+        caption = Xs_test[1][row]
+        ax.set_title("Target instance")
+    else:
+        col -= 1
+        try:
+            retrieved_instance = preds["image"]["id"][row][col]
+        except IndexError:
+            retrieved_instance = preds["text"]["id"][row][col]
+        retrieved_instance = memory_bank.loc[retrieved_instance]
+        image_to_show = retrieved_instance["img_path"]
+        caption = retrieved_instance["text"]
+        ax.set_title(f"Top-{col}")
 
-#################################
-# Now, let’s consider a target instance that is missing its image modality.
-nrows, ncols = 1,3
-fig, axes = plt.subplots(nrows, ncols, figsize=(6, 2), constrained_layout=True)
-ax = axes[0]
-ax.axis("off")
-ax.set_title("Target instance")
-caption = Xs_test[1][missing_img_id]
-caption = caption.split(" ")
-if len(caption) >= 6:
-    caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4 * 2] + \
-              ["\n"] + caption[len(caption) // 4 * 2:len(caption) // 4 * 3] + ["\n"] + caption[len(caption) // 4 * 3:]
-    caption = " ".join(caption)
-ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
-
-retrieved_instances = preds["text"]["id"][missing_img_id]
-retrieved_instances = memory_bank.loc[retrieved_instances]
-for i,retrieved_instance in retrieved_instances.reset_index(drop=True).iterrows():
-    ax = axes[i+1%ncols]
-    ax.axis("off")
-    image_to_show = retrieved_instance["img_path"]
-    image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-    try:
+    if isinstance(image_to_show, str):
+        image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
         ax.imshow(image_to_show)
-    except TypeError:
-        pass
-    ax.set_title(f"Top-{i+1}")
-    caption = retrieved_instance["text"]
-    caption = caption.split(" ")
-    if len(caption) >= 6:
-        caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4*2] + \
-                  ["\n"] + caption[len(caption) // 4*2:len(caption) // 4*3] + ["\n"] + caption[len(caption) // 4*3:]
-        caption = " ".join(caption)
-    ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+    if isinstance(caption, str):
+        caption = caption.split(" ")
+        if len(caption) >= 6:
+            caption = caption[:len(caption) // 4] + ["\n"] + caption[len(caption) // 4:len(caption) // 4 * 2] + \
+                      ["\n"] + caption[len(caption) // 4 * 2:len(caption) // 4 * 3] + ["\n"] + caption[
+                          len(caption) // 4 * 3:]
+            caption = " ".join(caption)
+        ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
 
 shutil.rmtree(data_folder, ignore_errors=True)
 

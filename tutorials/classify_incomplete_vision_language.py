@@ -70,7 +70,7 @@ folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
 # Load the dataset
-ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:50]")
+ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:100]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -221,21 +221,22 @@ preds = trainer.predict(estimator, test_dataloader)
 preds = [batch.softmax(dim=1) for batch in preds]
 preds = [pred for batch in preds for pred in batch]
 preds = torch.stack(preds).argmax(1).cpu()
-
-images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-                  if isinstance(image_to_show, str) else image_to_show
-                  for image_to_show in test_df["img"].to_list()]
+losses = [i.item() for i in estimator.agg_loss_list]
 
 nrows, ncols = 2,3
+test_df = test_df.reset_index()
+preds = preds[test_df.index]
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
-for i, (image_to_show, caption, pred, real_class) in enumerate(zip(
-        images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
+for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=random_state).iterrows()):
+    pred = preds[i_row]
+    image_to_show = row["img"]
+    caption = row["text"]
+    real_class = row["label"]
     ax = axes[i//ncols, i%ncols]
     ax.axis("off")
-    try:
+    if isinstance(image_to_show, str):
+        image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
         ax.imshow(image_to_show)
-    except TypeError:
-        pass
     pred_class = le.classes_[pred]
     c = "green" if pred_class == real_class else "red"
     ax.set_title(f"Pred:{pred_class}; Real:{real_class}", **{"color":c})

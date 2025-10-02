@@ -119,7 +119,7 @@ the ``MCR`` class from the retrieve module.
     os.makedirs(folder_images, exist_ok=True)
 
     # Load the dataset
-    ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:50]")
+    ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:100]")
 
     # Build a DataFrame with image paths and captions. We persist images to disk because
     # the retriever expects paths.
@@ -152,8 +152,8 @@ the ``MCR`` class from the retrieve module.
 
 
     class
-    1    37
-    0    13
+    1    72
+    0    28
     Name: count, dtype: int64
 
 
@@ -182,9 +182,9 @@ Split into 40% bank memory, 40% train and 20% test sets
 
  .. code-block:: none
 
-    train_df (20, 4)
-    test_df (10, 4)
-    bank_df (20, 4)
+    train_df (40, 4)
+    test_df (20, 4)
+    bank_df (40, 4)
 
 
 .. raw:: html
@@ -216,39 +216,39 @@ Split into 40% bank memory, 40% train and 20% test sets
       </thead>
       <tbody>
         <tr>
-          <th>27</th>
-          <td>oxford_iiit_pet/imgs/000027.jpg</td>
-          <td>a large white dog standing on a patio near a b...</td>
+          <th>48</th>
+          <td>oxford_iiit_pet/imgs/000048.jpg</td>
+          <td>a black dog with a long hair</td>
           <td>dog</td>
           <td>1</td>
         </tr>
         <tr>
-          <th>24</th>
-          <td>oxford_iiit_pet/imgs/000024.jpg</td>
-          <td>a white cat laying on a floor</td>
+          <th>65</th>
+          <td>oxford_iiit_pet/imgs/000065.jpg</td>
+          <td>a white dog with a blue collar</td>
+          <td>dog</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>52</th>
+          <td>oxford_iiit_pet/imgs/000052.jpg</td>
+          <td>a small dog sitting on a bed</td>
+          <td>dog</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>6</th>
+          <td>oxford_iiit_pet/imgs/000006.jpg</td>
+          <td>a dog laying on a brick sidewalk</td>
+          <td>dog</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>13</th>
+          <td>oxford_iiit_pet/imgs/000013.jpg</td>
+          <td>a cat sitting on a desk next to a laptop</td>
           <td>cat</td>
           <td>0</td>
-        </tr>
-        <tr>
-          <th>21</th>
-          <td>oxford_iiit_pet/imgs/000021.jpg</td>
-          <td>a black and tan dog with a blue collar</td>
-          <td>dog</td>
-          <td>1</td>
-        </tr>
-        <tr>
-          <th>44</th>
-          <td>oxford_iiit_pet/imgs/000044.jpg</td>
-          <td>a cat yawning on the floor</td>
-          <td>cat</td>
-          <td>0</td>
-        </tr>
-        <tr>
-          <th>19</th>
-          <td>oxford_iiit_pet/imgs/000019.jpg</td>
-          <td>a dog laying on a red pillow</td>
-          <td>dog</td>
-          <td>1</td>
         </tr>
       </tbody>
     </table>
@@ -329,7 +329,7 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
 
  .. code-block:: none
 
-    memory_bank (20, 8)
+    memory_bank (40, 8)
 
 
 .. raw:: html
@@ -365,59 +365,59 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
       </thead>
       <tbody>
         <tr>
-          <th>18</th>
-          <td>18</td>
-          <td>oxford_iiit_pet/imgs/000018.jpg</td>
-          <td>a gray cat laying on the floor</td>
-          <td>[-0.2883491814136505, 0.6082451343536377, 0.25...</td>
-          <td>[-0.5205264091491699, -0.2758329510688782, 0.2...</td>
-          <td>0</td>
-          <td>oxford_iiit_pet/image/000018.npy</td>
-          <td>oxford_iiit_pet/text/000018.npy</td>
-        </tr>
-        <tr>
-          <th>7</th>
-          <td>7</td>
-          <td>oxford_iiit_pet/imgs/000007.jpg</td>
-          <td>a man holding a black dog</td>
-          <td>[-0.36506423354148865, 0.27761751413345337, -0...</td>
-          <td>[-0.25834447145462036, 0.5495434403419495, 0.3...</td>
+          <th>26</th>
+          <td>26</td>
+          <td>oxford_iiit_pet/imgs/000026.jpg</td>
+          <td>a fluffy dog standing on top of a green field</td>
+          <td>[0.032110460102558136, 0.3297426402568817, -0....</td>
+          <td>[-0.015881717205047607, -0.3460213243961334, 0...</td>
           <td>1</td>
-          <td>oxford_iiit_pet/image/000007.npy</td>
-          <td>oxford_iiit_pet/text/000007.npy</td>
+          <td>oxford_iiit_pet/image/000026.npy</td>
+          <td>oxford_iiit_pet/text/000026.npy</td>
         </tr>
         <tr>
-          <th>20</th>
-          <td>20</td>
-          <td>oxford_iiit_pet/imgs/000020.jpg</td>
-          <td>a cat is sitting on a branch</td>
-          <td>[-0.32218602299690247, -0.18200132250785828, 0...</td>
-          <td>[-0.8176317811012268, 0.08956041932106018, 0.7...</td>
-          <td>0</td>
-          <td>oxford_iiit_pet/image/000020.npy</td>
-          <td>oxford_iiit_pet/text/000020.npy</td>
-        </tr>
-        <tr>
-          <th>0</th>
-          <td>0</td>
-          <td>oxford_iiit_pet/imgs/000000.jpg</td>
-          <td>a cat walking on grass</td>
-          <td>[0.04112914949655533, 0.28625351190567017, 0.2...</td>
-          <td>[0.36405640840530396, 0.47397932410240173, 0.6...</td>
-          <td>0</td>
-          <td>oxford_iiit_pet/image/000000.npy</td>
-          <td>oxford_iiit_pet/text/000000.npy</td>
-        </tr>
-        <tr>
-          <th>46</th>
-          <td>46</td>
-          <td>oxford_iiit_pet/imgs/000046.jpg</td>
-          <td>a dog laying in the grass</td>
-          <td>[0.139794260263443, 0.36746230721473694, -0.48...</td>
-          <td>[0.5348194241523743, 0.221372589468956, 0.3069...</td>
+          <th>62</th>
+          <td>62</td>
+          <td>oxford_iiit_pet/imgs/000062.jpg</td>
+          <td>a small white dog sitting on the floor with toys</td>
+          <td>[0.0885244756937027, 0.14477987587451935, -0.2...</td>
+          <td>[-0.16208945214748383, -0.44643452763557434, 0...</td>
           <td>1</td>
-          <td>oxford_iiit_pet/image/000046.npy</td>
-          <td>oxford_iiit_pet/text/000046.npy</td>
+          <td>oxford_iiit_pet/image/000062.npy</td>
+          <td>oxford_iiit_pet/text/000062.npy</td>
+        </tr>
+        <tr>
+          <th>82</th>
+          <td>82</td>
+          <td>oxford_iiit_pet/imgs/000082.jpg</td>
+          <td>a fluffy orange cat</td>
+          <td>[-0.3348943889141083, 1.2845616340637207, 0.23...</td>
+          <td>[-0.28176644444465637, 0.6349888443946838, 0.1...</td>
+          <td>0</td>
+          <td>oxford_iiit_pet/image/000082.npy</td>
+          <td>oxford_iiit_pet/text/000082.npy</td>
+        </tr>
+        <tr>
+          <th>63</th>
+          <td>63</td>
+          <td>oxford_iiit_pet/imgs/000063.jpg</td>
+          <td>a gray and white cat sitting on a blue background</td>
+          <td>[-0.2473592758178711, 0.42799001932144165, -0....</td>
+          <td>[0.4105989336967468, 0.2259322553873062, 0.436...</td>
+          <td>0</td>
+          <td>oxford_iiit_pet/image/000063.npy</td>
+          <td>oxford_iiit_pet/text/000063.npy</td>
+        </tr>
+        <tr>
+          <th>38</th>
+          <td>38</td>
+          <td>oxford_iiit_pet/imgs/000038.jpg</td>
+          <td>a dog looking up at the sky</td>
+          <td>[0.39031967520713806, 0.3217568099498749, -0.4...</td>
+          <td>[-0.8532043695449829, -0.4827764630317688, 0.7...</td>
+          <td>1</td>
+          <td>oxford_iiit_pet/image/000038.npy</td>
+          <td>oxford_iiit_pet/text/000038.npy</td>
         </tr>
       </tbody>
     </table>
@@ -461,8 +461,8 @@ Load generated training and testing prompts.
 
  .. code-block:: none
 
-    train_db (20, 14)
-    test_db (10, 14)
+    train_db (40, 14)
+    test_db (20, 14)
 
 
 
@@ -513,7 +513,7 @@ Lightning.
 
  .. code-block:: none
 
-    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:37<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:37<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:37<00:00,  0.03it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]
+    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [01:01<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [01:01<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [01:01<00:00,  0.02it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:58<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:58<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:58<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:58<00:00,  0.02it/s]
 
 
 
@@ -557,17 +557,17 @@ training.
 
  .. code-block:: none
 
-    Sanity Checking: |          | 0/? [00:00<?, ?it/s]    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:33<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:33<00:00,  0.03it/s]
+    Sanity Checking: |          | 0/? [00:00<?, ?it/s]    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:14<00:00,  0.07it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [01:01<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [01:01<00:00,  0.02it/s]
     Validation: |          | 0/? [00:00<?, ?it/s]
     Validation:   0%|          | 0/1 [00:00<?, ?it/s]
     Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:11<00:00,  0.09it/s]
-                                                                              Epoch 0: 100%|██████████| 1/1 [00:45<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:45<00:00,  0.02it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:30<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:30<00:00,  0.03it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:13<00:00,  0.07it/s]
+                                                                              Epoch 0: 100%|██████████| 1/1 [01:15<00:00,  0.01it/s]    Epoch 0: 100%|██████████| 1/1 [01:15<00:00,  0.01it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:59<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:59<00:00,  0.02it/s]
     Validation: |          | 0/? [00:00<?, ?it/s]
     Validation:   0%|          | 0/1 [00:00<?, ?it/s]
     Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]
-                                                                              Epoch 1: 100%|██████████| 1/1 [00:39<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:39<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:39<00:00,  0.03it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]
+                                                                              Epoch 1: 100%|██████████| 1/1 [01:15<00:00,  0.01it/s]    Epoch 1: 100%|██████████| 1/1 [01:15<00:00,  0.01it/s]    Epoch 1: 100%|██████████| 1/1 [01:15<00:00,  0.01it/s]
 
 
 
@@ -578,7 +578,7 @@ Step 7: Evaluation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After training, we can evaluate predictions and visualize the results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 220-251
+.. GENERATED FROM PYTHON SOURCE LINES 220-252
 
 .. code-block:: Python
 
@@ -586,21 +586,22 @@ After training, we can evaluate predictions and visualize the results.
     preds = [batch.softmax(dim=1) for batch in preds]
     preds = [pred for batch in preds for pred in batch]
     preds = torch.stack(preds).argmax(1).cpu()
-
-    images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
-                      if isinstance(image_to_show, str) else image_to_show
-                      for image_to_show in test_df["img"].to_list()]
+    losses = [i.item() for i in estimator.agg_loss_list]
 
     nrows, ncols = 2,3
+    test_df = test_df.reset_index()
+    preds = preds[test_df.index]
     fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
-    for i, (image_to_show, caption, pred, real_class) in enumerate(zip(
-            images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
+    for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=random_state).iterrows()):
+        pred = preds[i_row]
+        image_to_show = row["img"]
+        caption = row["text"]
+        real_class = row["label"]
         ax = axes[i//ncols, i%ncols]
         ax.axis("off")
-        try:
+        if isinstance(image_to_show, str):
+            image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
             ax.imshow(image_to_show)
-        except TypeError:
-            pass
         pred_class = le.classes_[pred]
         c = "green" if pred_class == real_class else "red"
         ax.set_title(f"Pred:{pred_class}; Real:{real_class}", **{"color":c})
@@ -615,19 +616,23 @@ After training, we can evaluate predictions and visualize the results.
 
 
 
+
+.. image-sg:: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_001.png
+   :alt: Pred:dog; Real:dog, Pred:dog; Real:dog, Pred:cat; Real:dog, Pred:dog; Real:dog, Pred:cat; Real:cat, Pred:dog; Real:dog
+   :srcset: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_001.png
+   :class: sphx-glr-single-img
+
+
 .. rst-class:: sphx-glr-script-out
 
-.. code-block:: pytb
+ .. code-block:: none
 
-    Traceback (most recent call last):
-      File "/home/alberto/Work/imml/tutorials/classify_incomplete_vision_language.py", line 233, in <module>
-        ax = axes[i//ncols, i%ncols]
-    IndexError: index 2 is out of bounds for axis 0 with size 2
+    Predicting: |          | 0/? [00:00<?, ?it/s]    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 252-256
+.. GENERATED FROM PYTHON SOURCE LINES 253-257
 
 .. code-block:: Python
 
@@ -636,7 +641,24 @@ After training, we can evaluate predictions and visualize the results.
     print("Testing metric:", matthews_corrcoef(y_true=y_test, y_pred=preds))
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 257-266
+
+
+.. image-sg:: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_002.png
+   :alt: classify incomplete vision language
+   :srcset: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_002.png
+   :class: sphx-glr-single-img
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Testing metric: 0.8921425711997711
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 258-267
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -648,7 +670,7 @@ demonstrated strong robustness on the test set.
 This example is intentionally simplified, using only 50 instances for demonstration.
 For stronger performance and more reliable results, the full dataset and longer training should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 268-272
+.. GENERATED FROM PYTHON SOURCE LINES 269-273
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -658,7 +680,7 @@ of significant modality incompleteness in vision-language datasets.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (11 minutes 40.360 seconds)
+   **Total running time of the script:** (19 minutes 26.977 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_classify_incomplete_vision_language.py:

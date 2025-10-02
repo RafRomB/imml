@@ -77,23 +77,6 @@ Questions or feedback?
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="When the learning algorithms cannot directly handle missing data, imputation methods become essential to allow their application. Thus, iMML has a module designed for filling missing data, which can be particularly useful when using external methods that are unable to handle missing values directly.">
-
-.. only:: html
-
-  .. image:: /auto_tutorials/images/thumb/sphx_glr_impute_multi_modal_data_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_tutorials_impute_multi_modal_data.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Impute incomplete modality- and feature-wise multi-modal data</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using iMML. We will use the MCR retriever to find similar items across modalities (image/text) even when one modality is missing. The example uses the public nlphuji/flickr8k dataset from Hugging Face Datasets, so you don&#x27;t need to prepare files manually.">
 
 .. only:: html
@@ -106,6 +89,23 @@ Questions or feedback?
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Retrieval on a vision–language dataset (flickr30k)</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="When the learning algorithms cannot directly handle missing data, imputation methods become essential to allow their application. Thus, iMML has a module designed for filling missing data, which can be particularly useful when using external methods that are unable to handle missing values directly.">
+
+.. only:: html
+
+  .. image:: /auto_tutorials/images/thumb/sphx_glr_impute_multi_modal_data_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_tutorials_impute_multi_modal_data.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Impute incomplete modality- and feature-wise multi-modal data</div>
     </div>
 
 
@@ -156,8 +156,8 @@ Questions or feedback?
    /auto_tutorials/multil_modal_data_statistics
    /auto_tutorials/generate_missing_modalities
    /auto_tutorials/cluster_incomplete_mmd
-   /auto_tutorials/impute_multi_modal_data
    /auto_tutorials/retrieve_incomplete_vision_language
+   /auto_tutorials/impute_multi_modal_data
    /auto_tutorials/classify_incomplete_vision_language
    /auto_tutorials/select_and_extract_features
 
