@@ -1404,7 +1404,7 @@ for your application.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 7.686 seconds)
+   **Total running time of the script:** (0 minutes 8.701 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_select_and_extract_features.py:

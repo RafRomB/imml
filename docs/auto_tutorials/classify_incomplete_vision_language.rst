@@ -118,8 +118,8 @@ the ``MCR`` class from the retrieve module.
     folder_images = os.path.join(data_folder, "imgs")
     os.makedirs(folder_images, exist_ok=True)
 
-    # Load the dataset. For this case, we will make sure that enough instances of each class are downloaded.
-    ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[-14:-3]")
+    # Load the dataset
+    ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:50]")
 
     # Build a DataFrame with image paths and captions. We persist images to disk because
     # the retriever expects paths.
@@ -152,8 +152,8 @@ the ``MCR`` class from the retrieve module.
 
 
     class
-    1    7
-    0    4
+    1    37
+    0    13
     Name: count, dtype: int64
 
 
@@ -182,9 +182,9 @@ Split into 40% bank memory, 40% train and 20% test sets
 
  .. code-block:: none
 
-    train_df (4, 4)
-    test_df (3, 4)
-    bank_df (4, 4)
+    train_df (20, 4)
+    test_df (10, 4)
+    bank_df (20, 4)
 
 
 .. raw:: html
@@ -216,30 +216,37 @@ Split into 40% bank memory, 40% train and 20% test sets
       </thead>
       <tbody>
         <tr>
-          <th>3</th>
-          <td>oxford_iiit_pet/imgs/000003.jpg</td>
-          <td>a cat walking in the snow</td>
-          <td>cat</td>
-          <td>0</td>
-        </tr>
-        <tr>
-          <th>9</th>
-          <td>oxford_iiit_pet/imgs/000009.jpg</td>
-          <td>a dog standing on a concrete floor</td>
+          <th>27</th>
+          <td>oxford_iiit_pet/imgs/000027.jpg</td>
+          <td>a large white dog standing on a patio near a b...</td>
           <td>dog</td>
           <td>1</td>
         </tr>
         <tr>
-          <th>0</th>
-          <td>oxford_iiit_pet/imgs/000000.jpg</td>
-          <td>a black cat is standing on a towel</td>
+          <th>24</th>
+          <td>oxford_iiit_pet/imgs/000024.jpg</td>
+          <td>a white cat laying on a floor</td>
           <td>cat</td>
           <td>0</td>
         </tr>
         <tr>
-          <th>1</th>
-          <td>oxford_iiit_pet/imgs/000001.jpg</td>
-          <td>a dog standing in the grass</td>
+          <th>21</th>
+          <td>oxford_iiit_pet/imgs/000021.jpg</td>
+          <td>a black and tan dog with a blue collar</td>
+          <td>dog</td>
+          <td>1</td>
+        </tr>
+        <tr>
+          <th>44</th>
+          <td>oxford_iiit_pet/imgs/000044.jpg</td>
+          <td>a cat yawning on the floor</td>
+          <td>cat</td>
+          <td>0</td>
+        </tr>
+        <tr>
+          <th>19</th>
+          <td>oxford_iiit_pet/imgs/000019.jpg</td>
+          <td>a dog laying on a red pillow</td>
           <td>dog</td>
           <td>1</td>
         </tr>
@@ -293,7 +300,7 @@ Step 4: Generate the prompts using a retriever
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts for the ``RAGPT`` model.
 
-.. GENERATED FROM PYTHON SOURCE LINES 134-152
+.. GENERATED FROM PYTHON SOURCE LINES 134-151
 
 .. code-block:: Python
 
@@ -301,7 +308,7 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
     modalities = ["image", "text"]
     batch_size = 64
     estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True,
-                    prompt_path=data_folder, n_neighbors=1, generate_cap=True)
+                    prompt_path=data_folder, n_neighbors=2, generate_cap=True)
 
     Xs_bank = [
         bank_df["img"].to_list(),
@@ -309,7 +316,6 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
     ]
     y_bank = bank_df["class"]
 
-    # As the training takes some time, we will save the results in this tutorial. Uncomment this line for training
     estimator.fit(Xs=Xs_bank, y=y_bank)
     memory_bank = estimator.memory_bank_
     print("memory_bank", memory_bank.shape)
@@ -323,7 +329,7 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
 
  .. code-block:: none
 
-    memory_bank (4, 8)
+    memory_bank (20, 8)
 
 
 .. raw:: html
@@ -359,48 +365,59 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
       </thead>
       <tbody>
         <tr>
-          <th>2</th>
-          <td>2</td>
-          <td>oxford_iiit_pet/imgs/000002.jpg</td>
-          <td>a brown and white dog</td>
-          <td>[-0.36566221714019775, -0.20091623067855835, -...</td>
-          <td>[0.02590126544237137, 0.5221644639968872, 0.51...</td>
-          <td>1</td>
-          <td>oxford_iiit_pet/image/000002.npy</td>
-          <td>oxford_iiit_pet/text/000002.npy</td>
-        </tr>
-        <tr>
-          <th>8</th>
-          <td>8</td>
-          <td>oxford_iiit_pet/imgs/000008.jpg</td>
-          <td>a dog wearing a green vest</td>
-          <td>[0.39330407977104187, 0.6766937375068665, -0.4...</td>
-          <td>[0.04553622007369995, -0.043125078082084656, -...</td>
-          <td>1</td>
-          <td>oxford_iiit_pet/image/000008.npy</td>
-          <td>oxford_iiit_pet/text/000008.npy</td>
-        </tr>
-        <tr>
-          <th>6</th>
-          <td>6</td>
-          <td>oxford_iiit_pet/imgs/000006.jpg</td>
-          <td>a dog with a curly coat sitting on a porch</td>
-          <td>[-0.4398946762084961, 0.7886341214179993, -0.3...</td>
-          <td>[0.1656709909439087, -0.4372251033782959, 0.16...</td>
-          <td>1</td>
-          <td>oxford_iiit_pet/image/000006.npy</td>
-          <td>oxford_iiit_pet/text/000006.npy</td>
-        </tr>
-        <tr>
-          <th>10</th>
-          <td>10</td>
-          <td>oxford_iiit_pet/imgs/000010.jpg</td>
-          <td>a cat laying on a bed</td>
-          <td>[0.37429460883140564, 0.6862649917602539, 0.11...</td>
-          <td>[-0.5021401643753052, -0.17627793550491333, 0....</td>
+          <th>18</th>
+          <td>18</td>
+          <td>oxford_iiit_pet/imgs/000018.jpg</td>
+          <td>a gray cat laying on the floor</td>
+          <td>[-0.2883491814136505, 0.6082451343536377, 0.25...</td>
+          <td>[-0.5205264091491699, -0.2758329510688782, 0.2...</td>
           <td>0</td>
-          <td>oxford_iiit_pet/image/000010.npy</td>
-          <td>oxford_iiit_pet/text/000010.npy</td>
+          <td>oxford_iiit_pet/image/000018.npy</td>
+          <td>oxford_iiit_pet/text/000018.npy</td>
+        </tr>
+        <tr>
+          <th>7</th>
+          <td>7</td>
+          <td>oxford_iiit_pet/imgs/000007.jpg</td>
+          <td>a man holding a black dog</td>
+          <td>[-0.36506423354148865, 0.27761751413345337, -0...</td>
+          <td>[-0.25834447145462036, 0.5495434403419495, 0.3...</td>
+          <td>1</td>
+          <td>oxford_iiit_pet/image/000007.npy</td>
+          <td>oxford_iiit_pet/text/000007.npy</td>
+        </tr>
+        <tr>
+          <th>20</th>
+          <td>20</td>
+          <td>oxford_iiit_pet/imgs/000020.jpg</td>
+          <td>a cat is sitting on a branch</td>
+          <td>[-0.32218602299690247, -0.18200132250785828, 0...</td>
+          <td>[-0.8176317811012268, 0.08956041932106018, 0.7...</td>
+          <td>0</td>
+          <td>oxford_iiit_pet/image/000020.npy</td>
+          <td>oxford_iiit_pet/text/000020.npy</td>
+        </tr>
+        <tr>
+          <th>0</th>
+          <td>0</td>
+          <td>oxford_iiit_pet/imgs/000000.jpg</td>
+          <td>a cat walking on grass</td>
+          <td>[0.04112914949655533, 0.28625351190567017, 0.2...</td>
+          <td>[0.36405640840530396, 0.47397932410240173, 0.6...</td>
+          <td>0</td>
+          <td>oxford_iiit_pet/image/000000.npy</td>
+          <td>oxford_iiit_pet/text/000000.npy</td>
+        </tr>
+        <tr>
+          <th>46</th>
+          <td>46</td>
+          <td>oxford_iiit_pet/imgs/000046.jpg</td>
+          <td>a dog laying in the grass</td>
+          <td>[0.139794260263443, 0.36746230721473694, -0.48...</td>
+          <td>[0.5348194241523743, 0.221372589468956, 0.3069...</td>
+          <td>1</td>
+          <td>oxford_iiit_pet/image/000046.npy</td>
+          <td>oxford_iiit_pet/text/000046.npy</td>
         </tr>
       </tbody>
     </table>
@@ -409,11 +426,11 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-154
+.. GENERATED FROM PYTHON SOURCE LINES 152-153
 
 Load generated training and testing prompts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-174
+.. GENERATED FROM PYTHON SOURCE LINES 153-172
 
 .. code-block:: Python
 
@@ -423,7 +440,6 @@ Load generated training and testing prompts.
         train_df["text"].to_list()
     ]
     y_train = train_df["class"]
-
     train_db = estimator.transform(Xs=Xs_train, y=y_train)
     print("train_db", train_db.shape)
     train_db.head()
@@ -445,19 +461,19 @@ Load generated training and testing prompts.
 
  .. code-block:: none
 
-    train_db (4, 14)
-    test_db (3, 14)
+    train_db (20, 14)
+    test_db (10, 14)
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 175-178
+.. GENERATED FROM PYTHON SOURCE LINES 173-176
 
 Step 5: Training the model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Create the loaders.
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-186
+.. GENERATED FROM PYTHON SOURCE LINES 176-184
 
 .. code-block:: Python
 
@@ -476,16 +492,16 @@ Create the loaders.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 187-189
+.. GENERATED FROM PYTHON SOURCE LINES 185-187
 
 Train the ``RAGPT`` model using the generated prompts. For speed in this demo we train for only 2 epochs using
 Lightning.
 
-.. GENERATED FROM PYTHON SOURCE LINES 189-193
+.. GENERATED FROM PYTHON SOURCE LINES 187-191
 
 .. code-block:: Python
 
-    trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
+    trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
     estimator = RAGPT(cls_num=len(le.classes_))
     trainer.fit(estimator, train_dataloader)
 
@@ -497,19 +513,72 @@ Lightning.
 
  .. code-block:: none
 
-    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]    Epoch 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]    Epoch 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]    Epoch 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]
+    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:37<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:37<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:37<00:00,  0.03it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:34<00:00,  0.03it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 194-198
+.. GENERATED FROM PYTHON SOURCE LINES 192-196
 
-Step 6: Evaluation
- ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-######################################################
- After training, we can evaluate predictions and visualize the results.
+Step 6: Advanced Usage: Track Metrics During Training
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We can modify the internal functions. For instance, we can track loss and compute evaluation metrics during
+training.
 
-.. GENERATED FROM PYTHON SOURCE LINES 198-228
+.. GENERATED FROM PYTHON SOURCE LINES 196-216
+
+.. code-block:: Python
+
+
+    trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
+    estimator = RAGPT(cls_num=len(le.classes_))
+    estimator.loss_list = []
+    estimator.agg_loss_list = []
+    validation_step = estimator.validation_step
+
+    def compute_metric(*args):
+        loss = validation_step(*args)
+        estimator.loss_list.append(loss)
+        return loss
+    estimator.validation_step = compute_metric
+
+    def agg_metric(*args):
+        estimator.agg_loss_list.append(torch.stack(estimator.loss_list).mean())
+        estimator.loss_list = []
+    estimator.on_validation_epoch_end = agg_metric
+
+    trainer.fit(estimator, train_dataloader, test_dataloader)
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Sanity Checking: |          | 0/? [00:00<?, ?it/s]    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:33<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:33<00:00,  0.03it/s]
+    Validation: |          | 0/? [00:00<?, ?it/s]
+    Validation:   0%|          | 0/1 [00:00<?, ?it/s]
+    Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:11<00:00,  0.09it/s]
+                                                                              Epoch 0: 100%|██████████| 1/1 [00:45<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:45<00:00,  0.02it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:30<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:30<00:00,  0.03it/s]
+    Validation: |          | 0/? [00:00<?, ?it/s]
+    Validation:   0%|          | 0/1 [00:00<?, ?it/s]
+    Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]
+                                                                              Epoch 1: 100%|██████████| 1/1 [00:39<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:39<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:39<00:00,  0.03it/s]
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 217-220
+
+Step 7: Evaluation
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+After training, we can evaluate predictions and visualize the results.
+
+.. GENERATED FROM PYTHON SOURCE LINES 220-251
 
 .. code-block:: Python
 
@@ -522,10 +591,11 @@ Step 6: Evaluation
                       if isinstance(image_to_show, str) else image_to_show
                       for image_to_show in test_df["img"].to_list()]
 
-    nrows, ncols = 1,3
+    nrows, ncols = 2,3
     fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
-    for i, (ax, image_to_show, caption, pred, real_class) in enumerate(zip(
-            axes, images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
+    for i, (image_to_show, caption, pred, real_class) in enumerate(zip(
+            images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
+        ax = axes[i//ncols, i%ncols]
         ax.axis("off")
         try:
             ax.imshow(image_to_show)
@@ -545,23 +615,19 @@ Step 6: Evaluation
 
 
 
-
-.. image-sg:: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_001.png
-   :alt: Pred:dog; Real:dog, Pred:dog; Real:dog, Pred:dog; Real:cat
-   :srcset: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_001.png
-   :class: sphx-glr-single-img
-
-
 .. rst-class:: sphx-glr-script-out
 
- .. code-block:: none
+.. code-block:: pytb
 
-    Predicting: |          | 0/? [00:00<?, ?it/s]    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:04<00:00,  0.22it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:04<00:00,  0.22it/s]
+    Traceback (most recent call last):
+      File "/home/alberto/Work/imml/tutorials/classify_incomplete_vision_language.py", line 233, in <module>
+        ax = axes[i//ncols, i%ncols]
+    IndexError: index 2 is out of bounds for axis 0 with size 2
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 229-233
+.. GENERATED FROM PYTHON SOURCE LINES 252-256
 
 .. code-block:: Python
 
@@ -570,24 +636,7 @@ Step 6: Evaluation
     print("Testing metric:", matthews_corrcoef(y_true=y_test, y_pred=preds))
 
 
-
-
-.. image-sg:: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_002.png
-   :alt: classify incomplete vision language
-   :srcset: /auto_tutorials/images/sphx_glr_classify_incomplete_vision_language_002.png
-   :class: sphx-glr-single-img
-
-
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Testing metric: 0.0
-
-
-
-
-.. GENERATED FROM PYTHON SOURCE LINES 234-243
+.. GENERATED FROM PYTHON SOURCE LINES 257-266
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -599,7 +648,7 @@ demonstrated strong robustness on the test set.
 This example is intentionally simplified, using only 50 instances for demonstration.
 For stronger performance and more reliable results, the full dataset and longer training should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 245-249
+.. GENERATED FROM PYTHON SOURCE LINES 268-272
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -609,7 +658,7 @@ of significant modality incompleteness in vision-language datasets.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (3 minutes 42.619 seconds)
+   **Total running time of the script:** (11 minutes 40.360 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_classify_incomplete_vision_language.py:

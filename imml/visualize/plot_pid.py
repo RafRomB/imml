@@ -5,38 +5,6 @@ from matplotlib import pyplot as plt
 from ..statistics import pid
 
 
-def _overlap_area(r1, r2, d):
-    if d >= r1 + r2:
-        return 0.0
-    if d <= abs(r1 - r2):
-        return math.pi * min(r1, r2)**2
-    r1_2, r2_2 = r1*r1, r2*r2
-    alpha = math.acos((d*d + r1_2 - r2_2) / (2*d*r1))
-    beta  = math.acos((d*d + r2_2 - r1_2) / (2*d*r2))
-    return r1_2*alpha + r2_2*beta - d*r1*math.sin(alpha)
-
-
-def _solve_distance_for_overlap(r1, r2, target_overlap, tol=1e-6, max_iter=100):
-    lo = max(0.0, abs(r1 - r2))
-    hi = r1 + r2
-    max_overlap = math.pi * min(r1, r2)**2
-    target_overlap = max(0.0, min(target_overlap, max_overlap))
-    if target_overlap <= 0:
-        return hi
-    if abs(target_overlap - max_overlap) < tol:
-        return lo
-    for _ in range(max_iter):
-        mid = 0.5*(lo+hi)
-        ov = _overlap_area(r1, r2, mid)
-        if abs(ov - target_overlap) < tol:
-            return mid
-        if ov > target_overlap:
-            lo = mid
-        else:
-            hi = mid
-    return 0.5*(lo+hi)
-
-
 def plot_pid(rus = None, Xs = None, y = None,
              modalities: list = ["Modality A", "Modality B"], colors: list = ["#780000", "#669BBC", "#FDF0D5"],
              abb: bool = True, figsize : tuple = None, **kwargs):
@@ -124,3 +92,35 @@ def plot_pid(rus = None, Xs = None, y = None,
     ax.set_aspect('equal', adjustable='box')
     ax.axis('off')
     return fig, ax
+
+
+def _overlap_area(r1, r2, d):
+    if d >= r1 + r2:
+        return 0.0
+    if d <= abs(r1 - r2):
+        return math.pi * min(r1, r2)**2
+    r1_2, r2_2 = r1*r1, r2*r2
+    alpha = math.acos((d*d + r1_2 - r2_2) / (2*d*r1))
+    beta  = math.acos((d*d + r2_2 - r1_2) / (2*d*r2))
+    return r1_2*alpha + r2_2*beta - d*r1*math.sin(alpha)
+
+
+def _solve_distance_for_overlap(r1, r2, target_overlap, tol=1e-6, max_iter=100):
+    lo = max(0.0, abs(r1 - r2))
+    hi = r1 + r2
+    max_overlap = math.pi * min(r1, r2)**2
+    target_overlap = max(0.0, min(target_overlap, max_overlap))
+    if target_overlap <= 0:
+        return hi
+    if abs(target_overlap - max_overlap) < tol:
+        return lo
+    for _ in range(max_iter):
+        mid = 0.5*(lo+hi)
+        ov = _overlap_area(r1, r2, mid)
+        if abs(ov - target_overlap) < tol:
+            return mid
+        if ov > target_overlap:
+            lo = mid
+        else:
+            hi = mid
+    return 0.5*(lo+hi)

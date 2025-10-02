@@ -741,6 +741,15 @@
    "name": "list"
   }
  ],
+ "agg_metric": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  }
+ ],
  "ax": [
   {
    "is_class": false,
@@ -1180,7 +1189,7 @@
    "is_explicit": false,
    "module": "builtins",
    "module_short": "builtins",
-   "name": "str"
+   "name": "float"
   }
  ],
  "caption.split": [
@@ -1189,7 +1198,16 @@
    "is_explicit": false,
    "module": "builtins",
    "module_short": "builtins",
-   "name": "builtin_function_or_method"
+   "name": "float"
+  }
+ ],
+ "compute_metric": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
   }
  ],
  "data_folder": [
@@ -1263,6 +1281,24 @@
    "name": "RAGPT"
   }
  ],
+ "estimator.agg_loss_list": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "list"
+  }
+ ],
+ "estimator.agg_loss_list.append": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
+  }
+ ],
  "estimator.fit": [
   {
    "is_class": false,
@@ -1284,6 +1320,24 @@
    "module": "imml",
    "module_short": "imml",
    "name": "RAGPT"
+  }
+ ],
+ "estimator.loss_list": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "list"
+  }
+ ],
+ "estimator.loss_list.append": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "builtin_function_or_method"
   }
  ],
  "estimator.memory_bank_": [
@@ -1309,6 +1363,15 @@
    "name": "RAGPT"
   }
  ],
+ "estimator.on_validation_epoch_end": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
+  }
+ ],
  "estimator.transform": [
   {
    "is_class": false,
@@ -1330,6 +1393,15 @@
    "module": "imml",
    "module_short": "imml",
    "name": "RAGPT"
+  }
+ ],
+ "estimator.validation_step": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "function"
   }
  ],
  "ex": [
@@ -4230,6 +4302,15 @@
    "module": "lightning",
    "module_short": "lightning",
    "name": "Trainer.predict"
+  }
+ ],
+ "validation_step": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "method"
   }
  ],
  "y_bank": [

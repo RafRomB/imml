@@ -69,8 +69,8 @@ data_folder = "oxford_iiit_pet"
 folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
 
-# Load the dataset. For this case, we will make sure that enough instances of each class are downloaded.
-ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[-14:-3]")
+# Load the dataset
+ds = load_dataset("visual-layer/oxford-iiit-pet-vl-enriched", split="train[:50]")
 
 # Build a DataFrame with image paths and captions. We persist images to disk because
 # the retriever expects paths.
@@ -135,7 +135,7 @@ test_df.loc[missing_mask, "text"] = np.nan
 modalities = ["image", "text"]
 batch_size = 64
 estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True,
-                prompt_path=data_folder, n_neighbors=1, generate_cap=True)
+                prompt_path=data_folder, n_neighbors=2, generate_cap=True)
 
 Xs_bank = [
     bank_df["img"].to_list(),
@@ -143,7 +143,6 @@ Xs_bank = [
 ]
 y_bank = bank_df["class"]
 
-# As the training takes some time, we will save the results in this tutorial. Uncomment this line for training
 estimator.fit(Xs=Xs_bank, y=y_bank)
 memory_bank = estimator.memory_bank_
 print("memory_bank", memory_bank.shape)
@@ -157,7 +156,6 @@ Xs_train = [
     train_df["text"].to_list()
 ]
 y_train = train_df["class"]
-
 train_db = estimator.transform(Xs=Xs_train, y=y_train)
 print("train_db", train_db.shape)
 train_db.head()
@@ -186,14 +184,38 @@ test_dataloader = DataLoader(dataset=test_data, batch_size=batch_size,
 ########################################################
 # Train the ``RAGPT`` model using the generated prompts. For speed in this demo we train for only 2 epochs using
 # Lightning.
-trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
+trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
 estimator = RAGPT(cls_num=len(le.classes_))
 trainer.fit(estimator, train_dataloader)
 
 ########################################################
-# Step 6: Evaluation
+# Step 6: Advanced Usage: Track Metrics During Training
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-#######################################################
+# We can modify the internal functions. For instance, we can track loss and compute evaluation metrics during
+# training.
+
+trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
+estimator = RAGPT(cls_num=len(le.classes_))
+estimator.loss_list = []
+estimator.agg_loss_list = []
+validation_step = estimator.validation_step
+
+def compute_metric(*args):
+    loss = validation_step(*args)
+    estimator.loss_list.append(loss)
+    return loss
+estimator.validation_step = compute_metric
+
+def agg_metric(*args):
+    estimator.agg_loss_list.append(torch.stack(estimator.loss_list).mean())
+    estimator.loss_list = []
+estimator.on_validation_epoch_end = agg_metric
+
+trainer.fit(estimator, train_dataloader, test_dataloader)
+
+########################################################
+# Step 7: Evaluation
+# ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # After training, we can evaluate predictions and visualize the results.
 preds = trainer.predict(estimator, test_dataloader)
 preds = [batch.softmax(dim=1) for batch in preds]
@@ -204,10 +226,11 @@ images_to_show = [Image.open(image_to_show).resize((512, 512), Image.Resampling.
                   if isinstance(image_to_show, str) else image_to_show
                   for image_to_show in test_df["img"].to_list()]
 
-nrows, ncols = 1,3
+nrows, ncols = 2,3
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
-for i, (ax, image_to_show, caption, pred, real_class) in enumerate(zip(
-        axes, images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
+for i, (image_to_show, caption, pred, real_class) in enumerate(zip(
+        images_to_show, test_df["text"].to_list(), preds, test_df["label"].to_list())):
+    ax = axes[i//ncols, i%ncols]
     ax.axis("off")
     try:
         ax.imshow(image_to_show)
