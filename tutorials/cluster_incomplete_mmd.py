@@ -44,13 +44,12 @@ from imml.visualize import plot_missing_modality
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 # For reproducibility, we generate a small synthetic classification dataset and split the features into two
 # modalities (Xs[0], Xs[1]).
-# Optional: set a random_state for reproducibility (we do below).
 #
 # Using your own data:
 #
 # - Represent your dataset as a Python list Xs, one entry per modality.
 # - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-# - All modalities must refer to the same samples and be aligned by row order or index.
+# - All modalities must refer to the same samples and be aligned by row.
 
 random_state = 42
 X, y = make_classification(n_samples=50, random_state=random_state, n_clusters_per_class=1, n_classes=3)
@@ -82,6 +81,9 @@ ConfusionMatrixDisplay.from_predictions(y_true=y, y_pred=labels)
 print("Adjusted Mutual Information Score:", adjusted_mutual_info_score(labels_true=y, labels_pred=labels))
 pd.Series(labels).value_counts()
 
+###############################################################################
+# The clustering was quite effective, achieving an AMI score close to 0.5. Note that in clustering, the actual label
+# values are arbitrary, only the grouping structure matters.
 
 ###################################################
 # Step 4: Simulate missing data (Amputation)
@@ -96,7 +98,7 @@ amputed_Xs = Amputer(p= p, mechanism="mcar", random_state=42).fit_transform(Xs)
 ###################################
 # You can visualize which modalities are missing using a binary color map (white for missing modalities, black
 # for available modalities). Each row is a sample; each column is a modality.
-plot_missing_modality(Xs=amputed_Xs, sort=False)
+_ = plot_missing_modality(Xs=amputed_Xs, sort=False)
 
 
 ########################################################
@@ -113,6 +115,9 @@ labels = pipeline.fit_predict(amputed_Xs)
 ConfusionMatrixDisplay.from_predictions(y_true=y, y_pred=labels)
 print("Adjusted Mutual Information Score:", adjusted_mutual_info_score(labels_true=y, labels_pred=labels))
 pd.Series(labels).value_counts()
+
+########################################################
+# As expected, the clustering performance decreased. However, it remains reasonably good.
 
 
 ########################################################

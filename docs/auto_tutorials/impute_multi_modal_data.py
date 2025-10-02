@@ -48,13 +48,12 @@ from imml.visualize import plot_missing_modality
 # ^^^^^^^^^^^^^^^^^^^^^^^^
 # For reproducibility, we generate a small synthetic classification dataset and split the features into two
 # modalities (Xs[0], Xs[1]).
-# Optional: set a random_state for reproducibility (we do below).
 #
 # Using your own data:
 #
 # - Represent your dataset as a Python list Xs, one entry per modality.
 # - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-# - All modalities must refer to the same samples and be aligned by row order or index.
+# - All modalities must refer to the same samples and be aligned by row.
 
 random_state = 42
 X, y = make_classification(n_samples=50, random_state=random_state, n_clusters_per_class=1, n_classes=3)

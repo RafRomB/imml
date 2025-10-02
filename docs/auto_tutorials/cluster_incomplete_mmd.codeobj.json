@@ -1139,6 +1139,15 @@
    "name": "list"
   }
  ],
+ "_": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "builtins",
+   "module_short": "builtins",
+   "name": "tuple"
+  }
+ ],
  "adjusted_mutual_info_score": [
   {
    "is_class": false,

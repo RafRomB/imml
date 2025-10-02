@@ -82,21 +82,20 @@ Step 1: Import required libraries
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 43-54
+.. GENERATED FROM PYTHON SOURCE LINES 43-53
 
 Step 2: Load the dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^
 For reproducibility, we generate a small synthetic classification dataset and split the features into two
 modalities (Xs[0], Xs[1]).
-Optional: set a random_state for reproducibility (we do below).
 
 Using your own data:
 
 - Represent your dataset as a Python list Xs, one entry per modality.
 - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-- All modalities must refer to the same samples and be aligned by row order or index.
+- All modalities must refer to the same samples and be aligned by row.
 
-.. GENERATED FROM PYTHON SOURCE LINES 54-65
+.. GENERATED FROM PYTHON SOURCE LINES 53-64
 
 .. code-block:: Python
 
@@ -128,14 +127,14 @@ Using your own data:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 66-70
+.. GENERATED FROM PYTHON SOURCE LINES 65-69
 
 Step 3: Clustering
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We show how to cluster the multi-modal data using `iMML`, in this case, using the algorithm ``EEIMVC``. For this
 example, we build a pipeline where we first normalize the data and then the samples are clustered.
 
-.. GENERATED FROM PYTHON SOURCE LINES 70-77
+.. GENERATED FROM PYTHON SOURCE LINES 69-76
 
 .. code-block:: Python
 
@@ -153,20 +152,19 @@ example, we build a pipeline where we first normalize the data and then the samp
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 78-81
+.. GENERATED FROM PYTHON SOURCE LINES 77-80
 
 Clustering performance is evaluated using the Adjusted Mutual Information (AMI) score, which measures the
 agreement between predicted clusters and the ground truth, independent of label permutations. We also plot a
 confusion matrix to visually assess the alignment between predicted clusters and true labels.
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-86
+.. GENERATED FROM PYTHON SOURCE LINES 80-84
 
 .. code-block:: Python
 
     ConfusionMatrixDisplay.from_predictions(y_true=y, y_pred=labels)
     print("Adjusted Mutual Information Score:", adjusted_mutual_info_score(labels_true=y, labels_pred=labels))
     pd.Series(labels).value_counts()
-
 
 
 
@@ -190,7 +188,12 @@ confusion matrix to visually assess the alignment between predicted clusters and
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 87-92
+.. GENERATED FROM PYTHON SOURCE LINES 85-87
+
+The clustering was quite effective, achieving an AMI score close to 0.5. Note that in clustering, the actual label
+values are arbitrary, only the grouping structure matters.
+
+.. GENERATED FROM PYTHON SOURCE LINES 89-94
 
 Step 4: Simulate missing data (Amputation)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -198,7 +201,7 @@ As we mentioned, `iMML` can be used also for incomplete multi-modal learning, Us
 randomly introduce missing data to simulate a scenario where some modalities are missing. Here, 20% of
 the samples will be incomplete.
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-96
+.. GENERATED FROM PYTHON SOURCE LINES 94-98
 
 .. code-block:: Python
 
@@ -213,16 +216,16 @@ the samples will be incomplete.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 97-99
+.. GENERATED FROM PYTHON SOURCE LINES 99-101
 
 You can visualize which modalities are missing using a binary color map (white for missing modalities, black
 for available modalities). Each row is a sample; each column is a modality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 99-102
+.. GENERATED FROM PYTHON SOURCE LINES 101-104
 
 .. code-block:: Python
 
-    plot_missing_modality(Xs=amputed_Xs, sort=False)
+    _ = plot_missing_modality(Xs=amputed_Xs, sort=False)
 
 
 
@@ -234,22 +237,16 @@ for available modalities). Each row is a sample; each column is a modality.
    :class: sphx-glr-single-img
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-
-    (<Figure size 640x480 with 1 Axes>, <Axes: xlabel='Modality', ylabel='Samples'>)
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-106
+.. GENERATED FROM PYTHON SOURCE LINES 105-108
 
 Step 5: Clustering with missing data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Now, we repeat the clustering analysis, but this time with the amputed (incomplete) data.
 
-.. GENERATED FROM PYTHON SOURCE LINES 106-118
+.. GENERATED FROM PYTHON SOURCE LINES 108-119
 
 .. code-block:: Python
 
@@ -263,7 +260,6 @@ Now, we repeat the clustering analysis, but this time with the amputed (incomple
     ConfusionMatrixDisplay.from_predictions(y_true=y, y_pred=labels)
     print("Adjusted Mutual Information Score:", adjusted_mutual_info_score(labels_true=y, labels_pred=labels))
     pd.Series(labels).value_counts()
-
 
 
 
@@ -287,7 +283,11 @@ Now, we repeat the clustering analysis, but this time with the amputed (incomple
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 119-124
+.. GENERATED FROM PYTHON SOURCE LINES 120-121
+
+As expected, the clustering performance decreased. However, it remains reasonably good.
+
+.. GENERATED FROM PYTHON SOURCE LINES 124-129
 
 Step 6: Benchmarking
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -295,7 +295,7 @@ We now compare performance with and without missing data. We also include a simp
 missing values are first imputed with the feature-wise mean. We repeat the experiments 5 times
 across increasing missingness to obtain more robust estimates.
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-130
+.. GENERATED FROM PYTHON SOURCE LINES 129-135
 
 .. code-block:: Python
 
@@ -312,7 +312,7 @@ across increasing missingness to obtain more robust estimates.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 131-156
+.. GENERATED FROM PYTHON SOURCE LINES 136-161
 
 .. code-block:: Python
 
@@ -416,7 +416,7 @@ across increasing missingness to obtain more robust estimates.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-163
+.. GENERATED FROM PYTHON SOURCE LINES 162-168
 
 .. code-block:: Python
 
@@ -438,7 +438,7 @@ across increasing missingness to obtain more robust estimates.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 164-169
+.. GENERATED FROM PYTHON SOURCE LINES 169-174
 
 The adjusted mutual information (AMI) indicates how well the clustering aligns with the ground truth.
 AMI is 1 when partitions are identical; random partitions have an expected AMI around 0 on average and
@@ -446,7 +446,7 @@ can be negative. Here we compare ``EEIMVC`` with a simple baseline (feature-wise
 across missingness rates from 0% to 80%. We report the mean over 5 repetitions with a
 standard-error-of-the-mean (SEM) interval.
 
-.. GENERATED FROM PYTHON SOURCE LINES 171-179
+.. GENERATED FROM PYTHON SOURCE LINES 176-184
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -457,7 +457,7 @@ are similarly constrained by data quality.
 With intermediate rates, ``EEIMVC`` tends to reach a better clustering performance, highlighting its robustness for
 incomplete multi-modal datasets.
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-186
+.. GENERATED FROM PYTHON SOURCE LINES 186-191
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -468,7 +468,7 @@ missingness make it straightforward to prototype, evaluate, and benchmark real-w
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 5.699 seconds)
+   **Total running time of the script:** (0 minutes 5.948 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_cluster_incomplete_mmd.py:

@@ -3,16 +3,16 @@
 Modality-wise missing data simulation (Amputation)
 ==================================================
 
-Evaluation and benchmarking of new algorithms under diverse conditions is essential to ensure their robustness,
-added value and generalizability. `iMML` simplifies this process by simulating incomplete multi-modal datasets with
-block-wise missing data. This so-called data amputation process allows for controlled testing of methods by
-introducing missing data from various mechanisms that reflect real-world scenarios where different modalities may be
-partially observed or entirely missing.
+Evaluation and benchmarking of new algorithms or models under diverse conditions is essential to ensure their
+robustness, added value and generalizability. `iMML` simplifies this process by simulating incomplete multi-modal
+datasets with block-wise missing data. This so-called data amputation process allows for controlled testing of
+methods by introducing missing data from various mechanisms that reflect real-world scenarios where different
+modalities may be partially observed or entirely missing.
 
 What you will learn:
 
-- The four amputation (missingness) mechanisms supported by iMML (PM, MCAR, MNAR, MEM).
-- How to generate modality-wise incomplete multi-modal datasets with Amputer.
+- The four amputation (missingness) mechanisms supported by `iMML` (PM, MCAR, MNAR, MEM).
+- How to generate modality-wise incomplete multi-modal datasets with ``Amputer``.
 - How to visualize missingness patterns across modalities.
 - How missingness mechanisms and rates affect per-modality data availability.
 
@@ -53,12 +53,13 @@ from imml.visualize import plot_missing_modality
 #
 # - Represent your dataset as a Python list Xs, one entry per modality.
 # - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-# - All modalities must refer to the same samples and be aligned by row order or index.
+# - All modalities must refer to the same samples and be aligned by row.
 
 random_state = 7
 n_mods = 4
 n_samples = 10
-Xs = [pd.DataFrame(np.random.default_rng(random_state).random((n_samples, 10))) for i in range(n_mods)]
+rng = np.random.default_rng(random_state)
+Xs = [pd.DataFrame(rng.random((n_samples, 10))) for i in range(n_mods)]
 
 
 ###################################################
@@ -68,7 +69,9 @@ Xs = [pd.DataFrame(np.random.default_rng(random_state).random((n_samples, 10))) 
 # 80% of the samples will be incomplete following a mutually exclusive missing pattern.
 
 mechanism = "mem"
-transformed_Xs = Amputer(mechanism=mechanism, p=0.8, random_state=random_state).fit_transform(Xs)
+p=0.8
+amputer = Amputer(mechanism=mechanism, p=p, random_state=random_state)
+transformed_Xs = amputer.fit_transform(Xs)
 
 
 ###################################
@@ -103,7 +106,7 @@ plt.tight_layout()
 
 ###################################################
 # As shown in the table below, all cases have the same numbers of complete and incomplete samples overall.
-# However, the number of observed samples in each modality varies with the missingness mechanism.
+# However, the number of observed samples in each modality varies with the missingness pattern.
 
 pd.DataFrame.from_dict(samples_dict, orient= "index")
 
@@ -115,7 +118,7 @@ pd.DataFrame.from_dict(samples_dict, orient= "index")
 
 n_mods = 5
 n_samples = 100
-Xs = [pd.DataFrame(np.random.default_rng(random_state).random((n_samples, 10))) for i in range(n_mods)]
+Xs = [pd.DataFrame(rng.random((n_samples, 10))) for i in range(n_mods)]
 for p in np.arange(0.1, 1., 0.1):
     samples_dict = {}
     fig,axs = plt.subplots(1,4, figsize= (12,2.5))

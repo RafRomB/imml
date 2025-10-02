@@ -22,16 +22,16 @@
 Modality-wise missing data simulation (Amputation)
 ==================================================
 
-Evaluation and benchmarking of new algorithms under diverse conditions is essential to ensure their robustness,
-added value and generalizability. `iMML` simplifies this process by simulating incomplete multi-modal datasets with
-block-wise missing data. This so-called data amputation process allows for controlled testing of methods by
-introducing missing data from various mechanisms that reflect real-world scenarios where different modalities may be
-partially observed or entirely missing.
+Evaluation and benchmarking of new algorithms or models under diverse conditions is essential to ensure their
+robustness, added value and generalizability. `iMML` simplifies this process by simulating incomplete multi-modal
+datasets with block-wise missing data. This so-called data amputation process allows for controlled testing of
+methods by introducing missing data from various mechanisms that reflect real-world scenarios where different
+modalities may be partially observed or entirely missing.
 
 What you will learn:
 
-- The four amputation (missingness) mechanisms supported by iMML (PM, MCAR, MNAR, MEM).
-- How to generate modality-wise incomplete multi-modal datasets with Amputer.
+- The four amputation (missingness) mechanisms supported by `iMML` (PM, MCAR, MNAR, MEM).
+- How to generate modality-wise incomplete multi-modal datasets with ``Amputer``.
 - How to visualize missingness patterns across modalities.
 - How missingness mechanisms and rates affect per-modality data availability.
 
@@ -97,9 +97,9 @@ Using your own data:
 
 - Represent your dataset as a Python list Xs, one entry per modality.
 - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-- All modalities must refer to the same samples and be aligned by row order or index.
+- All modalities must refer to the same samples and be aligned by row.
 
-.. GENERATED FROM PYTHON SOURCE LINES 57-64
+.. GENERATED FROM PYTHON SOURCE LINES 57-65
 
 .. code-block:: Python
 
@@ -107,7 +107,8 @@ Using your own data:
     random_state = 7
     n_mods = 4
     n_samples = 10
-    Xs = [pd.DataFrame(np.random.default_rng(random_state).random((n_samples, 10))) for i in range(n_mods)]
+    rng = np.random.default_rng(random_state)
+    Xs = [pd.DataFrame(rng.random((n_samples, 10))) for i in range(n_mods)]
 
 
 
@@ -117,20 +118,22 @@ Using your own data:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 65-69
+.. GENERATED FROM PYTHON SOURCE LINES 66-70
 
 Step 3: Simulate missing data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Using ``Amputer``, we introduce missing data to simulate a scenario where some modalities are missing. Here,
 80% of the samples will be incomplete following a mutually exclusive missing pattern.
 
-.. GENERATED FROM PYTHON SOURCE LINES 69-74
+.. GENERATED FROM PYTHON SOURCE LINES 70-77
 
 .. code-block:: Python
 
 
     mechanism = "mem"
-    transformed_Xs = Amputer(mechanism=mechanism, p=0.8, random_state=random_state).fit_transform(Xs)
+    p=0.8
+    amputer = Amputer(mechanism=mechanism, p=p, random_state=random_state)
+    transformed_Xs = amputer.fit_transform(Xs)
 
 
 
@@ -140,12 +143,12 @@ Using ``Amputer``, we introduce missing data to simulate a scenario where some m
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 75-77
+.. GENERATED FROM PYTHON SOURCE LINES 78-80
 
 We can visualize which modalities are missing using a binary color map (black = observed, white = missing).
 Each row is a sample; each column is a modality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-80
+.. GENERATED FROM PYTHON SOURCE LINES 80-83
 
 .. code-block:: Python
 
@@ -164,14 +167,14 @@ Each row is a sample; each column is a modality.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-85
+.. GENERATED FROM PYTHON SOURCE LINES 84-88
 
 Step 4: Compare amputation mechanisms
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We now illustrate the four different amputation patterns: mutually exclusive missing (MEM),
 partial missing (PM), missing completely at random (MCAR), and missing not at random (MNAR).
 
-.. GENERATED FROM PYTHON SOURCE LINES 85-104
+.. GENERATED FROM PYTHON SOURCE LINES 88-107
 
 .. code-block:: Python
 
@@ -206,12 +209,12 @@ partial missing (PM), missing completely at random (MCAR), and missing not at ra
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-107
+.. GENERATED FROM PYTHON SOURCE LINES 108-110
 
 As shown in the table below, all cases have the same numbers of complete and incomplete samples overall.
-However, the number of observed samples in each modality varies with the missingness mechanism.
+However, the number of observed samples in each modality varies with the missingness pattern.
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-110
+.. GENERATED FROM PYTHON SOURCE LINES 110-113
 
 .. code-block:: Python
 
@@ -296,21 +299,21 @@ However, the number of observed samples in each modality varies with the missing
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-115
+.. GENERATED FROM PYTHON SOURCE LINES 114-118
 
 Step 5: Vary the missingness rate
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Next, we explore how patterns behave as we increase the percentage of incomplete samples. We amputate a
 random multi-modal dataset under each mechanism at different missingness rates.
 
-.. GENERATED FROM PYTHON SOURCE LINES 115-135
+.. GENERATED FROM PYTHON SOURCE LINES 118-138
 
 .. code-block:: Python
 
 
     n_mods = 5
     n_samples = 100
-    Xs = [pd.DataFrame(np.random.default_rng(random_state).random((n_samples, 10))) for i in range(n_mods)]
+    Xs = [pd.DataFrame(rng.random((n_samples, 10))) for i in range(n_mods)]
     for p in np.arange(0.1, 1., 0.1):
         samples_dict = {}
         fig,axs = plt.subplots(1,4, figsize= (12,2.5))
@@ -450,7 +453,7 @@ random multi-modal dataset under each mechanism at different missingness rates.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-141
+.. GENERATED FROM PYTHON SOURCE LINES 139-144
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -461,7 +464,7 @@ machine learning models in the presence of incomplete data.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.213 seconds)
+   **Total running time of the script:** (0 minutes 2.583 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_generate_missing_modalities.py:

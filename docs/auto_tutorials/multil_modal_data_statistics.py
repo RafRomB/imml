@@ -11,8 +11,8 @@ A multi-modal dataset can be characterized beyond basic shape information. With 
 
 What you will learn:
 
-- How to describe per‑modality completeness and cross‑modality overlap with get_summary.
-- How to compute redundancy, uniqueness, and synergy (PID) with respect to a target.
+- How to describe per‑modality completeness and cross‑modality overlap with ``get_summary``.
+- How to compute redundancy, uniqueness, and synergy (PID) with respect to a target using ``pid``.
 - How to visualize and interpret PID results.
 - How PID generalizes when you have more than two modalities.
 
@@ -47,7 +47,7 @@ from imml.visualize import plot_pid
 #
 # - Represent your dataset as a Python list Xs, one entry per modality.
 # - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-# - All modalities must refer to the same samples and be aligned by row order or index.
+# - All modalities must refer to the same samples and be aligned by row.
 
 random_state = 42
 X, y = make_classification(n_samples=50, random_state=random_state)
@@ -59,7 +59,7 @@ print("Samples:", len(Xs[0]), "\t", "Modalities:", len(Xs), "\t", "Features:", [
 ###################################################
 # Step 3: Summarize the dataset
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# The get_summary function provides a compact overview of the multi‑modal dataset. Below we first
+# The ``get_summary`` function provides a compact overview of the multi‑modal dataset. Below we first
 # make the dataset a bit more complex by introducing some incomplete samples, then show two views:
 # 1) a dictionary aggregated across modalities (one_row=True) and 2) per‑modality counts (one_row=False).
 
@@ -90,8 +90,9 @@ _ = summary[[c for c in summary.columns if not c.startswith('%')]].plot(
 ###################################################
 # Step 4: Compute PID statistics (Redundancy, Uniqueness, Synergy)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# Using pid, we quantify the degree of redundancy, uniqueness, and synergy relating input modalities to the target.
-# With two input modalities, pid returns a dictionary with keys: "Redundancy", "Uniqueness1", "Uniqueness2", and "Synergy".
+# Using ``pid``, we quantify the degree of redundancy, uniqueness, and synergy relating input modalities to the target.
+# With two input modalities, ``pid`` returns a dictionary with keys: "Redundancy", "Uniqueness1", "Uniqueness2",
+# and "Synergy".
 
 rus = pid(Xs=Xs, y=y, random_state=random_state, normalize=True)
 rus  # a dict with keys: Redundancy, Uniqueness1, Uniqueness2, Synergy
@@ -100,8 +101,8 @@ rus  # a dict with keys: Redundancy, Uniqueness1, Uniqueness2, Synergy
 ###############################################################################
 # Step 5: Visualize the PID as a Venn-like diagram
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# You can directly pass the rus dict returned by pid to plot_pid. Alternatively, plot_pid can also compute pid
-# internally if you pass Xs and y, which is convenient when you want a one‑liner.
+# You can directly pass the rus dict returned by ``pid`` to ``plot_pid``. Alternatively, ``plot_pid`` can also compute
+# PID internally if you pass Xs and y, which is convenient when you want a one‑liner.
 
 rus = {"Redundancy": 0.2, "Synergy": 0.1, "Uniqueness1": 0.45, "Uniqueness2": 0.25}
 fig, ax = plot_pid(rus=rus, modalities=["Modality A", "Modality B"], abb=False)
@@ -119,7 +120,7 @@ fig, ax = plot_pid(rus=rus, modalities=["Modality A", "Modality B"], abb=False)
 ###################################################
 # Step 7: Working with more than two modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# If you have more than two modalities, PID statistics are computed pairwise; pid returns a list of
+# If you have more than two modalities, PID statistics are computed pairwise; ``pid`` returns a list of
 # dictionaries (one per pair). For example, adding a third modality yields three pairwise results.
 rus = pid(Xs=Xs + [Xs[0]], y=y, random_state=random_state, normalize=True)
 rus

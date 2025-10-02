@@ -1189,7 +1189,7 @@
    "is_explicit": false,
    "module": "builtins",
    "module_short": "builtins",
-   "name": "str"
+   "name": "float"
   }
  ],
  "caption.split": [
@@ -1198,7 +1198,7 @@
    "is_explicit": false,
    "module": "builtins",
    "module_short": "builtins",
-   "name": "builtin_function_or_method"
+   "name": "float"
   }
  ],
  "compute_metric": [

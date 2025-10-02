@@ -86,21 +86,20 @@ Step 1: Import required libraries
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 47-58
+.. GENERATED FROM PYTHON SOURCE LINES 47-57
 
 Step 2: Load the dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^
 For reproducibility, we generate a small synthetic classification dataset and split the features into two
 modalities (Xs[0], Xs[1]).
-Optional: set a random_state for reproducibility (we do below).
 
 Using your own data:
 
 - Represent your dataset as a Python list Xs, one entry per modality.
 - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-- All modalities must refer to the same samples and be aligned by row order or index.
+- All modalities must refer to the same samples and be aligned by row.
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-71
+.. GENERATED FROM PYTHON SOURCE LINES 57-70
 
 .. code-block:: Python
 
@@ -134,7 +133,7 @@ Using your own data:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 72-77
+.. GENERATED FROM PYTHON SOURCE LINES 71-76
 
 Step 3: Impute missing data
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -142,7 +141,7 @@ We build an imputation pipeline with two stages:
 1) Standardize features per modality (helps MOFA training and makes features comparable).
 2) Impute missing modalities with ``MOFAImputer``, which learns shared latent factors across modalities.
 
-.. GENERATED FROM PYTHON SOURCE LINES 77-80
+.. GENERATED FROM PYTHON SOURCE LINES 76-79
 
 .. code-block:: Python
 
@@ -156,11 +155,11 @@ We build an imputation pipeline with two stages:
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 81-82
+.. GENERATED FROM PYTHON SOURCE LINES 80-81
 
 Observe how missing modalities look.
 
-.. GENERATED FROM PYTHON SOURCE LINES 82-89
+.. GENERATED FROM PYTHON SOURCE LINES 81-88
 
 .. code-block:: Python
 
@@ -183,11 +182,11 @@ Observe how missing modalities look.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 90-91
+.. GENERATED FROM PYTHON SOURCE LINES 89-90
 
 Observe how all modalities are now filled.
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-95
+.. GENERATED FROM PYTHON SOURCE LINES 90-94
 
 .. code-block:: Python
 
@@ -207,7 +206,7 @@ Observe how all modalities are now filled.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-104
+.. GENERATED FROM PYTHON SOURCE LINES 95-103
 
 Step 4: Benchmark imputation accuracy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -218,7 +217,7 @@ Design:
 - We report Mean Absolute Error (MAE) only on entries that were truly missing.
 - For MOFAImputer, we standardize before fitting and then invert the scaling to compute MAE in the original space.
 
-.. GENERATED FROM PYTHON SOURCE LINES 104-153
+.. GENERATED FROM PYTHON SOURCE LINES 103-152
 
 .. code-block:: Python
 
@@ -346,11 +345,11 @@ Design:
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-155
+.. GENERATED FROM PYTHON SOURCE LINES 153-154
 
 Let's now visualize the results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 155-161
+.. GENERATED FROM PYTHON SOURCE LINES 154-160
 
 .. code-block:: Python
 
@@ -372,7 +371,7 @@ Let's now visualize the results.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 162-167
+.. GENERATED FROM PYTHON SOURCE LINES 161-166
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -380,7 +379,7 @@ Across runs and missingness levels, ``MOFAImputer`` generally achieves lower MAE
 at low‑to‑moderate missing rates, reflecting its ability to infer shared latent structure across modalities.
 As the missing rate becomes very high, both methods degrade and the gap narrows because little signal remains.
 
-.. GENERATED FROM PYTHON SOURCE LINES 169-175
+.. GENERATED FROM PYTHON SOURCE LINES 168-174
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -392,7 +391,7 @@ real-world applications.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.070 seconds)
+   **Total running time of the script:** (0 minutes 3.875 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_impute_multi_modal_data.py:

@@ -30,8 +30,8 @@ A multi-modal dataset can be characterized beyond basic shape information. With 
 
 What you will learn:
 
-- How to describe per‑modality completeness and cross‑modality overlap with get_summary.
-- How to compute redundancy, uniqueness, and synergy (PID) with respect to a target.
+- How to describe per‑modality completeness and cross‑modality overlap with ``get_summary``.
+- How to compute redundancy, uniqueness, and synergy (PID) with respect to a target using ``pid``.
 - How to visualize and interpret PID results.
 - How PID generalizes when you have more than two modalities.
 
@@ -91,7 +91,7 @@ Using your own data:
 
 - Represent your dataset as a Python list Xs, one entry per modality.
 - Each Xs[i] should be a 2D array-like (pandas DataFrame or NumPy array) of shape (n_samples, n_features_i).
-- All modalities must refer to the same samples and be aligned by row order or index.
+- All modalities must refer to the same samples and be aligned by row.
 
 .. GENERATED FROM PYTHON SOURCE LINES 51-59
 
@@ -122,7 +122,7 @@ Using your own data:
 
 Step 3: Summarize the dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-The get_summary function provides a compact overview of the multi‑modal dataset. Below we first
+The ``get_summary`` function provides a compact overview of the multi‑modal dataset. Below we first
 make the dataset a bit more complex by introducing some incomplete samples, then show two views:
 1) a dictionary aggregated across modalities (one_row=True) and 2) per‑modality counts (one_row=False).
 
@@ -299,14 +299,15 @@ For quick inspection, we can also plot the per‑modality counts. Here we create
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 91-95
+.. GENERATED FROM PYTHON SOURCE LINES 91-96
 
 Step 4: Compute PID statistics (Redundancy, Uniqueness, Synergy)
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-Using pid, we quantify the degree of redundancy, uniqueness, and synergy relating input modalities to the target.
-With two input modalities, pid returns a dictionary with keys: "Redundancy", "Uniqueness1", "Uniqueness2", and "Synergy".
+Using ``pid``, we quantify the degree of redundancy, uniqueness, and synergy relating input modalities to the target.
+With two input modalities, ``pid`` returns a dictionary with keys: "Redundancy", "Uniqueness1", "Uniqueness2",
+and "Synergy".
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-100
+.. GENERATED FROM PYTHON SOURCE LINES 96-101
 
 .. code-block:: Python
 
@@ -328,14 +329,14 @@ With two input modalities, pid returns a dictionary with keys: "Redundancy", "Un
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 101-105
+.. GENERATED FROM PYTHON SOURCE LINES 102-106
 
 Step 5: Visualize the PID as a Venn-like diagram
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-You can directly pass the rus dict returned by pid to plot_pid. Alternatively, plot_pid can also compute pid
-internally if you pass Xs and y, which is convenient when you want a one‑liner.
+You can directly pass the rus dict returned by ``pid`` to ``plot_pid``. Alternatively, ``plot_pid`` can also compute
+PID internally if you pass Xs and y, which is convenient when you want a one‑liner.
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-109
+.. GENERATED FROM PYTHON SOURCE LINES 106-110
 
 .. code-block:: Python
 
@@ -355,7 +356,7 @@ internally if you pass Xs and y, which is convenient when you want a one‑liner
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 110-118
+.. GENERATED FROM PYTHON SOURCE LINES 111-119
 
 Step 6: Interpreting PID results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -366,14 +367,14 @@ Step 6: Interpreting PID results
 If redundancy is high while uniqueness and synergy are low, this may suggest that the dataset could be more
 appropriately analyzed using classical unimodal modeling.
 
-.. GENERATED FROM PYTHON SOURCE LINES 120-124
+.. GENERATED FROM PYTHON SOURCE LINES 121-125
 
 Step 7: Working with more than two modalities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-If you have more than two modalities, PID statistics are computed pairwise; pid returns a list of
+If you have more than two modalities, PID statistics are computed pairwise; ``pid`` returns a list of
 dictionaries (one per pair). For example, adding a third modality yields three pairwise results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 124-128
+.. GENERATED FROM PYTHON SOURCE LINES 125-129
 
 .. code-block:: Python
 
@@ -394,7 +395,7 @@ dictionaries (one per pair). For example, adding a third modality yields three p
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-139
+.. GENERATED FROM PYTHON SOURCE LINES 130-140
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -410,7 +411,7 @@ feature engineering for downstream multi‑modal learning.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 10.225 seconds)
+   **Total running time of the script:** (0 minutes 10.926 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_multil_modal_data_statistics.py:
