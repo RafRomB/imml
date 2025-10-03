@@ -32,9 +32,9 @@ benchmark imputation quality against a simple baseline.
 What you will learn:
 
 - How to represent your dataset as Xs (a list of per‑modality matrices).
-- How to simulate block‑wise and feature‑wise missingness with Amputer and simple masks.
-- How to build an imputation pipeline with StandardScaler + MOFAImputer.
-- How to compare MOFAImputer to a baseline mean imputer using Mean Absolute Error (MAE).
+- How to simulate block‑wise and feature‑wise missingness with ``Amputer`` and simple masks.
+- How to build an imputation pipeline with StandardScaler + ``MOFAImputer``.
+- How to compare ``MOFAImputer`` to a baseline mean imputer using Mean Absolute Error (MAE).
 - How to visualize missingness before and after imputation.
 
 This tutorial is fully reproducible and uses a small synthetic dataset. You can easily
@@ -157,7 +157,7 @@ We build an imputation pipeline with two stages:
 
 .. GENERATED FROM PYTHON SOURCE LINES 80-81
 
-Observe how missing modalities look.
+Observe how missing modalities look:
 
 .. GENERATED FROM PYTHON SOURCE LINES 81-88
 
@@ -184,7 +184,7 @@ Observe how missing modalities look.
 
 .. GENERATED FROM PYTHON SOURCE LINES 89-90
 
-Observe how all modalities are now filled.
+Observe how all modalities are now filled:
 
 .. GENERATED FROM PYTHON SOURCE LINES 90-94
 
@@ -206,21 +206,22 @@ Observe how all modalities are now filled.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 95-103
+.. GENERATED FROM PYTHON SOURCE LINES 95-105
 
 Step 4: Benchmark imputation accuracy
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We now compare ``MOFAImputer`` with a simple baseline (feature‑wise mean imputation).
 Design:
+
 - We introduce both modality‑wise (block) and feature‑wise missingness.
 - For each missingness rate p, we repeat the procedure 5 times with different seeds.
 - We report Mean Absolute Error (MAE) only on entries that were truly missing.
-- For MOFAImputer, we standardize before fitting and then invert the scaling to compute MAE in the original space.
+- For ``MOFAImputer``, we standardize before fitting and then invert the scaling to compute MAE in the original space.
 
-.. GENERATED FROM PYTHON SOURCE LINES 103-152
+
+.. GENERATED FROM PYTHON SOURCE LINES 105-153
 
 .. code-block:: Python
-
 
     ps = np.arange(0.1, 0.8, 0.2)
     n_times = 5
@@ -345,11 +346,11 @@ Design:
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 153-154
+.. GENERATED FROM PYTHON SOURCE LINES 154-155
 
 Let's now visualize the results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 154-160
+.. GENERATED FROM PYTHON SOURCE LINES 155-161
 
 .. code-block:: Python
 
@@ -371,7 +372,7 @@ Let's now visualize the results.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 161-166
+.. GENERATED FROM PYTHON SOURCE LINES 162-167
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -379,7 +380,7 @@ Across runs and missingness levels, ``MOFAImputer`` generally achieves lower MAE
 at low‑to‑moderate missing rates, reflecting its ability to infer shared latent structure across modalities.
 As the missing rate becomes very high, both methods degrade and the gap narrows because little signal remains.
 
-.. GENERATED FROM PYTHON SOURCE LINES 168-174
+.. GENERATED FROM PYTHON SOURCE LINES 169-175
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -391,7 +392,7 @@ real-world applications.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 3.875 seconds)
+   **Total running time of the script:** (0 minutes 2.966 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_impute_multi_modal_data.py:

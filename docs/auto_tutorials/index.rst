@@ -77,7 +77,7 @@ Questions or feedback?
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using iMML. We will use the MCR retriever to find similar items across modalities (image/text) even when one modality is missing. The example uses the public nlphuji/flickr8k dataset from Hugging Face Datasets, so you don&#x27;t need to prepare files manually.">
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using iMML. We will use the MCR retriever to find similar items across modalities (image/text) even when one modality is missing. The example uses the public nlphuji/flickr30k dataset from Hugging Face Datasets, so you don&#x27;t need to prepare files manually.">
 
 .. only:: html
 

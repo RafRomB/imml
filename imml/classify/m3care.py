@@ -30,7 +30,7 @@ class M3Care(LightningModuleBase):
     It supports heterogeneous input types (e.g., tabular, text, vision).
 
     This class provides training, validation, testing, and prediction logic compatible with the
-    `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
+    `Lightning AI Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
 
     Parameters
     ----------
@@ -149,7 +149,7 @@ class M3Care(LightningModuleBase):
 
     def training_step(self, batch, batch_idx=None):
         r"""
-        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
+        Method required for training using `Lightning AI Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -159,7 +159,7 @@ class M3Care(LightningModuleBase):
 
     def validation_step(self, batch, batch_idx=None):
         r"""
-        Method required for validating using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
+        Method required for validating using `Lightning AI Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -169,7 +169,7 @@ class M3Care(LightningModuleBase):
 
     def test_step(self, batch, batch_idx=None):
         r"""
-        Method required for testing using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
+        Method required for testing using `Lightning AI Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -179,7 +179,7 @@ class M3Care(LightningModuleBase):
 
     def predict_step(self, batch, batch_idx=None):
         r"""
-        Method required for predicting using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
+        Method required for predicting using `Lightning AI Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         Xs, y, observed_mod_indicator = batch
         y_pred, _ = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
@@ -189,7 +189,7 @@ class M3Care(LightningModuleBase):
 
     def configure_optimizers(self):
         r"""
-        Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
+        Method required for training using `Lightning AI Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 

@@ -7,11 +7,15 @@ This tutorial demonstrates how to classify samples from an incomplete vision–l
 library. `iMML` supports robust classification even when some modalities (e.g., text or image) are missing, making it
 suitable for real‑world multi‑modal data where missingness is common.
 
-We will use the ``RAGPT`` algorithm from the `iMML` classify module on the Oxford‑IIIT Pets dataset and evaluate performance.
+We will use the ``RAGPT`` algorithm from the `iMML` classify module on the `Oxford‑IIIT Pets
+<https://huggingface.co/datasets/visual-layer/oxford-iiit-pet-vl-enriched?library=datasets>`__  dataset
+and evaluate its performance.
 
 What you will learn:
 
-- How to load a public vision–language dataset (Oxford‑IIIT Pets via Hugging Face Datasets).
+- How to load a public vision–language dataset
+  (`Oxford‑IIIT Pets <https://huggingface.co/datasets/visual-layer/oxford-iiit-pet-vl-enriched?library=datasets>`_
+  via `Hugging Face Datasets <https://huggingface.co/datasets>`__).
 - How to adapt this workflow to your own vision–language data.
 - How to build a retrieval‑augmented memory bank and prompts with ``MCR``.
 - How to train the ``RAGPT`` classifier when image or text may be missing.
@@ -58,7 +62,8 @@ from imml.retrieve import MCR
 # Step 2: Prepare the dataset
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We use the oxford-iiit-pet-vl-enriched dataset, a public vision–language dataset with images and captions
-# available on Hugging Face Datasets as visual-layer/oxford-iiit-pet-vl-enriched. For retrieval, we will use
+# available on `Hugging Face Datasets
+# <https://huggingface.co/datasets>`__ as visual-layer/oxford-iiit-pet-vl-enriched. For retrieval, we will use
 # the ``MCR`` class from the retrieve module.
 
 random_state = 42
@@ -183,7 +188,7 @@ test_dataloader = DataLoader(dataset=test_data, batch_size=batch_size,
 
 ########################################################
 # Train the ``RAGPT`` model using the generated prompts. For speed in this demo we train for only 2 epochs using
-# Lightning.
+# the `Lightning AI <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_ library.
 trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
 estimator = RAGPT(cls_num=len(le.classes_))
 trainer.fit(estimator, train_dataloader)
@@ -191,8 +196,8 @@ trainer.fit(estimator, train_dataloader)
 ########################################################
 # Step 6: Advanced Usage: Track Metrics During Training
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We can modify the internal functions. For instance, we can track loss and compute evaluation metrics during
-# training.
+# As any other model in `Lightning AI <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_, we can
+# modify the internal functions. For instance, we can track loss and compute evaluation metrics during training.
 
 trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
 estimator = RAGPT(cls_num=len(le.classes_))
@@ -254,10 +259,13 @@ shutil.rmtree(data_folder, ignore_errors=True)
 ConfusionMatrixDisplay.from_predictions(y_true=y_test, y_pred=preds)
 print("Testing metric:", matthews_corrcoef(y_true=y_test, y_pred=preds))
 
+#######################################################
+# Despite using only 50 instances and minimal training, the performance was excellent thanks to the pretrained models.
+
 ###################################
 # Summary of results
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We first built a memory bank with 40% independent vision-language samples using the `iMML` ``retrieve`` module to
+# We first built a memory bank with 40% independent vision-language samples using the `iMML` retrieve module to
 # generate retrieval-augmented prompts with a multi-channel retriever (``MCR``). Subsequently, we trained a model
 # using the ``RAGPT`` algorithm available in `iMML` under 25% randomly missing text and image modalities. The model
 # demonstrated strong robustness on the test set.

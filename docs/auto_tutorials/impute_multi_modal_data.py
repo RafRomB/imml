@@ -13,9 +13,9 @@ benchmark imputation quality against a simple baseline.
 What you will learn:
 
 - How to represent your dataset as Xs (a list of per‑modality matrices).
-- How to simulate block‑wise and feature‑wise missingness with Amputer and simple masks.
-- How to build an imputation pipeline with StandardScaler + MOFAImputer.
-- How to compare MOFAImputer to a baseline mean imputer using Mean Absolute Error (MAE).
+- How to simulate block‑wise and feature‑wise missingness with ``Amputer`` and simple masks.
+- How to build an imputation pipeline with StandardScaler + ``MOFAImputer``.
+- How to compare ``MOFAImputer`` to a baseline mean imputer using Mean Absolute Error (MAE).
 - How to visualize missingness before and after imputation.
 
 This tutorial is fully reproducible and uses a small synthetic dataset. You can easily
@@ -77,7 +77,7 @@ y.value_counts()
 amputed_Xs = Amputer(p= 0.3, mechanism="mcar", random_state=random_state).fit_transform(Xs)
 
 ########################################################
-# Observe how missing modalities look.
+# Observe how missing modalities look:
 _ = plot_missing_modality(Xs=amputed_Xs, sort=False)
 
 n_components = 4
@@ -86,7 +86,7 @@ pipeline = make_pipeline(
     MOFAImputer(n_components=n_components, random_state=random_state)
 )
 ########################################################
-# Observe how all modalities are now filled.
+# Observe how all modalities are now filled:
 imputed_Xs = pipeline.fit_transform(amputed_Xs)
 _ = plot_missing_modality(Xs=imputed_Xs, sort=False)
 
@@ -96,11 +96,12 @@ _ = plot_missing_modality(Xs=imputed_Xs, sort=False)
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We now compare ``MOFAImputer`` with a simple baseline (feature‑wise mean imputation).
 # Design:
+#
 # - We introduce both modality‑wise (block) and feature‑wise missingness.
 # - For each missingness rate p, we repeat the procedure 5 times with different seeds.
 # - We report Mean Absolute Error (MAE) only on entries that were truly missing.
-# - For MOFAImputer, we standardize before fitting and then invert the scaling to compute MAE in the original space.
-
+# - For ``MOFAImputer``, we standardize before fitting and then invert the scaling to compute MAE in the original space.
+#
 ps = np.arange(0.1, 0.8, 0.2)
 n_times = 5
 methods = ["MOFAImputer", "MeanImputer"]

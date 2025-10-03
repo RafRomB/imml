@@ -24,20 +24,21 @@ Retrieval on a vision–language dataset (flickr30k)
 
 This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using `iMML`.
 We will use the ``MCR`` retriever to find similar items across modalities (image/text) even when one modality
-is missing. The example uses the public nlphuji/flickr8k dataset from Hugging Face Datasets, so you don't
-need to prepare files manually.
+is missing. The example uses the public `nlphuji/flickr30k
+<https://huggingface.co/datasets/nlphuji/flickr30k>`__ dataset from `Hugging Face Datasets
+<https://huggingface.co/datasets>`__, so you don't need to prepare files manually.
 
 What you will learn:
 
 - How to load a vision–language dataset.
-- How to build a memory bank with MCR for cross-modal retrieval.
+- How to build a memory bank with ``MCR`` for cross-modal retrieval.
 - How to retrieve relevant items with missing modalities.
 - How to visualize top retrieved examples for qualitative inspection.
 
 This tutorial is fully reproducible. You can swap the loading section with your own data by constructing two
 parallel lists: image paths and texts for each sample.
 
-.. GENERATED FROM PYTHON SOURCE LINES 21-26
+.. GENERATED FROM PYTHON SOURCE LINES 22-27
 
 .. code-block:: Python
 
@@ -53,7 +54,7 @@ parallel lists: image paths and texts for each sample.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 27-33
+.. GENERATED FROM PYTHON SOURCE LINES 28-34
 
 Step 0: Prerequisites
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -62,12 +63,12 @@ To run this tutorial, install the extras for deep learning and tutorials:
 Additionally, we will use the Hugging Face Datasets library to load Flickr30k:
   pip install datasets
 
-.. GENERATED FROM PYTHON SOURCE LINES 36-38
+.. GENERATED FROM PYTHON SOURCE LINES 37-39
 
 Step 1: Import required libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. GENERATED FROM PYTHON SOURCE LINES 38-50
+.. GENERATED FROM PYTHON SOURCE LINES 39-51
 
 .. code-block:: Python
 
@@ -90,14 +91,16 @@ Step 1: Import required libraries
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 51-55
+.. GENERATED FROM PYTHON SOURCE LINES 52-58
 
 Step 2: Prepare the dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We use the Flickr30k dataset, a public vision–language dataset with images and captions available on
-Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR method from the retrieve module.
+`Hugging Face Datasets <https://huggingface.co/datasets>`__ as `nlphuji/flickr30k
+<https://huggingface.co/datasets/nlphuji/flickr30k>`__. For retrieval, we will use the ``MCR`` method from the
+retrieve module.
 
-.. GENERATED FROM PYTHON SOURCE LINES 55-88
+.. GENERATED FROM PYTHON SOURCE LINES 58-91
 
 .. code-block:: Python
 
@@ -142,7 +145,6 @@ Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR m
 
  .. code-block:: none
 
-    Seed set to 42
     train_df (80, 2)
 
 
@@ -204,14 +206,14 @@ Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR m
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 89-93
+.. GENERATED FROM PYTHON SOURCE LINES 92-96
 
 Step 3: Simulate missing modalities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 To reflect realistic scenarios, we randomly introduce missing data. In this case, 70% of test samples
 will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
-.. GENERATED FROM PYTHON SOURCE LINES 93-104
+.. GENERATED FROM PYTHON SOURCE LINES 96-107
 
 .. code-block:: Python
 
@@ -233,15 +235,15 @@ will have either text or image missing. You can change this parameter for more o
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 105-107
+.. GENERATED FROM PYTHON SOURCE LINES 108-111
 
 Step 4: Generate the memory bank
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We build the retriever with ``MCR``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 107-122
+.. GENERATED FROM PYTHON SOURCE LINES 111-125
 
 .. code-block:: Python
-
 
     modalities = ["image", "text"]
     estimator = MCR(batch_size=64, modalities=modalities, save_memory_bank=True)
@@ -261,21 +263,16 @@ Step 4: Generate the memory bank
 
 
 
-.. rst-class:: sphx-glr-script-out
-
- .. code-block:: none
-
-    Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
 
 
 
-
-.. GENERATED FROM PYTHON SOURCE LINES 123-125
+.. GENERATED FROM PYTHON SOURCE LINES 126-129
 
 Step 5: Retrieve
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+We retrieved the most similar items for the test set.
 
-.. GENERATED FROM PYTHON SOURCE LINES 125-136
+.. GENERATED FROM PYTHON SOURCE LINES 129-139
 
 .. code-block:: Python
 
@@ -288,8 +285,23 @@ Step 5: Retrieve
     y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
 
     preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
-    preds.keys()
 
+
+
+
+
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 140-141
+
+This is the content of the prediction.
+
+.. GENERATED FROM PYTHON SOURCE LINES 141-142
+
+.. code-block:: Python
+
+    preds.keys()
 
 
 
@@ -303,7 +315,45 @@ Step 5: Retrieve
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 137-144
+.. GENERATED FROM PYTHON SOURCE LINES 143-144
+
+.. code-block:: Python
+
+    preds["image"].keys()
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    dict_keys(['id', 'sims', 'label'])
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 145-148
+
+.. code-block:: Python
+
+    preds["text"].keys()
+
+
+
+
+
+
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+
+    dict_keys(['id', 'sims', 'label'])
+
+
+
+.. GENERATED FROM PYTHON SOURCE LINES 149-158
 
 Step 6: Visualize the retrieved instances
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -311,9 +361,11 @@ We can visualize the top-2 retrieved instances for a given target sample.
 Here we focus on qualitative inspection: looking at the images and reading the captions
 of the retrieved items to assess whether they are semantically similar to the target.
 
-Let's begin by visualizing the top-2 retrieved instances for a target sample that is missing its text modality.
+The target instance is displayed in the leftmost column, followed by the most similar instances in descending
+order of similarity. Note that some instances have missing modalities, which will not appear in the plot. In this
+example, the first two instances are missing the image modality, while the last one is missing the text modality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-180
+.. GENERATED FROM PYTHON SOURCE LINES 158-194
 
 .. code-block:: Python
 
@@ -337,7 +389,7 @@ Let's begin by visualizing the top-2 retrieved instances for a target sample tha
             retrieved_instance = memory_bank.loc[retrieved_instance]
             image_to_show = retrieved_instance["img_path"]
             caption = retrieved_instance["text"]
-            ax.set_title(f"Top-{col}")
+            ax.set_title(f"Top-{col+1}")
 
         if isinstance(image_to_show, str):
             image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
@@ -357,7 +409,7 @@ Let's begin by visualizing the top-2 retrieved instances for a target sample tha
 
 
 .. image-sg:: /auto_tutorials/images/sphx_glr_retrieve_incomplete_vision_language_001.png
-   :alt: Target instance, Top-0, Top-1, Target instance, Top-0, Top-1, Target instance, Top-0, Top-1
+   :alt: Target instance, Top-1, Top-2, Target instance, Top-1, Top-2, Target instance, Top-1, Top-2
    :srcset: /auto_tutorials/images/sphx_glr_retrieve_incomplete_vision_language_001.png
    :class: sphx-glr-single-img
 
@@ -365,7 +417,7 @@ Let's begin by visualizing the top-2 retrieved instances for a target sample tha
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-188
+.. GENERATED FROM PYTHON SOURCE LINES 195-202
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -375,7 +427,7 @@ memory bank, even when one of the modalities (image or text) was missing.
 This example is intentionally simplified, using only a few instances for demonstration.
 For stronger performance and more reliable results, the full dataset should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-193
+.. GENERATED FROM PYTHON SOURCE LINES 204-207
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -385,7 +437,7 @@ even in the presence of missing modalities.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (15 minutes 29.107 seconds)
+   **Total running time of the script:** (17 minutes 59.703 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_retrieve_incomplete_vision_language.py:

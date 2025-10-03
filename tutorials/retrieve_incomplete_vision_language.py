@@ -5,13 +5,14 @@ Retrieval on a vision–language dataset (flickr30k)
 
 This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using `iMML`.
 We will use the ``MCR`` retriever to find similar items across modalities (image/text) even when one modality
-is missing. The example uses the public nlphuji/flickr8k dataset from Hugging Face Datasets, so you don't
-need to prepare files manually.
+is missing. The example uses the public `nlphuji/flickr30k
+<https://huggingface.co/datasets/nlphuji/flickr30k>`__ dataset from `Hugging Face Datasets
+<https://huggingface.co/datasets>`__, so you don't need to prepare files manually.
 
 What you will learn:
 
 - How to load a vision–language dataset.
-- How to build a memory bank with MCR for cross-modal retrieval.
+- How to build a memory bank with ``MCR`` for cross-modal retrieval.
 - How to retrieve relevant items with missing modalities.
 - How to visualize top retrieved examples for qualitative inspection.
 
@@ -51,7 +52,9 @@ from imml.retrieve import MCR
 # Step 2: Prepare the dataset
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We use the Flickr30k dataset, a public vision–language dataset with images and captions available on
-# Hugging Face Datasets as nlphuji/flickr30k. For retrieval, we will use the MCR method from the retrieve module.
+# `Hugging Face Datasets <https://huggingface.co/datasets>`__ as `nlphuji/flickr30k
+# <https://huggingface.co/datasets/nlphuji/flickr30k>`__. For retrieval, we will use the ``MCR`` method from the
+# retrieve module.
 
 random_state = 42
 L.seed_everything(random_state)
@@ -104,7 +107,7 @@ test_df.loc[missing_mask, "text"] = np.nan
 ########################################################
 # Step 4: Generate the memory bank
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
+# We build the retriever with ``MCR``.
 modalities = ["image", "text"]
 estimator = MCR(batch_size=64, modalities=modalities, save_memory_bank=True)
 
@@ -122,6 +125,7 @@ memory_bank = estimator.memory_bank_
 ########################################################
 # Step 5: Retrieve
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+# We retrieved the most similar items for the test set.
 
 Xs_test = [
     test_df["img"].to_list(),
@@ -131,7 +135,15 @@ Xs_test = [
 y_test = pd.Series(np.zeros(len(test_df)), index=test_df.index)
 
 preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
+
+################################
+# This is the content of the prediction.
 preds.keys()
+################################
+preds["image"].keys()
+################################
+preds["text"].keys()
+
 
 ########################################################
 # Step 6: Visualize the retrieved instances
@@ -140,7 +152,9 @@ preds.keys()
 # Here we focus on qualitative inspection: looking at the images and reading the captions
 # of the retrieved items to assess whether they are semantically similar to the target.
 #
-# Let's begin by visualizing the top-2 retrieved instances for a target sample that is missing its text modality.
+# The target instance is displayed in the leftmost column, followed by the most similar instances in descending
+# order of similarity. Note that some instances have missing modalities, which will not appear in the plot. In this
+# example, the first two instances are missing the image modality, while the last one is missing the text modality.
 
 nrows, ncols = 3,3
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
@@ -161,7 +175,7 @@ for i in range(nrows*ncols):
         retrieved_instance = memory_bank.loc[retrieved_instance]
         image_to_show = retrieved_instance["img_path"]
         caption = retrieved_instance["text"]
-        ax.set_title(f"Top-{col}")
+        ax.set_title(f"Top-{col+1}")
 
     if isinstance(image_to_show, str):
         image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)

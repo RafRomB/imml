@@ -3,6 +3,7 @@
 [![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io)
 [![CI Tests](https://github.com/ocbe-uio/imml/actions/workflows/ci_test.yml/badge.svg)](https://github.com/ocbe-uio/imml/actions/workflows/ci_test.yml)
 ![Codecov](https://codecov.io/github/ocbe-uio/imml/graph/bundle/badge.svg)
+[![CodeQL](https://github.com/ocbe-uio/imml/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ocbe-uio/imml/actions/workflows/github-code-scanning/codeql)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/ocbe-uio/imml/pulls)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ocbe-uio/imml)
 [![GitHub License](https://img.shields.io/github/license/ocbe-uio/imml)](https://github.com/ocbe-uio/imml/blob/main/LICENSE)
@@ -92,7 +93,7 @@ Usage
 
 This package provides a user-friendly interface to apply these algorithms to user-provided data.
 *iMML* was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
-NumPy, Scikit-learn, and Lightning, hence allowing researchers to **apply machine learning models with
+NumPy, Scikit-learn, and Lightning AI, hence allowing researchers to **apply machine learning models with
 minimal programming effort**.
 Moreover, it can be easily integrated into Scikit-learn pipelines for data preprocessing and modeling.
 
