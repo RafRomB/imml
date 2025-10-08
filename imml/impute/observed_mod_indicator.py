@@ -1,4 +1,4 @@
-from typing import List
+# License: BSD-3-Clause
 
 import numpy as np
 import pandas as pd
@@ -32,7 +32,7 @@ class ObservedModIndicator(FunctionTransformer):
         super().__init__(get_observed_mod_indicator)
 
 
-def get_observed_mod_indicator(Xs : List, y = None):
+def get_observed_mod_indicator(Xs : list, y = None):
     r"""
     Return a binary indicator for observed modalities.
 

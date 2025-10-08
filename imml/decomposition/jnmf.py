@@ -1,4 +1,4 @@
-from typing import List
+# License: BSD-3-Clause
 
 import pandas as pd
 import numpy as np
@@ -119,7 +119,7 @@ class JNMF(TransformerMixin, BaseEstimator):
     def __init__(self, n_components : int = 10, init_W = None, init_V = None, init_H = None,
                  l1_W: float = 1e-10, l1_V: float = 1e-10, l1_H: float = 1e-10,
                  l2_W: float = 1e-10, l2_V: float = 1e-10, l2_H: float = 1e-10, weights = None,
-                 beta_loss : List = None, p: float = 1., tol: float = 1e-10, max_iter: int = 100,
+                 beta_loss : list = None, p: float = 1., tol: float = 1e-10, max_iter: int = 100,
                  verbose=0, random_state: int = None, engine: str = "r"):
         engines_options = ["r"]
         if engine not in engines_options:

@@ -1,4 +1,4 @@
-from typing import List
+# License: BSD-3-Clause
 
 try:
     import torch
@@ -33,7 +33,7 @@ class MRGCNDataset(DLBaseDataset):
     >>> train_data = MRGCNDataset(Xs=Xs)
     """
 
-    def __init__(self, Xs: List, transform = None):
+    def __init__(self, Xs: list, transform = None):
         if not deepmodule_installed:
             raise ImportError(deepmodule_error)
         if not isinstance(Xs, list):

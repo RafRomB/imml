@@ -1,4 +1,4 @@
-from typing import List
+# License: BSD-3-Clause
 
 import numpy as np
 import pandas as pd
@@ -45,7 +45,7 @@ class SimpleModImputer(BaseEstimator, TransformerMixin):
         self.value = value
 
 
-    def fit(self, Xs : List, y=None):
+    def fit(self, Xs : list, y=None):
         r"""
         Fit the transformer to the input data.
 

@@ -1,6 +1,8 @@
+# License: BSD-3-Clause
+
 import pandas as pd
 import numpy as np
-from typing import Union, List, Optional, Iterable
+from typing import Union, Optional, Iterable
 import h5py
 
 #######################

@@ -15,6 +15,9 @@
   <img alt="iMML Logo" src="https://raw.githubusercontent.com/ocbe-uio/imml/refs/heads/main/docs/figures/logo_imml.png">
 </p>
 
+[**Overview**](#Overview) | [**Background**](#Background) | [**Key features**](#Key-features) | [**Installation**](#installation) | 
+[**Usage**](#Usage) | [**Free software**](#Free-software) | [**Contribute**](#Contribute)
+
 Overview
 ====================
 
@@ -57,20 +60,16 @@ Key features
 To address this gap, we have developed *iMML*, a Python package designed for multi-modal learning with incomplete data.
 The key features of this package are:
 
--   **Comprehensive toolkit**: *iMML* offers a broad set of tools for integrating, processing, and analyzing
-    incomplete multi-modal datasets implemented as a single, user-friendly interface to facilitate adoption by
-    a wide community of users.
-    The package includes extensive technical testing to ensure robustness, and thorough documentation enables
-    end-users to apply its functionality effectively.
--   **Accessible**: *iMML* makes the tools readily available to the Python community, simplifying their usage,
-    comparison, and benchmarking, and thereby addresses the current lack of resources and standardized methods 
-    for handling incomplete multi-modal data.
--   **Extensible**: *iMML* provides a common framework where researchers can contribute and
-    integrate new approaches, serving as a community platform for hosting new algorithms and methods.
-
+-   **Coverage**: More than 25 methods for integrating, processing, and analyzing incomplete multi-modal 
+    datasets implemented as a single, user-friendly interface.
+-   **Comprehensive**: Designed to be compatible with widely-used machine learning and data analysis tools, 
+    allowing use with minimal programming effort. Its extensive documentation enables end-users to apply its 
+    functionality effectively.
+-   **Extensible**: It is a unified framework where researchers can contribute and integrate new approaches, 
+    serving as a community platform for hosting new methods.
 
 Installation
---------
+--------------
 
 Run the following command to install the most recent release of *iMML* using *pip*:
 
@@ -93,7 +92,7 @@ Usage
 
 This package provides a user-friendly interface to apply these algorithms to user-provided data.
 *iMML* was designed to be compatible with widely-used machine learning and data analysis tools, such as Pandas,
-NumPy, Scikit-learn, and Lightning AI, hence allowing researchers to **apply machine learning models with
+NumPy, Scikit-learn, andLightning, hence allowing researchers to **apply machine learning models with
 minimal programming effort**.
 Moreover, it can be easily integrated into Scikit-learn pipelines for data preprocessing and modeling.
 
@@ -137,14 +136,14 @@ Free software
 Contribute
 ------------
 
-**We welcome practitioners, researchers, and the open-source community** to contribute to the *iMML* project,
-and in doing so, helping us extend and refine the library for the community. Such a community-wide effort will
-make *iMML* more versatile, sustainable, powerful, and accessible to the machine learning community across
-many domains.
-
-Project roadmap
-------------
-
 Our vision is to establish *iMML* as a leading and reliable library for multi-modal learning across research and 
-applied settings. Therefore, our priorities include to broaden algorithmic coverage, improve performance and 
-scalability, strengthen interoperability, and grow a healthy contributor community.
+applied settings. Our priorities include to broaden algorithmic coverage, improve performance and 
+scalability, strengthen interoperability, and grow a healthy contributor community. Therefore, we welcome 
+practitioners, researchers, and the open-source community to contribute to the *iMML* project, and in doing so, 
+helping us extend and refine the library for the community. Such a community-wide effort will make *iMML* more 
+versatile, sustainable, powerful, and accessible to the machine learning community across many domains.
+
+For the full contributing guide, please see:
+
+- In-repo: https://github.com/ocbe-uio/imml/tree/main?tab=contributing-ov-file
+- Documentation: https://imml.readthedocs.io/stable/development/contributing.html

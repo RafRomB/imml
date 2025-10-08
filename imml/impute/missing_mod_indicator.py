@@ -1,4 +1,4 @@
-from typing import List
+# License: BSD-3-Clause
 
 import numpy as np
 import pandas as pd
@@ -30,7 +30,7 @@ class MissingModIndicator(FunctionTransformer):
         super().__init__(get_missing_mod_indicator)
 
 
-def get_missing_mod_indicator(Xs : List, y = None):
+def get_missing_mod_indicator(Xs : list, y = None):
     r"""
     Return a binary indicator for missing modalities.
 
