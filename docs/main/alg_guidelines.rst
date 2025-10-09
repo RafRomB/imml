@@ -7,12 +7,12 @@ task and check whether additional modules or dependencies are required.
 
 .. list-table::
    :header-rows: 1
-   :widths: 5 5 5 5 5
+   :widths: 10 5 70 5 10
    :align: center
 
    * - Task
      - Algorithm
-     - Supported input modalities
+     - Input modalities
      - Module
      - Extra dependencies
    * - Classification
@@ -44,7 +44,7 @@ task and check whether additional modules or dependencies are required.
      - IMSCAGL
      - Numeric
      - matlab
-     -
+     - octave
    * - Clustering
      - IMSR
      - Numeric
@@ -64,7 +64,7 @@ task and check whether additional modules or dependencies are required.
      - MKKMIK
      - Numeric
      - matlab
-     -
+     - octave
    * - Clustering
      - MONET
      - Numeric
@@ -84,22 +84,22 @@ task and check whether additional modules or dependencies are required.
      - OMVC
      - Numeric
      - matlab
-     -
+     - octave
    * - Clustering
      - OPIMC
      - Numeric
      - matlab
-     -
+     - octave
    * - Clustering
      - OSLFIMVC
      - Numeric
      - matlab
-     - octave-control, octave-statistics
+     - octave, octave-statistics
    * - Clustering
      - PIMVC
      - Numeric
      - matlab
-     -
+     - octave
    * - Clustering
      - SIMCADC
      - Numeric
@@ -124,12 +124,12 @@ task and check whether additional modules or dependencies are required.
      - JNMF
      - Numeric
      - r
-     - nnTensor
+     - R, nnTensor
    * - Feature selection
      - JNMFFeatureSelection
      - Numeric
      - r
-     - nnTensor
+     - R, nnTensor
    * - Impute
      - DFMFImputer
      - Numeric
@@ -144,7 +144,7 @@ task and check whether additional modules or dependencies are required.
      - JNMFImputer
      - Numeric
      - r
-     - nnTensor
+     - R, nnTensor
    * - Retrieve
      - MCR
      - Image & Text
@@ -156,21 +156,17 @@ task and check whether additional modules or dependencies are required.
      -
      -
 
-How to install an additional module and extra dependencies
+How to install an additional module
 ----------------------------------------------------------
 
-deep
-^^^^^^^
-
 See our `page <https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies>`__ on
-how to install the 'deep' module.
+how to install a module.
 
+How to install extra dependencies
+----------------------------------------------------------
 
-matlab
-^^^^^^^^^^^^^^^^^^^^^^^
-
-See our `page <https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies>`__ on
-how to install the 'matlab' module.
+Extra dependencies when using "matlab" module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to use 'matlab' as an engine, you will need to have `Octave` (`MATLAB`) in your machine. In linux, you can
 install it using the following commands:
@@ -188,11 +184,8 @@ Additionally, to install extra dependencies, execute the following commands in a
     sudo apt install octave-control
     sudo apt install octave-statistics
 
-r
-^^^^^^^^^^^^^^^^^^^^^^^
-
-See our `page <https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies>`__ on
-how to install the 'r' module.
+Extra dependencies when using "r" module
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 In order to use 'r' as an engine, you will need to have R in your machine. In linux, you can install it using the
 following commands:
