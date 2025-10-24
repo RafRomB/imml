@@ -17,7 +17,7 @@
   <img alt="iMML Logo" src="https://raw.githubusercontent.com/ocbe-uio/imml/refs/heads/main/docs/figures/logo_imml.png">
 </p>
 
-[**Overview**](#Overview) | [**Background**](#Background) | [**Key features**](#Key-features) | [**Installation**](#installation) | 
+[**Overview**](#Overview) | [**Key features**](#Key-features) | [**Installation**](#installation) | 
 [**Usage**](#Usage) | [**Free software**](#Free-software) | [**Contribute**](#Contribute) | [**Help us**](#Help-us-grow)
 
 Overview
