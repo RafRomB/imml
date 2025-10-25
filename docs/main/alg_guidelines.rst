@@ -31,82 +31,82 @@ task and check whether additional modules or dependencies are required.
      - deep
      -
    * - Clustering
-     - :class:`~imml.clustering.DAIMC`
+     - :class:`~imml.cluster.DAIMC`
      - Numeric
      -
      -
    * - Clustering
-     - :class:`~imml.clustering.EEIMVC`
+     - :class:`~imml.cluster.EEIMVC`
      - Numeric
      -
      -
    * - Clustering
-     - :class:`~imml.clustering.IMSCAGL`
+     - :class:`~imml.cluster.IMSCAGL`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - :class:`~imml.clustering.IMSR`
+     - :class:`~imml.cluster.IMSR`
      - Numeric
      -
      -
    * - Clustering
-     - :class:`~imml.clustering.IntegrAO`
+     - :class:`~imml.cluster.IntegrAO`
      - Numeric
      - deep
      -
    * - Clustering
-     - :class:`~imml.clustering.LFIMVC`
+     - :class:`~imml.cluster.LFIMVC`
      - Numeric
      -
      -
    * - Clustering
-     - :class:`~imml.clustering.MKKMIK`
+     - :class:`~imml.cluster.MKKMIK`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - :class:`~imml.clustering.MONET`
+     - :class:`~imml.cluster.MONET`
      - Numeric
      -
      -
    * - Clustering
-     - :class:`~imml.clustering.MRGCN`
+     - :class:`~imml.cluster.MRGCN`
      - Numeric
      - deep
      -
    * - Clustering
-     - :class:`~imml.clustering.NEMO`
+     - :class:`~imml.cluster.NEMO`
      - Numeric
      -
      -
    * - Clustering
-     - :class:`~imml.clustering.OMVC`
+     - :class:`~imml.cluster.OMVC`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - :class:`~imml.clustering.OPIMC`
+     - :class:`~imml.cluster.OPIMC`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - :class:`~imml.clustering.OSLFIMVC`
+     - :class:`~imml.cluster.OSLFIMVC`
      - Numeric
      - matlab
      - octave, octave-statistics
    * - Clustering
-     - :class:`~imml.clustering.PIMVC`
+     - :class:`~imml.cluster.PIMVC`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - :class:`~imml.clustering.SIMCADC`
+     - :class:`~imml.cluster.SIMCADC`
      - Numeric
      -
      -
    * - Clustering
-     - :class:`~imml.clustering.SUMO`
+     - :class:`~imml.cluster.SUMO`
      - Numeric
      -
      -
@@ -126,7 +126,7 @@ task and check whether additional modules or dependencies are required.
      - r
      - R, nnTensor
    * - Feature selection
-     - :class:`~imml.feature_selection.JNMFFeatureSelection`
+     - :class:`~imml.feature_selection.JNMFFeatureSelector`
      - Numeric
      - r
      - R, nnTensor

@@ -3,7 +3,7 @@
 import os
 from os.path import dirname
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 
 from ..impute import get_observed_mod_indicator
@@ -18,7 +18,7 @@ except ImportError:
     pass
 
 
-class PIMVC(BaseEstimator, ClassifierMixin):
+class PIMVC(BaseEstimator, ClusterMixin):
     r"""
     Projective Incomplete Multi-View Clustering (PIMVC). [#pimvcpaper]_ [#pimvccode]_
 

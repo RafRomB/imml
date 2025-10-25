@@ -6,7 +6,7 @@ from typing import Union
 import numpy as np
 import pandas as pd
 import snf
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
 
@@ -36,7 +36,7 @@ if rmodule_installed:
         snftool_module_error = "SNFtool needs to be installed in R to use r engine."
 
 
-class NEMO(BaseEstimator, ClassifierMixin):
+class NEMO(BaseEstimator, ClusterMixin):
     r"""
     NEighborhood based Multi-Omics clustering (NEMO). [#nemopaper]_ [#nemocode]_
 

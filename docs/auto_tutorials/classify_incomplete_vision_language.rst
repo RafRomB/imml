@@ -98,6 +98,13 @@ Step 1: Import required libraries
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: '/home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/torchvision/image.so: undefined symbol: _ZN3c1017RegisterOperatorsD1Ev'If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
+      warn(
+
 
 
 
@@ -155,6 +162,7 @@ the ``MCR`` class from the retrieve module.
 
  .. code-block:: none
 
+    Seed set to 42
 
     class
     1    37
@@ -299,13 +307,14 @@ will have either text or image missing. You can change this parameter for more o
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-139
+.. GENERATED FROM PYTHON SOURCE LINES 136-140
 
 Step 4: Generate the prompts using a retriever
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts for the ``RAGPT`` model.
+``RAGPT`` needs prompts, which are created from a memory bank with a retriever.
+We use ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-156
+.. GENERATED FROM PYTHON SOURCE LINES 140-157
 
 .. code-block:: Python
 
@@ -334,6 +343,9 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
 
  .. code-block:: none
 
+    Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
+    /home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/numpy/_core/fromnumeric.py:57: FutureWarning: 'DataFrame.swapaxes' is deprecated and will be removed in a future version. Please use 'DataFrame.transpose' instead.
+      return bound(*args, **kwds)
     memory_bank (20, 8)
 
 
@@ -374,8 +386,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>18</td>
           <td>oxford_iiit_pet/imgs/000018.jpg</td>
           <td>a gray cat laying on the floor</td>
-          <td>[-0.2883491814136505, 0.6082451343536377, 0.25...</td>
-          <td>[-0.5205264091491699, -0.2758329510688782, 0.2...</td>
+          <td>[-0.288349986076355, 0.6082454919815063, 0.257...</td>
+          <td>[-0.5205259919166565, -0.275832861661911, 0.22...</td>
           <td>0</td>
           <td>oxford_iiit_pet/image/000018.npy</td>
           <td>oxford_iiit_pet/text/000018.npy</td>
@@ -385,8 +397,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>7</td>
           <td>oxford_iiit_pet/imgs/000007.jpg</td>
           <td>a man holding a black dog</td>
-          <td>[-0.36506423354148865, 0.27761751413345337, -0...</td>
-          <td>[-0.25834447145462036, 0.5495434403419495, 0.3...</td>
+          <td>[-0.3650640547275543, 0.2776173949241638, -0.4...</td>
+          <td>[-0.25834596157073975, 0.549543023109436, 0.35...</td>
           <td>1</td>
           <td>oxford_iiit_pet/image/000007.npy</td>
           <td>oxford_iiit_pet/text/000007.npy</td>
@@ -396,8 +408,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>20</td>
           <td>oxford_iiit_pet/imgs/000020.jpg</td>
           <td>a cat is sitting on a branch</td>
-          <td>[-0.32218602299690247, -0.18200132250785828, 0...</td>
-          <td>[-0.8176317811012268, 0.08956041932106018, 0.7...</td>
+          <td>[-0.3221859633922577, -0.1820007562637329, 0.2...</td>
+          <td>[-0.8176321387290955, 0.08956006169319153, 0.7...</td>
           <td>0</td>
           <td>oxford_iiit_pet/image/000020.npy</td>
           <td>oxford_iiit_pet/text/000020.npy</td>
@@ -407,8 +419,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>0</td>
           <td>oxford_iiit_pet/imgs/000000.jpg</td>
           <td>a cat walking on grass</td>
-          <td>[0.04112914949655533, 0.28625351190567017, 0.2...</td>
-          <td>[0.36405640840530396, 0.47397932410240173, 0.6...</td>
+          <td>[0.04112936556339264, 0.2862536907196045, 0.22...</td>
+          <td>[0.3640563488006592, 0.47397851943969727, 0.63...</td>
           <td>0</td>
           <td>oxford_iiit_pet/image/000000.npy</td>
           <td>oxford_iiit_pet/text/000000.npy</td>
@@ -418,8 +430,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>46</td>
           <td>oxford_iiit_pet/imgs/000046.jpg</td>
           <td>a dog laying in the grass</td>
-          <td>[0.139794260263443, 0.36746230721473694, -0.48...</td>
-          <td>[0.5348194241523743, 0.221372589468956, 0.3069...</td>
+          <td>[0.13979414105415344, 0.36746183037757874, -0....</td>
+          <td>[0.5348194241523743, 0.22137261927127838, 0.30...</td>
           <td>1</td>
           <td>oxford_iiit_pet/image/000046.npy</td>
           <td>oxford_iiit_pet/text/000046.npy</td>
@@ -431,11 +443,11 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-158
+.. GENERATED FROM PYTHON SOURCE LINES 158-159
 
 Load generated training and testing prompts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-177
+.. GENERATED FROM PYTHON SOURCE LINES 159-178
 
 .. code-block:: Python
 
@@ -472,13 +484,13 @@ Load generated training and testing prompts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-181
+.. GENERATED FROM PYTHON SOURCE LINES 179-182
 
 Step 5: Training the model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Create the loaders.
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-189
+.. GENERATED FROM PYTHON SOURCE LINES 182-190
 
 .. code-block:: Python
 
@@ -497,12 +509,12 @@ Create the loaders.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-192
+.. GENERATED FROM PYTHON SOURCE LINES 191-193
 
 Train the ``RAGPT`` model using the generated prompts. For speed in this demo we train for only 2 epochs using
 the `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_ library.
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-196
+.. GENERATED FROM PYTHON SOURCE LINES 193-197
 
 .. code-block:: Python
 
@@ -518,19 +530,42 @@ the `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.ht
 
  .. code-block:: none
 
-    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]
+    GPU available: False, used: False
+    TPU available: False, using: 0 TPU cores
+    HPU available: False, using: 0 HPUs
+    /home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/lightning/pytorch/trainer/configuration_validator.py:70: You defined a `validation_step` but have no `val_dataloader`. Skipping val loop.
+
+      | Name  | Type        | Params | Mode 
+    ----------------------------------------------
+    0 | model | RAGPTModule | 118 M  | train
+    ----------------------------------------------
+    7.3 M     Trainable params
+    111 M     Non-trainable params
+    118 M     Total params
+    473.226   Total estimated model params size (MB)
+    19        Modules in train mode
+    232       Modules in eval mode
+    /home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:433: The 'train_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=11` in the `DataLoader` to improve performance.
+    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s] /home/alberto/Work/imml/imml/load/ragpt_dataset.py:229: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+      "input_ids": torch.tensor(input_ids,dtype=torch.int64),
+    /home/alberto/Work/imml/imml/classify/ragpt.py:268: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+      t_observed_mask = torch.tensor(observed_text).to(pixel_values.device)
+    /home/alberto/Work/imml/imml/classify/ragpt.py:269: UserWarning: To copy construct from a tensor, it is recommended to use sourceTensor.detach().clone() or sourceTensor.detach().clone().requires_grad_(True), rather than torch.tensor(sourceTensor).
+      i_observed_mask = torch.tensor(observed_image).to(pixel_values.device)
+    Epoch 0: 100%|██████████| 1/1 [00:26<00:00,  0.04it/s]    Epoch 0: 100%|██████████| 1/1 [00:26<00:00,  0.04it/s]    Epoch 0: 100%|██████████| 1/1 [00:26<00:00,  0.04it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:23<00:00,  0.04it/s]    Epoch 1: 100%|██████████| 1/1 [00:23<00:00,  0.04it/s]    Epoch 1: 100%|██████████| 1/1 [00:23<00:00,  0.04it/s]`Trainer.fit` stopped: `max_epochs=2` reached.
+    Epoch 1: 100%|██████████| 1/1 [00:23<00:00,  0.04it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-201
+.. GENERATED FROM PYTHON SOURCE LINES 198-202
 
 Step 6: Advanced Usage: Track Metrics During Training
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 As any other model in `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_, we can
 modify the internal functions. For instance, we can track loss and compute evaluation metrics during training.
 
-.. GENERATED FROM PYTHON SOURCE LINES 201-221
+.. GENERATED FROM PYTHON SOURCE LINES 202-222
 
 .. code-block:: Python
 
@@ -562,28 +597,44 @@ modify the internal functions. For instance, we can track loss and compute evalu
 
  .. code-block:: none
 
-    Sanity Checking: |          | 0/? [00:00<?, ?it/s]    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]
+    GPU available: False, used: False
+    TPU available: False, using: 0 TPU cores
+    HPU available: False, using: 0 HPUs
+
+      | Name  | Type        | Params | Mode 
+    ----------------------------------------------
+    0 | model | RAGPTModule | 118 M  | train
+    ----------------------------------------------
+    7.3 M     Trainable params
+    111 M     Non-trainable params
+    118 M     Total params
+    473.226   Total estimated model params size (MB)
+    19        Modules in train mode
+    232       Modules in eval mode
+    Sanity Checking: |          | 0/? [00:00<?, ?it/s]/home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:433: The 'val_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=11` in the `DataLoader` to improve performance.
+    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:06<00:00,  0.15it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:24<00:00,  0.04it/s]    Epoch 0: 100%|██████████| 1/1 [00:24<00:00,  0.04it/s]
     Validation: |          | 0/? [00:00<?, ?it/s]
     Validation:   0%|          | 0/1 [00:00<?, ?it/s]
     Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]
-                                                                              Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:05<00:00,  0.17it/s]
+                                                                              Epoch 0: 100%|██████████| 1/1 [00:30<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:30<00:00,  0.03it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:21<00:00,  0.05it/s]    Epoch 1: 100%|██████████| 1/1 [00:21<00:00,  0.05it/s]
     Validation: |          | 0/? [00:00<?, ?it/s]
     Validation:   0%|          | 0/1 [00:00<?, ?it/s]
     Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]
-                                                                              Epoch 1: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:06<00:00,  0.16it/s]
+                                                                              Epoch 1: 100%|██████████| 1/1 [00:28<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:28<00:00,  0.03it/s]`Trainer.fit` stopped: `max_epochs=2` reached.
+    Epoch 1: 100%|██████████| 1/1 [00:28<00:00,  0.03it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-225
+.. GENERATED FROM PYTHON SOURCE LINES 223-226
 
 Step 7: Evaluation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After training, we can evaluate predictions and visualize the results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-257
+.. GENERATED FROM PYTHON SOURCE LINES 226-258
 
 .. code-block:: Python
 
@@ -632,12 +683,13 @@ After training, we can evaluate predictions and visualize the results.
 
  .. code-block:: none
 
-    Predicting: |          | 0/? [00:00<?, ?it/s]    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]
+    /home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/lightning/pytorch/trainer/connectors/data_connector.py:433: The 'predict_dataloader' does not have many workers which may be a bottleneck. Consider increasing the value of the `num_workers` argument` to `num_workers=11` in the `DataLoader` to improve performance.
+    Predicting: |          | 0/? [00:00<?, ?it/s]    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:05<00:00,  0.17it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:05<00:00,  0.17it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-262
+.. GENERATED FROM PYTHON SOURCE LINES 259-263
 
 .. code-block:: Python
 
@@ -663,11 +715,11 @@ After training, we can evaluate predictions and visualize the results.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 263-264
+.. GENERATED FROM PYTHON SOURCE LINES 264-265
 
 Despite using only 50 instances and minimal training, the performance was excellent thanks to the pretrained models.
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-275
+.. GENERATED FROM PYTHON SOURCE LINES 267-276
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -679,7 +731,7 @@ demonstrated strong robustness on the test set.
 This example is intentionally simplified, using only 50 instances for demonstration.
 For stronger performance and more reliable results, the full dataset and longer training should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 277-281
+.. GENERATED FROM PYTHON SOURCE LINES 278-282
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -689,7 +741,7 @@ of significant modality incompleteness in vision-language datasets.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (11 minutes 36.245 seconds)
+   **Total running time of the script:** (5 minutes 11.724 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_classify_incomplete_vision_language.py:

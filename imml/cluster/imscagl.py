@@ -4,7 +4,7 @@ import os
 from os.path import dirname
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 
 from ..impute import get_observed_mod_indicator
@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 
-class IMSCAGL(BaseEstimator, ClassifierMixin):
+class IMSCAGL(BaseEstimator, ClusterMixin):
     r"""
     Incomplete Multiview Spectral Clustering With Adaptive Graph Learning (IMSCAGL). [#imscaglpaper1]_ [#imscaglpaper2]_ [#imscaglcode1]_ [#imscaglcode2]_
 

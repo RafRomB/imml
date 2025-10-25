@@ -4,7 +4,7 @@ import os
 from os.path import dirname
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 
 from ..utils import check_Xs
@@ -19,7 +19,7 @@ except ImportError:
     pass
 
 
-class OMVC(BaseEstimator, ClassifierMixin):
+class OMVC(BaseEstimator, ClusterMixin):
     r"""
     Online Multi-View Clustering (OMVC). [#omvcpaper]_ [#omvccode]_
 

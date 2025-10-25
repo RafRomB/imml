@@ -5,7 +5,7 @@ from os.path import dirname
 
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 from scipy.linalg import svd
 from scipy.stats import zscore
@@ -24,7 +24,7 @@ except ImportError:
     pass
 
 
-class SIMCADC(BaseEstimator, ClassifierMixin):
+class SIMCADC(BaseEstimator, ClusterMixin):
     r"""
     Scalable Incomplete Multiview Clustering with Adaptive Data Completion (SIMC-ADC). [#simcadcpaper]_ [#simcadccode]_
 

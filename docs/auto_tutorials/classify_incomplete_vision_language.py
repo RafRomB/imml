@@ -135,7 +135,8 @@ test_df.loc[missing_mask, "text"] = np.nan
 ########################################################
 # Step 4: Generate the prompts using a retriever
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts for the ``RAGPT`` model.
+# ``RAGPT`` needs prompts, which are created from a memory bank with a retriever.
+# We use ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts.
 
 modalities = ["image", "text"]
 batch_size = 64

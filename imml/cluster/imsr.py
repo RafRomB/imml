@@ -5,7 +5,7 @@ from os.path import dirname
 import numpy as np
 import pandas as pd
 import random
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 from scipy.sparse.linalg import eigs
 
@@ -21,7 +21,7 @@ except ImportError:
     pass
 
 
-class IMSR(BaseEstimator, ClassifierMixin):
+class IMSR(BaseEstimator, ClusterMixin):
     r"""
     Self-representation Subspace Clustering for Incomplete Multi-view Data (IMSR). [#imsrpaper]_ [#imscaglcode]_
 
