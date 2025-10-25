@@ -11,11 +11,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-LightningModuleBase = L.LightningModule if deepmodule_installed else object
-nnModuleBase = nn.Module if deepmodule_installed else object
+L.LightningModule = L.LightningModule if deepmodule_installed else object
+nn.Module = nn.Module if deepmodule_installed else object
 
 
-class MUSE(LightningModuleBase):
+class MUSE(L.LightningModule):
     r"""
 
     MUtual-conSistEnt graph contrastive learning (MUSE). [#musepaper]_ [#musecode]_
@@ -189,7 +189,7 @@ class MUSE(LightningModuleBase):
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
 
-class MUSEModule(nnModuleBase):
+class MUSEModule(nn.Module):
 
     def __init__(self, input_dim: list = None, modalities: list = None, extractors: list = None, tokenizer=None,
                  hidden_dim: int = 128, output_dim: int = 1, gnn_layers: int = 2, gnn_norm: str = None,

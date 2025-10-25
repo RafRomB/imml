@@ -9,10 +9,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
+nn.Module = nn.Module if deepmodule_installed else object
 
 
-class RNNEncoder(nnModuleBase):
+class RNNEncoder(nn.Module):
     """Recurrent neural network layer.
 
     This layer wraps the PyTorch RNN layer with masking and dropout support. It is

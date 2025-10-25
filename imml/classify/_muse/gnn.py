@@ -10,11 +10,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
-MessagePassingBase = MessagePassing if deepmodule_installed else object
+nn.Module = nn.Module if deepmodule_installed else object
+MessagePassing = MessagePassing if deepmodule_installed else object
 
 
-class EdgeSAGEConv(MessagePassingBase):
+class EdgeSAGEConv(MessagePassing):
     def __init__(self, in_channels, out_channels, edge_channels, normalize_emb, aggr="mean", **kwargs):
         super(EdgeSAGEConv, self).__init__(aggr=aggr, **kwargs)
         self.in_channels = in_channels
@@ -46,7 +46,7 @@ class EdgeSAGEConv(MessagePassingBase):
                                                      self.edge_channels)
 
 
-class GNNStack(nnModuleBase):
+class GNNStack(nn.Module):
     def __init__(self, node_channels, edge_channels, normalize_embs, num_layers, dropout):
         super(GNNStack, self).__init__()
         self.node_channels = node_channels
@@ -90,7 +90,7 @@ class GNNStack(nnModuleBase):
         return x
 
 
-class MML(nnModuleBase):
+class MML(nn.Module):
     def __init__(self, num_modalities, hidden_channels, normalize_embs, num_layers, dropout, output_dim):
         super(MML, self).__init__()
         self.output_dim = output_dim

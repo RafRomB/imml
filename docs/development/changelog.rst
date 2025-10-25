@@ -31,6 +31,20 @@ Change tags (adopted from `Scikit-learn
 - |API| : you will need to change your code to have the same effect in the future; or a feature will be removed in the future.
 
 
+Version 0.1.2
+-------------
+
+Updates in this release:
+
+- |Enhancement| Corrected inheritance hierarchy in clustering algorithms by replacing ``ClassifierMixin`` with the
+  appropriate ``ClusterMixin`` base class from `Scikit-learn <https://scikit-learn.org/stable/>`__.
+- |Enhancement| Improved code readability by updating references to
+  `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_ package base classes to use their
+  explicit class names instead of generic references.
+- |Enhancement| Enhanced navigation in the algorithm selection guide by adding direct hyperlinks from each algorithm
+  to its corresponding detailed documentation page, making it easier for users to explore specific implementations.
+
+
 Version 0.1.1
 -------------
 
