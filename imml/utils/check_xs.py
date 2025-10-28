@@ -4,6 +4,11 @@ import numpy as np
 import pandas as pd
 from sklearn.utils import check_array
 
+try:
+    import torch
+except ImportError:
+    torch.Tensor = object
+
 
 def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-nan",return_dimensions=False):
     r"""
@@ -74,12 +79,22 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-n
         )
         raise ValueError(msg)
 
-    pandas_format = True if isinstance(Xs[0],pd.DataFrame) else False
-    if pandas_format:
-        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite),
+    if len(set([len(X) for X in Xs])) != 1:
+        msg = "All modalities should have the same number of samples"
+        raise ValueError(msg)
+
+    dtype = type(Xs[0])
+    if not all(isinstance(X, dtype) for X in Xs):
+        msg = "All modalities should be the same data type"
+        raise ValueError(msg)
+
+    if isinstance(Xs[0],pd.DataFrame):
+        Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite, dtype=None),
                            index=X.index, columns=X.columns) for X_idx, X in enumerate(Xs)]
-    else:
-        Xs = [check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite) for X in Xs]
+    elif isinstance(Xs[0], np.ndarray) or isinstance(Xs[0], list):
+        Xs = [check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite, dtype=None) for X in Xs]
+    elif isinstance(Xs[0], torch.Tensor):
+        Xs = [check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite, dtype=None) for X in Xs]
 
     if return_dimensions:
         n_samples = Xs[0].shape[0]

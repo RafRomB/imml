@@ -5,6 +5,10 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import FunctionTransformer
 
+try:
+    import torch
+except ImportError:
+    torch = object
 from ..utils import check_Xs
 
 
@@ -67,10 +71,17 @@ def remove_mods(Xs: list, observed_mod_indicator):
         observed_mod_indicator = observed_mod_indicator.values
     for X_idx, X in enumerate(Xs):
         idxs_to_remove = observed_mod_indicator[:, X_idx] == False
-        if isinstance(X, pd.DataFrame):
-            X = X.values
-        transformed_X = copy.deepcopy(X).astype(float)
-        transformed_X[idxs_to_remove, :] = np.nan
+        transformed_X = copy.deepcopy(X)
+        if isinstance(transformed_X, pd.DataFrame):
+            transformed_X = transformed_X.values
+        if isinstance(transformed_X, np.ndarray):
+            if np.issubdtype(transformed_X.dtype, np.integer):
+                transformed_X = transformed_X.astype(float)
+            transformed_X[idxs_to_remove, :] = np.nan
+        elif isinstance(transformed_X, torch.Tensor):
+            if torch.is_floating_point(transformed_X):
+                transformed_X = transformed_X.float()
+            transformed_X[idxs_to_remove, :] = torch.nan
         transformed_Xs.append(transformed_X)
     if isinstance(Xs[0], pd.DataFrame):
         transformed_Xs = [pd.DataFrame(transformed_X, columns=X.columns, index=X.index) for X, transformed_X in

@@ -31,28 +31,54 @@ Change tags (adopted from `Scikit-learn
 - |API| : you will need to change your code to have the same effect in the future; or a feature will be removed in the future.
 
 
-Version 0.1.2
+Version 0.2.0
 -------------
+October 28, 2025
 
 Updates in this release:
 
-- |Enhancement| Corrected inheritance hierarchy in clustering algorithms by replacing ``ClassifierMixin`` with the
+- |Fix| Corrected inheritance hierarchy in clustering algorithms by replacing ``ClassifierMixin`` with the
   appropriate ``ClusterMixin`` base class from `Scikit-learn <https://scikit-learn.org/stable/>`__.
 - |Enhancement| Improved code readability by updating references to
   `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_ package base classes to use their
   explicit class names instead of generic references.
-- |Enhancement| Enhanced navigation in the algorithm selection guide by adding direct hyperlinks from each algorithm
-  to its corresponding detailed documentation page, making it easier for users to explore specific implementations.
+- |Enhancement| Enhanced navigation in the
+  `algorithm selection guide <https://imml.readthedocs.io/stable/main/alg_guidelines.html>`_ by adding direct
+  hyperlinks from each algorithm to its corresponding detailed documentation page, making it easier for users
+  to explore specific implementations.
+
+:mod:`imml.ampute`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- |Feature| :class:`~imml.ampute.Amputer` Now support lists and
+  `pytorch tensors <https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor>`_.
+- |Feature| :class:`~imml.ampute.RemoveMods` Now support lists and
+  `pytorch tensors <https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor>`_.
+
+:mod:`imml.classify`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- |Fix| :class:`~imml.classify.MUSE` Fixed text extractor load when using text modality.
+
+:mod:`imml.load`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- |API| :class:`~imml.load.M3CareDataset` observed_mod_indicator argument was removed.
+- |API| :class:`~imml.load.MUSEDataset` observed_mod_indicator argument was removed.
+
+:mod:`imml.utils`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- |Feature| :class:`~imml.utils.check_Xs` Now support
+  `pytorch tensors <https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor>`_.
 
 
 Version 0.1.1
 -------------
+October 17, 2025
 
 Updates in this release:
 
 - |Enhancement| Improving documentation for several methods.
 - |Enhancement| Improved documentation for installation and extra dependencies.
-- |Enhancement| Adding guidelines on how to choose an algorithm.
+- |Feature| Adding `guidelines <https://imml.readthedocs.io/stable/main/alg_guidelines.html>`_ on how to choose
+  an algorithm.
 - |Enhancement| Added license headers to all files.
 - |Fix| Fixed iPython dependency issue. Oct2Py depends on iPython but returned an error when importing ipython>=9.0.0.
 
@@ -63,5 +89,6 @@ Updates in this release:
 
 Version 0.1.0
 -------------
+October 03, 2025
 
 We are happy to announce the first major public version of `iMML`!

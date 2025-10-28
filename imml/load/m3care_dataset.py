@@ -1,4 +1,8 @@
 # License: BSD-3-Clause
+import numpy as np
+import pandas as pd
+
+from ..impute import get_observed_mod_indicator
 
 try:
     import lightning.pytorch as pl
@@ -23,8 +27,6 @@ class M3CareDataset(torch.utils.data.Dataset):
         A list of different modalities.
     y : array-like of shape (n_samples,)
         Target vector relative to X.
-    observed_mod_indicator: array-like of shape (n_samples, n_mods)
-        Boolean array-like indicating observed modalities for each sample.
 
     Returns
     -------
@@ -44,9 +46,8 @@ class M3CareDataset(torch.utils.data.Dataset):
     >>> from imml.load import M3CareDataset
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> Xs = [torch.from_numpy(X.values).float() for X in Xs]
-    >>> observed_mod_indicator = torch.from_numpy(get_observed_mod_indicator(Xs).values)
     >>> y = torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float()
-    >>> train_data = M3CareDataset(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y)
+    >>> train_data = M3CareDataset(Xs=Xs, y=y)
     """
 
     def __init__(self, Xs, y, observed_mod_indicator):
@@ -65,12 +66,14 @@ class M3CareDataset(torch.utils.data.Dataset):
             raise ValueError("Invalid y. It cannot be None.")
         if len(y) != len(Xs[0]):
             raise ValueError(f"Invalid y. It must have the same length as each element in Xs. Got {len(y)} vs {len(Xs[0])}")
-        if observed_mod_indicator is None:
-            raise ValueError("Invalid observed_mod_indicator. It cannot be None.")
-        if len(observed_mod_indicator) != len(Xs[0]):
-            raise ValueError(f"Invalid observed_mod_indicator. It must have the same length as each element in Xs. Got {len(observed_mod_indicator)} vs {len(Xs[0])}")
-        if observed_mod_indicator.shape[1] != len(Xs):
-            raise ValueError(f"Invalid observed_mod_indicator. It must have the same number of columns as the length of Xs. Got {observed_mod_indicator.shape[1]} vs {len(Xs)}")
+
+        observed_mod_indicator = get_observed_mod_indicator(Xs)
+        if isinstance(observed_mod_indicator, np.ndarray):
+            observed_mod_indicator = torch.from_numpy(observed_mod_indicator)
+        elif isinstance(observed_mod_indicator, pd.DataFrame):
+            observed_mod_indicator = torch.from_numpy(observed_mod_indicator.values)
+        elif isinstance(observed_mod_indicator, torch.Tensor):
+            pass
 
         self.Xs = Xs
         self.y = y

@@ -69,18 +69,17 @@ class M3Care(L.LightningModule):
 
     Example
     --------
-    >>> from imml.classify import M3Care
     >>> from lightning import Trainer
     >>> import torch
     >>> import numpy as np
     >>> import pandas as pd
     >>> from torch.utils.data import DataLoader
-    >>> from imml.impute import get_observed_mod_indicator
+    >>> from imml.classify import M3Care
     >>> from imml.load import M3CareDataset
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> train_data = M3CareDataset(Xs=[torch.from_numpy(X.values).float() for X in Xs],
-                                   y=torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float(),
-                                   observed_mod_indicator=torch.from_numpy(get_observed_mod_indicator(Xs).values))
+    >>> Xs = [torch.from_numpy(X.values).float() for X in Xs]
+    >>> y = torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float()
+    >>> train_data = M3CareDataset(Xs=Xs, y=y)
     >>> train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
     >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
     >>> estimator = M3Care(modalities= ["tabular", "tabular"], input_dim=[X.shape[1] for X in Xs])

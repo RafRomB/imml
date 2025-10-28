@@ -72,13 +72,10 @@ class MUSE(L.LightningModule):
     >>> import pandas as pd
     >>> from torch.utils.data import DataLoader
     >>> from imml.load import MUSEDataset
-    >>> from imml.impute import get_observed_mod_indicator
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> train_data = MUSEDataset(Xs=[torch.from_numpy(X.values).float() for X in Xs],
-                                 observed_mod_indicator=torch.from_numpy(get_observed_mod_indicator(Xs).values),
-                                 y=torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float(),
-                                 y_indicator=torch.ones((len(Xs[0]))).bool()
-                                 )
+    >>> Xs = [torch.from_numpy(X.values).float() for X in Xs]
+    >>> y = torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float()
+    >>> train_data = MUSEDataset(Xs=Xs, y=y)
     >>> train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
     >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
     >>> estimator = MUSE(modalities= ["tabular", "tabular"], input_dim=[X.shape[1] for X in Xs])
@@ -231,7 +228,7 @@ class MUSEModule(nn.Module):
                                          rnn_type="GRU", dropout=dropout, bidirectional=False)
                     extractor = nn.Sequential(encoder, nn.Linear(hidden_dim, hidden_dim))
             elif mod == "text":
-                if extractors is None:
+                if extractor is None:
                     encoder = TextEncoder(bert_type)
                     for param in encoder.parameters():
                         param.requires_grad = False
