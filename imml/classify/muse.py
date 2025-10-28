@@ -11,11 +11,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-L.LightningModule = L.LightningModule if deepmodule_installed else object
-nn.Module = nn.Module if deepmodule_installed else object
+LightningModule = L.LightningModule if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class MUSE(L.LightningModule):
+class MUSE(LightningModule):
     r"""
 
     MUtual-conSistEnt graph contrastive learning (MUSE). [#musepaper]_ [#musecode]_
@@ -147,8 +147,8 @@ class MUSE(L.LightningModule):
         r"""
         Method required for training using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
-        Xs, y, observed_mod_indicator, y_indicator = batch
-        loss = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y, y_indicator=y_indicator)
+        Xs, y, missing_mod_indicator, y_indicator = batch
+        loss = self.model(Xs=Xs, missing_mod_indicator=missing_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
@@ -156,8 +156,8 @@ class MUSE(L.LightningModule):
         r"""
         Method required for validating using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
-        Xs, y, observed_mod_indicator, y_indicator = batch
-        loss = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y, y_indicator=y_indicator)
+        Xs, y, missing_mod_indicator, y_indicator = batch
+        loss = self.model(Xs=Xs, missing_mod_indicator=missing_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
@@ -165,8 +165,8 @@ class MUSE(L.LightningModule):
         r"""
         Method required for testing using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
-        Xs, y, observed_mod_indicator, y_indicator = batch
-        loss = self.model(Xs=Xs, observed_mod_indicator=observed_mod_indicator, y=y, y_indicator=y_indicator)
+        Xs, y, missing_mod_indicator, y_indicator = batch
+        loss = self.model(Xs=Xs, missing_mod_indicator=missing_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
@@ -174,8 +174,8 @@ class MUSE(L.LightningModule):
         r"""
         Method required for predicting using `Lightning Trainer <https://lightning.ai/docs/pytorch/stable/common/trainer.html>`_.
         """
-        Xs, y, observed_mod_indicator, y_indicator = batch
-        pred = self.model.predict(Xs=Xs, observed_mod_indicator=observed_mod_indicator)
+        Xs, y, missing_mod_indicator, y_indicator = batch
+        pred = self.model.predict(Xs=Xs, missing_mod_indicator=missing_mod_indicator)
         return pred
 
 
@@ -186,7 +186,7 @@ class MUSE(L.LightningModule):
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
 
-class MUSEModule(nn.Module):
+class MUSEModule(Module):
 
     def __init__(self, input_dim: list = None, modalities: list = None, extractors: list = None, tokenizer=None,
                  hidden_dim: int = 128, output_dim: int = 1, gnn_layers: int = 2, gnn_norm: str = None,
@@ -242,27 +242,25 @@ class MUSEModule(nn.Module):
                        dropout=dropout, normalize_embs=gnn_norm, output_dim=output_dim)
 
 
-    def forward(self, Xs, y, observed_mod_indicator, y_indicator):
-        observed_mod_indicator = ~observed_mod_indicator
+    def forward(self, Xs, y, missing_mod_indicator, y_indicator):
         transformed_Xs = []
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
             code_embedding = extractor(X)
-            code_embedding[observed_mod_indicator[:,X_idx]] = 0
+            code_embedding[missing_mod_indicator[:,X_idx]] = 0
             code_embedding = self.dropout_layer(code_embedding)
             transformed_Xs.append(code_embedding)
-        loss = self.mml(Xs=transformed_Xs, observed_mod_indicator=observed_mod_indicator, y=y, y_indicator=y_indicator)
+        loss = self.mml(Xs=transformed_Xs, missing_mod_indicator=missing_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
-    def predict(self, Xs, observed_mod_indicator):
-        observed_mod_indicator = ~observed_mod_indicator
+    def predict(self, Xs, missing_mod_indicator):
         transformed_Xs = []
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
             code_embedding = extractor(X)
-            code_embedding[observed_mod_indicator[:,X_idx]] = 0
+            code_embedding[missing_mod_indicator[:,X_idx]] = 0
             code_embedding = self.dropout_layer(code_embedding)
             transformed_Xs.append(code_embedding)
-        logits = self.mml.inference(Xs=transformed_Xs, observed_mod_indicator=observed_mod_indicator)[0]
+        logits = self.mml.inference(Xs=transformed_Xs, missing_mod_indicator=missing_mod_indicator)[0]
         return logits

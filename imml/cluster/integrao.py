@@ -22,11 +22,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-L.LightningModule = L.LightningModule if deepmodule_installed else object
-nn.Module = nn.Module if deepmodule_installed else object
+LightningModule = L.LightningModule if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class IntegrAO(L.LightningModule):
+class IntegrAO(LightningModule):
     r"""
     Integrate Any Omics (IntegrAO). [#integraopaper]_ [#integraocode]_
 
@@ -96,7 +96,7 @@ class IntegrAO(L.LightningModule):
     >>> labels = trainer.predict(estimator, train_dataloader)[0]
     """
 
-    def __init__(self, Xs, model : nn.Module = None, n_clusters: int = 8, neighbor_size : int = None,
+    def __init__(self, Xs, model : Module = None, n_clusters: int = 8, neighbor_size : int = None,
                  hidden_channels : int = 128, embedding_dims: int = 50, fusing_iteration: int = 20,
                  mu : float = 0.5, learning_rate : float = 1e-3, weight_decay : float = 1e-4, random_state : int = None):
 
@@ -370,7 +370,7 @@ class IntegrAO(L.LightningModule):
         return C
 
 
-class IntegrAOModule(nn.Module):
+class IntegrAOModule(Module):
 
     def __init__(self, in_channels, hidden_channels, out_channels, num_layers=2):
         super().__init__()

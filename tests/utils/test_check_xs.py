@@ -2,6 +2,12 @@ import numpy as np
 import pandas as pd
 import pytest
 
+try:
+    import torch
+    deepmodule_installed = True
+except ImportError:
+    deepmodule_installed = False
+
 from imml.utils import check_Xs
 
 
@@ -28,13 +34,14 @@ def test_valid_inputs():
     assert len(result) == 1
     assert result[0].shape == (2, 2)
 
-    X1 = np.array([[1, 2], [3, 4]])
-    X2 = pd.DataFrame([[5, 6], [7, 8]], columns=['A', 'B'])
-    result = check_Xs([X1, X2])
-    assert isinstance(result, list)
-    assert len(result) == 2
-    assert isinstance(result[0], np.ndarray)
-    assert isinstance(result[1], np.ndarray)
+    if deepmodule_installed:
+        X1 = torch.from_numpy(np.array([[1, 2], [3, 4]]))
+        X2 = torch.from_numpy(np.array([[1, 2], [3, 4]]))
+        result = check_Xs([X1, X2])
+        assert isinstance(result, list)
+        assert len(result) == 2
+        assert isinstance(result[0], torch.Tensor)
+        assert isinstance(result[1], torch.Tensor)
 
     X3 = np.array([[[1, 2], [3, 4]], [[5, 6], [7, 8]]])
     result = check_Xs(X3)
@@ -56,16 +63,18 @@ def test_valid_inputs():
 def test_invalid_inputs():
     with pytest.raises(ValueError, match="If not list, input must be of type np.ndarray"):
         check_Xs(123)
+    with pytest.raises(ValueError, match="Length of input list must be greater than 0"):
+        check_Xs([])
 
     X1 = np.array([[1, 2], [3, 4]])
     X2 = np.array([[5, 6], [7, 8]])
     with pytest.raises(ValueError, match="Wrong number of modalities. Expected 3 but found 2"):
         check_Xs([X1, X2], enforce_modalities=3)
 
-
-def test_edge_cases():
-    with pytest.raises(ValueError, match="Length of input list must be greater than 0"):
-        check_Xs([])
+    with pytest.raises(ValueError, match="All modalities should have the same number of samples"):
+        check_Xs([X1[:-1], X2])
+    with pytest.raises(ValueError, match="All modalities should be the same data type"):
+        check_Xs([X1, pd.DataFrame(X2)])
 
 
 def test_optional_parameters():

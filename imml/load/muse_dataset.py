@@ -2,7 +2,7 @@
 import numpy as np
 import pandas as pd
 
-from ..impute import get_observed_mod_indicator
+from ..impute import get_missing_mod_indicator
 
 try:
     import lightning.pytorch as pl
@@ -12,10 +12,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-torch.utils.data.Dataset = torch.utils.data.Dataset if deepmodule_installed else object
+Dataset = torch.utils.data.Dataset if deepmodule_installed else object
 
 
-class MUSEDataset(torch.utils.data.Dataset):
+class MUSEDataset(Dataset):
     r"""
     This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `MUSE`.
 
@@ -36,8 +36,8 @@ class MUSEDataset(torch.utils.data.Dataset):
         A list of different modalities for one sample.
     y_idx: array-like of shape (n_samples,)
         Target vector relative to the sample.
-    observed_mod_indicator: array-like of shape (1, n_mods)
-        Boolean array-like indicating observed modalities for the sample.
+    missing_mod_indicator: array-like of shape (1, n_mods)
+        Boolean array-like indicating missing modalities for the sample.
     y_indicator: array-like of shape (1,)
         Boolean array-like indicating observed label for the sample.
 
@@ -70,14 +70,7 @@ class MUSEDataset(torch.utils.data.Dataset):
         if len(y) != len(Xs[0]):
             raise ValueError(f"Invalid y. It must have the same length as each element in Xs. Got {len(y)} vs {len(Xs[0])}")
 
-        observed_mod_indicator = get_observed_mod_indicator(Xs)
-        if isinstance(observed_mod_indicator, np.ndarray):
-            observed_mod_indicator = torch.from_numpy(observed_mod_indicator)
-        elif isinstance(observed_mod_indicator, pd.DataFrame):
-            observed_mod_indicator = torch.from_numpy(observed_mod_indicator.values)
-        elif isinstance(observed_mod_indicator, torch.Tensor):
-            pass
-
+        missing_mod_indicator = get_missing_mod_indicator(Xs)
         if isinstance(y, np.ndarray):
             y_indicator = torch.logical_not(torch.from_numpy(np.isnan(y)))
         elif isinstance(y, pd.Series):
@@ -87,17 +80,17 @@ class MUSEDataset(torch.utils.data.Dataset):
 
         self.Xs = Xs
         self.y = y
-        self.observed_mod_indicator = observed_mod_indicator
+        self.missing_mod_indicator = missing_mod_indicator
         self.y_indicator = y_indicator
 
 
     def __len__(self):
-        return len(self.observed_mod_indicator)
+        return len(self.missing_mod_indicator)
 
 
     def __getitem__(self, idx):
         Xs_idx = [X[idx] for X in self.Xs]
         y_idx = self.y[idx]
-        observed_mod_indicator_idx = self.observed_mod_indicator[idx]
+        missing_mod_indicator_idx = self.missing_mod_indicator[idx]
         y_indicator_idx = self.y_indicator[idx]
-        return Xs_idx, y_idx, observed_mod_indicator_idx, y_indicator_idx
+        return Xs_idx, y_idx, missing_mod_indicator_idx, y_indicator_idx

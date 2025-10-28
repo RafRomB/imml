@@ -13,12 +13,12 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-L.LightningModule = L.LightningModule if deepmodule_installed else object
+LightningModule = L.LightningModule if deepmodule_installed else object
 ViltModel = ViltModel if deepmodule_installed else object
-nn.Module = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class RAGPT(L.LightningModule):
+class RAGPT(LightningModule):
     r"""
 
     Retrieval-AuGmented dynamic Prompt Tuning (RAGPT). [#ragptpaper]_ [#ragptcode]_
@@ -197,7 +197,7 @@ class RAGPT(L.LightningModule):
         return optimizer
 
 
-class RAGPTModule(nn.Module):
+class RAGPTModule(Module):
     def __init__(self, vilt: ViltModel = None, max_text_len: int = 128, max_image_len: int = 145,
                  prompt_position: int = 0, prompt_length: int = 1, dropout_rate: float = 0.2,
                  hidden_dim: int = 768, cls_num: int = 2):

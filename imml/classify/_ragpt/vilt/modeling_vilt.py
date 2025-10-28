@@ -48,7 +48,7 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nn.Module = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 _CONFIG_FOR_DOC = "ViltConfig"
 _CHECKPOINT_FOR_DOC = "dandelin/vilt-b32-mlm"
@@ -98,7 +98,7 @@ class ViltForImagesAndTextClassificationOutput(ModelOutput):
     attentions = None
 
 
-class ViltEmbeddings(nn.Module):
+class ViltEmbeddings(Module):
     """
     Construct the text and patch embeddings.
 
@@ -252,7 +252,7 @@ class ViltEmbeddings(nn.Module):
         return embeddings, masks
 
 
-class TextEmbeddings(nn.Module):
+class TextEmbeddings(Module):
     """Construct the embeddings from word, position and token_type embeddings."""
 
     def __init__(self, config):
@@ -310,7 +310,7 @@ class TextEmbeddings(nn.Module):
         return embeddings
 
 
-class ViltPatchEmbeddings(nn.Module):
+class ViltPatchEmbeddings(Module):
     """
     Image to Patch Embedding.
     """
@@ -341,7 +341,7 @@ class ViltPatchEmbeddings(nn.Module):
         return x
 
 
-class ViltSelfAttention(nn.Module):
+class ViltSelfAttention(Module):
     def __init__(self, config):
         super().__init__()
         if config.hidden_size % config.num_attention_heads != 0 and not hasattr(config, "embedding_size"):
@@ -406,7 +406,7 @@ class ViltSelfAttention(nn.Module):
 
 
 # Copied from transformers.models.vit.modeling_vit.ViTSelfOutput with ViT->Vilt
-class ViltSelfOutput(nn.Module):
+class ViltSelfOutput(Module):
     """
     The residual connection is defined in ViltLayer instead of here (as is the case with other models), due to the
     layernorm applied before each block.
@@ -424,7 +424,7 @@ class ViltSelfOutput(nn.Module):
         return hidden_states
 
 
-class ViltAttention(nn.Module):
+class ViltAttention(Module):
     def __init__(self, config):
         super().__init__()
         self.attention = ViltSelfAttention(config)
@@ -459,7 +459,7 @@ class ViltAttention(nn.Module):
 
 
 # Copied from transformers.models.vit.modeling_vit.ViTIntermediate with ViT->Vilt
-class ViltIntermediate(nn.Module):
+class ViltIntermediate(Module):
     def __init__(self, config: ViltConfig) -> None:
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.intermediate_size)
@@ -476,7 +476,7 @@ class ViltIntermediate(nn.Module):
 
 
 # Copied from transformers.models.vit.modeling_vit.ViTOutput with ViT->Vilt
-class ViltOutput(nn.Module):
+class ViltOutput(Module):
     def __init__(self, config: ViltConfig) -> None:
         super().__init__()
         self.dense = nn.Linear(config.intermediate_size, config.hidden_size)
@@ -491,7 +491,7 @@ class ViltOutput(nn.Module):
         return hidden_states
 
 
-class ViltLayer(nn.Module):
+class ViltLayer(Module):
     """This corresponds to the Block class in the timm implementation."""
 
     def __init__(self, config):
@@ -529,7 +529,7 @@ class ViltLayer(nn.Module):
         return outputs
 
 
-class ViltEncoder(nn.Module):
+class ViltEncoder(Module):
     def __init__(self, config):
         super().__init__()
         self.config = config
@@ -881,7 +881,7 @@ class ViltModel(ViltPreTrainedModel):
         )
 
 
-class ViltPooler(nn.Module):
+class ViltPooler(Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
@@ -1036,7 +1036,7 @@ class ViltForMaskedLM(ViltPreTrainedModel):
         )
 
 
-class ViltPredictionHeadTransform(nn.Module):
+class ViltPredictionHeadTransform(Module):
     def __init__(self, config):
         super().__init__()
         self.dense = nn.Linear(config.hidden_size, config.hidden_size)
@@ -1053,7 +1053,7 @@ class ViltPredictionHeadTransform(nn.Module):
         return hidden_states
 
 
-class ViltMLMHead(nn.Module):
+class ViltMLMHead(Module):
     def __init__(self, config, weight=None):
         super().__init__()
         self.config = config

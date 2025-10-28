@@ -1,4 +1,4 @@
-![PyPI - Version](https://img.shields.io/pypi/v/imml)
+[![PyPI - Version](https://img.shields.io/pypi/v/imml)](https://pypi.org/project/imml/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
 [![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io)
 [![CI Tests](https://github.com/ocbe-uio/imml/actions/workflows/ci_test.yml/badge.svg)](https://github.com/ocbe-uio/imml/actions/workflows/ci_test.yml)

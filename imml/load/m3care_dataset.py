@@ -12,10 +12,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-torch.utils.data.Dataset = torch.utils.data.Dataset if deepmodule_installed else object
+Dataset = torch.utils.data.Dataset if deepmodule_installed else object
 
 
-class M3CareDataset(torch.utils.data.Dataset):
+class M3CareDataset(Dataset):
     r"""
     This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `M3Care`.
 
@@ -50,7 +50,7 @@ class M3CareDataset(torch.utils.data.Dataset):
     >>> train_data = M3CareDataset(Xs=Xs, y=y)
     """
 
-    def __init__(self, Xs, y, observed_mod_indicator):
+    def __init__(self, Xs, y):
         if not deepmodule_installed:
             raise ImportError(deepmodule_error)
 
@@ -68,12 +68,6 @@ class M3CareDataset(torch.utils.data.Dataset):
             raise ValueError(f"Invalid y. It must have the same length as each element in Xs. Got {len(y)} vs {len(Xs[0])}")
 
         observed_mod_indicator = get_observed_mod_indicator(Xs)
-        if isinstance(observed_mod_indicator, np.ndarray):
-            observed_mod_indicator = torch.from_numpy(observed_mod_indicator)
-        elif isinstance(observed_mod_indicator, pd.DataFrame):
-            observed_mod_indicator = torch.from_numpy(observed_mod_indicator.values)
-        elif isinstance(observed_mod_indicator, torch.Tensor):
-            pass
 
         self.Xs = Xs
         self.y = y

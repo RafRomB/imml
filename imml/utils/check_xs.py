@@ -7,7 +7,7 @@ from sklearn.utils import check_array
 try:
     import torch
 except ImportError:
-    torch.Tensor = object
+    torch = object
 
 
 def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-nan",return_dimensions=False):
@@ -94,7 +94,8 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-n
     elif isinstance(Xs[0], np.ndarray) or isinstance(Xs[0], list):
         Xs = [check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite, dtype=None) for X in Xs]
     elif isinstance(Xs[0], torch.Tensor):
-        Xs = [check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite, dtype=None) for X in Xs]
+        Xs = [torch.from_numpy(check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite, dtype=None))
+              for X in Xs]
 
     if return_dimensions:
         n_samples = Xs[0].shape[0]

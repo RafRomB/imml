@@ -58,6 +58,18 @@ Updates in this release:
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - |Fix| :class:`~imml.classify.MUSE` Fixed text extractor load when using text modality.
 
+
+:mod:`imml.impute`
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+- |Feature| :class:`~imml.ampute.MissingModIndicator` Now support lists and
+  `pytorch tensors <https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor>`_.
+- |Feature| :class:`~imml.ampute.get_missing_mod_indicator` Now support lists and
+  `pytorch tensors <https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor>`_.
+- |Feature| :class:`~imml.ampute.ObservedModIndicator` Now support lists and
+  `pytorch tensors <https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor>`_.
+- |Feature| :class:`~imml.ampute.get_observed_mod_indicator` Now support lists and
+  `pytorch tensors <https://docs.pytorch.org/docs/stable/tensors.html#torch.Tensor>`_.
+
 :mod:`imml.load`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - |API| :class:`~imml.load.M3CareDataset` observed_mod_indicator argument was removed.

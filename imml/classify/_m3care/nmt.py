@@ -15,7 +15,7 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nn.Module = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
 def clones(module, N):
@@ -23,7 +23,7 @@ def clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 
-class MultiHeadedAttention(nn.Module):
+class MultiHeadedAttention(Module):
     def __init__(self, h, d_model, dropout=0.1):
         "Take in model size and number of heads."
         super(MultiHeadedAttention, self).__init__()
@@ -70,7 +70,7 @@ def attention(query, key, value, mask=None, dropout=None):
     return torch.matmul(p_attn, value), p_attn
 
 
-class PositionwiseFeedForward(nn.Module):
+class PositionwiseFeedForward(Module):
     "Implements FFN equation."
     def __init__(self, d_model, d_ff, dropout=0.1):
         super(PositionwiseFeedForward, self).__init__()
@@ -82,7 +82,7 @@ class PositionwiseFeedForward(nn.Module):
         return self.w_2(self.dropout(F.relu(self.w_1(x))))
 
 
-class PositionalEncoding(nn.Module):
+class PositionalEncoding(Module):
     "Implement the PE function."
 
     def __init__(self, d_model, dropout, max_len=5000):
@@ -105,7 +105,7 @@ class PositionalEncoding(nn.Module):
         return self.dropout(x)
 
 
-class LayerNorm(nn.Module):
+class LayerNorm(Module):
     "Construct a layernorm module (See citation for details)."
     def __init__(self, features, eps=1e-6):
         super(LayerNorm, self).__init__()
@@ -119,7 +119,7 @@ class LayerNorm(nn.Module):
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
 
 
-class SublayerConnection(nn.Module):
+class SublayerConnection(Module):
     """
     A residual connection followed by a layer norm.
     Note for code simplicity the norm is first as opposed to last.
@@ -135,7 +135,7 @@ class SublayerConnection(nn.Module):
         return x + self.dropout(sublayer(self.norm(x)))
 
 
-class Encoder(nn.Module):
+class Encoder(Module):
     "Core encoder is a stack of N layers"
 
     def __init__(self, layer, N):
@@ -150,7 +150,7 @@ class Encoder(nn.Module):
         return self.norm(x)
 
 
-class EncoderLayer(nn.Module):
+class EncoderLayer(Module):
     "Encoder is made up of self-attn and feed forward (defined below)"
     def __init__(self, size, self_attn, feed_forward, dropout):
         super(EncoderLayer, self).__init__()
@@ -165,7 +165,7 @@ class EncoderLayer(nn.Module):
         return self.sublayer[1](x, self.feed_forward)
 
 
-class Encoder(nn.Module):
+class Encoder(Module):
     "Core encoder is a stack of N layers"
 
     def __init__(self, layer, N):
@@ -180,7 +180,7 @@ class Encoder(nn.Module):
         return self.norm(x)
 
 
-class NMT_tran(nn.Module):
+class NMT_tran(Module):
 
     def __init__(self, embed_size, hidden_size, vocab, dropout_rate=0.2):
         """ Init NMT Model.

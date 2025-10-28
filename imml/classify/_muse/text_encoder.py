@@ -9,10 +9,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nn.Module = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class TextEncoder(nn.Module):
+class TextEncoder(Module):
     def __init__(self, bert_type="emilyalsentzer/Bio_ClinicalBERT", device="cpu") -> None:
         super().__init__()
         self.bert_type = bert_type

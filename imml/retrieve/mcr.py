@@ -16,14 +16,14 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nn.Module = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 AutoProcessor = AutoProcessor if deepmodule_installed else object
 ViltModel = ViltModel if deepmodule_installed else object
 BertTokenizer = BertTokenizer if deepmodule_installed else object
 ViltImageProcessor = ViltImageProcessor if deepmodule_installed else object
 
 
-class MCR(nn.Module):
+class MCR(Module):
     r"""
     Multi-Channel Retriever (MCR). [#ragptpaper]_ [#ragptcode]_
 

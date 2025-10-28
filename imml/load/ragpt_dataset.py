@@ -16,12 +16,12 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-torch.utils.data.Dataset = torch.utils.data.Dataset if deepmodule_installed else object
+Dataset = torch.utils.data.Dataset if deepmodule_installed else object
 BertTokenizer = BertTokenizer if deepmodule_installed else object
 ViltImageProcessor = ViltImageProcessor if deepmodule_installed else object
 
 
-class RAGPTDataset(torch.utils.data.Dataset):
+class RAGPTDataset(Dataset):
     r"""
     This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `RAGPT`. If 
     it is used with `torch.utils.data.DataLoader`, the `collate_fn` argument of the `DataLoader` constructor should be  

@@ -4,6 +4,11 @@ import numpy as np
 import pandas as pd
 from sklearn.preprocessing import FunctionTransformer
 
+try:
+    import torch
+    from torch import Tensor
+except ImportError:
+    Tensor = str
 from ..utils import check_Xs
 
 
@@ -63,8 +68,10 @@ def get_observed_mod_indicator(Xs : list, y = None):
     """
     Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
     transformed_X = np.vstack([np.isnan(X).all(1) for X in Xs]).T
-    transformed_X = ~transformed_X
+    transformed_X = np.logical_not(transformed_X)
     if isinstance(Xs[0], pd.DataFrame):
         transformed_X = pd.DataFrame(transformed_X, index=Xs[0].index)
+    elif isinstance(Xs[0], Tensor):
+        transformed_X = torch.from_numpy(transformed_X).bool()
     return transformed_X
 

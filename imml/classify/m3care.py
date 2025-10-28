@@ -17,11 +17,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-L.LightningModule = L.LightningModule if deepmodule_installed else object
-nn.Module = nn.Module if deepmodule_installed else object
+LightningModule = L.LightningModule if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class M3Care(L.LightningModule):
+class M3Care(LightningModule):
     r"""
 
     Missing Modalities in Multimodal healthcare data (M3Care). [#m3carepaper]_ [#m3carecode]_ [#m3carecode2]_
@@ -194,7 +194,7 @@ class M3Care(L.LightningModule):
         return optim.Adam(self.parameters(), lr=self.learning_rate, weight_decay=self.weight_decay)
 
 
-class M3CareModule(nn.Module):
+class M3CareModule(Module):
 
     def __init__(self, input_dim: list = None, hidden_dim: int = 128, embed_size: int = 128, modalities: list = None,
                  vocab = None, output_dim: int =1, keep_prob: float = 1, extractors: list = None):

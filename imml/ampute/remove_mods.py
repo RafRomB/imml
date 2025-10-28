@@ -7,8 +7,10 @@ from sklearn.preprocessing import FunctionTransformer
 
 try:
     import torch
+    from torch import Tensor
 except ImportError:
-    torch = object
+    Tensor = str
+
 from ..utils import check_Xs
 
 
@@ -78,7 +80,7 @@ def remove_mods(Xs: list, observed_mod_indicator):
             if np.issubdtype(transformed_X.dtype, np.integer):
                 transformed_X = transformed_X.astype(float)
             transformed_X[idxs_to_remove, :] = np.nan
-        elif isinstance(transformed_X, torch.Tensor):
+        elif isinstance(transformed_X, Tensor):
             if torch.is_floating_point(transformed_X):
                 transformed_X = transformed_X.float()
             transformed_X[idxs_to_remove, :] = torch.nan
