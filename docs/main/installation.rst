@@ -86,7 +86,6 @@ Dependencies
 -  snfpy>=0
 -  control>=0.10.1
 -  cvxpy>=1.7.1
--  numba>=0.58.0
 
 `iMML` is supported for Python 3.10 and above.
 

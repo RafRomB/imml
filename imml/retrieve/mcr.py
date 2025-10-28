@@ -206,6 +206,7 @@ class MCR(Module):
         if len(y) != len(Xs[0]):
             raise ValueError(f"Invalid y. It must have the same length as each element in Xs. Got {len(y)} vs {len(Xs[0])}")
 
+        Xs = self._convert_to_1dlist(Xs=Xs)
         q_i_list, q_t_list = self._encode_img_text(Xs=Xs)
         memory_bank = pd.DataFrame({
             'item_id': list(range(len(Xs[0]))),
@@ -284,6 +285,7 @@ class MCR(Module):
             if len(set(len(X) for X in Xs)) > 1:
                 raise ValueError("Invalid Xs. All elements must have the same number of samples.")
         if Xs is not None:
+            Xs = self._convert_to_1dlist(Xs=Xs)
             q_i, q_t = self._encode_img_text(Xs=Xs)
         else:
             q_i = memory_bank['q_i'].tolist()
@@ -429,6 +431,7 @@ class MCR(Module):
         if not self.generate_cap:
             raise ValueError("Invalid generate_cap. No prompts available. generate_cap must be True to use transform.")
 
+        Xs = self._convert_to_1dlist(Xs=Xs)
         output = self.predict(Xs=Xs, memory_bank=memory_bank, n_neighbors=n_neighbors)
         database = pd.DataFrame({
             'item_id': list(range(len(Xs[0]))),
@@ -594,12 +597,12 @@ class MCR(Module):
         q_t_list = []
         for X,mod in zip(Xs, self.modalities):
             if mod == "image":
-                all_images = [Image.open(img_name)
-                              if pd.notna(img_name) else Image.new("RGBA", (256, 256), (0, 0, 0))
-                              for img_name in X]
                 batch_size = self.batch_size
-                for i in range(0, len(all_images), batch_size):
-                    batch_images = all_images[i: i + batch_size]
+                for i in range(0, len(X), batch_size):
+                    batch_images = X[i: i + batch_size]
+                    batch_images = [Image.open(img_name)
+                                  if pd.notna(img_name) else Image.new("RGBA", (256, 256), (0, 0, 0))
+                                  for img_name in batch_images]
                     batch_outputs = self._encode_image(batch_images)
                     q_i_list.extend(batch_outputs.cpu().tolist())
                 q_i_list = [q_i if pd.notna(img) else [torch.nan for q in q_i] for img,q_i in zip(X, q_i_list)]
@@ -684,4 +687,14 @@ class MCR(Module):
 
     def _resize_image(self, img, size=(384, 384)):
         return img.resize(size, Image.BILINEAR)
+
+
+    def _convert_to_1dlist(self, Xs):
+        if isinstance(Xs[0], pd.DataFrame):
+            Xs = [X.squeeze().to_list() for X in Xs]
+        elif isinstance(Xs[0], np.ndarray):
+            Xs = [X.flatten().tolist() for X in Xs]
+        elif isinstance(Xs[0], torch.Tensor):
+            Xs = [X.numpy().flatten().tolist() for X in Xs]
+        return Xs
 

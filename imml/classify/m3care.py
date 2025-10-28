@@ -221,7 +221,7 @@ class M3CareModule(Module):
                     extractor = NMT_tran(embed_size=embed_size, hidden_size=hidden_dim,
                                          dropout_rate=1 - self.keep_prob, vocab=vocab)
             elif mod == "image":
-                if extractors is None:
+                if extractor is None:
                     extractor = nn.Sequential(models.resnet18(),
                                               nn.Linear(1000, self.hidden_dim)
                                               )
@@ -268,10 +268,7 @@ class M3CareModule(Module):
         mask2_mats = []
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
-            if mod == 'tabular':
-                feat = extractor(X)
-                mask_mat = observed_mod_indicator[:, X_idx]
-            elif mod == 'image':
+            if mod in ["tabular", "image"]:
                 feat = extractor(X)
                 mask_mat = observed_mod_indicator[:, X_idx]
             elif mod == 'text':

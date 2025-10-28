@@ -54,6 +54,7 @@ import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from datasets import load_dataset
 
+from imml.ampute import Amputer
 from imml.classify import RAGPT
 from imml.load import RAGPTDataset, RAGPTCollator
 from imml.retrieve import MCR
@@ -111,25 +112,15 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data. In this case, 30% of training and test samples
-# will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
+# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 30% of training
+# and test samples will have either text or image missing. You can change this parameter for more or less
+# amount of incompleteness.
 
-p = 0.3
-missing_mask = train_df.sample(frac=p/2, random_state=random_state).index
-train_df.loc[missing_mask, "img"] = np.nan
-missing_mask = train_df. \
-    drop(labels=missing_mask). \
-    sample(n=len(missing_mask), random_state=random_state). \
-    index
-train_df.loc[missing_mask, "text"] = np.nan
-
-missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
-test_df.loc[missing_mask, "img"] = np.nan
-missing_mask = test_df. \
-    drop(labels=missing_mask). \
-    sample(n=len(missing_mask), random_state=random_state). \
-    index
-test_df.loc[missing_mask, "text"] = np.nan
+Xs_train = [train_df[["img"]], train_df[["text"]]]
+Xs_test = [test_df[["img"]], test_df[["text"]]]
+amputer = Amputer(p=0.3, random_state=random_state)
+Xs_train = amputer.fit_transform(Xs_train)
+Xs_test = amputer.fit_transform(Xs_test)
 
 
 ########################################################
@@ -143,10 +134,7 @@ batch_size = 64
 estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True,
                 prompt_path=data_folder, n_neighbors=2, generate_cap=True)
 
-Xs_bank = [
-    bank_df["img"].to_list(),
-    bank_df["text"].to_list()
-]
+Xs_bank = [bank_df[["img"]], bank_df[["text"]]]
 y_bank = bank_df["class"]
 
 estimator.fit(Xs=Xs_bank, y=y_bank)
@@ -157,19 +145,11 @@ memory_bank.head()
 ########################################################
 # Load generated training and testing prompts.
 
-Xs_train = [
-    train_df["img"].to_list(),
-    train_df["text"].to_list()
-]
 y_train = train_df["class"]
 train_db = estimator.transform(Xs=Xs_train, y=y_train)
 print("train_db", train_db.shape)
 train_db.head()
 
-Xs_test = [
-    test_df["img"].to_list(),
-    test_df["text"].to_list()
-]
 y_test = test_df["class"]
 test_db = estimator.transform(Xs=Xs_test, y=y_test)
 print("test_db", test_db.shape)
