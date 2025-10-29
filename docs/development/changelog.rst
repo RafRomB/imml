@@ -57,6 +57,7 @@ Updates in this release:
 :mod:`imml.classify`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - |Fix| :class:`~imml.classify.MUSE` Fixed text extractor load when using text modality.
+- |Fix| :class:`~imml.classify.M3Care` Fixed error when working with multiple data modalities.
 
 
 :mod:`imml.impute`

@@ -1,3 +1,5 @@
+import numpy as np
+import pandas as pd
 import pytest
 torch = pytest.importorskip("torch")
 transformers = pytest.importorskip("transformers")
@@ -116,6 +118,36 @@ def test_custom_loss_fn(sample_data):
     model = estimator(modalities=["tabular", "tabular", "tabular"],
                      input_dim=[10, 10, 10],
                      loss_fn=torch.nn.functional.binary_cross_entropy_with_logits)
+    with torch.no_grad():
+        loss = model.training_step(sample_data, 0)
+    assert isinstance(loss, torch.Tensor)
+
+
+def test_image_text(sample_data):
+    model = estimator(modalities=["tabular", "image", "text"],
+                     input_dim=[10])
+    Xs = [
+        sample_data[0][0],
+        pd.DataFrame(["docs/figures/graph.png", "docs/figures/logo_imml.png"]),
+        pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]),
+    ]
+    sample_data = [Xs, sample_data[1], sample_data[2]]
+    with torch.no_grad():
+        loss = model.training_step(sample_data, 0)
+    assert isinstance(loss, torch.Tensor)
+
+
+def test_incomplete_image_text(sample_data):
+    model = estimator(modalities=["tabular", "image", "text"],
+                     input_dim=[10])
+    Xs = [
+        sample_data[0][0],
+        pd.DataFrame(["docs/figures/graph.png", "docs/figures/logo_imml.png"]),
+        pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]),
+    ]
+    Xs[0][0,:] = np.nan
+    Xs[1].iloc[1,:] = np.nan
+    sample_data = [Xs, sample_data[1], sample_data[2]]
     with torch.no_grad():
         loss = model.training_step(sample_data, 0)
     assert isinstance(loss, torch.Tensor)

@@ -2,6 +2,8 @@
 
 import os
 import numpy as np
+import pandas as pd
+from PIL import Image
 
 from ._m3care import NMT_tran, MM_transformer_encoder, init_weights, PositionalEncoding, clones, \
     GraphConvolution, length_to_mask, guassian_kernel
@@ -12,6 +14,7 @@ try:
     from torchvision import models as models
     import lightning as L
     import torch.nn.functional as F
+    import torchvision.transforms as transforms
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
@@ -222,6 +225,13 @@ class M3CareModule(Module):
                                          dropout_rate=1 - self.keep_prob, vocab=vocab)
             elif mod == "image":
                 if extractor is None:
+                    self.preprocess_img = transforms.Compose([
+                        transforms.Resize(256),
+                        transforms.CenterCrop(224),
+                        transforms.ToTensor(),
+                        transforms.Normalize(mean=[0.485, 0.456, 0.406],
+                                             std=[0.229, 0.224, 0.225]),
+                    ])
                     extractor = nn.Sequential(models.resnet18(),
                                               nn.Linear(1000, self.hidden_dim)
                                               )
@@ -238,13 +248,11 @@ class M3CareModule(Module):
 
         self.dropout = nn.Dropout(p=1 - self.keep_prob)
 
-        self.proj1 = nn.Linear(self.hidden_dim * (len(self.modalities)+1), self.hidden_dim * 2)
+        self.proj1 = nn.Linear(self.hidden_dim * len(self.modalities), self.hidden_dim * 2)
         self.out_layer = nn.Linear(self.hidden_dim * 2, self.output_dim)
 
         self.threshold = nn.Parameter(torch.ones(size=(1,)) + 1)
         self.simiProj = nn.Linear(self.hidden_dim, self.hidden_dim)
-
-        self.selu = nn.SELU()
 
         self.bn = nn.BatchNorm1d(self.hidden_dim)
 
@@ -263,36 +271,65 @@ class M3CareModule(Module):
 
     def forward(self, Xs, observed_mod_indicator):
 
+        n_samples = len(Xs[0])
+        feats = []
         hidden00 = []
         mask_mats = []
+        mask_mats_ = []
         mask2_mats = []
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
-            if mod in ["tabular", "image"]:
+            if mod == 'tabular':
                 feat = extractor(X)
-                mask_mat = observed_mod_indicator[:, X_idx]
+                feat = F.relu(feat)
+                mask = torch.ones((feat.shape[0], 1)).int().squeeze()
+                feat_00 = feat
+            elif mod == 'image':
+                X = self._convert_to_1dlist(X=X)
+                X = [self.preprocess_img(Image.open(img_name).convert('RGB')
+                                         if pd.notna(img_name)
+                                         else Image.new("RGB", (256, 256), (0, 0, 0)))
+                 for img_name in X]
+                X = torch.stack(X)
+                feat = extractor(X)
+                feat = F.relu(feat)
+                mask = torch.ones((feat.shape[0],1)).int().squeeze()
+                feat_00 = torch.zeros((n_samples, self.hidden_dim))
+                for j in range(len(feat_00)):
+                    feat_00[j] = feat[j]
             elif mod == 'text':
+                if isinstance(X, pd.DataFrame):
+                    X = X.squeeze().to_list()
+                elif isinstance(X, np.ndarray):
+                    X = X.tolist()
+                elif isinstance(X, torch.Tensor):
+                    X = X.tolist()
+                X = [s.split() for s in X]
                 feat, lens = extractor(X)
-                feat = feat[:, 0]
-                mask_mat = torch.from_numpy(np.array(lens)).to(feat.device)
+                feat = F.relu(feat)
+                mask = torch.from_numpy(np.array(lens))
+                feat_00 = torch.zeros_like(feat[:,0])
+                for j in range(len(feat_00)):
+                    feat_00[j] = feat[j, 0 ]
             else:
                 raise ValueError(f"Unknown modality type: {mod}")
-            feat = F.relu(feat)
-            mask_mat = length_to_mask(mask_mat.int()).int()
-            mask2 = mask_mat * mask_mat.permute(1,0)
-            hidden00.append(feat)
-            mask_mats.append(mask_mat)
+            mask = length_to_mask(mask).unsqueeze(1).to(feat.device).int()
+            mask_ = observed_mod_indicator[:, [X_idx]]
+            mask2 = mask_ * mask_.permute(1,0)
+            feats.append(feat)
+            hidden00.append(feat_00)
+            mask_mats.append(mask)
+            mask_mats_.append(mask_)
             mask2_mats.append(mask2)
 
         sim_mats = []
         diffs = []
         for i, h in enumerate(hidden00):
-            h0 = h
-            p = F.relu(self.simiProj[i](h0))
-            km1 = guassian_kernel(self.bn(p), kernel_mul=2.0, kernel_num=3)
-            km2 = guassian_kernel(self.bn(h0), kernel_mul=2.0, kernel_num=3)
-            sim = ((1 - torch.sigmoid(self.eps[i])) * km1 + torch.sigmoid(self.eps[i]) * km2)
-            sim = sim * mask_mats[i]
+            km1 = guassian_kernel(self.bn(F.relu(self.simiProj[i](h))), kernel_mul=2.0, kernel_num=3)
+            km2 = guassian_kernel(self.bn(h), kernel_mul=2.0, kernel_num=3)
+            sim = ((1 - torch.sigmoid(self.eps[i])) * km1 + torch.sigmoid(self.eps[i])) * km2
+            if self.modalities[i] == "text":
+                sim = sim * mask2_mats[i]
             sim_mats.append(sim)
             diff = torch.abs(torch.norm(self.simiProj[i](h), dim=1) - torch.norm(h, dim=1))
             diffs.append(diff)
@@ -301,18 +338,18 @@ class M3CareModule(Module):
 
         sim_sum = torch.stack(sim_mats, dim=0).sum(dim=0)
         mask_sum = torch.stack(mask2_mats, dim=0).sum(dim=0)
-        sim_avg = sim_sum / mask_sum
+        similar_score = sim_sum / mask_sum
 
         th = torch.sigmoid(self.threshold)[0]
-        sim_th = F.relu(sim_avg - th)
-        bin_mask = sim_th > 0
-        sim_final = sim_th + bin_mask * th.detach()
+        similar_score = F.relu(similar_score - th)
+        bin_mask = similar_score > 0
+        similar_score = similar_score + bin_mask * th.detach()
 
         final_h = []
         gs = []
         for i, (h,mask2) in enumerate(zip(hidden00, mask2_mats)):
-            g = F.relu(self.GCN1[i](sim_final*mask2, h))
-            g = F.relu(self.GCN2[i](sim_final*mask2, g))
+            g = F.relu(self.GCN1[i](similar_score*mask2, h))
+            g = F.relu(self.GCN2[i](similar_score*mask2, g))
             gs.append(g)
             w1 = torch.sigmoid(self.weight1[i](g))
             w2 = torch.sigmoid(self.weight2[i](h))
@@ -322,18 +359,39 @@ class M3CareModule(Module):
             final_h.append(final)
 
         embs = []
-        batch_size = hidden00[0].size(0)
-        for idx, (h, mask) in enumerate(zip(hidden00, mask_mats)):
-            emb = self.PositionalEncoding(h.unsqueeze(1))
-            emb = emb + self.token_type_embeddings(torch.full((batch_size,1), idx, dtype=torch.long, device=h.device))
+        for X_idx, (h,mod,final,g,mask,mask_) in enumerate(zip(feats, self.modalities, final_h, gs, mask_mats, mask_mats_)):
+            h_ = torch.zeros_like(h)
+            h_ += h
+            if mod == "text":
+                h_[mask_[:, 0], 0] = final[mask_[:, 0]]
+                h_[torch.logical_not(mask_[:, 0]), 0] = g[torch.logical_not(mask_[:, 0])]
+                emb = self.PositionalEncoding(h_)
+            else:
+                h_[mask_[:, 0]] = final[mask_[:, 0]]
+                h_[torch.logical_not(mask_[:, 0])] = g[torch.logical_not(mask_[:, 0])]
+                emb = h.unsqueeze(1)
+            mask = torch.ones_like(mask.permute(0,2,1).squeeze(-1)).to(h_.device).long()
+            emb += self.token_type_embeddings(X_idx * mask)
             embs.append(emb)
 
         z0 = torch.cat(embs, dim=1)
         z0_mask = torch.cat(mask_mats, dim=-1).int()
-        z1 = F.relu(self.MM_model1(z0, z0_mask.unsqueeze(1)))
-        z2 = F.relu(self.MM_model2(z1, z0_mask.unsqueeze(1)))
-        combined_hidden = torch.cat([z2[:,0,:]]+final_h, dim=-1)
+        z1 = F.relu(self.MM_model1(z0, z0_mask))
+        z2 = F.relu(self.MM_model2(z1, z0_mask))
+
+        combined_hidden = [z2[:, X_idx] for X_idx in range(len(self.modalities))]
+        combined_hidden = torch.cat(combined_hidden, dim=-1)
         last_hs_proj = self.dropout(F.relu(self.proj1(combined_hidden)))
         output = self.out_layer(last_hs_proj)
 
         return output, sum_of_diff
+
+
+    def _convert_to_1dlist(self, X):
+        if isinstance(X, pd.DataFrame):
+            X = X.squeeze().to_list()
+        elif isinstance(X, np.ndarray):
+            X = X.flatten().tolist()
+        elif isinstance(X, torch.Tensor):
+            X = X.numpy().flatten().tolist()
+        return X
