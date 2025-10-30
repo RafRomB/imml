@@ -70,7 +70,7 @@ from imml.retrieve import MCR
 random_state = 42
 L.seed_everything(random_state)
 
-# Local working directory (images will be saved here so ``MCR`` can read paths)
+# Local working directory (images will be saved here so MCR can read paths)
 data_folder = "oxford_iiit_pet"
 folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)

@@ -73,19 +73,19 @@ class M3Care(LightningModule):
     Example
     --------
     >>> from lightning import Trainer
-    >>> import torch
     >>> import numpy as np
     >>> import pandas as pd
     >>> from torch.utils.data import DataLoader
     >>> from imml.classify import M3Care
     >>> from imml.load import M3CareDataset
-    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> Xs = [torch.from_numpy(X.values).float() for X in Xs]
-    >>> y = torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float()
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((2, 10)))]
+    >>> Xs.append(pd.DataFrame(["docs/figures/graph.png", "docs/figures/logo_imml.png"]))
+    >>> Xs.append(pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]))
+    >>> y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0])))
     >>> train_data = M3CareDataset(Xs=Xs, y=y)
     >>> train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
-    >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
-    >>> estimator = M3Care(modalities= ["tabular", "tabular"], input_dim=[X.shape[1] for X in Xs])
+    >>> trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
+    >>> estimator = M3Care(modalities= ["tabular", "image", "text"], input_dim=[Xs[0].shape[1]])
     >>> trainer.fit(estimator, train_dataloader)
     >>> trainer.predict(estimator, train_dataloader)
     """
@@ -270,8 +270,6 @@ class M3CareModule(Module):
 
 
     def forward(self, Xs, observed_mod_indicator):
-
-        n_samples = len(Xs[0])
         feats = []
         hidden00 = []
         mask_mats = []
@@ -282,35 +280,29 @@ class M3CareModule(Module):
             if mod == 'tabular':
                 feat = extractor(X)
                 feat = F.relu(feat)
-                mask = torch.ones((feat.shape[0], 1)).int().squeeze()
-                feat_00 = feat
+                if len(X) == 1:
+                    mask = torch.ones((2, 1)).int().squeeze()[:1]
+                else:
+                    mask = torch.ones((feat.shape[0], 1)).int().squeeze()
+                feat_00 = feat.clone()
             elif mod == 'image':
-                X = self._convert_to_1dlist(X=X)
-                X = [self.preprocess_img(Image.open(img_name).convert('RGB')
-                                         if pd.notna(img_name)
-                                         else Image.new("RGB", (256, 256), (0, 0, 0)))
-                 for img_name in X]
+                X = [self.preprocess_img(Image.open(img_path).convert('RGB')
+                     if pd.notna(img_path) else Image.new("RGB", (256, 256), (0, 0, 0)))
+                     for img_path in X[0]]
                 X = torch.stack(X)
                 feat = extractor(X)
                 feat = F.relu(feat)
-                mask = torch.ones((feat.shape[0],1)).int().squeeze()
-                feat_00 = torch.zeros((n_samples, self.hidden_dim))
-                for j in range(len(feat_00)):
-                    feat_00[j] = feat[j]
+                if len(X) == 1:
+                    mask = torch.ones((2, 1)).int().squeeze()[:1]
+                else:
+                    mask = torch.ones((feat.shape[0], 1)).int().squeeze()
+                feat_00 = feat.clone()
             elif mod == 'text':
-                if isinstance(X, pd.DataFrame):
-                    X = X.squeeze().to_list()
-                elif isinstance(X, np.ndarray):
-                    X = X.tolist()
-                elif isinstance(X, torch.Tensor):
-                    X = X.tolist()
-                X = [s.split() for s in X]
+                X = [s.split() for s in X[0]]
                 feat, lens = extractor(X)
                 feat = F.relu(feat)
                 mask = torch.from_numpy(np.array(lens))
-                feat_00 = torch.zeros_like(feat[:,0])
-                for j in range(len(feat_00)):
-                    feat_00[j] = feat[j, 0 ]
+                feat_00 = feat[:,0].clone()
             else:
                 raise ValueError(f"Unknown modality type: {mod}")
             mask = length_to_mask(mask).unsqueeze(1).to(feat.device).int()
@@ -361,7 +353,7 @@ class M3CareModule(Module):
         embs = []
         for X_idx, (h,mod,final,g,mask,mask_) in enumerate(zip(feats, self.modalities, final_h, gs, mask_mats, mask_mats_)):
             h_ = torch.zeros_like(h)
-            h_ += h
+            h_ = h_ + h
             if mod == "text":
                 h_[mask_[:, 0], 0] = final[mask_[:, 0]]
                 h_[torch.logical_not(mask_[:, 0]), 0] = g[torch.logical_not(mask_[:, 0])]
@@ -371,7 +363,7 @@ class M3CareModule(Module):
                 h_[torch.logical_not(mask_[:, 0])] = g[torch.logical_not(mask_[:, 0])]
                 emb = h.unsqueeze(1)
             mask = torch.ones_like(mask.permute(0,2,1).squeeze(-1)).to(h_.device).long()
-            emb += self.token_type_embeddings(X_idx * mask)
+            emb = emb + self.token_type_embeddings(X_idx * mask)
             embs.append(emb)
 
         z0 = torch.cat(embs, dim=1)

@@ -3,6 +3,7 @@
 from ._muse import FFNEncoder, RNNEncoder, TextEncoder, MML
 
 try:
+    import torch
     from torch import optim, nn
     import lightning as L
     import torch.nn.functional as F
@@ -65,20 +66,19 @@ class MUSE(LightningModule):
 
     Example
     --------
-    >>> from imml.classify import MUSE
     >>> from lightning import Trainer
-    >>> import torch
     >>> import numpy as np
     >>> import pandas as pd
     >>> from torch.utils.data import DataLoader
+    >>> from imml.classify import MUSE
     >>> from imml.load import MUSEDataset
-    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> Xs = [torch.from_numpy(X.values).float() for X in Xs]
-    >>> y = torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float()
+    >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((2, 10)))]
+    >>> Xs.append(pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]))
+    >>> y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0])))
     >>> train_data = MUSEDataset(Xs=Xs, y=y)
     >>> train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
-    >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
-    >>> estimator = MUSE(modalities= ["tabular", "tabular"], input_dim=[X.shape[1] for X in Xs])
+    >>> trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
+    >>> estimator = MUSE(modalities= ["tabular", "text"], input_dim=[Xs[0].shape[1]])
     >>> trainer.fit(estimator, train_dataloader)
     >>> trainer.predict(estimator, train_dataloader)
     """
@@ -246,6 +246,8 @@ class MUSEModule(Module):
         transformed_Xs = []
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
+            if mod == "text":
+                X = [sent if isinstance(sent, str) else "" for sent in X[0]]
             code_embedding = extractor(X)
             code_embedding[missing_mod_indicator[:,X_idx]] = 0
             code_embedding = self.dropout_layer(code_embedding)
@@ -258,6 +260,8 @@ class MUSEModule(Module):
         transformed_Xs = []
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
+            if mod == "text":
+                X = [sent if isinstance(sent, str) else "" for sent in X[0]]
             code_embedding = extractor(X)
             code_embedding[missing_mod_indicator[:,X_idx]] = 0
             code_embedding = self.dropout_layer(code_embedding)

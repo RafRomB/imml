@@ -59,30 +59,17 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-n
         each modality. Returned only if ``return_dimensions`` is ``True``.
     """
     if not isinstance(Xs, list):
-        if not isinstance(Xs, np.ndarray):
-            msg = f"If not list, input must be of type np.ndarray,\
-                not {type(Xs)}"
-            raise ValueError(msg)
-        if Xs.ndim == 2:
-            Xs = [Xs]
-        else:
-            Xs = list(Xs)
-
+        raise ValueError(f"Invalid Xs. It must be a list. A {type(Xs)} was passed.")
     n_mods = len(Xs)
-    if n_mods == 0:
-        msg = "Length of input list must be greater than 0"
-        raise ValueError(msg)
-
+    if len(Xs) < 2:
+        raise ValueError(f"Invalid Xs. It must have at least two modalities. Got {n_mods} modalities.")
+    if any(len(X) == 0 for X in Xs):
+        raise ValueError("Invalid Xs. All elements must have at least one sample.")
     if enforce_modalities is not None and n_mods != enforce_modalities:
-        msg = "Wrong number of modalities. Expected {} but found {}".format(
-            enforce_modalities, n_mods
-        )
-        raise ValueError(msg)
-
+        raise ValueError(f"Invalid Xs. Wrong number of modalities. Expected {enforce_modalities} but found {n_mods}")
     if len(set([len(X) for X in Xs])) != 1:
         msg = "All modalities should have the same number of samples"
         raise ValueError(msg)
-
     dtype = type(Xs[0])
     if not all(isinstance(X, dtype) for X in Xs):
         msg = "All modalities should be the same data type"

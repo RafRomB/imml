@@ -27,7 +27,7 @@ task and check whether additional modules or dependencies are required.
      -
    * - Classification
      - :class:`~imml.classify.RAGPT`
-     - Image | Text
+     - Image & Text
      - deep
      -
    * - Clustering
@@ -147,7 +147,7 @@ task and check whether additional modules or dependencies are required.
      - R, nnTensor
    * - Retrieve
      - :class:`~imml.retrieve.MCR`
-     - Image | Text
+     - Image & Text
      - deep
      -
    * - Statistics

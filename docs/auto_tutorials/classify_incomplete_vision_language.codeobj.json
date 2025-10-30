@@ -1,4 +1,160 @@
 {
+ "Amputer": [
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "imml.ampute.amputer",
+   "module_short": "imml.ampute",
+   "name": "Amputer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "imml.ampute",
+   "module_short": "imml.ampute",
+   "name": "Amputer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "imml",
+   "module_short": "imml",
+   "name": "Amputer"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.base",
+   "module_short": "sklearn.base",
+   "name": "BaseEstimator"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "BaseEstimator"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.base",
+   "module_short": "sklearn.base",
+   "name": "TransformerMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "TransformerMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html.base",
+   "module_short": "sklearn.utils._repr_html.base",
+   "name": "ReprHTMLMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html",
+   "module_short": "sklearn.utils._repr_html",
+   "name": "ReprHTMLMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "ReprHTMLMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "ReprHTMLMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html.base",
+   "module_short": "sklearn.utils._repr_html.base",
+   "name": "_HTMLDocumentationLinkMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html",
+   "module_short": "sklearn.utils._repr_html",
+   "name": "_HTMLDocumentationLinkMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "_HTMLDocumentationLinkMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "_HTMLDocumentationLinkMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils._metadata_requests",
+   "module_short": "sklearn.utils._metadata_requests",
+   "name": "_MetadataRequester"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "_MetadataRequester"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "_MetadataRequester"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils._set_output",
+   "module_short": "sklearn.utils._set_output",
+   "name": "_SetOutputMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "_SetOutputMixin"
+  },
+  {
+   "is_class": true,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "_SetOutputMixin"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "imml.ampute",
+   "module_short": "imml.ampute",
+   "name": "Amputer"
+  }
+ ],
  "ConfusionMatrixDisplay.from_predictions": [
   {
    "is_class": true,
@@ -750,6 +906,178 @@
    "name": "function"
   }
  ],
+ "amputer": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "imml.ampute.amputer",
+   "module_short": "imml.ampute",
+   "name": "Amputer"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "imml.ampute",
+   "module_short": "imml.ampute",
+   "name": "Amputer"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "imml",
+   "module_short": "imml",
+   "name": "Amputer"
+  }
+ ],
+ "amputer.fit_transform": [
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "imml.ampute.amputer",
+   "module_short": "imml.ampute",
+   "name": "Amputer.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "imml.ampute",
+   "module_short": "imml.ampute",
+   "name": "Amputer.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "imml",
+   "module_short": "imml",
+   "name": "Amputer.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.base",
+   "module_short": "sklearn.base",
+   "name": "BaseEstimator.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "BaseEstimator.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.base",
+   "module_short": "sklearn.base",
+   "name": "TransformerMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "TransformerMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html.base",
+   "module_short": "sklearn.utils._repr_html.base",
+   "name": "ReprHTMLMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html",
+   "module_short": "sklearn.utils._repr_html",
+   "name": "ReprHTMLMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "ReprHTMLMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "ReprHTMLMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html.base",
+   "module_short": "sklearn.utils._repr_html.base",
+   "name": "_HTMLDocumentationLinkMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils._repr_html",
+   "module_short": "sklearn.utils._repr_html",
+   "name": "_HTMLDocumentationLinkMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "_HTMLDocumentationLinkMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "_HTMLDocumentationLinkMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils._metadata_requests",
+   "module_short": "sklearn.utils._metadata_requests",
+   "name": "_MetadataRequester.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "_MetadataRequester.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "_MetadataRequester.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils._set_output",
+   "module_short": "sklearn.utils._set_output",
+   "name": "_SetOutputMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn.utils",
+   "module_short": "sklearn.utils",
+   "name": "_SetOutputMixin.fit_transform"
+  },
+  {
+   "is_class": false,
+   "is_explicit": false,
+   "module": "sklearn",
+   "module_short": "sklearn",
+   "name": "_SetOutputMixin.fit_transform"
+  }
+ ],
  "ax": [
   {
    "is_class": false,
@@ -1189,7 +1517,7 @@
    "is_explicit": false,
    "module": "builtins",
    "module_short": "builtins",
-   "name": "float"
+   "name": "str"
   }
  ],
  "caption.split": [
@@ -1198,7 +1526,7 @@
    "is_explicit": false,
    "module": "builtins",
    "module_short": "builtins",
-   "name": "float"
+   "name": "builtin_function_or_method"
   }
  ],
  "compute_metric": [
@@ -2113,36 +2441,6 @@
    "name": "DirNamesMixin.shape"
   }
  ],
- "missing_mask": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.indexes.base",
-   "module_short": "pandas.core.indexes.base",
-   "name": "Index"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.indexes",
-   "module_short": "pandas.core.indexes",
-   "name": "Index"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "Index"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "Index"
-  }
- ],
  "modalities": [
   {
    "is_class": false,
@@ -2168,22 +2466,6 @@
    "module": "builtins",
    "module_short": "builtins",
    "name": "int"
-  }
- ],
- "np.nan": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "builtins",
-   "module_short": "builtins",
-   "name": "float"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "numpy",
-   "module_short": "numpy",
-   "name": "nan"
   }
  ],
  "nrows": [
@@ -2225,15 +2507,6 @@
    "module": "os.path",
    "module_short": "os.path",
    "name": "join"
-  }
- ],
- "p": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "builtins",
-   "module_short": "builtins",
-   "name": "float"
   }
  ],
  "pd.DataFrame": [
@@ -2716,134 +2989,6 @@
    "name": "DataFrame"
   }
  ],
- "test_df.drop": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.frame",
-   "module_short": "pandas.core.frame",
-   "name": "DataFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DataFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DataFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.generic",
-   "module_short": "pandas.core.generic",
-   "name": "NDFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "NDFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "NDFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.arraylike",
-   "module_short": "pandas.core.arraylike",
-   "name": "OpsMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "OpsMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "OpsMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.base",
-   "module_short": "pandas.core.base",
-   "name": "PandasObject.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "PandasObject.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "PandasObject.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.indexing",
-   "module_short": "pandas.core.indexing",
-   "name": "IndexingMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "IndexingMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "IndexingMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.accessor",
-   "module_short": "pandas.core.accessor",
-   "name": "DirNamesMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DirNamesMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DirNamesMixin.drop"
-  }
- ],
  "test_df.index": [
   {
    "is_class": false,
@@ -2872,134 +3017,6 @@
    "module": "pandas",
    "module_short": "pandas",
    "name": "RangeIndex"
-  }
- ],
- "test_df.loc": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.frame",
-   "module_short": "pandas.core.frame",
-   "name": "DataFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DataFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DataFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.generic",
-   "module_short": "pandas.core.generic",
-   "name": "NDFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "NDFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "NDFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.arraylike",
-   "module_short": "pandas.core.arraylike",
-   "name": "OpsMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "OpsMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "OpsMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.base",
-   "module_short": "pandas.core.base",
-   "name": "PandasObject.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "PandasObject.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "PandasObject.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.indexing",
-   "module_short": "pandas.core.indexing",
-   "name": "IndexingMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "IndexingMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "IndexingMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.accessor",
-   "module_short": "pandas.core.accessor",
-   "name": "DirNamesMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DirNamesMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DirNamesMixin.loc"
   }
  ],
  "test_df.reset_index": [
@@ -3757,134 +3774,6 @@
    "name": "DataFrame"
   }
  ],
- "train_df.drop": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.frame",
-   "module_short": "pandas.core.frame",
-   "name": "DataFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DataFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DataFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.generic",
-   "module_short": "pandas.core.generic",
-   "name": "NDFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "NDFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "NDFrame.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.arraylike",
-   "module_short": "pandas.core.arraylike",
-   "name": "OpsMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "OpsMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "OpsMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.base",
-   "module_short": "pandas.core.base",
-   "name": "PandasObject.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "PandasObject.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "PandasObject.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.indexing",
-   "module_short": "pandas.core.indexing",
-   "name": "IndexingMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "IndexingMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "IndexingMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.accessor",
-   "module_short": "pandas.core.accessor",
-   "name": "DirNamesMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DirNamesMixin.drop"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DirNamesMixin.drop"
-  }
- ],
  "train_df.head": [
   {
    "is_class": false,
@@ -4011,262 +3900,6 @@
    "module": "pandas",
    "module_short": "pandas",
    "name": "DirNamesMixin.head"
-  }
- ],
- "train_df.loc": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.frame",
-   "module_short": "pandas.core.frame",
-   "name": "DataFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DataFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DataFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.generic",
-   "module_short": "pandas.core.generic",
-   "name": "NDFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "NDFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "NDFrame.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.arraylike",
-   "module_short": "pandas.core.arraylike",
-   "name": "OpsMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "OpsMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "OpsMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.base",
-   "module_short": "pandas.core.base",
-   "name": "PandasObject.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "PandasObject.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "PandasObject.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.indexing",
-   "module_short": "pandas.core.indexing",
-   "name": "IndexingMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "IndexingMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "IndexingMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.accessor",
-   "module_short": "pandas.core.accessor",
-   "name": "DirNamesMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DirNamesMixin.loc"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DirNamesMixin.loc"
-  }
- ],
- "train_df.sample": [
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.frame",
-   "module_short": "pandas.core.frame",
-   "name": "DataFrame.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DataFrame.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DataFrame.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.generic",
-   "module_short": "pandas.core.generic",
-   "name": "NDFrame.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "NDFrame.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "NDFrame.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.arraylike",
-   "module_short": "pandas.core.arraylike",
-   "name": "OpsMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "OpsMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "OpsMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.base",
-   "module_short": "pandas.core.base",
-   "name": "PandasObject.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "PandasObject.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "PandasObject.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.indexing",
-   "module_short": "pandas.core.indexing",
-   "name": "IndexingMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "IndexingMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "IndexingMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core.accessor",
-   "module_short": "pandas.core.accessor",
-   "name": "DirNamesMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas.core",
-   "module_short": "pandas.core",
-   "name": "DirNamesMixin.sample"
-  },
-  {
-   "is_class": false,
-   "is_explicit": false,
-   "module": "pandas",
-   "module_short": "pandas",
-   "name": "DirNamesMixin.sample"
   }
  ],
  "train_df.shape": [

@@ -6,7 +6,7 @@
 
 Computation times
 =================
-**05:11.724** total execution time for 7 files **from auto_tutorials**:
+**11:45.979** total execution time for 7 files **from auto_tutorials**:
 
 .. container::
 
@@ -32,24 +32,24 @@ Computation times
    * - Example
      - Time
      - Mem (MB)
-   * - :ref:`sphx_glr_auto_tutorials_classify_incomplete_vision_language.py` (``classify_incomplete_vision_language.py``)
-     - 05:11.724
-     - 0.0
-   * - :ref:`sphx_glr_auto_tutorials_cluster_incomplete_mmd.py` (``cluster_incomplete_mmd.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_tutorials_generate_missing_modalities.py` (``generate_missing_modalities.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_tutorials_impute_multi_modal_data.py` (``impute_multi_modal_data.py``)
-     - 00:00.000
-     - 0.0
-   * - :ref:`sphx_glr_auto_tutorials_multil_modal_data_statistics.py` (``multil_modal_data_statistics.py``)
-     - 00:00.000
-     - 0.0
    * - :ref:`sphx_glr_auto_tutorials_retrieve_incomplete_vision_language.py` (``retrieve_incomplete_vision_language.py``)
-     - 00:00.000
+     - 06:32.304
+     - 0.0
+   * - :ref:`sphx_glr_auto_tutorials_classify_incomplete_vision_language.py` (``classify_incomplete_vision_language.py``)
+     - 04:19.407
      - 0.0
    * - :ref:`sphx_glr_auto_tutorials_select_and_extract_features.py` (``select_and_extract_features.py``)
-     - 00:00.000
+     - 00:17.462
+     - 0.0
+   * - :ref:`sphx_glr_auto_tutorials_multil_modal_data_statistics.py` (``multil_modal_data_statistics.py``)
+     - 00:16.694
+     - 0.0
+   * - :ref:`sphx_glr_auto_tutorials_impute_multi_modal_data.py` (``impute_multi_modal_data.py``)
+     - 00:08.991
+     - 0.0
+   * - :ref:`sphx_glr_auto_tutorials_cluster_incomplete_mmd.py` (``cluster_incomplete_mmd.py``)
+     - 00:06.779
+     - 0.0
+   * - :ref:`sphx_glr_auto_tutorials_generate_missing_modalities.py` (``generate_missing_modalities.py``)
+     - 00:04.343
      - 0.0

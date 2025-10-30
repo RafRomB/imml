@@ -233,14 +233,14 @@
    "is_explicit": false,
    "module": "sklearn.base",
    "module_short": "sklearn.base",
-   "name": "ClassifierMixin"
+   "name": "ClusterMixin"
   },
   {
    "is_class": true,
    "is_explicit": false,
    "module": "sklearn",
    "module_short": "sklearn",
-   "name": "ClassifierMixin"
+   "name": "ClusterMixin"
   },
   {
    "is_class": true,

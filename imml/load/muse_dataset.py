@@ -3,6 +3,7 @@ import numpy as np
 import pandas as pd
 
 from ..impute import get_missing_mod_indicator
+from ..utils import check_Xs
 
 try:
     import lightning.pytorch as pl
@@ -46,39 +47,51 @@ class MUSEDataset(Dataset):
     >>> import numpy as np
     >>> import pandas as pd
     >>> import torch
+    >>> from torch.utils.data import DataLoader
     >>> from imml.load import MUSEDataset
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((20, 10))) for i in range(3)]
-    >>> Xs = [torch.from_numpy(X.values).float() for X in Xs]
     >>> y = torch.from_numpy(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).float()
     >>> train_data = MUSEDataset(Xs=Xs, y=y)
+    >>> train_dataloader = DataLoader(dataset=train_data)
+    >>> next(iter(train_dataloader))
     """
 
     def __init__(self, Xs, y):
         if not deepmodule_installed:
             raise ImportError(deepmodule_error)
 
-        if not isinstance(Xs, list):
-            raise ValueError(f"Invalid Xs. It must be a list. A {type(Xs)} was passed.")
-        if len(Xs) == 0:
-            raise ValueError("Invalid Xs. It must have at least one modality.")
-        if any(len(X) == 0 for X in Xs):
-            raise ValueError("Invalid Xs. All elements must have at least one sample.")
-        if len(set(len(X) for X in Xs)) > 1:
-            raise ValueError("Invalid Xs. All elements must have the same number of samples.")
         if y is None:
             raise ValueError("Invalid y. It cannot be None.")
         if len(y) != len(Xs[0]):
             raise ValueError(f"Invalid y. It must have the same length as each element in Xs. Got {len(y)} vs {len(Xs[0])}")
 
+        Xs = check_Xs(Xs, ensure_all_finite='allow-nan')
         missing_mod_indicator = get_missing_mod_indicator(Xs)
-        if isinstance(y, np.ndarray):
-            y_indicator = torch.logical_not(torch.from_numpy(np.isnan(y)))
-        elif isinstance(y, pd.Series):
-            y_indicator = torch.logical_not(torch.from_numpy(np.isnan(y.values)))
-        elif isinstance(y, torch.Tensor):
-            y_indicator = torch.logical_not(torch.isnan(y))
+        if isinstance(missing_mod_indicator, pd.DataFrame):
+            missing_mod_indicator = missing_mod_indicator.values
+        if isinstance(missing_mod_indicator, np.ndarray):
+            missing_mod_indicator = torch.from_numpy(missing_mod_indicator)
+        missing_mod_indicator = missing_mod_indicator.bool()
 
-        self.Xs = Xs
+        Xs_ = []
+        for X in Xs:
+            if isinstance(Xs[0], pd.DataFrame):
+                X = X.values
+            if isinstance(X, np.ndarray):
+                if X[0].dtype == object:
+                    X = X.tolist()
+                else:
+                    X = torch.from_numpy(X).float()
+            Xs_.append(X)
+
+        if isinstance(y, pd.Series):
+            y = y.values
+        if isinstance(y, np.ndarray):
+            y = torch.from_numpy(y)
+        y_indicator = torch.logical_not(torch.isnan(y))
+        y = y.long()
+
+        self.Xs = Xs_
         self.y = y
         self.missing_mod_indicator = missing_mod_indicator
         self.y_indicator = y_indicator
@@ -89,8 +102,6 @@ class MUSEDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        Xs_idx = [X[idx] for X in self.Xs]
-        y_idx = self.y[idx]
-        missing_mod_indicator_idx = self.missing_mod_indicator[idx]
-        y_indicator_idx = self.y_indicator[idx]
-        return Xs_idx, y_idx, missing_mod_indicator_idx, y_indicator_idx
+        Xs = [X[idx][0] if isinstance(X[0], str) else X[idx] for X in self.Xs]
+        sample = Xs, self.y[idx], self.missing_mod_indicator[idx],  self.y_indicator[idx]
+        return sample
