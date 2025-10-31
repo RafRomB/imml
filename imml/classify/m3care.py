@@ -291,7 +291,7 @@ class M3CareModule(Module):
             elif mod == 'image':
                 X = [self.preprocess_img(Image.open(img_path).convert('RGB')
                      if pd.notna(img_path) else Image.new("RGB", (256, 256), (0, 0, 0)))
-                     for img_path in X[0]]
+                     for img_path in X]
                 X = torch.stack(X)
                 feat = extractor(X)
                 feat = F.relu(feat)
@@ -301,7 +301,7 @@ class M3CareModule(Module):
                     mask = torch.ones((feat.shape[0], 1)).int().squeeze()
                 feat_00 = feat.clone()
             elif mod == 'text':
-                X = [s.split() for s in X[0]]
+                X = [s.split() for s in X]
                 feat, lens = extractor(X)
                 feat = F.relu(feat)
                 mask = torch.from_numpy(np.array(lens))
@@ -380,13 +380,3 @@ class M3CareModule(Module):
         output = self.out_layer(last_hs_proj)
 
         return output, sum_of_diff
-
-
-    def _convert_to_1dlist(self, X):
-        if isinstance(X, pd.DataFrame):
-            X = X.squeeze().to_list()
-        elif isinstance(X, np.ndarray):
-            X = X.flatten().tolist()
-        elif isinstance(X, torch.Tensor):
-            X = X.numpy().flatten().tolist()
-        return X

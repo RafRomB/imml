@@ -267,7 +267,7 @@ class MUSEModule(Module):
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
             if mod == "text":
-                X = [sent if isinstance(sent, str) else "" for sent in X[0]]
+                X = [sent if isinstance(sent, str) else "" for sent in X]
             code_embedding = extractor(X)
             code_embedding[missing_mod_indicator[:,X_idx]] = 0
             code_embedding = self.dropout_layer(code_embedding)
