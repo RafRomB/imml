@@ -260,12 +260,6 @@ class NMT_tran(Module):
 
         return enc_hiddens, first_hidden
 
-    @property
-    def device(self):
-        """ Determine which device to place the Tensors upon, CPU or GPU.
-        """
-        return self.source.weight.device
-
 
 class VocabEntry(object):
     def __init__(self, word2id=None):

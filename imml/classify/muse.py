@@ -243,20 +243,18 @@ class MUSEModule(Module):
 
 
     def forward(self, Xs, y, missing_mod_indicator, y_indicator):
-        transformed_Xs = []
-        for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
-            extractor = getattr(self, f"extractor{X_idx}")
-            if mod == "text":
-                X = [sent if isinstance(sent, str) else "" for sent in X[0]]
-            code_embedding = extractor(X)
-            code_embedding[missing_mod_indicator[:,X_idx]] = 0
-            code_embedding = self.dropout_layer(code_embedding)
-            transformed_Xs.append(code_embedding)
+        transformed_Xs = self.extract(Xs=Xs, missing_mod_indicator=missing_mod_indicator)
         loss = self.mml(Xs=transformed_Xs, missing_mod_indicator=missing_mod_indicator, y=y, y_indicator=y_indicator)
         return loss
 
 
     def predict(self, Xs, missing_mod_indicator):
+        transformed_Xs = self.extract(Xs=Xs, missing_mod_indicator=missing_mod_indicator)
+        logits = self.mml.inference(Xs=transformed_Xs, missing_mod_indicator=missing_mod_indicator)[0]
+        return logits
+
+
+    def extract(self, Xs, missing_mod_indicator):
         transformed_Xs = []
         for X_idx, (X,mod) in enumerate(zip(Xs, self.modalities)):
             extractor = getattr(self, f"extractor{X_idx}")
@@ -266,5 +264,4 @@ class MUSEModule(Module):
             code_embedding[missing_mod_indicator[:,X_idx]] = 0
             code_embedding = self.dropout_layer(code_embedding)
             transformed_Xs.append(code_embedding)
-        logits = self.mml.inference(Xs=transformed_Xs, missing_mod_indicator=missing_mod_indicator)[0]
-        return logits
+        return transformed_Xs

@@ -149,7 +149,6 @@ class CodeEncoder(Module):
             dropout: float,
             layers: int,
             heads: int,
-            device="cpu",
     ):
         super(CodeEncoder, self).__init__()
         self.tokenizer = tokenizer
@@ -158,7 +157,6 @@ class CodeEncoder(Module):
         self.dropout = dropout
         self.layers = layers
         self.heads = heads
-        self.device = device
 
         # embedding
         if pretrained_embedding:
@@ -184,11 +182,6 @@ class CodeEncoder(Module):
     def forward(
             self, codes, types, ages, genders, ethnicities
     ):
-        codes = codes.to(self.device)
-        types = types.to(self.device)
-        ages = ages.to(self.device)
-        genders = genders.to(self.device)
-        ethnicities = ethnicities.to(self.device)
 
         mask = (types != 0)
         mask = torch.einsum("ab,ac->abc", mask, mask)
