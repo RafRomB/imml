@@ -97,6 +97,6 @@ class M3CareDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        Xs = [X[idx][0] if (isinstance(X[idx][0], str) or str(X[idx][0]) == "nan") else X[idx] for X in self.Xs]
+        Xs = [X[idx][0] if (isinstance(X[idx][0], str) or str(X[idx]) == "nan") else X[idx] for X in self.Xs]
         sample = Xs, self.y[idx], self.observed_mod_indicator[idx]
         return sample
