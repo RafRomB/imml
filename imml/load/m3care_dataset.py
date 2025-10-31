@@ -76,7 +76,7 @@ class M3CareDataset(Dataset):
             if isinstance(Xs[0], pd.DataFrame):
                 X = X.values
             if isinstance(X, np.ndarray):
-                if X[0].dtype == object:
+                if X[:,0].dtype == object:
                     X = X.tolist()
                 else:
                     X = torch.from_numpy(X).float()
@@ -97,6 +97,6 @@ class M3CareDataset(Dataset):
 
 
     def __getitem__(self, idx):
-        Xs = [X[idx][0] if (isinstance(X[idx][0], str) or str(X[idx]) == "nan") else X[idx] for X in self.Xs]
+        Xs = [X[idx][0] if isinstance(X[idx][0], str) else X[idx] for X in self.Xs]
         sample = Xs, self.y[idx], self.observed_mod_indicator[idx]
         return sample

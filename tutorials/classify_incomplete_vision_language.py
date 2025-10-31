@@ -118,7 +118,7 @@ train_df.head()
 
 Xs_train = [train_df[["img"]], train_df[["text"]]]
 Xs_test = [test_df[["img"]], test_df[["text"]]]
-amputer = Amputer(p=0.6, random_state=random_state)
+amputer = Amputer(p=0.3, random_state=random_state)
 Xs_train = amputer.fit_transform(Xs_train)
 Xs_test = amputer.fit_transform(Xs_test)
 
