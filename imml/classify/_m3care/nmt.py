@@ -226,7 +226,7 @@ class NMT_tran(Module):
 
         # Convert list of lists into tensors
         total_src_padded = self.vocab.src.to_input_tensor(
-            source, device=self.device)  # Tensor: (src_len, b)
+            source)  # Tensor: (src_len, b)
 
         enc_hiddens, first_hidden = self.encode(
             total_src_padded)
@@ -249,7 +249,7 @@ class NMT_tran(Module):
         enc_hiddens, dec_init_state = None, None
 
         # print(source_padded.shape)
-        source_padded = source_padded.permute(1, 0)  # b t
+        source_padded = source_padded.to(next(self.source.parameters()).device).permute(1, 0)  # b t
         #         print(source_padded.shape)
         src_mask = (source_padded != 0).unsqueeze(-2)
 
@@ -311,11 +311,11 @@ class VocabEntry(object):
     def indices2words(self, word_ids):
         return [self.id2word[w_id] for w_id in word_ids]
 
-    def to_input_tensor(self, sents: list[list[str]], device):
+    def to_input_tensor(self, sents: list[list[str]]):
         word_ids = self.words2indices(sents)
         sents_t = self.input_transpose(word_ids, self['<pad>'])
 
-        sents_var = torch.tensor(sents_t, dtype=torch.long, device=device)
+        sents_var = torch.tensor(sents_t, dtype=torch.long)
 
         return sents_var
 
