@@ -55,12 +55,12 @@ def test_invalid_inputs():
 
     X1 = np.array([[1, 2], [3, 4]])
     X2 = np.array([[5, 6], [7, 8]])
-    with pytest.raises(ValueError, match="Wrong number of modalities. Expected 3 but found 2"):
+    with pytest.raises(ValueError, match="Invalid Xs. Wrong number of modalities. Expected 3 but found 2"):
         check_Xs([X1, X2], enforce_modalities=3)
 
-    with pytest.raises(ValueError, match="All modalities should have the same number of samples"):
+    with pytest.raises(ValueError, match="Invalid Xs. All modalities should have the same number of samples"):
         check_Xs([X1[:-1], X2])
-    with pytest.raises(ValueError, match="All modalities should be the same data type"):
+    with pytest.raises(ValueError, match="Invalid Xs. All modalities should be the same data type"):
         check_Xs([X1, pd.DataFrame(X2)])
 
 

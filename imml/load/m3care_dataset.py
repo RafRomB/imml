@@ -82,7 +82,7 @@ class M3CareDataset(Dataset):
                     X = torch.from_numpy(X).float()
             Xs_.append(X)
 
-        if isinstance(y, pd.Series):
+        if isinstance(y, (pd.DataFrame, pd.Series)):
             y = y.values
         if isinstance(y, np.ndarray):
             y = torch.from_numpy(y)

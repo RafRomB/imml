@@ -91,7 +91,7 @@ class GNNStack(Module):
 
 
 class MML(Module):
-    def __init__(self, num_modalities, hidden_channels, normalize_embs, num_layers, dropout, output_dim):
+    def __init__(self, num_modalities, hidden_channels, normalize_embs, num_layers, dropout, output_dim, loss_fn):
         super(MML, self).__init__()
         self.output_dim = output_dim
         self.modality_nodes = nn.Parameter(torch.randn(num_modalities, hidden_channels))
@@ -117,6 +117,8 @@ class MML(Module):
             self.act = nn.Sigmoid()
         else:
             self.act = nn.Softmax(dim=-1)
+        self.loss_fn = loss_fn
+
 
     def edgedrop(self, flag):
         n, m = flag.size()
@@ -158,7 +160,7 @@ class MML(Module):
         loss_zaz_t = F.binary_cross_entropy_with_logits(zaz_s.t(), target)
         return (2 * loss_z + loss_zaz + loss_zaz_t) / 4
 
-    def classification_loss(self, l, y):
+    def loss_fn(self, l, y):
         if self.output_dim == 1:
             loss = F.binary_cross_entropy_with_logits(l.squeeze(-1), y)
         else:
@@ -211,7 +213,7 @@ class MML(Module):
         # cls
         z = z[y_indicator]
         logits = self.classifier(z)
-        cls_loss = self.classification_loss(logits, y)
+        cls_loss = self.loss_fn(logits, y)
 
         return 0.5 * unsup_loss + 0.5 * sup_loss + cls_loss
 

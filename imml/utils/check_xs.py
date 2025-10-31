@@ -64,16 +64,15 @@ def check_Xs(Xs, enforce_modalities=None, copy=False, ensure_all_finite="allow-n
     if len(Xs) < 2:
         raise ValueError(f"Invalid Xs. It must have at least two modalities. Got {n_mods} modalities.")
     if any(len(X) == 0 for X in Xs):
-        raise ValueError("Invalid Xs. All elements must have at least one sample.")
+        raise ValueError(f"Invalid Xs. All elements must have at least one sample. Got {[len(X) for X in Xs]}.")
     if enforce_modalities is not None and n_mods != enforce_modalities:
         raise ValueError(f"Invalid Xs. Wrong number of modalities. Expected {enforce_modalities} but found {n_mods}")
     if len(set([len(X) for X in Xs])) != 1:
-        msg = "All modalities should have the same number of samples"
-        raise ValueError(msg)
+        raise ValueError(f"Invalid Xs. All modalities should have the same number of samples. Got {[len(X) for X in Xs]}.")
     dtype = type(Xs[0])
     if not all(isinstance(X, dtype) for X in Xs):
         msg = "All modalities should be the same data type"
-        raise ValueError(msg)
+        raise ValueError(f"Invalid Xs. All modalities should be the same data type. Got {[type(X) for X in Xs]}.")
 
     if isinstance(Xs[0],pd.DataFrame):
         Xs = [pd.DataFrame(check_array(X, allow_nd=False, copy=copy, ensure_all_finite=ensure_all_finite, dtype=None),

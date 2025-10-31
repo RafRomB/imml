@@ -13,6 +13,7 @@ from imml.classify import MUSE
 from imml.load import MUSEDataset
 
 estimator = MUSE
+torch.set_default_device('cpu')
 
 
 @pytest.fixture
@@ -156,13 +157,17 @@ def test_example(sample_data):
     from torch.utils.data import DataLoader
     from imml.classify import MUSE
     from imml.load import MUSEDataset
+    from imml.ampute import Amputer
     Xs = [pd.DataFrame(np.random.default_rng(42).random((2, 10)))]
+    Xs.append(pd.DataFrame(np.random.default_rng(42).random((2, 15))))
     Xs.append(pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]))
-    y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0])))
+    Xs = Amputer(p=0.2, random_state=42).fit_transform(Xs)  # this step is optional
+    y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).astype(float)
     train_data = MUSEDataset(Xs=Xs, y=y)
     train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
     trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
-    estimator = MUSE(modalities= ["tabular", "text"], input_dim=[Xs[0].shape[1]])
+    modalities = ["tabular", "tabular", "text"]
+    estimator = MUSE(modalities=modalities, input_dim=[Xs[0].shape[1], Xs[1].shape[1]])
     trainer.fit(estimator, train_dataloader)
     trainer.predict(estimator, train_dataloader)
 

@@ -6,7 +6,6 @@ from ..impute import get_missing_mod_indicator
 from ..utils import check_Xs
 
 try:
-    import lightning.pytorch as pl
     import torch
     deepmodule_installed = True
 except ImportError:
@@ -84,12 +83,11 @@ class MUSEDataset(Dataset):
                     X = torch.from_numpy(X).float()
             Xs_.append(X)
 
-        if isinstance(y, pd.Series):
+        if isinstance(y, (pd.DataFrame, pd.Series)):
             y = y.values
         if isinstance(y, np.ndarray):
             y = torch.from_numpy(y)
         y_indicator = torch.logical_not(torch.isnan(y))
-        y = y.long()
 
         self.Xs = Xs_
         self.y = y

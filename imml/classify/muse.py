@@ -51,6 +51,8 @@ class MUSE(LightningModule):
         Number of GNN layers used to propagate sample-modality representations.
     gnn_norm : str or None, default=None
         Optional normalization strategy in GNN layers (e.g., 'batchnorm', 'layernorm').
+    loss_fn : callable, default=None
+        Loss function. If None, defaults to `nn.BCEWithLogitsLoss()`.
     code_pretrained_embedding : bool, default=True
         If True, initializes pretrained embeddings for text/code features.
     bert_type : str, default="prajjwal1/bert-tiny"
@@ -72,20 +74,24 @@ class MUSE(LightningModule):
     >>> from torch.utils.data import DataLoader
     >>> from imml.classify import MUSE
     >>> from imml.load import MUSEDataset
+    >>> from imml.ampute import Amputer
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((2, 10)))]
+    >>> Xs.append(pd.DataFrame(np.random.default_rng(42).random((2, 15))))
     >>> Xs.append(pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]))
-    >>> y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0])))
+    >>> Xs = Amputer(p=0.2, random_state=42).fit_transform(Xs) # this step is optional
+    >>> y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).astype(float)
     >>> train_data = MUSEDataset(Xs=Xs, y=y)
     >>> train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
     >>> trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
-    >>> estimator = MUSE(modalities= ["tabular", "text"], input_dim=[Xs[0].shape[1]])
+    >>> modalities = ["tabular", "tabular", "text"]
+    >>> estimator = MUSE(modalities=modalities, input_dim=[Xs[0].shape[1], Xs[1].shape[1]])
     >>> trainer.fit(estimator, train_dataloader)
     >>> trainer.predict(estimator, train_dataloader)
     """
 
     def __init__(self, input_dim: list = None, hidden_dim: int = 128, modalities: list = None,
                  tokenizer=None, learning_rate: float = 2e-4, weight_decay: float = 0., output_dim: int = 1,
-                 extractors: list = None, gnn_layers: int = 2, gnn_norm: str = None,
+                 extractors: list = None, gnn_layers: int = 2, gnn_norm: str = None, loss_fn: callable = None,
                  code_pretrained_embedding: bool = True, bert_type: str = "prajjwal1/bert-tiny", dropout: float = 0.25):
 
         if not deepmodule_installed:
@@ -138,7 +144,7 @@ class MUSE(LightningModule):
         self.model = MUSEModule(input_dim=input_dim, tokenizer=tokenizer, hidden_dim=hidden_dim,
                                modalities=modalities, output_dim=output_dim, extractors=extractors,
                                gnn_layers=gnn_layers, gnn_norm=gnn_norm, bert_type=bert_type, dropout=dropout,
-                               code_pretrained_embedding=code_pretrained_embedding)
+                               code_pretrained_embedding=code_pretrained_embedding, loss_fn=loss_fn)
         self.learning_rate = learning_rate
         self.weight_decay = weight_decay
 
@@ -189,7 +195,7 @@ class MUSE(LightningModule):
 class MUSEModule(Module):
 
     def __init__(self, input_dim: list = None, modalities: list = None, extractors: list = None, tokenizer=None,
-                 hidden_dim: int = 128, output_dim: int = 1, gnn_layers: int = 2, gnn_norm: str = None,
+                 hidden_dim: int = 128, output_dim: int = 1, gnn_layers: int = 2, gnn_norm: str = None, loss_fn=None,
                  code_pretrained_embedding: bool = True, bert_type: str = "prajjwal1/bert-tiny", dropout: float = 0.25
                  ):
 
@@ -206,6 +212,9 @@ class MUSEModule(Module):
         self.dropout = dropout
         self.gnn_layers = gnn_layers
         self.gnn_norm = gnn_norm
+        if loss_fn is None:
+            loss_fn = nn.BCEWithLogitsLoss()
+        self.loss_fn = loss_fn
 
         self.dropout_layer = nn.Dropout(dropout)
 
@@ -232,14 +241,13 @@ class MUSEModule(Module):
                     encoder = TextEncoder(bert_type)
                     for param in encoder.parameters():
                         param.requires_grad = False
-                    output_dim = encoder.model.config.hidden_size
-                    extractor = nn.Sequential(encoder, nn.Linear(output_dim, hidden_dim))
+                    extractor = nn.Sequential(encoder, nn.Linear(encoder.model.config.hidden_size, hidden_dim))
             else:
                 raise ValueError(f"Unknown modality type: {mod}")
             setattr(self, f"extractor{i}", extractor)
 
         self.mml = MML(num_modalities=len(modalities), hidden_channels=hidden_dim, num_layers=gnn_layers,
-                       dropout=dropout, normalize_embs=gnn_norm, output_dim=output_dim)
+                       dropout=dropout, normalize_embs=gnn_norm, output_dim=output_dim, loss_fn=loss_fn)
 
 
     def forward(self, Xs, y, missing_mod_indicator, y_indicator):
