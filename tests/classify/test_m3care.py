@@ -14,10 +14,6 @@ from imml.load import M3CareDataset
 
 estimator = M3Care
 
-if sys.platform.startswith("darwin"):
-    torch.set_default_device('mps:0')
-
-
 
 @pytest.fixture
 def sample_data():
@@ -161,6 +157,7 @@ def test_incomplete_image_text(sample_data):
     assert isinstance(loss, torch.Tensor)
 
 
+@pytest.mark.skipif(sys.platform.startswith("darwin"), reason="Error with MPS")
 def test_example(sample_data):
     from lightning import Trainer
     import numpy as np

@@ -16,9 +16,6 @@ from imml.load import IntegrAODataset
 L.seed_everything(42)
 estimator = IntegrAO
 
-if sys.platform.startswith("darwin"):
-    torch.set_default_device('mps:0')
-
 
 @pytest.fixture
 def sample_data():
@@ -40,7 +37,7 @@ def test_deepmodule_not_installed(sample_data):
     importlib.reload(module_mock)
 
 
-# @pytest.mark.skipif(sys.platform.startswith("darwin"), reason="Error with torch_geometric and MPS")
+@pytest.mark.skipif(sys.platform.startswith("darwin"), reason="Error with MPS")
 def test_default_params(sample_data):
     n_clusters = 3
     for Xs in sample_data:
@@ -77,7 +74,7 @@ def test_invalid_params(sample_data):
         estimator(learning_rate=-1, Xs=sample_data[0])
 
 
-# @pytest.mark.skipif(sys.platform.startswith("darwin"), reason="Error with torch_geometric and MPS")
+@pytest.mark.skipif(sys.platform.startswith("darwin"), reason="Error with MPS")
 def test_missing_values_handling(sample_data):
     n_clusters = 2
     for Xs in sample_data[1:]:
@@ -102,6 +99,7 @@ def test_missing_values_handling(sample_data):
         assert len(embedding_) == n_samples
 
 
+@pytest.mark.skipif(sys.platform.startswith("darwin"), reason="Error with MPS")
 def test_example():
     import numpy as np
     import torch
