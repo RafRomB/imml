@@ -50,7 +50,6 @@ import torch
 import os
 import pandas as pd
 from sklearn.metrics import matthews_corrcoef, ConfusionMatrixDisplay
-import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from datasets import load_dataset
 
@@ -118,7 +117,7 @@ train_df.head()
 
 Xs_train = [train_df[["img"]], train_df[["text"]]]
 Xs_test = [test_df[["img"]], test_df[["text"]]]
-amputer = Amputer(p=0.3, random_state=random_state)
+amputer = Amputer(p=0.4, random_state=random_state)
 Xs_train = amputer.fit_transform(Xs_train)
 Xs_test = amputer.fit_transform(Xs_test)
 
@@ -237,7 +236,7 @@ for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=rand
             caption = " ".join(caption)
         ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
     else:
-        ax.plot(0.5, -0.5, 'rx', markersize=100, markeredgewidth=10)
+        ax.plot(400, -0.5, 'rx', markersize=20, markeredgewidth=10)
 
 shutil.rmtree(data_folder, ignore_errors=True)
 

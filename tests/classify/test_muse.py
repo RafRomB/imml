@@ -13,7 +13,9 @@ from imml.classify import MUSE
 from imml.load import MUSEDataset
 
 estimator = MUSE
-torch.set_default_device('cpu')
+
+if sys.platform.startswith("darwin"):
+    torch.set_default_device('cpu')
 
 
 @pytest.fixture
@@ -162,7 +164,7 @@ def test_example(sample_data):
     Xs.append(pd.DataFrame(np.random.default_rng(42).random((2, 15))))
     Xs.append(pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]))
     Xs = Amputer(p=0.2, random_state=42).fit_transform(Xs)  # this step is optional
-    y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).astype(float)
+    y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).astype(np.float32)
     train_data = MUSEDataset(Xs=Xs, y=y)
     train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
     trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
