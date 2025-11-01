@@ -2,11 +2,15 @@ import pytest
 torch = pytest.importorskip("torch")
 transformers = pytest.importorskip("transformers")
 L = pytest.importorskip("lightning")
+import numpy as np
+import pandas as pd
 import importlib
 import sys
 from unittest.mock import patch
+from torch.utils.data import DataLoader
 
 from imml.classify import M3Care
+from imml.load import M3CareDataset
 
 estimator = M3Care
 
@@ -89,26 +93,26 @@ def test_invalid_params():
 
 
 def test_lightning_methods(sample_data):
-    model = estimator(modalities=["tabular", "tabular", "tabular"], input_dim=[10, 10, 10])
-    loss = model.training_step(sample_data)
-    assert isinstance(loss, torch.Tensor)
-    loss = model.validation_step(sample_data)
-    assert isinstance(loss, torch.Tensor)
-    loss = model.test_step(sample_data)
-    assert isinstance(loss, torch.Tensor)
-    preds = model.predict_step(sample_data)
-    assert isinstance(preds, torch.Tensor)
-    optimizer = model.configure_optimizers()
-    assert isinstance(optimizer, torch.optim.Optimizer)
+    with torch.no_grad():
+        model = estimator(modalities=["tabular", "tabular", "tabular"], input_dim=[10, 10, 10])
+        loss = model.training_step(sample_data)
+        assert isinstance(loss, torch.Tensor)
+        loss = model.validation_step(sample_data)
+        assert isinstance(loss, torch.Tensor)
+        loss = model.test_step(sample_data)
+        assert isinstance(loss, torch.Tensor)
+        preds = model.predict_step(sample_data)
+        assert isinstance(preds, torch.Tensor)
+        optimizer = model.configure_optimizers()
+        assert isinstance(optimizer, torch.optim.Optimizer)
 
 
 def test_missing_values_handling(sample_data):
     model = estimator(modalities=["tabular", "tabular", "tabular"], input_dim=[10, 10, 10])
-    Xs, y, observed_mod_indicator = sample_data
-    observed_mod_indicator[0, 0] = False
-    observed_mod_indicator[1, 1] = False
+    sample_data[2][0, 0] = False
+    sample_data[2][1, 1] = False
     with torch.no_grad():
-        loss = model.training_step((Xs, y, observed_mod_indicator))
+        loss = model.training_step(sample_data)
     assert isinstance(loss, torch.Tensor)
 
 
@@ -119,6 +123,62 @@ def test_custom_loss_fn(sample_data):
     with torch.no_grad():
         loss = model.training_step(sample_data, 0)
     assert isinstance(loss, torch.Tensor)
+
+
+def test_image_text(sample_data):
+    model = estimator(modalities=["tabular", "image", "text"],
+                     input_dim=[10])
+    Xs = [
+        pd.DataFrame(sample_data[0][0].numpy()),
+        pd.DataFrame(["docs/figures/graph.png", "docs/figures/logo_imml.png"]),
+        pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]),
+    ]
+    dataset = M3CareDataset(Xs=Xs, y=sample_data[1])
+    sample_data = next(iter(DataLoader(dataset=dataset, batch_size=2)))
+    with torch.no_grad():
+        loss = model.training_step(sample_data, 0)
+    assert isinstance(loss, torch.Tensor)
+
+
+def test_incomplete_image_text(sample_data):
+    model = estimator(modalities=["tabular", "image", "text"],
+                     input_dim=[10])
+    Xs = [
+        pd.DataFrame(sample_data[0][0].numpy()),
+        pd.DataFrame(["docs/figures/graph.png", "docs/figures/logo_imml.png"]),
+        pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]),
+    ]
+    Xs[0].iloc[0,:] = np.nan
+    Xs[1].iloc[1, 0] = np.nan
+    dataset = M3CareDataset(Xs=Xs, y=sample_data[1])
+    sample_data = next(iter(DataLoader(dataset=dataset, batch_size=2)))
+    with torch.no_grad():
+        loss = model.training_step(sample_data, 0)
+    assert isinstance(loss, torch.Tensor)
+
+
+@pytest.mark.skipif(sys.platform.startswith("darwin"), reason="Error with MPS")
+def test_example(sample_data):
+    from lightning import Trainer
+    import numpy as np
+    import pandas as pd
+    from torch.utils.data import DataLoader
+    from imml.classify import M3Care
+    from imml.load import M3CareDataset
+    from imml.ampute import Amputer
+    Xs = [pd.DataFrame(np.random.default_rng(42).random((2, 10)))]
+    Xs.append(pd.DataFrame(np.random.default_rng(42).random((2, 15))))
+    Xs.append(pd.DataFrame(["docs/figures/graph.png", "docs/figures/logo_imml.png"]))
+    Xs.append(pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]))
+    Xs = Amputer(p=0.2, random_state=42).fit_transform(Xs)  # this step is optional
+    y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).astype(np.float32)
+    train_data = M3CareDataset(Xs=Xs, y=y)
+    train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
+    trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
+    modalities = ["tabular", "tabular", "image", "text"]
+    estimator = M3Care(modalities=modalities, input_dim=[X.shape[1] for X,mod in zip(Xs, modalities) if mod=="tabular"])
+    trainer.fit(estimator, train_dataloader)
+    trainer.predict(estimator, train_dataloader)
 
 
 if __name__ == "__main__":

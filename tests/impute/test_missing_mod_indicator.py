@@ -3,6 +3,12 @@ import numpy as np
 import pandas as pd
 from imml.impute import MissingModIndicator, get_missing_mod_indicator
 
+try:
+    import torch
+    deepmodule_installed = True
+except ImportError:
+    deepmodule_installed = False
+
 
 @pytest.fixture
 def sample_data():
@@ -17,17 +23,31 @@ def sample_data():
         1: [False, True, False, False, False]
     })
     observed_mod_indicator = observed_mod_indicator.values
+    if deepmodule_installed:
+        Xs_torch = [torch.from_numpy(X) for X in Xs_numpy]
+        observed_mod_indicator_torch = torch.from_numpy(observed_mod_indicator).bool()
+        return Xs_pandas, Xs_numpy, Xs_torch, observed_mod_indicator, observed_mod_indicator_torch
     return Xs_pandas, Xs_numpy, observed_mod_indicator
 
 def test_get_missing_mod_indicator(sample_data):
-    observed_mod_indicator = sample_data[-1]
-    for Xs in sample_data[:2]:
+    if deepmodule_installed:
+        observed_mod_indicator = sample_data[3]
+        sample_data = sample_data[:3]
+    else:
+        observed_mod_indicator = sample_data[2]
+        sample_data = sample_data[:2]
+    for Xs in sample_data:
         indicator = get_missing_mod_indicator(Xs)
         np.equal(indicator, observed_mod_indicator)
 
 def test_missing_mod_indicator_class(sample_data):
-    observed_mod_indicator = sample_data[-1]
-    for Xs in sample_data[:2]:
+    if deepmodule_installed:
+        observed_mod_indicator = sample_data[3]
+        sample_data = sample_data[:3]
+    else:
+        observed_mod_indicator = sample_data[2]
+        sample_data = sample_data[:2]
+    for Xs in sample_data:
         transformer = MissingModIndicator()
         indicator = transformer.fit_transform(Xs)
         np.equal(indicator, observed_mod_indicator)

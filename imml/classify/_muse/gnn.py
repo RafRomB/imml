@@ -10,11 +10,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
-MessagePassingBase = MessagePassing if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
+MessagePassing = MessagePassing if deepmodule_installed else object
 
 
-class EdgeSAGEConv(MessagePassingBase):
+class EdgeSAGEConv(MessagePassing):
     def __init__(self, in_channels, out_channels, edge_channels, normalize_emb, aggr="mean", **kwargs):
         super(EdgeSAGEConv, self).__init__(aggr=aggr, **kwargs)
         self.in_channels = in_channels
@@ -46,7 +46,7 @@ class EdgeSAGEConv(MessagePassingBase):
                                                      self.edge_channels)
 
 
-class GNNStack(nnModuleBase):
+class GNNStack(Module):
     def __init__(self, node_channels, edge_channels, normalize_embs, num_layers, dropout):
         super(GNNStack, self).__init__()
         self.node_channels = node_channels
@@ -90,8 +90,8 @@ class GNNStack(nnModuleBase):
         return x
 
 
-class MML(nnModuleBase):
-    def __init__(self, num_modalities, hidden_channels, normalize_embs, num_layers, dropout, output_dim):
+class MML(Module):
+    def __init__(self, num_modalities, hidden_channels, normalize_embs, num_layers, dropout, output_dim, loss_fn):
         super(MML, self).__init__()
         self.output_dim = output_dim
         self.modality_nodes = nn.Parameter(torch.randn(num_modalities, hidden_channels))
@@ -117,6 +117,8 @@ class MML(nnModuleBase):
             self.act = nn.Sigmoid()
         else:
             self.act = nn.Softmax(dim=-1)
+        self.loss_fn = loss_fn
+
 
     def edgedrop(self, flag):
         n, m = flag.size()
@@ -158,14 +160,14 @@ class MML(nnModuleBase):
         loss_zaz_t = F.binary_cross_entropy_with_logits(zaz_s.t(), target)
         return (2 * loss_z + loss_zaz + loss_zaz_t) / 4
 
-    def classification_loss(self, l, y):
+    def loss_fn(self, l, y):
         if self.output_dim == 1:
             loss = F.binary_cross_entropy_with_logits(l.squeeze(-1), y)
         else:
             loss = F.cross_entropy(l, y)
         return loss
 
-    def forward(self, Xs, observed_mod_indicator, y, y_indicator):
+    def forward(self, Xs, missing_mod_indicator, y, y_indicator):
         batch_size = Xs[0].size(0)
         hidden_dim = Xs[0].size(1)
         x = torch.stack(Xs, dim=1)
@@ -173,13 +175,13 @@ class MML(nnModuleBase):
         g_patient_nodes = torch.ones(batch_size, hidden_dim)
         g_patient_nodes = g_patient_nodes.to(x.device)
         g_nodes = torch.cat([g_patient_nodes, self.modality_nodes], dim=0)
-        g_edge_index = observed_mod_indicator.nonzero().t()
+        g_edge_index = missing_mod_indicator.nonzero().t()
         g_edge_index[1] += batch_size
         g_edge_index = torch.cat([g_edge_index, g_edge_index.flip([0])], dim=1)
-        g_edge_attr = x[observed_mod_indicator].repeat(2, 1)
+        g_edge_attr = x[missing_mod_indicator].repeat(2, 1)
         z = self.gnn(g_nodes, g_edge_attr, g_edge_index)
 
-        ag_x_flag = observed_mod_indicator.clone()
+        ag_x_flag = missing_mod_indicator.clone()
         ag_x_flag = self.edgedrop(ag_x_flag)
         ag_patient_nodes = torch.ones(batch_size, hidden_dim)
         ag_patient_nodes = ag_patient_nodes.to(x.device)
@@ -211,11 +213,11 @@ class MML(nnModuleBase):
         # cls
         z = z[y_indicator]
         logits = self.classifier(z)
-        cls_loss = self.classification_loss(logits, y)
+        cls_loss = self.loss_fn(logits, y)
 
         return 0.5 * unsup_loss + 0.5 * sup_loss + cls_loss
 
-    def inference(self, Xs, observed_mod_indicator):
+    def inference(self, Xs, missing_mod_indicator):
         batch_size = Xs[0].size(0)
         hidden_dim = Xs[0].size(1)
         x = torch.stack(Xs, dim=1)
@@ -223,10 +225,10 @@ class MML(nnModuleBase):
         g_patient_nodes = torch.ones(batch_size, hidden_dim)
         g_patient_nodes = g_patient_nodes.to(x.device)
         g_nodes = torch.cat([g_patient_nodes, self.modality_nodes], dim=0)
-        g_edge_index = observed_mod_indicator.nonzero().t()
+        g_edge_index = missing_mod_indicator.nonzero().t()
         g_edge_index[1] += batch_size
         g_edge_index = torch.cat([g_edge_index, g_edge_index.flip([0])], dim=1)
-        g_edge_attr = x[observed_mod_indicator].repeat(2, 1)
+        g_edge_attr = x[missing_mod_indicator].repeat(2, 1)
 
         z = self.gnn(g_nodes, g_edge_attr, g_edge_index)
         z = z[:batch_size]

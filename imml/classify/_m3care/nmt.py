@@ -15,7 +15,7 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
 def clones(module, N):
@@ -23,7 +23,7 @@ def clones(module, N):
     return nn.ModuleList([copy.deepcopy(module) for _ in range(N)])
 
 
-class MultiHeadedAttention(nnModuleBase):
+class MultiHeadedAttention(Module):
     def __init__(self, h, d_model, dropout=0.1):
         "Take in model size and number of heads."
         super(MultiHeadedAttention, self).__init__()
@@ -70,7 +70,7 @@ def attention(query, key, value, mask=None, dropout=None):
     return torch.matmul(p_attn, value), p_attn
 
 
-class PositionwiseFeedForward(nnModuleBase):
+class PositionwiseFeedForward(Module):
     "Implements FFN equation."
     def __init__(self, d_model, d_ff, dropout=0.1):
         super(PositionwiseFeedForward, self).__init__()
@@ -82,7 +82,7 @@ class PositionwiseFeedForward(nnModuleBase):
         return self.w_2(self.dropout(F.relu(self.w_1(x))))
 
 
-class PositionalEncoding(nnModuleBase):
+class PositionalEncoding(Module):
     "Implement the PE function."
 
     def __init__(self, d_model, dropout, max_len=5000):
@@ -105,7 +105,7 @@ class PositionalEncoding(nnModuleBase):
         return self.dropout(x)
 
 
-class LayerNorm(nnModuleBase):
+class LayerNorm(Module):
     "Construct a layernorm module (See citation for details)."
     def __init__(self, features, eps=1e-6):
         super(LayerNorm, self).__init__()
@@ -119,7 +119,7 @@ class LayerNorm(nnModuleBase):
         return self.a_2 * (x - mean) / (std + self.eps) + self.b_2
 
 
-class SublayerConnection(nnModuleBase):
+class SublayerConnection(Module):
     """
     A residual connection followed by a layer norm.
     Note for code simplicity the norm is first as opposed to last.
@@ -135,7 +135,7 @@ class SublayerConnection(nnModuleBase):
         return x + self.dropout(sublayer(self.norm(x)))
 
 
-class Encoder(nnModuleBase):
+class Encoder(Module):
     "Core encoder is a stack of N layers"
 
     def __init__(self, layer, N):
@@ -150,7 +150,7 @@ class Encoder(nnModuleBase):
         return self.norm(x)
 
 
-class EncoderLayer(nnModuleBase):
+class EncoderLayer(Module):
     "Encoder is made up of self-attn and feed forward (defined below)"
     def __init__(self, size, self_attn, feed_forward, dropout):
         super(EncoderLayer, self).__init__()
@@ -165,7 +165,7 @@ class EncoderLayer(nnModuleBase):
         return self.sublayer[1](x, self.feed_forward)
 
 
-class Encoder(nnModuleBase):
+class Encoder(Module):
     "Core encoder is a stack of N layers"
 
     def __init__(self, layer, N):
@@ -180,7 +180,7 @@ class Encoder(nnModuleBase):
         return self.norm(x)
 
 
-class NMT_tran(nnModuleBase):
+class NMT_tran(Module):
 
     def __init__(self, embed_size, hidden_size, vocab, dropout_rate=0.2):
         """ Init NMT Model.
@@ -226,7 +226,7 @@ class NMT_tran(nnModuleBase):
 
         # Convert list of lists into tensors
         total_src_padded = self.vocab.src.to_input_tensor(
-            source, device=self.device)  # Tensor: (src_len, b)
+            source)  # Tensor: (src_len, b)
 
         enc_hiddens, first_hidden = self.encode(
             total_src_padded)
@@ -249,7 +249,7 @@ class NMT_tran(nnModuleBase):
         enc_hiddens, dec_init_state = None, None
 
         # print(source_padded.shape)
-        source_padded = source_padded.permute(1, 0)  # b t
+        source_padded = source_padded.to(next(self.source.parameters()).device).permute(1, 0)  # b t
         #         print(source_padded.shape)
         src_mask = (source_padded != 0).unsqueeze(-2)
 
@@ -259,12 +259,6 @@ class NMT_tran(nnModuleBase):
         first_hidden = enc_hiddens[:, 0, :]
 
         return enc_hiddens, first_hidden
-
-    @property
-    def device(self):
-        """ Determine which device to place the Tensors upon, CPU or GPU.
-        """
-        return self.source.weight.device
 
 
 class VocabEntry(object):
@@ -317,11 +311,11 @@ class VocabEntry(object):
     def indices2words(self, word_ids):
         return [self.id2word[w_id] for w_id in word_ids]
 
-    def to_input_tensor(self, sents: list[list[str]], device):
+    def to_input_tensor(self, sents: list[list[str]]):
         word_ids = self.words2indices(sents)
         sents_t = self.input_transpose(word_ids, self['<pad>'])
 
-        sents_var = torch.tensor(sents_t, dtype=torch.long, device=device)
+        sents_var = torch.tensor(sents_t, dtype=torch.long)
 
         return sents_var
 

@@ -13,9 +13,9 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-DLBaseeModule = L.LightningModule if deepmodule_installed else object
+LightningModule = L.LightningModule if deepmodule_installed else object
 
-class MRGCN(DLBaseeModule):
+class MRGCN(LightningModule):
     r"""
     Multi-Reconstruction Graph Convolutional Network (MRGCN). [#mrgcnpaper]_ [#mrgcncode]_
 

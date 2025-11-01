@@ -9,10 +9,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class RNNEncoder(nnModuleBase):
+class RNNEncoder(Module):
     """Recurrent neural network layer.
 
     This layer wraps the PyTorch RNN layer with masking and dropout support. It is
@@ -39,7 +39,6 @@ class RNNEncoder(nnModuleBase):
             num_layers: int = 1,
             dropout: float = 0.5,
             bidirectional: bool = False,
-            device: str = "cpu",
     ):
         super(RNNEncoder, self).__init__()
         self.input_size = input_size
@@ -48,7 +47,6 @@ class RNNEncoder(nnModuleBase):
         self.num_layers = num_layers
         self.dropout = dropout
         self.bidirectional = bidirectional
-        self.device = device
 
         self.dropout_layer = nn.Dropout(dropout)
         self.num_directions = 2 if bidirectional else 1
@@ -81,7 +79,6 @@ class RNNEncoder(nnModuleBase):
         """
         # pytorch's rnn will only apply dropout between layers
         lengths = ((x != 0).sum(-1) > 0).sum(dim=-1)
-        x = x.to(self.device)
         lengths[lengths == 0] = 1
         x = self.dropout_layer(x)
         batch_size = x.size(0)

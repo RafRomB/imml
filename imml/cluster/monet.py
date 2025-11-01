@@ -5,7 +5,7 @@ import networkx as nx
 import numpy as np
 import pandas as pd
 from joblib import Parallel, delayed
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 
 from ._monet._aux_monet import _best_samples_to_add, _which_sample_to_remove, _which_view_to_add_to_module, \
     _which_view_to_remove_from_module, _score_of_split_module, _weight_of_split_and_add_view, \
@@ -15,7 +15,7 @@ from ..utils import check_Xs
 from ..preprocessing import remove_missing_samples_by_mod
 
 
-class MONET(BaseEstimator, ClassifierMixin):
+class MONET(BaseEstimator, ClusterMixin):
     r"""
     Multi Omic Clustering by Non-Exhaustive Types (MONET). [#monetpaper]_ [#monetcode]_
 

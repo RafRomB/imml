@@ -10,10 +10,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class RelTemporalEncoding(nnModuleBase):
+class RelTemporalEncoding(Module):
     def __init__(self, embedding_size, max_len=5000):
         super(RelTemporalEncoding, self).__init__()
         position = torch.arange(0., max_len).unsqueeze(1)
@@ -29,7 +29,7 @@ class RelTemporalEncoding(nnModuleBase):
         return timestamps_emb
 
 
-class Attention(nnModuleBase):
+class Attention(Module):
     def forward(self, query, key, value, mask, dropout=None):
         scores = torch.matmul(query, key.transpose(-2, -1)) / math.sqrt(query.size(-1))
         if mask is not None:
@@ -41,7 +41,7 @@ class Attention(nnModuleBase):
         return torch.matmul(p_attn, value), p_attn
 
 
-class MultiHeadedAttention(nnModuleBase):
+class MultiHeadedAttention(Module):
     def __init__(self, h, d_model, dropout=0.1):
         super(MultiHeadedAttention, self).__init__()
         assert d_model % h == 0
@@ -78,7 +78,7 @@ class MultiHeadedAttention(nnModuleBase):
         return self.output_linear(x)
 
 
-class PositionwiseFeedForward(nnModuleBase):
+class PositionwiseFeedForward(Module):
     def __init__(self, d_model, d_ff, dropout=0.1):
         super(PositionwiseFeedForward, self).__init__()
         self.w_1 = nn.Linear(d_model, d_ff)
@@ -93,7 +93,7 @@ class PositionwiseFeedForward(nnModuleBase):
         return x
 
 
-class SublayerConnection(nnModuleBase):
+class SublayerConnection(Module):
     """
     A residual connection followed by a layer norm.
     Note for code simplicity the norm is first as opposed to last.
@@ -109,7 +109,7 @@ class SublayerConnection(nnModuleBase):
         return x + self.dropout(sublayer(self.norm(x)))
 
 
-class TransformerBlock(nnModuleBase):
+class TransformerBlock(Module):
     """
     Transformer Block = MultiHead Attention + Feed Forward with sublayer connection
     """
@@ -140,7 +140,7 @@ class TransformerBlock(nnModuleBase):
         return x
 
 
-class CodeEncoder(nnModuleBase):
+class CodeEncoder(Module):
     def __init__(
             self,
             tokenizer,
@@ -149,7 +149,6 @@ class CodeEncoder(nnModuleBase):
             dropout: float,
             layers: int,
             heads: int,
-            device="cpu",
     ):
         super(CodeEncoder, self).__init__()
         self.tokenizer = tokenizer
@@ -158,7 +157,6 @@ class CodeEncoder(nnModuleBase):
         self.dropout = dropout
         self.layers = layers
         self.heads = heads
-        self.device = device
 
         # embedding
         if pretrained_embedding:
@@ -184,11 +182,6 @@ class CodeEncoder(nnModuleBase):
     def forward(
             self, codes, types, ages, genders, ethnicities
     ):
-        codes = codes.to(self.device)
-        types = types.to(self.device)
-        ages = ages.to(self.device)
-        genders = genders.to(self.device)
-        ethnicities = ethnicities.to(self.device)
 
         mask = (types != 0)
         mask = torch.einsum("ab,ac->abc", mask, mask)

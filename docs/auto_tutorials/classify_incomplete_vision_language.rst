@@ -60,7 +60,7 @@ What you will learn:
 
 Step 0: Prerequisites
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To run this tutorial, install the extras for deep learning and tutorials:
+To run this tutorial, install the extras for deep learning:
   pip install imml[deep]
 We also use the Hugging Face Datasets library to load Oxford‑IIIT Pets:
   pip install datasets
@@ -86,10 +86,10 @@ Step 1: Import required libraries
     import os
     import pandas as pd
     from sklearn.metrics import matthews_corrcoef, ConfusionMatrixDisplay
-    import numpy as np
     from sklearn.preprocessing import LabelEncoder
     from datasets import load_dataset
 
+    from imml.ampute import Amputer
     from imml.classify import RAGPT
     from imml.load import RAGPTDataset, RAGPTCollator
     from imml.retrieve import MCR
@@ -118,7 +118,7 @@ the ``MCR`` class from the retrieve module.
     random_state = 42
     L.seed_everything(random_state)
 
-    # Local working directory (images will be saved here so ``MCR`` can read paths)
+    # Local working directory (images will be saved here so MCR can read paths)
     data_folder = "oxford_iiit_pet"
     folder_images = os.path.join(data_folder, "imgs")
     os.makedirs(folder_images, exist_ok=True)
@@ -262,34 +262,24 @@ Split into 40% bank memory, 40% train and 20% test sets
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 112-116
+.. GENERATED FROM PYTHON SOURCE LINES 112-117
 
 Step 3: Simulate missing modalities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To reflect realistic scenarios, we randomly introduce missing data. In this case, 30% of training and test samples
-will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
+To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 60% of training
+and test samples will have either text or image missing. You can change this parameter for more or less
+amount of incompleteness.
 
-.. GENERATED FROM PYTHON SOURCE LINES 116-135
+.. GENERATED FROM PYTHON SOURCE LINES 117-125
 
 .. code-block:: Python
 
 
-    p = 0.3
-    missing_mask = train_df.sample(frac=p/2, random_state=random_state).index
-    train_df.loc[missing_mask, "img"] = np.nan
-    missing_mask = train_df. \
-        drop(labels=missing_mask). \
-        sample(n=len(missing_mask), random_state=random_state). \
-        index
-    train_df.loc[missing_mask, "text"] = np.nan
-
-    missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
-    test_df.loc[missing_mask, "img"] = np.nan
-    missing_mask = test_df. \
-        drop(labels=missing_mask). \
-        sample(n=len(missing_mask), random_state=random_state). \
-        index
-    test_df.loc[missing_mask, "text"] = np.nan
+    Xs_train = [train_df[["img"]], train_df[["text"]]]
+    Xs_test = [test_df[["img"]], test_df[["text"]]]
+    amputer = Amputer(p=0.6, random_state=random_state)
+    Xs_train = amputer.fit_transform(Xs_train)
+    Xs_test = amputer.fit_transform(Xs_test)
 
 
 
@@ -299,13 +289,14 @@ will have either text or image missing. You can change this parameter for more o
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 136-139
+.. GENERATED FROM PYTHON SOURCE LINES 126-130
 
 Step 4: Generate the prompts using a retriever
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts for the ``RAGPT`` model.
+``RAGPT`` needs prompts, which are created from a memory bank with a retriever.
+We use ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-156
+.. GENERATED FROM PYTHON SOURCE LINES 130-144
 
 .. code-block:: Python
 
@@ -315,10 +306,7 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
     estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True,
                     prompt_path=data_folder, n_neighbors=2, generate_cap=True)
 
-    Xs_bank = [
-        bank_df["img"].to_list(),
-        bank_df["text"].to_list()
-    ]
+    Xs_bank = [bank_df[["img"]], bank_df[["text"]]]
     y_bank = bank_df["class"]
 
     estimator.fit(Xs=Xs_bank, y=y_bank)
@@ -374,8 +362,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>18</td>
           <td>oxford_iiit_pet/imgs/000018.jpg</td>
           <td>a gray cat laying on the floor</td>
-          <td>[-0.2883491814136505, 0.6082451343536377, 0.25...</td>
-          <td>[-0.5205264091491699, -0.2758329510688782, 0.2...</td>
+          <td>[-0.288349986076355, 0.6082454919815063, 0.257...</td>
+          <td>[-0.5205259919166565, -0.275832861661911, 0.22...</td>
           <td>0</td>
           <td>oxford_iiit_pet/image/000018.npy</td>
           <td>oxford_iiit_pet/text/000018.npy</td>
@@ -385,8 +373,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>7</td>
           <td>oxford_iiit_pet/imgs/000007.jpg</td>
           <td>a man holding a black dog</td>
-          <td>[-0.36506423354148865, 0.27761751413345337, -0...</td>
-          <td>[-0.25834447145462036, 0.5495434403419495, 0.3...</td>
+          <td>[-0.3650640547275543, 0.2776173949241638, -0.4...</td>
+          <td>[-0.25834596157073975, 0.549543023109436, 0.35...</td>
           <td>1</td>
           <td>oxford_iiit_pet/image/000007.npy</td>
           <td>oxford_iiit_pet/text/000007.npy</td>
@@ -396,8 +384,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>20</td>
           <td>oxford_iiit_pet/imgs/000020.jpg</td>
           <td>a cat is sitting on a branch</td>
-          <td>[-0.32218602299690247, -0.18200132250785828, 0...</td>
-          <td>[-0.8176317811012268, 0.08956041932106018, 0.7...</td>
+          <td>[-0.3221859633922577, -0.1820007562637329, 0.2...</td>
+          <td>[-0.8176321387290955, 0.08956006169319153, 0.7...</td>
           <td>0</td>
           <td>oxford_iiit_pet/image/000020.npy</td>
           <td>oxford_iiit_pet/text/000020.npy</td>
@@ -407,8 +395,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>0</td>
           <td>oxford_iiit_pet/imgs/000000.jpg</td>
           <td>a cat walking on grass</td>
-          <td>[0.04112914949655533, 0.28625351190567017, 0.2...</td>
-          <td>[0.36405640840530396, 0.47397932410240173, 0.6...</td>
+          <td>[0.04112936556339264, 0.2862536907196045, 0.22...</td>
+          <td>[0.3640563488006592, 0.47397851943969727, 0.63...</td>
           <td>0</td>
           <td>oxford_iiit_pet/image/000000.npy</td>
           <td>oxford_iiit_pet/text/000000.npy</td>
@@ -418,8 +406,8 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
           <td>46</td>
           <td>oxford_iiit_pet/imgs/000046.jpg</td>
           <td>a dog laying in the grass</td>
-          <td>[0.139794260263443, 0.36746230721473694, -0.48...</td>
-          <td>[0.5348194241523743, 0.221372589468956, 0.3069...</td>
+          <td>[0.13979414105415344, 0.36746183037757874, -0....</td>
+          <td>[0.5348194241523743, 0.22137261927127838, 0.30...</td>
           <td>1</td>
           <td>oxford_iiit_pet/image/000046.npy</td>
           <td>oxford_iiit_pet/text/000046.npy</td>
@@ -431,28 +419,20 @@ We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and gene
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 157-158
+.. GENERATED FROM PYTHON SOURCE LINES 145-146
 
 Load generated training and testing prompts.
 
-.. GENERATED FROM PYTHON SOURCE LINES 158-177
+.. GENERATED FROM PYTHON SOURCE LINES 146-157
 
 .. code-block:: Python
 
 
-    Xs_train = [
-        train_df["img"].to_list(),
-        train_df["text"].to_list()
-    ]
     y_train = train_df["class"]
     train_db = estimator.transform(Xs=Xs_train, y=y_train)
     print("train_db", train_db.shape)
     train_db.head()
 
-    Xs_test = [
-        test_df["img"].to_list(),
-        test_df["text"].to_list()
-    ]
     y_test = test_df["class"]
     test_db = estimator.transform(Xs=Xs_test, y=y_test)
     print("test_db", test_db.shape)
@@ -472,13 +452,13 @@ Load generated training and testing prompts.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 178-181
+.. GENERATED FROM PYTHON SOURCE LINES 158-161
 
 Step 5: Training the model
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 Create the loaders.
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-189
+.. GENERATED FROM PYTHON SOURCE LINES 161-169
 
 .. code-block:: Python
 
@@ -497,12 +477,12 @@ Create the loaders.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-192
+.. GENERATED FROM PYTHON SOURCE LINES 170-172
 
 Train the ``RAGPT`` model using the generated prompts. For speed in this demo we train for only 2 epochs using
 the `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_ library.
 
-.. GENERATED FROM PYTHON SOURCE LINES 192-196
+.. GENERATED FROM PYTHON SOURCE LINES 172-176
 
 .. code-block:: Python
 
@@ -518,19 +498,19 @@ the `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.ht
 
  .. code-block:: none
 
-    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:35<00:00,  0.03it/s]
+    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.07it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.07it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.07it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.07it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 197-201
+.. GENERATED FROM PYTHON SOURCE LINES 177-181
 
 Step 6: Advanced Usage: Track Metrics During Training
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 As any other model in `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.html>`_, we can
 modify the internal functions. For instance, we can track loss and compute evaluation metrics during training.
 
-.. GENERATED FROM PYTHON SOURCE LINES 201-221
+.. GENERATED FROM PYTHON SOURCE LINES 181-201
 
 .. code-block:: Python
 
@@ -562,28 +542,28 @@ modify the internal functions. For instance, we can track loss and compute evalu
 
  .. code-block:: none
 
-    Sanity Checking: |          | 0/? [00:00<?, ?it/s]    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]    Epoch 0: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]
+    Sanity Checking: |          | 0/? [00:00<?, ?it/s]    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.27it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:14<00:00,  0.07it/s]    Epoch 0: 100%|██████████| 1/1 [00:14<00:00,  0.07it/s]
     Validation: |          | 0/? [00:00<?, ?it/s]
     Validation:   0%|          | 0/1 [00:00<?, ?it/s]
     Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]
-                                                                              Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]    Epoch 1: 100%|██████████| 1/1 [00:31<00:00,  0.03it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.33it/s]
+                                                                              Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:14<00:00,  0.07it/s]    Epoch 1: 100%|██████████| 1/1 [00:14<00:00,  0.07it/s]
     Validation: |          | 0/? [00:00<?, ?it/s]
     Validation:   0%|          | 0/1 [00:00<?, ?it/s]
     Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:09<00:00,  0.11it/s]
-                                                                              Epoch 1: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]    Epoch 1: 100%|██████████| 1/1 [00:40<00:00,  0.02it/s]
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.32it/s]
+                                                                              Epoch 1: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 1: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 1: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 222-225
+.. GENERATED FROM PYTHON SOURCE LINES 202-205
 
 Step 7: Evaluation
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 After training, we can evaluate predictions and visualize the results.
 
-.. GENERATED FROM PYTHON SOURCE LINES 225-257
+.. GENERATED FROM PYTHON SOURCE LINES 205-243
 
 .. code-block:: Python
 
@@ -594,19 +574,23 @@ After training, we can evaluate predictions and visualize the results.
     losses = [i.item() for i in estimator.agg_loss_list]
 
     nrows, ncols = 2,3
-    test_df = test_df.reset_index()
+    test_df = pd.concat(Xs_test, axis=1)
+    test_df = pd.concat([test_df, y_test.to_frame("label")], axis=1)
+    test_df = test_df.reset_index(drop=True)
     preds = preds[test_df.index]
     fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
     for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=random_state).iterrows()):
         pred = preds[i_row]
         image_to_show = row["img"]
         caption = row["text"]
-        real_class = row["label"]
+        real_class = le.classes_[row["label"]]
         ax = axes[i//ncols, i%ncols]
         ax.axis("off")
         if isinstance(image_to_show, str):
             image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
             ax.imshow(image_to_show)
+        else:
+            ax.plot(0.5, 0.5, 'rx', markersize=100, markeredgewidth=10)
         pred_class = le.classes_[pred]
         c = "green" if pred_class == real_class else "red"
         ax.set_title(f"Pred:{pred_class}; Real:{real_class}", **{"color":c})
@@ -616,6 +600,8 @@ After training, we can evaluate predictions and visualize the results.
                 caption = caption[:len(caption)//2] + ["\n"] + caption[len(caption)//2:]
                 caption = " ".join(caption)
             ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+        else:
+            ax.annotate("X", xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top', color="red", fontsize=30)
 
     shutil.rmtree(data_folder, ignore_errors=True)
 
@@ -632,12 +618,12 @@ After training, we can evaluate predictions and visualize the results.
 
  .. code-block:: none
 
-    Predicting: |          | 0/? [00:00<?, ?it/s]    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:08<00:00,  0.12it/s]
+    Predicting: |          | 0/? [00:00<?, ?it/s]    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.32it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.32it/s]
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 258-262
+.. GENERATED FROM PYTHON SOURCE LINES 244-248
 
 .. code-block:: Python
 
@@ -658,16 +644,16 @@ After training, we can evaluate predictions and visualize the results.
 
  .. code-block:: none
 
-    Testing metric: 1.0
+    Testing metric: 0.8017837257372732
 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 263-264
+.. GENERATED FROM PYTHON SOURCE LINES 249-250
 
 Despite using only 50 instances and minimal training, the performance was excellent thanks to the pretrained models.
 
-.. GENERATED FROM PYTHON SOURCE LINES 266-275
+.. GENERATED FROM PYTHON SOURCE LINES 252-261
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -679,7 +665,7 @@ demonstrated strong robustness on the test set.
 This example is intentionally simplified, using only 50 instances for demonstration.
 For stronger performance and more reliable results, the full dataset and longer training should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 277-281
+.. GENERATED FROM PYTHON SOURCE LINES 263-267
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -689,7 +675,7 @@ of significant modality incompleteness in vision-language datasets.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (11 minutes 36.245 seconds)
+   **Total running time of the script:** (3 minutes 54.805 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_classify_incomplete_vision_language.py:

@@ -4,7 +4,7 @@ import os
 from os.path import dirname
 import numpy as np
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 from sklearn.gaussian_process import kernels
 
@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 
-class MKKMIK(BaseEstimator, ClassifierMixin):
+class MKKMIK(BaseEstimator, ClusterMixin):
     r"""
     Multiple Kernel K-Means with Incomplete Kernels (MKKM-IK). [#mkkmikpaper]_ [#mkkmikcode]_
 

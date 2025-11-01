@@ -4,7 +4,7 @@ import os
 from os.path import dirname
 import numpy as np
 from sklearn.gaussian_process import kernels
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 from scipy.sparse.linalg import eigs
 
@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 
-class LFIMVC(BaseEstimator, ClassifierMixin):
+class LFIMVC(BaseEstimator, ClusterMixin):
     r"""
     Late Fusion Incomplete Multi-View Clustering (LF-IMVC). [#lfimvcpaper]_ [#lfimvccode]_
 

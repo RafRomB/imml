@@ -27,7 +27,7 @@ parallel lists: image paths and texts for each sample.
 ###################################
 # Step 0: Prerequisites
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To run this tutorial, install the extras for deep learning and tutorials:
+# To run this tutorial, install the extras for deep learning:
 #   pip install imml[deep]
 # Additionally, we will use the Hugging Face Datasets library to load Flickr30k:
 #   pip install datasets
@@ -46,6 +46,7 @@ import matplotlib.pyplot as plt
 from datasets import load_dataset
 import shutil
 
+from imml.ampute import Amputer
 from imml.retrieve import MCR
 
 ################################
@@ -91,17 +92,12 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data. In this case, 70% of test samples
+# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 70% of test samples
 # will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
-p = 0.7
-missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
-test_df.loc[missing_mask, "img"] = np.nan
-missing_mask = test_df. \
-    drop(labels=missing_mask). \
-    sample(n=len(missing_mask), random_state=random_state). \
-    index
-test_df.loc[missing_mask, "text"] = np.nan
+Xs_test = [test_df[["img"]], test_df[["text"]]]
+amputer = Amputer(p=0.7, random_state=random_state)
+Xs_test = amputer.fit_transform(Xs_test)
 
 
 ########################################################
@@ -111,10 +107,7 @@ test_df.loc[missing_mask, "text"] = np.nan
 modalities = ["image", "text"]
 estimator = MCR(batch_size=64, modalities=modalities, save_memory_bank=True)
 
-Xs_train = [
-    train_df["img"].to_list(),
-    train_df["text"].to_list()
-]
+Xs_train = [train_df[["img"]], train_df[["text"]]]
 # Use dummy labels for API compatibility (labels are not provided in Flickr30k)
 y_train = pd.Series(np.zeros(len(train_df)), index=train_df.index)
 
@@ -126,11 +119,6 @@ memory_bank = estimator.memory_bank_
 # Step 5: Retrieve
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 # We retrieved the most similar items for the test set.
-
-Xs_test = [
-    test_df["img"].to_list(),
-    test_df["text"].to_list()
-]
 
 preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
 
@@ -161,8 +149,8 @@ for i in range(nrows*ncols):
     ax = axes[i//ncols, col]
     ax.axis("off")
     if col == 0:
-        image_to_show = Xs_test[0][row]
-        caption = Xs_test[1][row]
+        image_to_show = Xs_test[0].iloc[row]
+        caption = Xs_test[1].iloc[row]
         ax.set_title("Target instance")
     else:
         col -= 1

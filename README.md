@@ -1,10 +1,9 @@
-![PyPI - Version](https://img.shields.io/pypi/v/imml)
+[![PyPI - Version](https://img.shields.io/pypi/v/imml)](https://pypi.org/project/imml/)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/imml)
 [![Read the Docs](https://img.shields.io/readthedocs/imml)](https://imml.readthedocs.io)
 [![CI Tests](https://github.com/ocbe-uio/imml/actions/workflows/ci_test.yml/badge.svg)](https://github.com/ocbe-uio/imml/actions/workflows/ci_test.yml)
 ![Codecov](https://codecov.io/github/ocbe-uio/imml/graph/bundle/badge.svg)
 [![CodeQL](https://github.com/ocbe-uio/imml/actions/workflows/github-code-scanning/codeql/badge.svg)](https://github.com/ocbe-uio/imml/actions/workflows/github-code-scanning/codeql)
-![Libraries.io dependency status for latest release](https://img.shields.io/librariesio/release/pypi/imml)
 [![PRs Welcome](https://img.shields.io/badge/PRs-welcome-brightgreen.svg?style=flat-square)](https://github.com/ocbe-uio/imml/pulls)
 ![PyPI - Status](https://img.shields.io/pypi/status/imml)
 ![GitHub repo size](https://img.shields.io/github/repo-size/ocbe-uio/imml)
@@ -17,7 +16,7 @@
   <img alt="iMML Logo" src="https://raw.githubusercontent.com/ocbe-uio/imml/refs/heads/main/docs/figures/logo_imml.png">
 </p>
 
-[**Overview**](#Overview) | [**Background**](#Background) | [**Key features**](#Key-features) | [**Installation**](#installation) | 
+[**Overview**](#Overview) | [**Key features**](#Key-features) | [**Installation**](#installation) | 
 [**Usage**](#Usage) | [**Free software**](#Free-software) | [**Contribute**](#Contribute) | [**Help us**](#Help-us-grow)
 
 Overview

@@ -68,7 +68,7 @@ Additionally, we will use the Hugging Face Datasets library to load Flickr30k:
 Step 1: Import required libraries
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-.. GENERATED FROM PYTHON SOURCE LINES 39-51
+.. GENERATED FROM PYTHON SOURCE LINES 39-52
 
 .. code-block:: Python
 
@@ -82,6 +82,7 @@ Step 1: Import required libraries
     from datasets import load_dataset
     import shutil
 
+    from imml.ampute import Amputer
     from imml.retrieve import MCR
 
 
@@ -91,7 +92,7 @@ Step 1: Import required libraries
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 52-58
+.. GENERATED FROM PYTHON SOURCE LINES 53-59
 
 Step 2: Prepare the dataset
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -100,7 +101,7 @@ We use the Flickr30k dataset, a public vision–language dataset with images and
 <https://huggingface.co/datasets/nlphuji/flickr30k>`__. For retrieval, we will use the ``MCR`` method from the
 retrieve module.
 
-.. GENERATED FROM PYTHON SOURCE LINES 58-91
+.. GENERATED FROM PYTHON SOURCE LINES 59-92
 
 .. code-block:: Python
 
@@ -145,6 +146,7 @@ retrieve module.
 
  .. code-block:: none
 
+    Seed set to 42
     train_df (80, 2)
 
 
@@ -206,26 +208,21 @@ retrieve module.
     <br />
     <br />
 
-.. GENERATED FROM PYTHON SOURCE LINES 92-96
+.. GENERATED FROM PYTHON SOURCE LINES 93-97
 
 Step 3: Simulate missing modalities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To reflect realistic scenarios, we randomly introduce missing data. In this case, 70% of test samples
+To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 70% of test samples
 will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
-.. GENERATED FROM PYTHON SOURCE LINES 96-107
+.. GENERATED FROM PYTHON SOURCE LINES 97-103
 
 .. code-block:: Python
 
 
-    p = 0.7
-    missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
-    test_df.loc[missing_mask, "img"] = np.nan
-    missing_mask = test_df. \
-        drop(labels=missing_mask). \
-        sample(n=len(missing_mask), random_state=random_state). \
-        index
-    test_df.loc[missing_mask, "text"] = np.nan
+    Xs_test = [test_df[["img"]], test_df[["text"]]]
+    amputer = Amputer(p=0.7, random_state=random_state)
+    Xs_test = amputer.fit_transform(Xs_test)
 
 
 
@@ -235,23 +232,20 @@ will have either text or image missing. You can change this parameter for more o
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 108-111
+.. GENERATED FROM PYTHON SOURCE LINES 104-107
 
 Step 4: Generate the memory bank
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We build the retriever with ``MCR``.
 
-.. GENERATED FROM PYTHON SOURCE LINES 111-125
+.. GENERATED FROM PYTHON SOURCE LINES 107-118
 
 .. code-block:: Python
 
     modalities = ["image", "text"]
     estimator = MCR(batch_size=64, modalities=modalities, save_memory_bank=True)
 
-    Xs_train = [
-        train_df["img"].to_list(),
-        train_df["text"].to_list()
-    ]
+    Xs_train = [train_df[["img"]], train_df[["text"]]]
     # Use dummy labels for API compatibility (labels are not provided in Flickr30k)
     y_train = pd.Series(np.zeros(len(train_df)), index=train_df.index)
 
@@ -263,24 +257,25 @@ We build the retriever with ``MCR``.
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    Using a slow image processor as `use_fast` is unset and a slow processor was saved with this model. `use_fast=True` will be the default behavior in v4.52, even if the model was saved with a slow processor. This will result in minor differences in outputs. You'll still be able to use a slow processor with `use_fast=False`.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 126-129
+
+.. GENERATED FROM PYTHON SOURCE LINES 119-122
 
 Step 5: Retrieve
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 We retrieved the most similar items for the test set.
 
-.. GENERATED FROM PYTHON SOURCE LINES 129-137
+.. GENERATED FROM PYTHON SOURCE LINES 122-125
 
 .. code-block:: Python
 
-
-    Xs_test = [
-        test_df["img"].to_list(),
-        test_df["text"].to_list()
-    ]
 
     preds = estimator.predict(Xs=Xs_test, n_neighbors=2)
 
@@ -291,11 +286,11 @@ We retrieved the most similar items for the test set.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 138-139
+.. GENERATED FROM PYTHON SOURCE LINES 126-127
 
 This is the content of the prediction.
 
-.. GENERATED FROM PYTHON SOURCE LINES 139-140
+.. GENERATED FROM PYTHON SOURCE LINES 127-128
 
 .. code-block:: Python
 
@@ -313,7 +308,7 @@ This is the content of the prediction.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 141-142
+.. GENERATED FROM PYTHON SOURCE LINES 129-130
 
 .. code-block:: Python
 
@@ -331,7 +326,7 @@ This is the content of the prediction.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 143-146
+.. GENERATED FROM PYTHON SOURCE LINES 131-134
 
 .. code-block:: Python
 
@@ -351,7 +346,7 @@ This is the content of the prediction.
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 147-156
+.. GENERATED FROM PYTHON SOURCE LINES 135-144
 
 Step 6: Visualize the retrieved instances
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -363,7 +358,7 @@ The target instance is displayed in the leftmost column, followed by the most si
 order of similarity. Note that some instances have missing modalities, which will not appear in the plot. In this
 example, the first two instances are missing the image modality, while the last one is missing the text modality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 156-192
+.. GENERATED FROM PYTHON SOURCE LINES 144-180
 
 .. code-block:: Python
 
@@ -375,8 +370,8 @@ example, the first two instances are missing the image modality, while the last 
         ax = axes[i//ncols, col]
         ax.axis("off")
         if col == 0:
-            image_to_show = Xs_test[0][row]
-            caption = Xs_test[1][row]
+            image_to_show = Xs_test[0].iloc[row]
+            caption = Xs_test[1].iloc[row]
             ax.set_title("Target instance")
         else:
             col -= 1
@@ -415,7 +410,7 @@ example, the first two instances are missing the image modality, while the last 
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 193-200
+.. GENERATED FROM PYTHON SOURCE LINES 181-188
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -425,7 +420,7 @@ memory bank, even when one of the modalities (image or text) was missing.
 This example is intentionally simplified, using only a few instances for demonstration.
 For stronger performance and more reliable results, the full dataset should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 202-205
+.. GENERATED FROM PYTHON SOURCE LINES 190-193
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -435,7 +430,7 @@ even in the presence of missing modalities.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (15 minutes 9.558 seconds)
+   **Total running time of the script:** (4 minutes 57.520 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_retrieve_incomplete_vision_language.py:

@@ -8,11 +8,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class FFNEncoder(nnModuleBase):
-    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout_prob=0.5, device="cpu"):
+class FFNEncoder(Module):
+    def __init__(self, input_dim, hidden_dim, output_dim, num_layers, dropout_prob=0.5):
         super(FFNEncoder, self).__init__()
 
         num_middle_layers = num_layers - 2
@@ -39,10 +39,9 @@ class FFNEncoder(nnModuleBase):
         # Output layer
         self.fc2 = nn.Linear(hidden_dim, output_dim)
 
-        self.device = device
 
     def forward(self, x):
-        x = x.to(self.device)
+        # x = x.to(self.device)
 
         x = self.dropout0(x)
 

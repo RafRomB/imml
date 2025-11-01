@@ -2,15 +2,14 @@
 
 try:
     import torch
-    DLBaseDataset = torch.utils.data.Dataset
     deepmodule_installed = True
 except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
-    DLBaseDataset = object
+Dataset = torch.utils.data.Dataset if deepmodule_installed else object
 
 
-class MRGCNDataset(DLBaseDataset):
+class MRGCNDataset(Dataset):
     r"""
     This class provides a `torch.utils.data.Dataset` implementation for handling multi-modal datasets with `MRGCN`.
 

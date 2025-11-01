@@ -5,7 +5,7 @@ from os.path import dirname
 import numpy as np
 import pandas as pd
 from control.matlab import lyap
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from sklearn.cluster import KMeans
 
 from ..impute import get_observed_mod_indicator, simple_mod_imputer
@@ -20,7 +20,7 @@ except ImportError:
     pass
 
 
-class DAIMC(BaseEstimator, ClassifierMixin):
+class DAIMC(BaseEstimator, ClusterMixin):
     r"""
     Doubly Aligned Incomplete Multi-view Clustering (DAIMC). [#daimcpaper1]_ [#daimcpaper2]_ [#daimccode]_
 

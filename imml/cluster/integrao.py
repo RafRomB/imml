@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 import snf
-from sklearn.cluster import spectral_clustering, SpectralClustering
+from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
 from sklearn.utils import check_symmetric
 from snf.compute import _find_dominate_set
@@ -22,11 +22,11 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-LightningModuleBase = L.LightningModule if deepmodule_installed else object
-nnModuleBase = nn.Module if deepmodule_installed else object
+LightningModule = L.LightningModule if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class IntegrAO(LightningModuleBase):
+class IntegrAO(LightningModule):
     r"""
     Integrate Any Omics (IntegrAO). [#integraopaper]_ [#integraocode]_
 
@@ -90,13 +90,13 @@ class IntegrAO(LightningModuleBase):
     >>> Xs = [torch.from_numpy(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = IntegrAO(Xs=Xs, random_state=42)
     >>> train_data = IntegrAODataset(Xs=Xs, neighbor_size=estimator.neighbor_size, networks=estimator.fused_networks_)
-    >>> train_dataloader = DataLoader(dataset=train_data)
+    >>> train_dataloader = DataLoader(dataset=train_data, batch_size=len(Xs[0]))
     >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
     >>> trainer.fit(estimator, train_dataloader)
     >>> labels = trainer.predict(estimator, train_dataloader)[0]
     """
 
-    def __init__(self, Xs, model : nnModuleBase = None, n_clusters: int = 8, neighbor_size : int = None,
+    def __init__(self, Xs, model : Module = None, n_clusters: int = 8, neighbor_size : int = None,
                  hidden_channels : int = 128, embedding_dims: int = 50, fusing_iteration: int = 20,
                  mu : float = 0.5, learning_rate : float = 1e-3, weight_decay : float = 1e-4, random_state : int = None):
 
@@ -370,7 +370,7 @@ class IntegrAO(LightningModuleBase):
         return C
 
 
-class IntegrAOModule(nnModuleBase):
+class IntegrAOModule(Module):
 
     def __init__(self, in_channels, hidden_channels, out_channels, num_layers=2):
         super().__init__()

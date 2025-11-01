@@ -2,7 +2,7 @@
 
 from typing import Union
 import pandas as pd
-from sklearn.base import BaseEstimator, ClassifierMixin
+from sklearn.base import BaseEstimator, ClusterMixin
 from scipy.cluster.hierarchy import cophenet, linkage
 from scipy.spatial.distance import pdist
 import numpy as np
@@ -14,7 +14,7 @@ from ._sumo.modes.run.solvers.unsupervised_sumo import UnsupervisedSumoNMF
 from ._sumo.modes.prepare.similarity import feature_to_adjacency
 
 
-class SUMO(BaseEstimator, ClassifierMixin):
+class SUMO(BaseEstimator, ClusterMixin):
     r"""
     Subtyping Tool for Multi-Omic Data (SUMO). [#sumopaper1]_ [#sumocode]_
 

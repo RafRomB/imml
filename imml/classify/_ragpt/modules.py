@@ -9,10 +9,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class MMG(nnModuleBase):
+class MMG(Module):
     def __init__(self, dropout_rate, n, d):
         super(MMG, self).__init__()
         self.n = n
@@ -32,7 +32,7 @@ class MMG(nnModuleBase):
         return F_l
 
 
-class CAP(nnModuleBase):
+class CAP(Module):
     def __init__(self, prompt_length,dim=768):
         super(CAP, self).__init__()
         self.dim = dim

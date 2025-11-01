@@ -9,10 +9,10 @@ except ImportError:
     deepmodule_installed = False
     deepmodule_error = "Module 'deep' needs to be installed. See https://imml.readthedocs.io/stable/main/installation.html#optional-dependencies"
 
-nnModuleBase = nn.Module if deepmodule_installed else object
+Module = nn.Module if deepmodule_installed else object
 
 
-class MM_transformer_encoder(nnModuleBase):
+class MM_transformer_encoder(Module):
     def __init__(self, input_dim, d_model, MHD_num_head, d_ff, output_dim, keep_prob=0.5):
         super(MM_transformer_encoder, self).__init__()
 

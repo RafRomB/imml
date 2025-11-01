@@ -29,7 +29,7 @@ What you will learn:
 ###################################
 # Step 0: Prerequisites
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To run this tutorial, install the extras for deep learning and tutorials:
+# To run this tutorial, install the extras for deep learning:
 #   pip install imml[deep]
 # We also use the Hugging Face Datasets library to load Oxford‑IIIT Pets:
 #   pip install datasets
@@ -50,10 +50,10 @@ import torch
 import os
 import pandas as pd
 from sklearn.metrics import matthews_corrcoef, ConfusionMatrixDisplay
-import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from datasets import load_dataset
 
+from imml.ampute import Amputer
 from imml.classify import RAGPT
 from imml.load import RAGPTDataset, RAGPTCollator
 from imml.retrieve import MCR
@@ -69,7 +69,7 @@ from imml.retrieve import MCR
 random_state = 42
 L.seed_everything(random_state)
 
-# Local working directory (images will be saved here so ``MCR`` can read paths)
+# Local working directory (images will be saved here so MCR can read paths)
 data_folder = "oxford_iiit_pet"
 folder_images = os.path.join(data_folder, "imgs")
 os.makedirs(folder_images, exist_ok=True)
@@ -111,41 +111,29 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data. In this case, 30% of training and test samples
-# will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
+# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 60% of training
+# and test samples will have either text or image missing. You can change this parameter for more or less
+# amount of incompleteness.
 
-p = 0.3
-missing_mask = train_df.sample(frac=p/2, random_state=random_state).index
-train_df.loc[missing_mask, "img"] = np.nan
-missing_mask = train_df. \
-    drop(labels=missing_mask). \
-    sample(n=len(missing_mask), random_state=random_state). \
-    index
-train_df.loc[missing_mask, "text"] = np.nan
-
-missing_mask = test_df.sample(frac=p/2, random_state=random_state).index
-test_df.loc[missing_mask, "img"] = np.nan
-missing_mask = test_df. \
-    drop(labels=missing_mask). \
-    sample(n=len(missing_mask), random_state=random_state). \
-    index
-test_df.loc[missing_mask, "text"] = np.nan
+Xs_train = [train_df[["img"]], train_df[["text"]]]
+Xs_test = [test_df[["img"]], test_df[["text"]]]
+amputer = Amputer(p=0.6, random_state=random_state)
+Xs_train = amputer.fit_transform(Xs_train)
+Xs_test = amputer.fit_transform(Xs_test)
 
 
 ########################################################
 # Step 4: Generate the prompts using a retriever
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# We use the ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts for the ``RAGPT`` model.
+# ``RAGPT`` needs prompts, which are created from a memory bank with a retriever.
+# We use ``MCR`` (Multi-Channel Retriever) to construct a memory bank and generate prompts.
 
 modalities = ["image", "text"]
 batch_size = 64
 estimator = MCR(batch_size=batch_size, modalities=modalities, save_memory_bank=True,
                 prompt_path=data_folder, n_neighbors=2, generate_cap=True)
 
-Xs_bank = [
-    bank_df["img"].to_list(),
-    bank_df["text"].to_list()
-]
+Xs_bank = [bank_df[["img"]], bank_df[["text"]]]
 y_bank = bank_df["class"]
 
 estimator.fit(Xs=Xs_bank, y=y_bank)
@@ -156,19 +144,11 @@ memory_bank.head()
 ########################################################
 # Load generated training and testing prompts.
 
-Xs_train = [
-    train_df["img"].to_list(),
-    train_df["text"].to_list()
-]
 y_train = train_df["class"]
 train_db = estimator.transform(Xs=Xs_train, y=y_train)
 print("train_db", train_db.shape)
 train_db.head()
 
-Xs_test = [
-    test_df["img"].to_list(),
-    test_df["text"].to_list()
-]
 y_test = test_df["class"]
 test_db = estimator.transform(Xs=Xs_test, y=y_test)
 print("test_db", test_db.shape)
@@ -229,19 +209,23 @@ preds = torch.stack(preds).argmax(1).cpu()
 losses = [i.item() for i in estimator.agg_loss_list]
 
 nrows, ncols = 2,3
-test_df = test_df.reset_index()
+test_df = pd.concat(Xs_test, axis=1)
+test_df = pd.concat([test_df, y_test.to_frame("label")], axis=1)
+test_df = test_df.reset_index(drop=True)
 preds = preds[test_df.index]
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
 for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=random_state).iterrows()):
     pred = preds[i_row]
     image_to_show = row["img"]
     caption = row["text"]
-    real_class = row["label"]
+    real_class = le.classes_[row["label"]]
     ax = axes[i//ncols, i%ncols]
     ax.axis("off")
     if isinstance(image_to_show, str):
         image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
         ax.imshow(image_to_show)
+    else:
+        ax.plot(0.5, 0.5, 'rx', markersize=100, markeredgewidth=10)
     pred_class = le.classes_[pred]
     c = "green" if pred_class == real_class else "red"
     ax.set_title(f"Pred:{pred_class}; Real:{real_class}", **{"color":c})
@@ -251,6 +235,8 @@ for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=rand
             caption = caption[:len(caption)//2] + ["\n"] + caption[len(caption)//2:]
             caption = " ".join(caption)
         ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+    else:
+        ax.annotate("X", xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top', color="red", fontsize=30)
 
 shutil.rmtree(data_folder, ignore_errors=True)
 

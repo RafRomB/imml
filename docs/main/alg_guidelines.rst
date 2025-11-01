@@ -16,142 +16,142 @@ task and check whether additional modules or dependencies are required.
      - Module
      - Extra dependencies
    * - Classification
-     - M3Care
+     - :class:`~imml.classify.M3Care`
      - Numeric | Image | Text
      - deep
      -
    * - Classification
-     - MUSE
-     - Numeric | Text | Series
+     - :class:`~imml.classify.MUSE`
+     - Numeric | Text | Time series
      - deep
      -
    * - Classification
-     - RAGPT
-     - Image | Text
+     - :class:`~imml.classify.RAGPT`
+     - Image & Text
      - deep
      -
    * - Clustering
-     - DAIMC
+     - :class:`~imml.cluster.DAIMC`
      - Numeric
      -
      -
    * - Clustering
-     - EEIMVC
+     - :class:`~imml.cluster.EEIMVC`
      - Numeric
      -
      -
    * - Clustering
-     - IMSCAGL
+     - :class:`~imml.cluster.IMSCAGL`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - IMSR
+     - :class:`~imml.cluster.IMSR`
      - Numeric
      -
      -
    * - Clustering
-     - IntegrAO
-     - Numeric
-     - deep
-     -
-   * - Clustering
-     - LFIMVC
-     - Numeric
-     -
-     -
-   * - Clustering
-     - MKKMIK
-     - Numeric
-     - matlab
-     - octave
-   * - Clustering
-     - MONET
-     - Numeric
-     -
-     -
-   * - Clustering
-     - MRGCN
+     - :class:`~imml.cluster.IntegrAO`
      - Numeric
      - deep
      -
    * - Clustering
-     - NEMO
+     - :class:`~imml.cluster.LFIMVC`
      - Numeric
      -
      -
    * - Clustering
-     - OMVC
+     - :class:`~imml.cluster.MKKMIK`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - OPIMC
+     - :class:`~imml.cluster.MONET`
+     - Numeric
+     -
+     -
+   * - Clustering
+     - :class:`~imml.cluster.MRGCN`
+     - Numeric
+     - deep
+     -
+   * - Clustering
+     - :class:`~imml.cluster.NEMO`
+     - Numeric
+     -
+     -
+   * - Clustering
+     - :class:`~imml.cluster.OMVC`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - OSLFIMVC
+     - :class:`~imml.cluster.OPIMC`
+     - Numeric
+     - matlab
+     - octave
+   * - Clustering
+     - :class:`~imml.cluster.OSLFIMVC`
      - Numeric
      - matlab
      - octave, octave-statistics
    * - Clustering
-     - PIMVC
+     - :class:`~imml.cluster.PIMVC`
      - Numeric
      - matlab
      - octave
    * - Clustering
-     - SIMCADC
+     - :class:`~imml.cluster.SIMCADC`
      - Numeric
      -
      -
    * - Clustering
-     - SUMO
+     - :class:`~imml.cluster.SUMO`
      - Numeric
      -
      -
    * - Decomposition
-     - DFMF
+     - :class:`~imml.decomposition.DFMF`
      - Numeric
      -
      -
    * - Decomposition
-     - MOFA
+     - :class:`~imml.decomposition.MOFA`
      - Numeric
      -
      -
    * - Decomposition
-     - JNMF
+     - :class:`~imml.decomposition.JNMF`
      - Numeric
      - r
      - R, nnTensor
    * - Feature selection
-     - JNMFFeatureSelection
+     - :class:`~imml.feature_selection.JNMFFeatureSelector`
      - Numeric
      - r
      - R, nnTensor
    * - Impute
-     - DFMFImputer
+     - :class:`~imml.impute.DFMFImputer`
      - Numeric
      -
      -
    * - Impute
-     - MOFAImputer
+     - :class:`~imml.impute.MOFAImputer`
      - Numeric
      -
      -
    * - Impute
-     - JNMFImputer
+     - :class:`~imml.impute.JNMFImputer`
      - Numeric
      - r
      - R, nnTensor
    * - Retrieve
-     - MCR
-     - Image | Text
+     - :class:`~imml.retrieve.MCR`
+     - Image & Text
      - deep
      -
    * - Statistics
-     - pid
+     - :class:`~imml.statistics.pid`
      - Numeric
      -
      -
