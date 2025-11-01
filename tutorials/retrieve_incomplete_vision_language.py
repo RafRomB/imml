@@ -27,7 +27,7 @@ parallel lists: image paths and texts for each sample.
 ###################################
 # Step 0: Prerequisites
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To run this tutorial, install the extras for deep learning and tutorials:
+# To run this tutorial, install the extras for deep learning:
 #   pip install imml[deep]
 # Additionally, we will use the Hugging Face Datasets library to load Flickr30k:
 #   pip install datasets

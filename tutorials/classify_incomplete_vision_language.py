@@ -29,7 +29,7 @@ What you will learn:
 ###################################
 # Step 0: Prerequisites
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To run this tutorial, install the extras for deep learning and tutorials:
+# To run this tutorial, install the extras for deep learning:
 #   pip install imml[deep]
 # We also use the Hugging Face Datasets library to load Oxford‑IIIT Pets:
 #   pip install datasets
@@ -111,7 +111,7 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 50% of training
+# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 60% of training
 # and test samples will have either text or image missing. You can change this parameter for more or less
 # amount of incompleteness.
 

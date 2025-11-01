@@ -17,7 +17,7 @@ L.seed_everything(42)
 estimator = IntegrAO
 
 if sys.platform.startswith("darwin"):
-    torch.set_default_device('cpu')
+    torch.set_default_device('mps:0')
 
 
 @pytest.fixture

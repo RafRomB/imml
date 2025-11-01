@@ -15,7 +15,7 @@ from imml.load import M3CareDataset
 estimator = M3Care
 
 if sys.platform.startswith("darwin"):
-    torch.set_default_device('cpu')
+    torch.set_default_device('mps:0')
 
 
 

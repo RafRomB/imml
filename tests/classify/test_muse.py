@@ -15,7 +15,7 @@ from imml.load import MUSEDataset
 estimator = MUSE
 
 if sys.platform.startswith("darwin"):
-    torch.set_default_device('cpu')
+    torch.set_default_device('mps:0')
 
 
 @pytest.fixture

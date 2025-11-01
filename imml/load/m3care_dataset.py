@@ -1,13 +1,12 @@
 # License: BSD-3-Clause
 import numpy as np
 import pandas as pd
-from PIL import Image
 
 from ..impute import get_observed_mod_indicator
 from ..utils import check_Xs
 
 try:
-    import lightning.pytorch as pl
+    import lightning as L
     import torch
     deepmodule_installed = True
 except ImportError:

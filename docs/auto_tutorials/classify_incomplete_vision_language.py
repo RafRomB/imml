@@ -29,7 +29,7 @@ What you will learn:
 ###################################
 # Step 0: Prerequisites
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To run this tutorial, install the extras for deep learning and tutorials:
+# To run this tutorial, install the extras for deep learning:
 #   pip install imml[deep]
 # We also use the Hugging Face Datasets library to load Oxford‑IIIT Pets:
 #   pip install datasets
@@ -50,7 +50,6 @@ import torch
 import os
 import pandas as pd
 from sklearn.metrics import matthews_corrcoef, ConfusionMatrixDisplay
-import numpy as np
 from sklearn.preprocessing import LabelEncoder
 from datasets import load_dataset
 
@@ -112,13 +111,13 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 30% of training
+# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 60% of training
 # and test samples will have either text or image missing. You can change this parameter for more or less
 # amount of incompleteness.
 
 Xs_train = [train_df[["img"]], train_df[["text"]]]
 Xs_test = [test_df[["img"]], test_df[["text"]]]
-amputer = Amputer(p=0.3, random_state=random_state)
+amputer = Amputer(p=0.6, random_state=random_state)
 Xs_train = amputer.fit_transform(Xs_train)
 Xs_test = amputer.fit_transform(Xs_test)
 
@@ -210,19 +209,23 @@ preds = torch.stack(preds).argmax(1).cpu()
 losses = [i.item() for i in estimator.agg_loss_list]
 
 nrows, ncols = 2,3
-test_df = test_df.reset_index()
+test_df = pd.concat(Xs_test, axis=1)
+test_df = pd.concat([test_df, y_test.to_frame("label")], axis=1)
+test_df = test_df.reset_index(drop=True)
 preds = preds[test_df.index]
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
 for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=random_state).iterrows()):
     pred = preds[i_row]
     image_to_show = row["img"]
     caption = row["text"]
-    real_class = row["label"]
+    real_class = le.classes_[row["label"]]
     ax = axes[i//ncols, i%ncols]
     ax.axis("off")
     if isinstance(image_to_show, str):
         image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
         ax.imshow(image_to_show)
+    else:
+        ax.plot(0.5, 0.5, 'rx', markersize=100, markeredgewidth=10)
     pred_class = le.classes_[pred]
     c = "green" if pred_class == real_class else "red"
     ax.set_title(f"Pred:{pred_class}; Real:{real_class}", **{"color":c})
@@ -232,6 +235,8 @@ for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=rand
             caption = caption[:len(caption)//2] + ["\n"] + caption[len(caption)//2:]
             caption = " ".join(caption)
         ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+    else:
+        ax.annotate("X", xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top', color="red", fontsize=30)
 
 shutil.rmtree(data_folder, ignore_errors=True)
 
