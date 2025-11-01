@@ -3,7 +3,7 @@
 import numpy as np
 import pandas as pd
 import snf
-from sklearn.cluster import spectral_clustering, SpectralClustering
+from sklearn.cluster import SpectralClustering
 from sklearn.manifold import spectral_embedding
 from sklearn.utils import check_symmetric
 from snf.compute import _find_dominate_set
@@ -90,7 +90,7 @@ class IntegrAO(LightningModule):
     >>> Xs = [torch.from_numpy(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     >>> estimator = IntegrAO(Xs=Xs, random_state=42)
     >>> train_data = IntegrAODataset(Xs=Xs, neighbor_size=estimator.neighbor_size, networks=estimator.fused_networks_)
-    >>> train_dataloader = DataLoader(dataset=train_data)
+    >>> train_dataloader = DataLoader(dataset=train_data, batch_size=len(Xs[0]))
     >>> trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
     >>> trainer.fit(estimator, train_dataloader)
     >>> labels = trainer.predict(estimator, train_dataloader)[0]

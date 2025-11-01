@@ -112,11 +112,10 @@ def test_example():
     Xs = [torch.from_numpy(np.random.default_rng(42).random((20, 10))) for i in range(3)]
     estimator = IntegrAO(Xs=Xs, random_state=42)
     train_data = IntegrAODataset(Xs=Xs, neighbor_size=estimator.neighbor_size, networks=estimator.fused_networks_)
-    train_dataloader = DataLoader(dataset=train_data)
+    train_dataloader = DataLoader(dataset=train_data, batch_size=len(Xs[0]))
     trainer = Trainer(max_epochs=2, logger=False, enable_checkpointing=False)
     trainer.fit(estimator, train_dataloader)
     labels = trainer.predict(estimator, train_dataloader)[0]
-
 
 if __name__ == "__main__":
     pytest.main()

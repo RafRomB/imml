@@ -117,7 +117,7 @@ train_df.head()
 
 Xs_train = [train_df[["img"]], train_df[["text"]]]
 Xs_test = [test_df[["img"]], test_df[["text"]]]
-amputer = Amputer(p=0.4, random_state=random_state)
+amputer = Amputer(p=0.6, random_state=random_state)
 Xs_train = amputer.fit_transform(Xs_train)
 Xs_test = amputer.fit_transform(Xs_test)
 
@@ -211,14 +211,14 @@ losses = [i.item() for i in estimator.agg_loss_list]
 nrows, ncols = 2,3
 test_df = pd.concat(Xs_test, axis=1)
 test_df = pd.concat([test_df, y_test.to_frame("label")], axis=1)
-test_df = test_df.reset_index()
+test_df = test_df.reset_index(drop=True)
 preds = preds[test_df.index]
 fig, axes = plt.subplots(nrows, ncols, constrained_layout=True)
 for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=random_state).iterrows()):
     pred = preds[i_row]
     image_to_show = row["img"]
     caption = row["text"]
-    real_class = row["label"]
+    real_class = le.classes_[row["label"]]
     ax = axes[i//ncols, i%ncols]
     ax.axis("off")
     if isinstance(image_to_show, str):
@@ -236,7 +236,7 @@ for i, (i_row, row) in enumerate(test_df.sample(n=nrows*ncols, random_state=rand
             caption = " ".join(caption)
         ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
     else:
-        ax.plot(400, -0.5, 'rx', markersize=20, markeredgewidth=10)
+        ax.annotate("X", xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top', color="red", fontsize=30)
 
 shutil.rmtree(data_folder, ignore_errors=True)
 
