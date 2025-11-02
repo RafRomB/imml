@@ -92,11 +92,11 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 70% of test samples
+# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 30% of test samples
 # will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
 Xs_test = [test_df[["img"]], test_df[["text"]]]
-amputer = Amputer(p=0.7, random_state=random_state)
+amputer = Amputer(p=0.3, random_state=random_state)
 Xs_test = amputer.fit_transform(Xs_test)
 
 
@@ -166,6 +166,8 @@ for i in range(nrows*ncols):
     if isinstance(image_to_show, str):
         image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
         ax.imshow(image_to_show)
+    else:
+        ax.plot(0.5, 0.5, 'rx', markersize=100, markeredgewidth=10)
     if isinstance(caption, str):
         caption = caption.split(" ")
         if len(caption) >= 6:
@@ -174,6 +176,8 @@ for i in range(nrows*ncols):
                           len(caption) // 4 * 3:]
             caption = " ".join(caption)
         ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+    else:
+        ax.annotate("X", xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top', color="red", fontsize=30)
 
 shutil.rmtree(data_folder, ignore_errors=True)
 
