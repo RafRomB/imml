@@ -498,7 +498,19 @@ the `Lightning <https://lightning.ai/docs/pytorch/stable/starter/introduction.ht
 
  .. code-block:: none
 
-    Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]
+
+    Training: |          | 0/? [00:00<?, ?it/s]
+    Training:   0%|          | 0/1 [00:00<?, ?it/s]
+    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s] 
+    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]
+    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]
+    Epoch 0: 100%|██████████| 1/1 [00:18<00:00,  0.05it/s]
+    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]        
+    Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:15<00:00,  0.06it/s]
 
 
 
@@ -542,17 +554,47 @@ modify the internal functions. For instance, we can track loss and compute evalu
 
  .. code-block:: none
 
-    Sanity Checking: |          | 0/? [00:00<?, ?it/s]    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:04<00:00,  0.21it/s]                                                                               Training: |          | 0/? [00:00<?, ?it/s]    Training:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]     Epoch 0: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]    Epoch 0: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]
-    Validation: |          | 0/? [00:00<?, ?it/s]
-    Validation:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.31it/s]
-                                                                              Epoch 0: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]    Epoch 0: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]            Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]    Epoch 1: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]    Epoch 1: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]
-    Validation: |          | 0/? [00:00<?, ?it/s]
-    Validation:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
-    Validation DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.29it/s]
-                                                                              Epoch 1: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]    Epoch 1: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]    Epoch 1: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]
+
+    Sanity Checking: |          | 0/? [00:00<?, ?it/s]
+    Sanity Checking:   0%|          | 0/1 [00:00<?, ?it/s]
+    Sanity Checking DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
+    Sanity Checking DataLoader 0: 100%|██████████| 1/1 [00:04<00:00,  0.21it/s]
+                                                                           
+
+    Training: |          | 0/? [00:00<?, ?it/s]
+    Training:   0%|          | 0/1 [00:00<?, ?it/s]
+    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s] 
+    Epoch 0: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]
+    Epoch 0: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]
+
+    Validation: |          | 0/? [00:00<?, ?it/s]
+
+    Validation:   0%|          | 0/1 [00:00<?, ?it/s]
+
+    Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
+
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.31it/s]
+
+                                                                          
+    Epoch 0: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]
+    Epoch 0: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]
+    Epoch 0:   0%|          | 0/1 [00:00<?, ?it/s]        
+    Epoch 1:   0%|          | 0/1 [00:00<?, ?it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:16<00:00,  0.06it/s]
+
+    Validation: |          | 0/? [00:00<?, ?it/s]
+
+    Validation:   0%|          | 0/1 [00:00<?, ?it/s]
+
+    Validation DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
+
+    Validation DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.29it/s]
+
+                                                                          
+    Epoch 1: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]
+    Epoch 1: 100%|██████████| 1/1 [00:20<00:00,  0.05it/s]
 
 
 
@@ -618,7 +660,12 @@ After training, we can evaluate predictions and visualize the results.
 
  .. code-block:: none
 
-    Predicting: |          | 0/? [00:00<?, ?it/s]    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.32it/s]    Predicting DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.32it/s]
+
+    Predicting: |          | 0/? [00:00<?, ?it/s]
+    Predicting:   0%|          | 0/1 [00:00<?, ?it/s]
+    Predicting DataLoader 0:   0%|          | 0/1 [00:00<?, ?it/s]
+    Predicting DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.32it/s]
+    Predicting DataLoader 0: 100%|██████████| 1/1 [00:03<00:00,  0.32it/s]
 
 
 
