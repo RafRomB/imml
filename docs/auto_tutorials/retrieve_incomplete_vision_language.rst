@@ -89,6 +89,13 @@ Step 1: Import required libraries
 
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/torchvision/io/image.py:13: UserWarning: Failed to load image Python extension: '/home/alberto/anaconda3/envs/imc/lib/python3.10/site-packages/torchvision/image.so: undefined symbol: _ZN3c1017RegisterOperatorsD1Ev'If you don't plan on using image functionality from `torchvision.io`, you can ignore this warning. Otherwise, there might be something wrong with your environment. Did you have `libjpeg` or `libpng` installed before building `torchvision` from source?
+      warn(
+
 
 
 
@@ -212,7 +219,7 @@ retrieve module.
 
 Step 3: Simulate missing modalities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 70% of test samples
+To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 80% of test samples
 will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
 .. GENERATED FROM PYTHON SOURCE LINES 97-103
@@ -221,7 +228,7 @@ will have either text or image missing. You can change this parameter for more o
 
 
     Xs_test = [test_df[["img"]], test_df[["text"]]]
-    amputer = Amputer(p=0.7, random_state=random_state)
+    amputer = Amputer(p=0.8, random_state=0)
     Xs_test = amputer.fit_transform(Xs_test)
 
 
@@ -358,7 +365,7 @@ The target instance is displayed in the leftmost column, followed by the most si
 order of similarity. Note that some instances have missing modalities, which will not appear in the plot. In this
 example, the first two instances are missing the image modality, while the last one is missing the text modality.
 
-.. GENERATED FROM PYTHON SOURCE LINES 144-180
+.. GENERATED FROM PYTHON SOURCE LINES 144-184
 
 .. code-block:: Python
 
@@ -370,8 +377,8 @@ example, the first two instances are missing the image modality, while the last 
         ax = axes[i//ncols, col]
         ax.axis("off")
         if col == 0:
-            image_to_show = Xs_test[0].iloc[row]
-            caption = Xs_test[1].iloc[row]
+            image_to_show = Xs_test[0].iloc[row][0]
+            caption = Xs_test[1].iloc[row][0]
             ax.set_title("Target instance")
         else:
             col -= 1
@@ -387,6 +394,8 @@ example, the first two instances are missing the image modality, while the last 
         if isinstance(image_to_show, str):
             image_to_show = Image.open(image_to_show).resize((512, 512), Image.Resampling.LANCZOS)
             ax.imshow(image_to_show)
+        else:
+            ax.plot(0.5, 0.5, 'rx', markersize=100, markeredgewidth=10)
         if isinstance(caption, str):
             caption = caption.split(" ")
             if len(caption) >= 6:
@@ -395,6 +404,8 @@ example, the first two instances are missing the image modality, while the last 
                               len(caption) // 4 * 3:]
                 caption = " ".join(caption)
             ax.annotate(caption, xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top')
+        else:
+            ax.annotate("X", xy=(0.5, -0.08), xycoords='axes fraction', ha='center', va='top', color="red", fontsize=30)
 
     shutil.rmtree(data_folder, ignore_errors=True)
 
@@ -407,10 +418,19 @@ example, the first two instances are missing the image modality, while the last 
    :class: sphx-glr-single-img
 
 
+.. rst-class:: sphx-glr-script-out
+
+ .. code-block:: none
+
+    /home/alberto/Work/imml/tutorials/retrieve_incomplete_vision_language.py:152: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+      image_to_show = Xs_test[0].iloc[row][0]
+    /home/alberto/Work/imml/tutorials/retrieve_incomplete_vision_language.py:153: FutureWarning: Series.__getitem__ treating keys as positions is deprecated. In a future version, integer keys will always be treated as labels (consistent with DataFrame behavior). To access a value by position, use `ser.iloc[pos]`
+      caption = Xs_test[1].iloc[row][0]
 
 
 
-.. GENERATED FROM PYTHON SOURCE LINES 181-188
+
+.. GENERATED FROM PYTHON SOURCE LINES 185-192
 
 Summary of results
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -420,7 +440,7 @@ memory bank, even when one of the modalities (image or text) was missing.
 This example is intentionally simplified, using only a few instances for demonstration.
 For stronger performance and more reliable results, the full dataset should be used.
 
-.. GENERATED FROM PYTHON SOURCE LINES 190-193
+.. GENERATED FROM PYTHON SOURCE LINES 194-197
 
 Conclusion
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -430,7 +450,7 @@ even in the presence of missing modalities.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (4 minutes 45.277 seconds)
+   **Total running time of the script:** (4 minutes 37.392 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_retrieve_incomplete_vision_language.py:

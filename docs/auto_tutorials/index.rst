@@ -60,23 +60,6 @@ Questions or feedback?
 
 .. raw:: html
 
-    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using iMML. We will use the MCR retriever to find similar items across modalities (image/text) even when one modality is missing. The example uses the public nlphuji/flickr30k dataset from Hugging Face Datasets, so you don&#x27;t need to prepare files manually.">
-
-.. only:: html
-
-  .. image:: /auto_tutorials/images/thumb/sphx_glr_retrieve_incomplete_vision_language_thumb.png
-    :alt:
-
-  :ref:`sphx_glr_auto_tutorials_retrieve_incomplete_vision_language.py`
-
-.. raw:: html
-
-      <div class="sphx-glr-thumbnail-title">Retrieval on a vision–language dataset (flickr30k)</div>
-    </div>
-
-
-.. raw:: html
-
     <div class="sphx-glr-thumbcontainer" tooltip="Clustering involves grouping samples into distinct groups. In this tutorial, we show how to use iMML to perform clustering on a multi-modal dataset. We also demonstrate how to work with incomplete multi-modal data, where some samples are missing one or more modalities, and how to benchmark the impact of missingness.">
 
 .. only:: html
@@ -89,6 +72,23 @@ Questions or feedback?
 .. raw:: html
 
       <div class="sphx-glr-thumbnail-title">Clustering a multi-modal dataset</div>
+    </div>
+
+
+.. raw:: html
+
+    <div class="sphx-glr-thumbcontainer" tooltip="This tutorial demonstrates how to retrieve samples from an incomplete vision–language dataset using iMML. We will use the MCR retriever to find similar items across modalities (image/text) even when one modality is missing. The example uses the public nlphuji/flickr30k dataset from Hugging Face Datasets, so you don&#x27;t need to prepare files manually.">
+
+.. only:: html
+
+  .. image:: /auto_tutorials/images/thumb/sphx_glr_retrieve_incomplete_vision_language_thumb.png
+    :alt:
+
+  :ref:`sphx_glr_auto_tutorials_retrieve_incomplete_vision_language.py`
+
+.. raw:: html
+
+      <div class="sphx-glr-thumbnail-title">Retrieval on a vision–language dataset (flickr30k)</div>
     </div>
 
 
@@ -155,8 +155,8 @@ Questions or feedback?
 
    /auto_tutorials/multil_modal_data_statistics
    /auto_tutorials/generate_missing_modalities
-   /auto_tutorials/retrieve_incomplete_vision_language
    /auto_tutorials/cluster_incomplete_mmd
+   /auto_tutorials/retrieve_incomplete_vision_language
    /auto_tutorials/impute_multi_modal_data
    /auto_tutorials/classify_incomplete_vision_language
    /auto_tutorials/select_and_extract_features
