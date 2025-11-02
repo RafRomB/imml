@@ -92,11 +92,11 @@ train_df.head()
 ###################################################
 # Step 3: Simulate missing modalities
 # ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 30% of test samples
+# To reflect realistic scenarios, we randomly introduce missing data using ``Amputer``. In this case, 80% of test samples
 # will have either text or image missing. You can change this parameter for more or less amount of incompleteness.
 
 Xs_test = [test_df[["img"]], test_df[["text"]]]
-amputer = Amputer(p=0.3, random_state=random_state)
+amputer = Amputer(p=0.8, random_state=0)
 Xs_test = amputer.fit_transform(Xs_test)
 
 
@@ -149,8 +149,8 @@ for i in range(nrows*ncols):
     ax = axes[i//ncols, col]
     ax.axis("off")
     if col == 0:
-        image_to_show = Xs_test[0].iloc[row]
-        caption = Xs_test[1].iloc[row]
+        image_to_show = Xs_test[0].iloc[row][0]
+        caption = Xs_test[1].iloc[row][0]
         ax.set_title("Target instance")
     else:
         col -= 1

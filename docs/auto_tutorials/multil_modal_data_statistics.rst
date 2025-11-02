@@ -411,7 +411,7 @@ feature engineering for downstream multi‑modal learning.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (0 minutes 21.077 seconds)
+   **Total running time of the script:** (0 minutes 27.475 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_multil_modal_data_statistics.py:
