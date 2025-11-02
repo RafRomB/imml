@@ -58,7 +58,7 @@ parallel lists: image paths and texts for each sample.
 
 Step 0: Prerequisites
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-To run this tutorial, install the extras for deep learning and tutorials:
+To run this tutorial, install the extras for deep learning:
   pip install imml[deep]
 Additionally, we will use the Hugging Face Datasets library to load Flickr30k:
   pip install datasets
@@ -430,7 +430,7 @@ even in the presence of missing modalities.
 
 .. rst-class:: sphx-glr-timing
 
-   **Total running time of the script:** (4 minutes 57.520 seconds)
+   **Total running time of the script:** (4 minutes 45.277 seconds)
 
 
 .. _sphx_glr_download_auto_tutorials_retrieve_incomplete_vision_language.py:
