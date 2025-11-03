@@ -33,7 +33,7 @@ Change tags (adopted from `Scikit-learn
 
 Version 0.2.0
 -------------
-October 28, 2025
+November 3, 2025
 
 Updates in this release:
 
@@ -75,7 +75,7 @@ Updates in this release:
 :mod:`imml.load`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 - |API| :class:`~imml.load.M3CareDataset` observed_mod_indicator argument was removed.
-- |API| :class:`~imml.load.MUSEDataset` observed_mod_indicator argument was removed.
+- |API| :class:`~imml.load.MUSEDataset` observed_mod_indicator and y_indicator arguments were removed.
 
 :mod:`imml.utils`
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -91,7 +91,7 @@ Updates in this release:
 
 - |Enhancement| Improving documentation for several methods.
 - |Enhancement| Improved documentation for installation and extra dependencies.
-- |Feature| Adding `guidelines <https://imml.readthedocs.io/stable/main/alg_guidelines.html>`_ on how to choose
+- |Enhancement| Adding `guidelines <https://imml.readthedocs.io/stable/main/alg_guidelines.html>`_ on how to choose
   an algorithm.
 - |Enhancement| Added license headers to all files.
 - |Fix| Fixed iPython dependency issue. Oct2Py depends on iPython but returned an error when importing ipython>=9.0.0.

@@ -80,10 +80,11 @@ class M3Care(LightningModule):
     >>> from imml.load import M3CareDataset
     >>> from imml.ampute import Amputer
     >>> Xs = [pd.DataFrame(np.random.default_rng(42).random((2, 10)))]
+    >>> Xs.append(pd.DataFrame(np.random.default_rng(42).random((2, 15))))
     >>> Xs.append(pd.DataFrame(["docs/figures/graph.png", "docs/figures/logo_imml.png"]))
     >>> Xs.append(pd.DataFrame(["This is the graphical abstract of iMML.", "This is the logo of iMML."]))
     >>> Xs = Amputer(p=0.2, random_state=42).fit_transform(Xs) # this step is optional
-    >>> y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0]))).astype(np.float32)
+    >>> y = pd.Series(np.random.default_rng(42).integers(0, 2, len(Xs[0])), dtype="Float32")
     >>> train_data = M3CareDataset(Xs=Xs, y=y)
     >>> train_dataloader = DataLoader(dataset=train_data, batch_size=10, shuffle=True)
     >>> trainer = Trainer(max_epochs=1, logger=False, enable_checkpointing=False)
